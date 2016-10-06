@@ -6,3 +6,4 @@ for dev in list_devices(): # scan all devices
    pprint(('device: ', device,'-',device.name))
    cap = device.capabilities(verbose=True,absinfo=True)
    pprint(('Device Capabilities:', cap))
+   #This works nicely.
