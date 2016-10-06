@@ -31,7 +31,9 @@ class TrackedEvent(object):
 		self.discard = 0
 		self.moved = 0
 		self.track_start = None
-		self.click_delay = 1.1
+		self.click_delay = 0.5
+		self.m = PyMouse()
+		self.clicked = 0
 
 	def add_finger(self, slot):
 		"""  Add a detected finger. """
@@ -41,6 +43,12 @@ class TrackedEvent(object):
 		if self.total_event_fingers < self.fingers:
 			self.total_event_fingers = self.fingers
 
+		#origin: remove fingers
+		if (self.fingers == 0 and self.total_event_fingers == 2):
+			self._initiate_right_click()
+		elif ((self.fingers == 0 or self.fingers == -1) and self.total_event_fingers == 1 and self.moved == 0):
+			self._internal_timing()
+
 	def remove_fingers(self):
 		""" Remove detected finger upon release. """
 		if self.total_event_fingers == self.fingers:
@@ -49,6 +57,7 @@ class TrackedEvent(object):
 			print('Total Fingers used: ', self.total_event_fingers)
 		self.fingers -= 1
 
+		'''
 		if (self.fingers == 0 and
 				self.total_event_fingers == 2 and
 				self.moved == 0):
@@ -58,22 +67,26 @@ class TrackedEvent(object):
 				self.total_event_fingers == 1 and
 				self.moved == 0):
 			self._internal_timing()
-
+		'''
 		if self.fingers == 0 or self.fingers == -1:
 			self.discard = 1
+			self.clicked = 0
 
 	def position_event(self, event_code, value):
 		""" tracks position to track movement of fingers """
 		if self.position[event_code] is None:
 			self.position[event_code] = value
+			self.clicked=0
 			#print('position event None-event code, value=',event_code,value)
 		else:
 			old = self.position[event_code]
 			new = value
 			diff = old-new
-			if abs(diff) > 50:
+			if abs(diff) > 100:
 				self._moved_event()
 				print('moved too much')
+			elif self.clicked==0:
+				self._internal_timing()
 
 	def trackit(self):
 		""" start timing for long press """
@@ -87,8 +100,9 @@ class TrackedEvent(object):
 		""" Internal method for determining long press time right clicking. """
 		if self.track_start is not None:
 			elapsed = datetime.datetime.now() - self.track_start
-			if elapsed.total_seconds() >= self.click_delay:
+			if (elapsed.total_seconds() >= self.click_delay and self.clicked==0):
 				self._initiate_right_click()
+
 
 	def _initiate_right_click(self):
 		""" Internal method for initiating a right click at touch point. """
@@ -116,12 +130,13 @@ class TrackedEvent(object):
 		ui.syn()
 		ui.close()
 		'''
-		m = PyMouse()
-		x, y = m.position()  # gets mouse current position coordinates
+		#m = PyMouse()
+		x, y = self.m.position()  # gets mouse current position coordinates
 		#m.click(x,y,1)
 		#if m.press(x,y,1)==1:
 			#print('button1 ',m.press(x,y))
-		m.click(x, y, 2)  # the third argument represents the mouse button (1 click,2 right click,3 middle click)
+		self.m.click(x, y, 2)  # the third argument represents the mouse button (1 click,2 right click,3 middle click)
+		self.clicked=1
 		print('position:', x, y, ':-Right Click injected')
 
 def initiate_gesture_find():
@@ -147,19 +162,27 @@ def initiate_gesture_find():
 		if MT_event:
 			if MT_event.discard == 1:
 				MT_event = None
+
 		if event.type == ecodes.EV_ABS:
 			if MT_event is None:
 				MT_event = TrackedEvent()
+				MT_event.clicked=0
 			event_code = Abs_events[event.code]
 			if event_code == 'ABS_MT_SLOT':
 				MT_event.add_finger(event.value)
+				MT_event.clicked=0
 			elif event_code == 'ABS_X' or event_code == 'ABS_Y':
 				MT_event.position_event(event_code, event.value)
+				#print('check position')
 			elif event_code == 'ABS_MT_TRACKING_ID':
 				if event.value == -1:
 					MT_event.remove_fingers()
+					#MT_event.clicked=0
+					print('event.value = -1 / remove fingers')
 				else:
 					MT_event.trackit()
+					#print('trackit')
+					print('trackit:event.code - event.value=',event.code, event.value)
 
 if __name__ == '__main__':
 	initiate_gesture_find()
