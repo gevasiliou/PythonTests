@@ -57,6 +57,7 @@ class TrackedEvent(object):
 			print('Total Fingers used: ', self.total_event_fingers)
 		self.fingers -= 1
 
+
 		'''
 		if (self.fingers == 0 and
 				self.total_event_fingers == 2 and
@@ -178,11 +179,11 @@ def initiate_gesture_find():
 				if event.value == -1:
 					MT_event.remove_fingers()
 					#MT_event.clicked=0
-					print('event.value = -1 / remove fingers')
+					#print('event.value = -1 / remove fingers')
 				else:
 					MT_event.trackit()
 					#print('trackit')
-					print('trackit:event.code - event.value=',event.code, event.value)
+					#print('trackit:event.code - event.value=',event.code, event.value)
 
 if __name__ == '__main__':
 	initiate_gesture_find()
