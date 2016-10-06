@@ -11,3 +11,4 @@ sleep(10) #wait 10 seconds
 m.move(a/2,b/2) #With this line your mouse pointer is moved on the center of the screen
 m.click(a/2,b/2,2) #and right click is injected in the center of the screen.
 #moving the mouse pointer is not mandatory for m.click to work.
+#The third argument in the m.click represent the mouse button to be emulated (1 for left, 2 for right , 3 for middle)
