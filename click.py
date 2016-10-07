@@ -1,7 +1,7 @@
 from pymouse import PyMouse
 from time import sleep
 m = PyMouse()
-sleep(10) #wait 10 seconds
+sleep(10) #wait 10 seconds....
 x, y = m.position()
 a, b = m.screen_size()
 print('current position:',x,y)
