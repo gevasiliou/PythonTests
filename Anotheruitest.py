@@ -1,6 +1,7 @@
 from evdev import UInput, AbsInfo, ecodes as e
 from time import sleep
 import subprocess
+#import os;cmd = 'ls -al';os.system(cmd)
 
 ##http://suanfazu.com/t/simulate-mouse-clicks-on-python/10334/3
 capabilities = {
@@ -10,15 +11,15 @@ capabilities = {
 
 with UInput(capabilities) as ui:
     sleep(10)
-    ui.write(e.EV_REL, e.REL_X, 10)
-    ui.write(e.EV_REL, e.REL_Y, 10)
+    ui.write(e.EV_REL, e.REL_X, 5)
+    ui.write(e.EV_REL, e.REL_Y, 5)
     ui.write(e.EV_KEY, e.BTN_RIGHT, 1)
     ui.write(e.EV_KEY, e.BTN_RIGHT, 0)
     ui.syn()
-    ui.close()
+#   ui.close()
 #subprocess.Popen(['notify-send', 'Right Click 1 injected'])
-# Result: Some times work, some times not. if i open a terminal and monitor python-evdev-uinput device using evtest it works...
-
+# Result: This works.... But a couple of times it didn't work.
+#
 '''
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
@@ -36,7 +37,6 @@ with UInput(capabilities) as ui:
     ui.syn()
     ui.close()
 #subprocess.Popen(['notify-send', 'Right Click 2 injected'])
-# Result: Not working.
 '''
 #if notify send not working then start the daemon manually:
 # as root give-> #/usr/lib/notification-daemon/notification-daemon

@@ -1,7 +1,7 @@
 from evdev import InputDevice, InputEvent, UInput, AbsInfo, categorize, ecodes as e
 import evdev
 import time
-
+'''
 #device = evdev.InputDevice('/dev/input/event2')
 device = InputDevice('/dev/input/event10') # adjust the correct event number
 print(device)
@@ -10,7 +10,7 @@ cap = device.capabilities(verbose=True,absinfo=True)
 print('Device Capabilities:', cap) # Prints device capabilities in format Type : Values
 
 # Tutorial: Specify uinput device options
-
+'''
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
      e.EV_ABS : [
@@ -30,16 +30,16 @@ print('UInput Capabilites:', ui.capabilities(verbose=True,absinfo=True))
 time.sleep(10)
 
 #Inject Event Example of Tutorial
-ui.write(e.EV_ABS, e.ABS_X, 2555) #this works: moves mouse and injects right click.
-ui.write(e.EV_ABS, e.ABS_Y, 226) #this works: moves mouse and injects right click.
-'''
+#ui.write(e.EV_ABS, e.ABS_X, 2555) #this works: moves mouse and injects right click.
+#ui.write(e.EV_ABS, e.ABS_Y, 226) #this works: moves mouse and injects right click.
+
 ui.write(e.EV_ABS, e.ABS_X, 0) #this also works: Right click injected at wherever mouse it is
 ui.write(e.EV_ABS, e.ABS_Y, 0) #this also works: Right click injected at wherever mouse it is.
-'''
+
 ui.write(e.EV_KEY, e.BTN_RIGHT, 1)
 ui.write(e.EV_KEY, e.BTN_RIGHT, 0)
 ui.syn()
-ui.close()
+#ui.close()
 
 #for event in device.read_loop():
 ##	print('output :',evdev.ecodes.EV_KEY)
