@@ -16,7 +16,8 @@ capabilities = {
      e.EV_ABS : [
           (e.ABS_X, AbsInfo(value=3100, min=0, max=3264, fuzz=0, flat=0, resolution=13)),
           (e.ABS_Y, AbsInfo(1090, 0, 1856, 0, 0, 13))]
-} #this really works - mouse moved and right click menu appeared
+} #this really works - mouse moved and right click menu appeared.Also looks steady=always working
+
 '''
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
@@ -27,13 +28,14 @@ ui = UInput(capabilities)
 #ui = UInput()
 print('UInput Capabilites:', ui.capabilities(verbose=True,absinfo=True))
 time.sleep(10)
-'''
-Inject Event Example of Tutorial
+
+#Inject Event Example of Tutorial
 ui.write(e.EV_ABS, e.ABS_X, 2555) #this works: moves mouse and injects right click.
 ui.write(e.EV_ABS, e.ABS_Y, 226) #this works: moves mouse and injects right click.
 '''
 ui.write(e.EV_ABS, e.ABS_X, 0) #this also works: Right click injected at wherever mouse it is
 ui.write(e.EV_ABS, e.ABS_Y, 0) #this also works: Right click injected at wherever mouse it is.
+'''
 ui.write(e.EV_KEY, e.BTN_RIGHT, 1)
 ui.write(e.EV_KEY, e.BTN_RIGHT, 0)
 ui.syn()
