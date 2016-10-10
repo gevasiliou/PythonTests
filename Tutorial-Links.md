@@ -24,3 +24,10 @@ https://github.com/tuomasjjrasanen/python-uinput<br>
 <br>
 **Zyell Script for Long Press TouchScreen Right Click:** https://github.com/Zyell/Python-Touchscreen-RightClick
 
+**Python GTK (pygtk) Tutorial and Examples:**<br>
+http://zetcode.com/gui/pygtk/<br>
+http://zetcode.com/gui/pygtk/menus/<br>
+<br>
+**Python GTK3 :**<br>
+https://python-gtk-3-tutorial.readthedocs.io/en/latest/introduction.html<br>
+
