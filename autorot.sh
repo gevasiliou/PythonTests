@@ -46,3 +46,28 @@ exit
 # grep examples by http://www.robelle.com/smugbook/regexpr.html:
 # grep '[a-zA-Z]'	{any line with at least one letter}
 # grep '[^a-zA-Z0-9]	{anything not a letter or number}
+
+## Here there is an extension of the above script using a kind of rotation lock feature:
+## https://linuxappfinder.com/blog/add_an_auto_rotation_lock
+## Instead of the lock/unlock using a hidden file (see blog above), we could use zenity inside bash script to lock/unlock:
+## answer = $(zenity --list --text='test' --radiolist --column="Action" --column="-" TRUE "Unlock" FALSE "Locked" FALSE "Exit")
+## You only need to handle the value of $answer within an "If" condition. 
+## $answer can get values Unlock, Locked, Exit , and Null/nothing if the user presses cancel.
+## Moreover, using yad instead of zenity (or combining yad and zenity) you can provide a tray icon (!!) and can call a custom shell command 
+## upon user click on icon.... 
+## yad example: $yad --notification --command='zenity --notification --text=hello world' --image='/home/gv/Desktop/abp.png'
+## The whole story could be split in three scripts:
+## First script will just call the yad , calling the second script.
+## Second script will be just an if - then condition based on the user answer:
+## answer=$(zenity --list --text='test' --radiolist --column="Action" --column="-" TRUE "Unlock" FALSE "Locked" FALSE "Exit")
+## If answer = exit or answer = locked then kill all
+## If answer = unlocked then call third script for automatic rotation else kill all (case of exit and unlocked)
+## Third script will be the script presented above.
+
+## Tricks:
+## yad --notification --command='zenity --list --text='test' --radiolist --column="Action" --column="-" TRUE "Unlock" FALSE "Locked" FALSE "Exit"' --image='/home/gv/Desktop/abp.png'
+## This works ok. Icon goes to tray and upon click it calls the zenity list.
+## 
+## For script probably could be used like this:
+## ans=$(yad --notification --command='zenity --list --text='test' --radiolist --column="Action" --column="-" TRUE "Unlock" FALSE "Locked" FALSE "Exit"' --image='/home/gv/Desktop/abp.png')
+## However this one when combined with ;echo $ans in the end, prints nothing....
