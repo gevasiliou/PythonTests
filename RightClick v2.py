@@ -108,13 +108,12 @@ class TrackedEvent(object):
 	def _initiate_right_click(self):
 		""" Internal method for initiating a right click at touch point. """
 		'''
-		The initial way
+		##The initial way
 		#capabilities = {ecodes.EV_ABS: (ecodes.ABS_X, ecodes.ABS_Y),
 		#               ecodes.EV_KEY: (ecodes.BTN_LEFT, ecodes.BTN_RIGHT)}
 		'''
 
-		'''
-		the correct way
+		#the correct way
 		capab = {
 			ecodes.EV_KEY : [ecodes.BTN_LEFT, ecodes.BTN_RIGHT],
 			ecodes.EV_ABS : [(ecodes.ABS_X, AbsInfo(value=1900, min=0, max=3264, fuzz=0, flat=0, resolution=13)),
@@ -129,7 +128,7 @@ class TrackedEvent(object):
 		ui.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 1)
 		ui.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 0)
 		ui.syn()
-		ui.close()
+		#ui.close()
 		'''
 		#m = PyMouse()
 		x, y = self.m.position()  # gets mouse current position coordinates
@@ -139,6 +138,7 @@ class TrackedEvent(object):
 		self.m.click(x, y, 2)  # the third argument represents the mouse button (1 click,2 right click,3 middle click)
 		self.clicked=1
 		print('position:', x, y, ':-Right Click injected')
+		'''
 
 def initiate_gesture_find():
 	"""
