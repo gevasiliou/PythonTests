@@ -13,7 +13,7 @@ http://suanfazu.com/t/simulate-mouse-clicks-on-python/10334/3
 https://www.kernel.org/doc/Documentation/input/event-codes.txt 
 https://www.kernel.org/doc/Documentation/input/multi-touch-protocol.txt 
 
-PyMouse:
+**PyMouse:
 https://github.com/tuomasjjrasanen/python-uinput/blob/master/examples/mouse.py
 
 Python-UInput:
