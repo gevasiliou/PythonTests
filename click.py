@@ -1,11 +1,13 @@
+# Right Click simulation using Python pymouse module (requires also python-xlib to be present)
+# While python evdev/uinput method works as a virtual input device injecting events directly to the kernel , pymouse works at xserver level.
 from pymouse import PyMouse
 from time import sleep
 m = PyMouse()
 sleep(10) #wait 10 seconds....
 x, y = m.position()
-a, b = m.screen_size()
+a, b = m.screen_size() #Just for fun
 print('current position:',x,y)
-print('screen dimensions:', a, b)
+print('screen dimensions:', a, b) #Just for fun
 #sleep(10) #wait 10 seconds
 m.click(x,y,2) #With this line, right click happens wherever your mouse is
 
