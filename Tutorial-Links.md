@@ -3,6 +3,7 @@
 **Python Basics:** <br>
 https://python.swaroopch.com/basics.html
 <br>
+<br>
 **Tkinter Links:**<br>
 https://wiki.python.org/moin/Intro%20to%20programming%20with%20Python%20and%20Tkinter <br>
 https://docs.python.org/2/library/tkinter.html <br>
