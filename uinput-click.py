@@ -26,7 +26,7 @@ capabilities = {
 '''
 ui = UInput(capabilities)
 #ui = UInput()
-print('UInput Capabilites:', ui.capabilities(verbose=True,absinfo=True))
+print('UInput Capabilities:', ui.capabilities(verbose=True,absinfo=True))
 time.sleep(10)
 
 #Inject Event Example of Tutorial
