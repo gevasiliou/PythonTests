@@ -27,7 +27,12 @@ https://github.com/tuomasjjrasanen/python-uinput<br>
 **Python GTK (pygtk) Tutorial and Examples:**<br>
 http://zetcode.com/gui/pygtk/<br>
 http://zetcode.com/gui/pygtk/menus/<br>
+http://www.pygtk.org/pygtk2tutorial/index.html<br>
+RSS Plugin : https://git.xfce.org/panel-plugins/xfce4-rss-plugin/tree/<br>
 <br>
 **Python GTK3 :**<br>
 https://python-gtk-3-tutorial.readthedocs.io/en/latest/introduction.html<br>
+Simple Tray icon with Python GTK3: https://gist.github.com/pklaus/304963<br>
+gtk status icon tutorial: http://www.pygtk.org/docs/pygtk/class-gtkstatusicon.html<br>
+PS: GTK3 works even with Python 2
 
