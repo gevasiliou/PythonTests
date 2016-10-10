@@ -36,6 +36,7 @@ Simple Tray icon with Python GTK3: https://gist.github.com/pklaus/304963<br>
 gtk status icon tutorial: http://www.pygtk.org/docs/pygtk/class-gtkstatusicon.html<br>
 PS: GTK3 works even with Python 2
 <br>
+
 **Python Scripts for Auto Rotate Screen**<br>
 https://github.com/kkrizka/autorotate<br>
 It also includes an indicator built with GTK.<br>
