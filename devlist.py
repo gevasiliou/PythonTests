@@ -1,4 +1,5 @@
 # Sample Code using python-evdev tutorials to list properties of all devices.
+#https://python-evdev.readthedocs.io/en/latest/tutorial.html
 from evdev import InputDevice, list_devices
 from pprint import pprint #the pretty print modules
 for dev in list_devices(): # scan all devices
