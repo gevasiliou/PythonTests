@@ -1,5 +1,7 @@
 #https://wiki.python.org/moin/Intro%20to%20programming%20with%20Python%20and%20Tkinter
-from Tkinter import *           # Import the Tkinter library
+#https://docs.python.org/2/library/tkinter.html
+
+from Tkinter import *           # Import all (*) from Tkinter library
 root = Tk()                    # Create a background window object
                                 # A simple way to create 2 lists
 li     = ['Carl','Patrick','Lindsay','Helmut','Chris','Gwen']
