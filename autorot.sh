@@ -10,7 +10,12 @@
 #
 # Receives input from monitor-sensor (part of iio-sensor-proxy package). You can run monitor-sensor first in command line to verify correct working.
 # This script could be added to startup applications for the user.
-
+scr=$(xrandr |grep connected)
+#echo $scr
+pos=$(expr index "${scr}" connected)
+screen=$(expr substr "${scr}" 1 $(($pos-2))) #pos has the value of "c" from connected. -1 has a space , -2 has the screen name
+echo 'Auto Recognized Screen:' $screen
+#screen2=$(xrandr | grep 'connected' | grep -oE '[A-Z]+[\-]+[^ ]') #this seems also to work and print the VGA-1
 > sensor.log # Clear sensor log to keep the size small.
 monitor-sensor >> sensor.log 2>&1 & # Launch monitor-sensor - store output in a variable to be parsed by rest script
 
@@ -22,18 +27,18 @@ ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$') # R
 # Set the actions to be taken for each possible orientation
 case "$ORIENTATION" in
 normal)
-xrandr --output eDP1 --rotate normal ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen --rotate normal ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 bottom-up)
-xrandr --output eDP1 --rotate inverted ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen --rotate inverted ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 right-up)
-xrandr --output eDP1 --rotate right ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen --rotate right ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 left-up)
-xrandr --output eDP1 --rotate left ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen --rotate left ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 esac
 done
-exit
-# You need to supply to xrandr the correct output (eDP1 in my case). Just run xrandr from any terminal.
-# Or we can modify the script to get the output name using grep. 
+exit #exit may not required. added by me.
+
+# IF the screen to be rotated is not correctly grabbed, run xrandr from terminal.
 # inotifywait seems that is not terminated when the script is terminated.
 # To kill the inotifywait : kill -- -$$ (https://bbs.archlinux.org/viewtopic.php?id=186989) or kill $(pgrep inotifywait)
 # inotifywatch manual: http://man7.org/linux/man-pages/man1/inotifywatch.1.html
