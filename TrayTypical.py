@@ -2,12 +2,12 @@
 
 # found on <http://files.majorsilence.com/rubbish/pygtk-book/pygtk-notebook-html/pygtk-notebook-latest.html#SECTION00430000000000000000>
 # simple example of a tray icon application using PyGTK
+# this is a typical tray operation: An action is made on left click - a popup menu appears on right-click.
 
 import gtk
 
 def message(data=None):
   "Function to display messages to the user."
-
   msg=gtk.MessageDialog(None, gtk.DIALOG_MODAL,
     gtk.MESSAGE_INFO, gtk.BUTTONS_OK, data)
   msg.run()
@@ -49,3 +49,8 @@ if __name__ == '__main__':
   icon.connect('popup-menu', on_right_click)
   icon.connect('activate', on_left_click)
   gtk.main()
+
+#By default connect 'popup-menu' works in right click.
+#and connect 'activate' works in left click.
+#connect popup-menu action sends to right-click function 3 variables
+#connect activate action send to left-click function 1 variable
