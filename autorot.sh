@@ -10,12 +10,14 @@
 #
 # Receives input from monitor-sensor (part of iio-sensor-proxy package). You can run monitor-sensor first in command line to verify correct working.
 # This script could be added to startup applications for the user.
-scr=$(xrandr |grep connected)
+#scr=$(xrandr |grep connected)
 #echo $scr
-pos=$(expr index "${scr}" connected)
-screen=$(expr substr "${scr}" 1 $(($pos-2))) #pos has the value of "c" from connected. -1 has a space , -2 has the screen name
-echo 'Auto Recognized Screen:' $screen
-#screen2=$(xrandr | grep 'connected' | grep -oE '[A-Z]+[\-]+[^ ]') #this seems also to work and print the VGA-1
+#pos=$(expr index "${scr}" connected)
+#echo 'position:' $pos
+#screen=$(expr substr "${scr}" 1 $(($pos-2))) #pos has the value of "c" from connected. -1 has a space , -2 has the screen name
+#echo 'Auto Recognized Screen:' $screen
+screen2=$(xrandr | grep 'connected' |grep -v 'disconnected' | grep -oE '[a-zA-Z]+[\-]+[^ ]') #this seems also to work and print the VGA-1 / eDP-1
+echo 'Auto Recognize screen {alt}:' $screen2
 > sensor.log # Clear sensor log to keep the size small.
 monitor-sensor >> sensor.log 2>&1 & # Launch monitor-sensor - store output in a variable to be parsed by rest script
 
@@ -27,13 +29,13 @@ ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$') # R
 # Set the actions to be taken for each possible orientation
 case "$ORIENTATION" in
 normal)
-xrandr --output $screen --rotate normal ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen2 --rotate normal ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 bottom-up)
-xrandr --output $screen --rotate inverted ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen2 --rotate inverted ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 right-up)
-xrandr --output $screen --rotate right ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen2 --rotate right ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 left-up)
-xrandr --output $screen --rotate left ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen2 --rotate left ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 esac
 done
 exit #exit may not required. added by me.
