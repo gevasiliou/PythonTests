@@ -23,8 +23,10 @@ monitor-sensor >> sensor.log 2>&1 & # Launch monitor-sensor - store output in a 
 
 # Parse output or monitor sensor to get the new orientation whenever the log file is updated
 # Possibles are: normal, bottom-up, right-up, left-up. Light data will be ignored
-while inotifywait -e modify sensor.log; do
-ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$') # Read the last line that was added to the file and get the orientation
+while inotifywait -e modify sensor.log; do 
+#switch -e = event.  modify = event to watch. sensor.log = file to watch.
+ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$') 
+# Read the last line that was added to the file and get the orientation
 
 # Set the actions to be taken for each possible orientation
 case "$ORIENTATION" in
@@ -43,6 +45,7 @@ exit #exit may not required. added by me.
 # IF the screen to be rotated is not correctly grabbed, run xrandr from terminal.
 # inotifywait seems that is not terminated when the script is terminated.
 # To kill the inotifywait : kill -- -$$ (https://bbs.archlinux.org/viewtopic.php?id=186989) or kill $(pgrep inotifywait)
+# or try even kill -9 -f inotifywait
 # inotifywatch manual: http://man7.org/linux/man-pages/man1/inotifywatch.1.html
 # grep manual / operators / options : http://man7.org/linux/man-pages/man1/grep.1.html
 # grep & Unix Expressions: http://www.robelle.com/smugbook/regexpr.html
