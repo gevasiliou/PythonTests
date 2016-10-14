@@ -11,6 +11,7 @@ Currently implements 2 types of right click options:
 from evdev import InputDevice, ecodes, UInput, list_devices
 from threading import Timer
 from pymouse import PyMouse
+import sys
 
 class TrackedEvent(object):
 
@@ -59,21 +60,24 @@ class TrackedEvent(object):
                 self.track_start.cancel()
                 self.track_start.join()
             except AttributeError:  # capture Nonetype track_start
+                if dbg: print(AttributeError)
                 pass
             try:
                 self.dev.ungrab()
             except (OSError,IOError):  # capture case where grab was never initiated
+                if dbg: print (OSError,IOError)
                 pass
 
         if self.fingers == 0:
             self.discard = 1
+            if dbg: print('self.discard')
 
     def position_event(self, event_code, value):
         """ tracks position to track movement of fingers """
         if self.position[event_code] is None:
             self.position[event_code] = value
         else:
-            print('touch offset:',abs(self.position[event_code] - value))
+            if dbg: print('touch offset:',abs(self.position[event_code] - value))
             if abs(self.position[event_code] - value) > self.vars[event_code]:
                 self._moved_event()
         if (self.fingers == 1 and self.position['ABS_X'] and
@@ -93,22 +97,24 @@ class TrackedEvent(object):
     def _moved_event(self):
         """ movement detected. """
         self.moved = 1
-        print('moved too much')
+        if dbg: print('moved over the limit')
 
     def _initiate_right_click(self):
         """ Internal method for initiating a right click at touch point. """
-        '''
+        if dbg: print('Right Click will be injected now')
         with UInput(self.abilities) as ui:
+
             ui.write(ecodes.EV_ABS, ecodes.ABS_X, 0)
             ui.write(ecodes.EV_ABS, ecodes.ABS_Y, 0)
             ui.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 1)
             ui.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 0)
             ui.syn()
+
         '''
         m = PyMouse()
         x , y = m.position()  # gets mouse current position coordinates
         m.click(x, y, 2)  # the third argument represents the mouse button (1 click,2 right click,3 middle click)
-        print('Right Click injected')
+        '''
 
 def initiate_gesture_find():
     """
@@ -118,8 +124,8 @@ def initiate_gesture_find():
     """
     for device in list_devices():
         dev = InputDevice(device)
-        if (dev.name == 'ELAN Touchscreen') or \
-           (dev.name == 'Atmel Atmel maXTouch Digitizer'):
+        if (dev.name == 'ELAN Touchscreen' or dev.name=='VirtualBox USB Tablet' or dev.name == 'Atmel Atmel maXTouch Digitizer'):
+            if dbg: print('device found:', dev.name, '-',dev, "\n")
             break
     Abs_events = {}
     abilities = {ecodes.EV_ABS: [ecodes.ABS_X, ecodes.ABS_Y],
@@ -129,6 +135,7 @@ def initiate_gesture_find():
     res_y = 13  # touch unit resolution # units/mm in y direction
     # would be weird if above resolutions differed, but will treat generically
     codes = dev.capabilities()
+    if dbg: print('device capabilities: ',dev.capabilities(verbose=True,absinfo=True))
     for code in codes:
         if code == 3:
             for type_code in codes[code]:
@@ -167,4 +174,11 @@ def initiate_gesture_find():
 
 
 if __name__ == '__main__':
+    dbg = False
+    if (len(sys.argv)>1 and sys.argv[1]=="--debug"):
+        print 'Debug option selected'
+        dbg = True
+    else:
+        print 'Run with --debug to get detailed info'
+    print('debug level:',dbg)
     initiate_gesture_find()
