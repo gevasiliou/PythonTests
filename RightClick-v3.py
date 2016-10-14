@@ -73,6 +73,7 @@ class TrackedEvent(object):
         if self.position[event_code] is None:
             self.position[event_code] = value
         else:
+            print('touch offset:',abs(self.position[event_code] - value))
             if abs(self.position[event_code] - value) > self.vars[event_code]:
                 self._moved_event()
         if (self.fingers == 1 and self.position['ABS_X'] and
