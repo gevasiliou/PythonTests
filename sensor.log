@@ -1,0 +1,6 @@
+    Waiting for iio-sensor-proxy to appear
++++ iio-sensor-proxy appeared
+=== Has accelerometer (orientation: normal)
+=== No ambient light sensor
+    Accelerometer orientation changed: right-up
+    Accelerometer orientation changed: normal
