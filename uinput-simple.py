@@ -13,3 +13,4 @@ ui.write(e.EV_ABS, e.ABS_Y, 0)
 ui.write(e.EV_KEY, e.BTN_RIGHT, 1)
 ui.write(e.EV_KEY, e.BTN_RIGHT, 0)
 ui.syn()
+#test
