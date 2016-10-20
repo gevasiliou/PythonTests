@@ -1,14 +1,23 @@
 now=$(pwd)
 cd /usr/share/applications
-for i in $( ls *.desktop); do
-#executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[^ ]*')
-executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[A-Za-z0-9]*+[ --0-9A-Za-z-a-zA-Z0-9]*')
-echo item: $i , command: $executable
+for i in $( ls trans*.desktop); do
+##executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[^ ]*')
+##executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[A-Za-z0-9]*+[ --0-9A-Za-z-a-zA-Z0-9]*')
+executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z]*')
+
+#executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec')
+echo executable: $executable
+index=1
+for word in $(echo "$executable"); do
+echo word["$index"]: $word
+index=$(($index + 1))
+#echo item: $i , command: $executable
 list+="$i $executable "
 done
-echo $list
+done
+#echo $list
 #yad --list --column "A" --column "B" DataA1 DataB1 DataA2 DataB2
-yad --list --column "Desktop File" --column "Exec Value" $list
+#yad --list --column "Desktop File" --column "Exec Value" $list
 cd $now
 # grep -V means do not select lines containing TryExec (works like not operator)
 # grep Exec means select lines containing Exec
