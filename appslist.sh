@@ -5,7 +5,7 @@ cd /usr/share/applications
 fileindex=0
 comindex=0
 
-for i in $( ls libre*.desktop); do
+for i in $( ls brasero.desktop); do
 	##executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[A-Za-z0-9]*+[ --0-9A-Za-z-a-zA-Z0-9]*')
 	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z]*')
 #	executable=`cat $i |grep -v 'TryExec' |grep 'Exec'`		# This also works ok.
@@ -61,9 +61,13 @@ done
 #echo "file index last value:" $fileindex
 	
 k=1
+c='"'
 while [[ "$k" -le "$comindex" ]]; do
 	echo "ID: " $k " -- "${desktopfiles[$k]} " -- " ${commands[$k]} #Array is printed correctly.
+	
+#	list= $(echo "'" "$k" "' '" ${desktopfiles[$k]} "' '" ${commands[$k]} "'" )
 	k=$(($k + 1))
+echo $list
 done
 
 
