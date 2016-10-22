@@ -5,9 +5,9 @@ cd /usr/share/applications
 fileindex=0
 comindex=0
 
-for i in $( ls brasero.desktop); do
+for i in $( ls c*.desktop); do
 	##executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[A-Za-z0-9]*+[ --0-9A-Za-z-a-zA-Z0-9]*')
-	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z]*')
+	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 #	executable=`cat $i |grep -v 'TryExec' |grep 'Exec'`		# This also works ok.
 	echo "file:" $i "-- executable:" $executable
 
@@ -61,21 +61,21 @@ done
 #echo "file index last value:" $fileindex
 	
 k=1
-c='"'
+
 while [[ "$k" -le "$comindex" ]]; do
-	echo "ID: " $k " -- "${desktopfiles[$k]} " -- " ${commands[$k]} #Array is printed correctly.
-	
-#	list= $(echo "'" "$k" "' '" ${desktopfiles[$k]} "' '" ${commands[$k]} "'" )
+	echo $k " -- "${desktopfiles[$k]} " -- " ${commands[$k]}
+	list+=( "$k" "${desktopfiles[$k]}" "${commands[$k]}" )
 	k=$(($k + 1))
-echo $list
 done
+echo "${list[@]}"
 
-
-#echo $list
-#yad --list --column "A" --column "B" DataA1 DataB1 DataA2 DataB2
-#yad --list --column "Desktop File" --column "Exec Value" $list
+yad --list --width=800 --height=600 --center --column "ID" \
+	--column "File" --column "Exec" "${list[@]}"
 
 cd $now
+
+#yad --list --column "A" --column "B" DataA1 DataB1 DataA2 DataB2
+
 # grep -V means do not select lines containing TryExec (works like not operator)
 # grep Exec means select lines containing Exec
 # grep -Po gets part of the previous line. Operator ?<= means Look forward after the literal given expression Exec=
