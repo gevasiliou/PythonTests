@@ -1,11 +1,24 @@
 #!/bin/bash
-now=$(pwd) #Keep current working directory
 clear
-cd /usr/share/applications
+now=$(pwd) #Keep current working directory
+# http://smokey01.com/yad/
+selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator="," --date-format="%Y-%m-%d" \
+	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "*.desktop" ) 
+ret=$?
+echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
+if [[ $ret -eq 1 ]]; then
+	exit 0
+fi 
+location=`echo $selections | awk -F',' '{print $1}'`  
+files=`echo $selections | awk -F',' '{print $2}'`  
+#echo $location $files
+
+
+cd $location
 fileindex=0
 comindex=0
 
-for i in $( ls c*.desktop); do
+for i in $( ls $files); do
 	##executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[A-Za-z0-9]*+[ --0-9A-Za-z-a-zA-Z0-9]*')
 	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 #	executable=`cat $i |grep -v 'TryExec' |grep 'Exec'`		# This also works ok.
