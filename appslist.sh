@@ -69,7 +69,7 @@ echo "${list[@]}"
 
 #while : loop
 #do
-yad --list --width=800 --height=600 --center --print-column=0 --select-action 'echo select event %s' \
+yad --list --width=800 --height=600 --center --print-column=0 --select-action 'bash -c yadcall %s %s %s' \
 	--button="Display":100 --button="Run":120 --button="Cancel":110  \
 	--column "ID" --column "File" --column "Exec" "${list[@]}"
 btn=$?
