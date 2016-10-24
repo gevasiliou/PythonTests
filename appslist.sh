@@ -1,10 +1,17 @@
 #!/bin/bash
-function yad_call()
-{
-yad --width=200 --height=200 --center --text "i received P0:$0, P1:$1, P2: $2"
+
+function yadcall 
+{ 
+rec0=$0
+echo "Received0 =" $rec0
+rec1=$1
+echo "Received1 =" $rec1
+
+echo 'List:' "${list[@]}" # Prints nothing. $list is not accesible by yadcall, even that list is "ready" when yadcall is called by yad list at the end.
+#yad --width=200 --height=200 --center --text $received 
 }
 
-export -f yad_call
+export -f yadcall
 
 clear
 now=$(pwd) #Keep current working directory
@@ -59,32 +66,28 @@ while [[ "$k" -le "$comindex" ]]; do
 done
 echo "${list[@]}"
 
-#while :
+
+#while : loop
 #do
-#yad --list --width=800 --height=600 --center \
-yadselection=$(yad --list --width=800 --height=600 --center \
-	--button="Display":"/home/gv/PythonTests/yadabout.sh" --button="Run":"bash -c yad_call" --button="Cancel":0  \
-	--column "ID" --column "File" \
-	--column "Exec" "${list[@]}") 
+yad --list --width=800 --height=600 --center --print-column=0 --select-action 'echo select event %s' \
+	--button="Display":100 --button="Run":120 --button="Cancel":110  \
+	--column "ID" --column "File" --column "Exec" "${list[@]}"
 btn=$?
 #If list is not given to yad as array but as a plain variable, is not working.
 echo "button pressed:" $? "-" $btn
-#if you assing id on every button, yad list exits after button click.
 #PS: it seems that button code 11 is assigned for cancel by default.
-#if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0)
+#if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
 case $btn in
-	'a')
-		echo 'display code' 
-		echo "yad selection=" $yadselection
+	10)
 		todisplay=`echo $yadselection | awk -F'|' '{print $2}'`		
-		echo "yad file to display=" $todisplay 
+		echo 'display code'  - 'yad selection=' $yadselection  - 'file to display' $todisplay
+#		yad --file $todisplay 
 		;;
-	'c')
-		echo 'cancel code' 
-		echo "yad selection=" $yadselection
+	11)
+		echo 'cancel code - yad selection=' $yadselection
 		exit
 		;;
-	'b')
+	12)
 		echo 'run code' 
 		echo "yad selection=" $yadselection
 		torun=`echo $yadselection | awk -F'|' '{print $3}'`		
@@ -133,3 +136,9 @@ cd $now
 #   operation-2
 #   operation-n
 #done
+# Bellow works ok, but you can not send to external command/script the --list selected row. 
+# Button calls with yad selection is supported only in forms , using %N, where N is the number of the field to be parsed as argument to external command/scipt.
+#yad --list --width=800 --height=600 --center --always-print-result \
+#	--button="Display":"/home/gv/PythonTests/yadabout.sh" --button="Run":"bash -c yad_call" --button="Cancel":0  \
+#	--column "ID" --column "File" --column "Exec" "${list[@]}"
+# the end
