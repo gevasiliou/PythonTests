@@ -6,6 +6,11 @@ rec0=$0
 echo "Received0 =" $rec0
 rec1=$1
 echo "Received1 =" $rec1
+rec2=$2
+echo "Received2 =" $rec2
+rec3=$3
+echo "Received3 =" $rec3
+
 
 echo 'List:' "${list[@]}" # Prints nothing. $list is not accesible by yadcall, even that list is "ready" when yadcall is called by yad list at the end.
 #yad --width=200 --height=200 --center --text $received 
@@ -17,7 +22,7 @@ clear
 now=$(pwd) #Keep current working directory
 # http://smokey01.com/yad/
 selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator="," --date-format="%Y-%m-%d" \
-	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "*a.desktop" ) 
+	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "*.desktop" ) 
 ret=$?
 echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
 if [[ $ret -eq 1 ]]; then # Cancel Selected
@@ -69,7 +74,7 @@ echo "${list[@]}"
 
 #while : loop
 #do
-yad --list --width=800 --height=600 --center --print-column=0 --select-action 'bash -c yadcall %s %s %s' \
+yad --list --width=800 --height=600 --center --print-column=0 --select-action 'bash -c "yadcall %s "' \
 	--button="Display":100 --button="Run":120 --button="Cancel":110  \
 	--column "ID" --column "File" --column "Exec" "${list[@]}"
 btn=$?
