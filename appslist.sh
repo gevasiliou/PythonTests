@@ -1,32 +1,44 @@
 #!/bin/bash
-
+# http://smokey01.com/yad/
+clear
+export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
 function yadcall 
 { 
 rec0=$0
-echo "Received0 =" $rec0
 rec1=$1
-echo "Received1 =" $rec1
 rec2=$2
-echo "Received2 =" $rec2
 rec3=$3
-echo "Received3 =" $rec3
-
-
-echo 'List:' "${list[@]}" # Prints nothing. $list is not accesible by yadcall, even that list is "ready" when yadcall is called by yad list at the end.
-#yad --width=200 --height=200 --center --text $received 
+echo "Received =" $rec1 "-" $rec2 "-" $rec3
+#echo -e "IMGNAME=\"$2\"\nIMGSIZE=$3\nIMGPATH=\"$4\"" > $TMPFILE
+echo -e "FILEID=\"$1\"\nFILENAME=\"$2\"\nFILECOMMAND=\"$3\"" > $TMPFILE
+cat $TMPFILE
 }
-
 export -f yadcall
 
-clear
+function filedisplay   
+{ 
+source $TMPFILE
+yad --width=800 --height=300 --center --text-info --filename=/usr/share/applications/$FILENAME --wrap
+#Filename variable read and set directly by tmpfile!!
+}
+export -f filedisplay
+
+function filerun   
+{ 
+source $TMPFILE
+$FILECOMMAND
+#Filename variable read and set directly by tmpfile!!
+}
+export -f filerun
+
+
 now=$(pwd) #Keep current working directory
-# http://smokey01.com/yad/
 selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator="," --date-format="%Y-%m-%d" \
-	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "*.desktop" ) 
+	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "*a.desktop" ) 
 ret=$?
 echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
 if [[ $ret -eq 1 ]]; then # Cancel Selected
-	exit 0
+	exit 0 # this exits completely th whole script.
 fi 
 location=`echo $selections | awk -F',' '{print $1}'`  
 files=`echo $selections | awk -F',' '{print $2}'`  
@@ -75,36 +87,36 @@ echo "${list[@]}"
 #while : loop
 #do
 yad --list --width=800 --height=600 --center --print-column=0 --select-action 'bash -c "yadcall %s "' \
-	--button="Display":100 --button="Run":120 --button="Cancel":110  \
+	--button="Display":'bash -c "filedisplay"' --button="Run":'bash -c "filerun"' --button="Cancel":110  \
 	--column "ID" --column "File" --column "Exec" "${list[@]}"
 btn=$?
 #If list is not given to yad as array but as a plain variable, is not working.
 echo "button pressed:" $? "-" $btn
 #PS: it seems that button code 11 is assigned for cancel by default.
 #if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
-case $btn in
-	10)
-		todisplay=`echo $yadselection | awk -F'|' '{print $2}'`		
-		echo 'display code'  - 'yad selection=' $yadselection  - 'file to display' $todisplay
-#		yad --file $todisplay 
-		;;
-	11)
-		echo 'cancel code - yad selection=' $yadselection
-		exit
-		;;
-	12)
-		echo 'run code' 
-		echo "yad selection=" $yadselection
-		torun=`echo $yadselection | awk -F'|' '{print $3}'`		
-		echo "yad file to run=" $torun 
-		;;
-esac
+#case $btn in
+#	10)
+#		todisplay=`echo $yadselection | awk -F'|' '{print $2}'`		
+#		echo 'display code'  - 'yad selection=' $yadselection  - 'file to display' $todisplay
+#		;;
+#	11)
+#		echo 'cancel code - yad selection=' $yadselection
+#		exit
+#		;;
+#	12)
+#		echo 'run code' 
+#		echo "yad selection=" $yadselection
+#		torun=`echo $yadselection | awk -F'|' '{print $3}'`		
+#		echo "yad file to run=" $torun 
+#		;;
+#esac
 #done
 
 cd $now
 
 #yad --list --column "A" --column "B" DataA1 DataB1 DataA2 DataB2
-
+# `grep '^Exec' filename.desktop | tail -1 | sed 's/^Exec=//' | sed 's/%.//'` &
+# tail -1 get the last exec, sed 's dont get the arguments , & run in background
 # grep -V means do not select lines containing TryExec (works like not operator)
 # grep Exec means select lines containing Exec
 # grep -Po gets part of the previous line. Operator ?<= means Look forward after the literal given expression Exec=
