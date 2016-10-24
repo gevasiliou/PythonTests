@@ -1,10 +1,11 @@
 #!/bin/bash
 function yad_call()
 {
-yad --width=500 --text 'i received: p0:'$0', P1:'$1', P2:' $2
+yad --width=200 --height=200 --center --text "i received P0:$0, P1:$1, P2: $2"
 }
 
 export -f yad_call
+
 clear
 now=$(pwd) #Keep current working directory
 # http://smokey01.com/yad/
@@ -62,7 +63,7 @@ echo "${list[@]}"
 #do
 #yad --list --width=800 --height=600 --center \
 yadselection=$(yad --list --width=800 --height=600 --center \
-	--button="Display":"yad --about" --button="Run":"bash -c yad_call $yadselection" --button="Cancel":0  \
+	--button="Display":"/home/gv/PythonTests/yadabout.sh" --button="Run":"bash -c yad_call" --button="Cancel":0  \
 	--column "ID" --column "File" \
 	--column "Exec" "${list[@]}") 
 btn=$?
