@@ -18,28 +18,47 @@ function filedisplay
 { 
 source $TMPFILE
 echo "Received =" $0 " , " $1 " , " $2 " , " $3
-
-abb=$(yad --width=800 --height=500 --center --text-info --filename=/usr/share/applications/$FILENAME --wrap --editable \
---button="Save":0 --button=gtk-ok:2 --button=gtk-quit:1)
+fileedit=/usr/share/applications/$FILENAME
+abb=$(yad --width=800 --height=500 --center --text-info --filename=$fileedit --wrap --editable \
+--button=gtk-save:0 --button=gtk-save-as:10 --button=gtk-ok:2 --button=gtk-quit:1)
 fileaction=$?
-#cat -E -n $abb
+echo "abb:" $abb
+abbsaveas=$abb
+
 if [ $fileaction -eq "0" ]; then
-echo "Save Selected"
-counter=1
-while IFS= read -r linenew; do
-#	abb2+=($linenew)
-	if [ $counter -eq 1 ]; then
-		echo $linenew > /usr/share/applications/$FILENAME
-	else
-		echo $linenew >> /usr/share/applications/$FILENAME
-	fi
+	echo "Save Selected"
+	counter=1
+	while IFS= read -r linenew; do
+		if [ $counter -eq 1 ]; then
+			echo $linenew > $fileedit
+		else
+			echo $linenew >> $fileedit 
+		fi
 	counter=$(($counter +1))
 	done <<< "$abb"
-#echo "${abb2[@]}"
-#echo "${abb2[0]}"
-#echo "${abb2[1]}"
-#echo "${abb2[2]}"
-#yad --file --filename=/usr/share/applications/$FILENAME --save --confirm-overwrite
+fi
+
+if [ $fileaction -eq 10 ]; then
+	echo "Save As Selected"
+	saveas=$(yad --center --file --filename=$fileedit --save )
+	countersa=1
+	overwrite=0
+	if [ $saveas = $fileedit ]; then
+		yad --center --text="overwrite file?"
+		overwrite=$?
+	fi
+
+	if [ $overwrite -eq 0 ];then
+		while IFS= read -r linesaveas; do
+			echo "contents: " $linesaveas
+			if [ $countersa -eq 1 ]; then
+				echo $linesaveas > $saveas
+			else
+				echo $linesaveas >> $saveas
+			fi
+		countersa=$(($countersa +1))
+		done <<< "$abbsaveas"
+	fi
 fi
 #Filename variable read and set directly by tmpfile!!
 }
@@ -78,7 +97,7 @@ selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form 
 ret=$?
 echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
 if [[ $ret -eq 1 ]]; then # Cancel Selected
-	exit 0 # this exits completely the whole script.
+	exit 1 # this exits completely the whole script.
 fi 
 location=`echo $selections | awk -F',' '{print $1}'`  
 files=`echo $selections | awk -F',' '{print $2}'`  
