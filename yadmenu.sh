@@ -105,7 +105,7 @@ case $action in
 		byebye
 		;;
 	    *) 
-		exit 1 
+		exit 0 
 		;;    
 esac
 echo 'Main Programm End'
