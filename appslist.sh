@@ -1,18 +1,21 @@
 #!/bin/bash
-#Great Tuto: http://smokey01.com/yad/
+#Great Tuto:http://smokey01.com/yad/
 clear
 export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
+#export TTT="-something-"
+#declare -x TTT
+
 now=$(pwd) #Keep current working directory
 stop="false"
 selections=""
 location=""
 files="" 
 fileedited=0
-
 function yadlistselect 
 { 
 echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
-
+#TTT="$2"
+#echo "yadlistselect - test file name =" $TTT
 #echo -e "IMGNAME=\"$2\"\nIMGSIZE=$3\nIMGPATH=\"$4\"" > $TMPFILE
 echo -e "FILEID=\"$1\"\nFILENAME=\"$2\"\nFILECOMMAND=\"$3\"" > $TMPFILE
 #cat $TMPFILE
@@ -21,9 +24,11 @@ export -f yadlistselect
 
 function filedisplay   
 { 
+echo "filedisplay - test file name =" $TTT
 source $TMPFILE
 filetodisplay=/usr/share/applications/$FILENAME
-yad --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button=gtk-quit:1
+yad --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button="Go Back":0
+
 }
 export -f filedisplay
 
@@ -33,10 +38,14 @@ source $TMPFILE
 #echo "Received =" $0 " , " $1 " , " $2 " , " $3
 filetoedit=/usr/share/applications/$FILENAME
 abb=$(yad --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
---button=gtk-save:0 --button=gtk-save-as:10 --button=gtk-quit:1)
+--button=gtk-save:0 --button=gtk-save-as:10 --button="Go Back":1 --button=gtk-quit:3)
 fileaction=$?
 echo "abb:" $abb
 abbsaveas=$abb
+
+if [ $fileaction -eq 3 ]; then
+	exit 3
+fi
 
 if [ $fileaction -eq "0" ]; then
 	echo "Save Selected"
@@ -72,6 +81,8 @@ if [ $fileaction -eq 10 ]; then
 		countersa=$(($countersa +1))
 		done <<< "$abbsaveas"
 	fi
+
+
 fi
 fileedited=1
 #Filename variable read and set directly by tmpfile!!
@@ -96,8 +107,6 @@ case $sel in
 		$torunbasic		
 		;;
 esac
-#$runcommand
-#Filename variable read and set directly by tmpfile!!
 }
 export -f filerun
 
@@ -129,13 +138,13 @@ for i in $( ls $files); do
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
 	mname1=$(cat "$i" |grep '^Name=' |head -1 )
 	mname2=`echo $mname1 | awk -F'=' '{print $2}'`
-	mname3=`echo $mname2 | awk -F'&' '{print $1}'`
-	if [ $mname3 != "" ]; then
-		mname=$(echo "$mname2" |tr '&' '+')
-		#echo "fucking & symbol found"
-	else
+#	mname3=`echo $mname2 | awk -F'&' '{print $1}'`
+#	if [ $mname3 != "" ]; then
+#		mname=$(echo "$mname2" |tr '&' '+')
+#		#echo "fucking & symbol found"
+#	else
 		mname=$mname2
-	fi
+#	fi
 #	if [ $comment == "" ]; then
 #		comment=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=GenericName=)[ --0-9A-Za-z/.]*')
 #	fi
@@ -174,7 +183,7 @@ done
 echo "list for yad:" "${list[@]}"
 
 
-yad --list --width=1200 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
+yad --list --no-markup --width=1200 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
 --button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
 --button="New Selection":2 --button="Cancel":1 --column "No" --column "File" --column "Exec" --column "Description" \
 --column="Menu Name" "${list[@]}"
