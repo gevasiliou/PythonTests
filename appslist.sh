@@ -1,12 +1,17 @@
 #!/bin/bash
-# Great Tuto: http://smokey01.com/yad/
+#Great Tuto: http://smokey01.com/yad/
 clear
 export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
 now=$(pwd) #Keep current working directory
 stop="false"
-function yadlistselect
+selections=""
+location=""
+files="" 
+fileedited=0
+
+function yadlistselect 
 { 
-echo "Received =" $0 " , " $1 " , " $2 " , " $3
+echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 
 #echo -e "IMGNAME=\"$2\"\nIMGSIZE=$3\nIMGPATH=\"$4\"" > $TMPFILE
 echo -e "FILEID=\"$1\"\nFILENAME=\"$2\"\nFILECOMMAND=\"$3\"" > $TMPFILE
@@ -17,10 +22,18 @@ export -f yadlistselect
 function filedisplay   
 { 
 source $TMPFILE
-echo "Received =" $0 " , " $1 " , " $2 " , " $3
-fileedit=/usr/share/applications/$FILENAME
-abb=$(yad --width=800 --height=500 --center --text-info --filename=$fileedit --wrap --editable \
---button=gtk-save:0 --button=gtk-save-as:10 --button=gtk-ok:2 --button=gtk-quit:1)
+filetodisplay=/usr/share/applications/$FILENAME
+yad --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button=gtk-quit:1
+}
+export -f filedisplay
+
+function fileedit  
+{ 
+source $TMPFILE
+#echo "Received =" $0 " , " $1 " , " $2 " , " $3
+filetoedit=/usr/share/applications/$FILENAME
+abb=$(yad --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
+--button=gtk-save:0 --button=gtk-save-as:10 --button=gtk-quit:1)
 fileaction=$?
 echo "abb:" $abb
 abbsaveas=$abb
@@ -30,9 +43,9 @@ if [ $fileaction -eq "0" ]; then
 	counter=1
 	while IFS= read -r linenew; do
 		if [ $counter -eq 1 ]; then
-			echo $linenew > $fileedit
+			echo $linenew > $filetoedit
 		else
-			echo $linenew >> $fileedit 
+			echo $linenew >> $filetoedit 
 		fi
 	counter=$(($counter +1))
 	done <<< "$abb"
@@ -40,10 +53,10 @@ fi
 
 if [ $fileaction -eq 10 ]; then
 	echo "Save As Selected"
-	saveas=$(yad --center --file --filename=$fileedit --save )
+	saveas=$(yad --center --file --filename=$filetoedit --save )
 	countersa=1
 	overwrite=0
-	if [ $saveas = $fileedit ]; then
+	if [ $saveas = $filetoedit ]; then
 		yad --center --text="overwrite file?"
 		overwrite=$?
 	fi
@@ -60,16 +73,16 @@ if [ $fileaction -eq 10 ]; then
 		done <<< "$abbsaveas"
 	fi
 fi
+fileedited=1
 #Filename variable read and set directly by tmpfile!!
 }
 
-export -f filedisplay
 
 function filerun   
 { 
 source $TMPFILE
-runcommand=$(yad --entry --entry-label="File to Run" --entry-text="$FILECOMMAND" \
---button=gtk-quit:11 --button="Run With Arguments":10 --button="Run No Argumanents":12)
+runcommand=$(yad --center --entry --entry-label="File to Run" --entry-text="$FILECOMMAND" \
+--button=gtk-quit:11 --button="Run With Args":10 --button="Run No Args":12)
 # If entry-text contains spaces and is not given within quotes will be treated as two different values.
 sel=$?
 case $sel in
@@ -88,12 +101,10 @@ esac
 }
 export -f filerun
 
-selections="" && location="" && files="" 
-
 function selectfiles
 {
 selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator="," --date-format="%Y-%m-%d" \
-	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gvte*.desktop" ) 
+	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gnome-m*.desktop" ) 
 ret=$?
 echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
 if [[ $ret -eq 1 ]]; then # Cancel Selected
@@ -104,19 +115,36 @@ files=`echo $selections | awk -F',' '{print $2}'`
 #echo $location $files
 }
 
-while [ $stop == "false" ];
-do
+while [ $stop == "false" ]; do
+if [ $fileedited -eq 0 ]; then
 selectfiles
+fi
 cd $location
 fileindex=0
 comindex=0
 
 for i in $( ls $files); do
+	unset mname2 mname
 	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
-	echo "file:" $i "-- executable:" $executable
+	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	mname1=$(cat "$i" |grep '^Name=' |head -1 )
+	mname2=`echo $mname1 | awk -F'=' '{print $2}'`
+	mname3=`echo $mname2 | awk -F'&' '{print $1}'`
+	if [ $mname3 != "" ]; then
+		mname=$(echo "$mname2" |tr '&' '+')
+		#echo "fucking & symbol found"
+	else
+		mname=$mname2
+	fi
+#	if [ $comment == "" ]; then
+#		comment=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=GenericName=)[ --0-9A-Za-z/.]*')
+#	fi
+	echo "file:" $i "-- executable:" $executable #"-- comment:" $comment "-- menu name:" ${menuname[0]} 
 
 	fileindex=$(($fileindex + 1))
 	desktopfiles["$fileindex"]=$i	
+	filecomment["$fileindex"]=$comment
+	fmn["$fileindex"]=$mname
 	
 	while IFS= read -r line; do
 		comindex=$(($comindex + 1))
@@ -127,6 +155,8 @@ for i in $( ls $files); do
 #			echo 'comindex greater than fileindex'
 			fileindex=$(($fileindex + 1))
 			desktopfiles["$fileindex"]=$i
+			filecomment["$fileindex"]=$comment
+			fmn["$fileindex"]=$mname
 		fi
 	done <<< "$executable"
 done
@@ -137,26 +167,34 @@ done
 k=1
 
 while [[ "$k" -le "$comindex" ]]; do
-	echo $k " -- "${desktopfiles[$k]} " -- " ${commands[$k]}
-	list+=( "$k" "${desktopfiles[$k]}" "${commands[$k]}" ) #this sets double quotes in each variable.
+	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
+	list+=( "$k" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" "${fmn[$k]}" ) #this sets double quotes in each variable.
 	k=$(($k + 1))
 done
-echo "${list[@]}"
+echo "list for yad:" "${list[@]}"
 
 
-yad --list --width=800 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
-	--button="Display":'bash -c "filedisplay"' --button="Run":'bash -c "filerun"' --button="New Selection":2 --button="Cancel":1  \
-	--column "ID" --column "File" --column "Exec" "${list[@]}"
+yad --list --width=1200 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
+--button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
+--button="New Selection":2 --button="Cancel":1 --column "No" --column "File" --column "Exec" --column "Description" \
+--column="Menu Name" "${list[@]}"
+
 btn=$?
 echo "button pressed:" $? "-" $btn
-if [ $btn -eq "1" ]; then
+if [ $btn -eq 1 ]; then
 stop="true" 
 #Tip: Click on buttons with id , yad list exits. If list exits with button 1 then stop the loop
 fi
 
-if [ $btn -eq "2" ]; then
+if [ $btn -eq 2 ]; then
 # if yad list exits with code 2 (new selection) then clear variables and go to the beginning!
-unset list && unset commands && unset desktopfiles
+unset list commands desktopfiles filecomment fmn
+fileedited=0
+fi
+
+if [ $btn -eq 4 ]; then
+fileedit
+unset list commands desktopfiles filecomment fmn
 fi
 done
 cd $now
