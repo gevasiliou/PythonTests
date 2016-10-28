@@ -17,7 +17,7 @@ echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 #TTT="$2"
 #echo "yadlistselect - test file name =" $TTT
 #echo -e "IMGNAME=\"$2\"\nIMGSIZE=$3\nIMGPATH=\"$4\"" > $TMPFILE
-echo -e "FILEID=\"$1\"\nFILENAME=\"$2\"\nFILECOMMAND=\"$3\"" > $TMPFILE
+echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
 #cat $TMPFILE
 }
 export -f yadlistselect
@@ -136,6 +136,7 @@ for i in $( ls $files); do
 	unset mname2 mname
 	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
 	mname1=$(cat "$i" |grep '^Name=' |head -1 )
 	mname2=`echo $mname1 | awk -F'=' '{print $2}'`
 #	mname3=`echo $mname2 | awk -F'&' '{print $1}'`
@@ -148,13 +149,13 @@ for i in $( ls $files); do
 #	if [ $comment == "" ]; then
 #		comment=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=GenericName=)[ --0-9A-Za-z/.]*')
 #	fi
-	echo "file:" $i "-- executable:" $executable #"-- comment:" $comment "-- menu name:" ${menuname[0]} 
+	echo "file:" $i "-- executable:" $executable #"-- comment:" $comment "-- menu name:" $mname "-- icon:" $icon
 
 	fileindex=$(($fileindex + 1))
 	desktopfiles["$fileindex"]=$i	
 	filecomment["$fileindex"]=$comment
 	fmn["$fileindex"]=$mname
-	
+	ficon["$fileindex"]=$icon	
 	while IFS= read -r line; do
 		comindex=$(($comindex + 1))
 #		printf '%s\n' "$line" 	# this prints correctly.
@@ -166,6 +167,7 @@ for i in $( ls $files); do
 			desktopfiles["$fileindex"]=$i
 			filecomment["$fileindex"]=$comment
 			fmn["$fileindex"]=$mname
+			ficon["$fileindex"]=$icon
 		fi
 	done <<< "$executable"
 done
@@ -176,17 +178,17 @@ done
 k=1
 
 while [[ "$k" -le "$comindex" ]]; do
-	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
-	list+=( "$k" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" "${fmn[$k]}" ) #this sets double quotes in each variable.
+#	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
+	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
 	k=$(($k + 1))
 done
 echo "list for yad:" "${list[@]}"
 
-
 yad --list --no-markup --width=1200 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
+--dclick-action='bash -c "filedisplay"' \
 --button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
---button="New Selection":2 --button="Cancel":1 --column "No" --column "File" --column "Exec" --column "Description" \
---column="Menu Name" "${list[@]}"
+--button="New Selection":2 --button=gtk-quit:1 --column "No" --column="Icon":IMG --column="Menu Name" \
+--column "File" --column "Exec" --column "Description" "${list[@]}"
 
 btn=$?
 echo "button pressed:" $? "-" $btn
@@ -207,9 +209,10 @@ unset list commands desktopfiles filecomment fmn
 fi
 done
 cd $now
-
-#if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
-#--button="Display":'bash -c "filedisplay %s "' --> This one doesn't work in button, works only with --select-action. Also works on yad --form (using %1, %2, etc)
+ 
+# find / -name gnome-mines -type f |egrep -v 'help|icon|locale'
+# if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
+# --button="Display":'bash -c "filedisplay %s "' --> This one doesn't work in button, works only with --select-action. Also works on yad --form (using %1, %2, etc)
 # If list is not given to yad as array but as a plain variable (i.e $list), is not working correctly.
 # Typical yad list => yad --list --column "A" --column "B" DataA1 DataB1 DataA2 DataB2
 # Strip the exec command of desktop file:=> executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
