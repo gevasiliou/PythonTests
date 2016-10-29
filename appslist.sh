@@ -2,8 +2,6 @@
 #Great Tuto:http://smokey01.com/yad/
 clear
 export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
-#export TTT="-something-"
-#declare -x TTT
 
 now=$(pwd) #Keep current working directory
 stop="false"
@@ -11,24 +9,17 @@ selections=""
 location=""
 files="" 
 fileedited=0
-function yadlistselect 
-{ 
+
+function yadlistselect { 
 echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
-#TTT="$2"
-#echo "yadlistselect - test file name =" $TTT
-#echo -e "IMGNAME=\"$2\"\nIMGSIZE=$3\nIMGPATH=\"$4\"" > $TMPFILE
 echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
-#cat $TMPFILE
 }
 export -f yadlistselect
 
-function filedisplay   
-{ 
-echo "filedisplay - test file name =" $TTT
+function filedisplay { 
 source $TMPFILE
 filetodisplay=/usr/share/applications/$FILENAME
-yad --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button="Go Back":0
-
+yad --title="File Display" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button="Go Back":0
 }
 export -f filedisplay
 
@@ -37,19 +28,16 @@ function fileedit
 source $TMPFILE
 #echo "Received =" $0 " , " $1 " , " $2 " , " $3
 filetoedit=/usr/share/applications/$FILENAME
-abb=$(yad --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
+abb=$(yad --title="Edit Files" --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
 --button=gtk-save:0 --button=gtk-save-as:10 --button="Go Back":1 --button=gtk-quit:3)
 fileaction=$?
-echo "abb:" $abb
+#echo "abb:" $abb
 abbsaveas=$abb
 
-if [ $fileaction -eq 3 ]; then
-	exit 3
-fi
-
-if [ $fileaction -eq "0" ]; then
-	echo "Save Selected"
+case $fileaction in
+0)  
 	counter=1
+#	echo "Save Selected"
 	while IFS= read -r linenew; do
 		if [ $counter -eq 1 ]; then
 			echo $linenew > $filetoedit
@@ -58,21 +46,25 @@ if [ $fileaction -eq "0" ]; then
 		fi
 	counter=$(($counter +1))
 	done <<< "$abb"
-fi
-
-if [ $fileaction -eq 10 ]; then
-	echo "Save As Selected"
+	;;
+3) yad --text="Are you sure?"
+	ret2=$?
+	if [ $ret2 -eq 0 ]; then exit 3; fi # this exits completely the whole script.
+	#exit 3
+	;;
+10) 
+#	echo "Save As Selected"
 	saveas=$(yad --center --file --filename=$filetoedit --save )
 	countersa=1
 	overwrite=0
 	if [ $saveas = $filetoedit ]; then
-		yad --center --text="overwrite file?"
+		yad --title="OverWrite"--center --text="overwrite file?"
 		overwrite=$?
 	fi
 
 	if [ $overwrite -eq 0 ];then
 		while IFS= read -r linesaveas; do
-			echo "contents: " $linesaveas
+			#echo "contents: " $linesaveas
 			if [ $countersa -eq 1 ]; then
 				echo $linesaveas > $saveas
 			else
@@ -81,29 +73,28 @@ if [ $fileaction -eq 10 ]; then
 		countersa=$(($countersa +1))
 		done <<< "$abbsaveas"
 	fi
+	;;	
+esac
 
-
-fi
 fileedited=1
-#Filename variable read and set directly by tmpfile!!
 }
 
 
 function filerun   
 { 
 source $TMPFILE
-runcommand=$(yad --center --entry --entry-label="File to Run" --entry-text="$FILECOMMAND" \
+runcommand=$(yad --center --title="Run File" --entry --entry-label="File to Run" --entry-text="$FILECOMMAND" \
 --button=gtk-quit:11 --button="Run With Args":10 --button="Run No Args":12)
 # If entry-text contains spaces and is not given within quotes will be treated as two different values.
 sel=$?
 case $sel in
 	10)	torunfull=$runcommand 		
-		echo 'run full command:' $torunfull
+#		echo 'run full command:' $torunfull
 		$torunfull
 		;;
-	11) echo 'cancel code';;
+	11) echo 'quit code';;
 	12)	torunbasic=`echo $runcommand | awk -F' ' '{print $1}'`
-		echo 'run no arguments:' $torunbasic 
+#		echo 'run no arguments:' $torunbasic 
 		$torunbasic		
 		;;
 esac
@@ -112,44 +103,39 @@ export -f filerun
 
 function selectfiles
 {
-selections=$(yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator="," --date-format="%Y-%m-%d" \
+selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --date-format="%Y-%m-%d" \
 	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gnome-m*.desktop" ) 
 ret=$?
-echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
+#echo $selections
+#echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
 if [[ $ret -eq 1 ]]; then # Cancel Selected
-	exit 1 # this exits completely the whole script.
-fi 
+	yad --text="Are you sure?"
+	ret2=$?
+	if [ $ret2 -eq 0 ]; then exit 1; fi # this exits completely the whole script.
+fi
 location=`echo $selections | awk -F',' '{print $1}'`  
 files=`echo $selections | awk -F',' '{print $2}'`  
 #echo $location $files
 }
 
+#--------------------------------MAIN PROGRAM---------------------------------------------#
 while [ $stop == "false" ]; do
 if [ $fileedited -eq 0 ]; then
-selectfiles
+selectfiles #If a file has been edited, just reload the list of previous selection.
 fi
 cd $location
 fileindex=0
 comindex=0
 
 for i in $( ls $files); do
-	unset mname2 mname
 	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
+		if [[ $comment = "" ]]; then
+			comment=$comment2
+		fi	
 	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
-	mname1=$(cat "$i" |grep '^Name=' |head -1 )
-	mname2=`echo $mname1 | awk -F'=' '{print $2}'`
-#	mname3=`echo $mname2 | awk -F'&' '{print $1}'`
-#	if [ $mname3 != "" ]; then
-#		mname=$(echo "$mname2" |tr '&' '+')
-#		#echo "fucking & symbol found"
-#	else
-		mname=$mname2
-#	fi
-#	if [ $comment == "" ]; then
-#		comment=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=GenericName=)[ --0-9A-Za-z/.]*')
-#	fi
-	echo "file:" $i "-- executable:" $executable #"-- comment:" $comment "-- menu name:" $mname "-- icon:" $icon
+	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
 
 	fileindex=$(($fileindex + 1))
 	desktopfiles["$fileindex"]=$i	
@@ -182,16 +168,17 @@ while [[ "$k" -le "$comindex" ]]; do
 	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
 	k=$(($k + 1))
 done
-echo "list for yad:" "${list[@]}"
+#echo "list for yad:" "${list[@]}"
 
-yad --list --no-markup --width=1200 --height=600 --center --print-column=0 --select-action 'bash -c "yadlistselect %s "' \
+yad --list --title="Application Files Browser" --no-markup --width=1200 --height=600 --center --print-column=0 \
+--select-action 'bash -c "yadlistselect %s "' \
 --dclick-action='bash -c "filedisplay"' \
 --button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
 --button="New Selection":2 --button=gtk-quit:1 --column "No" --column="Icon":IMG --column="Menu Name" \
 --column "File" --column "Exec" --column "Description" "${list[@]}"
 
 btn=$?
-echo "button pressed:" $? "-" $btn
+#echo "button pressed:" $? "-" $btn
 if [ $btn -eq 1 ]; then
 stop="true" 
 #Tip: Click on buttons with id , yad list exits. If list exits with button 1 then stop the loop
@@ -204,13 +191,13 @@ fileedited=0
 fi
 
 if [ $btn -eq 4 ]; then
-fileedit
+fileedit #Call file edit function.
 unset list commands desktopfiles filecomment fmn
 fi
 done
 cd $now
  
-# find / -name gnome-mines -type f |egrep -v 'help|icon|locale'
+# find / -name gnome-mines -type f -executable |egrep -v 'help|icon|locale'
 # if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
 # --button="Display":'bash -c "filedisplay %s "' --> This one doesn't work in button, works only with --select-action. Also works on yad --form (using %1, %2, etc)
 # If list is not given to yad as array but as a plain variable (i.e $list), is not working correctly.
