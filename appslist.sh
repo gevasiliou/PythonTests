@@ -103,19 +103,28 @@ export -f filerun
 
 function selectfiles
 {
-selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --date-format="%Y-%m-%d" \
-	--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gnome-m*.desktop" ) 
-ret=$?
-#echo $selections
-#echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
-if [[ $ret -eq 1 ]]; then # Cancel Selected
-	yad --text="Are you sure?"
-	ret2=$?
-	if [ $ret2 -eq 0 ]; then exit 1; fi # this exits completely the whole script.
-fi
-location=`echo $selections | awk -F',' '{print $1}'`  
-files=`echo $selections | awk -F',' '{print $2}'`  
-#echo $location $files
+ret2=1
+ret=1
+while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
+	selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
+		--date-format="%Y-%m-%d" \
+		--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gnome-m*.desktop" )
+	ret=$?
+	location=`echo $selections | awk -F',' '{print $1}'`  
+	files=`echo $selections | awk -F',' '{print $2}'`  
+	echo $location $files
+
+	#echo $selections
+	#echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
+	if [[ $ret -eq 1 ]]; then # Cancel Selected
+		yad --text="Are you sure?"
+		ret2=$?
+#		[[ $ret2 -eq 0 ]] && exit 1
+		if [ $ret2 -eq 0 ]; then 
+			exit 1
+		fi 
+	fi
+done
 }
 
 #--------------------------------MAIN PROGRAM---------------------------------------------#
