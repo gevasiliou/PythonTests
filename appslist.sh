@@ -112,7 +112,7 @@ while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
 	ret=$?
 	location=`echo $selections | awk -F',' '{print $1}'`  
 	files=`echo $selections | awk -F',' '{print $2}'`  
-	echo $location $files
+#	echo $location $files
 
 	#echo $selections
 	#echo "ret:" $ret #This one returns 0 for OK button, 1 for cancel button
