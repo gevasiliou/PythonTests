@@ -35,5 +35,7 @@ save results to file
 
 tips:
 provide pulsating progress bars during find
-
+provide undo options (undo delete,edit,move,)
+provide backup file/folder and restore file/folder
+show files in folder (in case of folder search mode)
 
