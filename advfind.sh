@@ -1,41 +1,53 @@
-#
-Advanced Find
+#!/bin/bash
+#Written by smokey01
+#04 May 2016
 
-Use select files form
+function help 
+{
+yad --window-icon="gtk-find" --center --title="Look4 Help" --text="
+This is a simple little GUI made with
+YAD to help drive the find command.
 
-options:
-search for folders only & checkbox display files in folder found
-search multiple directories
-exclude directories from search (either by selecting particular directory or by entering directory pattern)
+All fields must be populated or the GUI
+will not return any results.
 
-search files only (find -type f) 
-exlude file extensions # find / -name gnome-mines -type f -executable |egrep -v 'help|icon|locale'
-use extensions patterns (*.txt or *.py or .... ) 
+If you believe you should have received
+results but didn't, try widening the
+date and or size parameters.
 
-search files and folders using patterns
-search executable files only (-executable) using patterns
+Double click on results to open the file.
 
-Check box "save this search profile"
-Button "load saved search profile"
-Check Box "use locate instead of find"
-Button "remove file" - with confirmation
-Search for files based on dates /size range
-Search applications -> call the appslist.sh script
+Requires YAD-0.36.2 or later.
 
+Enjoy. smokey01
+"
+}
+export -f help
 
-Display Find Results
-Results include filename, path, directory, executable attribute, owner
-checkbox of a result and give options exclude folder, exclude extension 
-dpkg information (pop up window with dpkg -S or -L or both)
-installation info (manual, automatc, date installed, source package, versions, )
-run the file (if it is executable) and maybe mark file as executable
-view the file (editor if text, viewer if image/icon, etc)
-copy / move selected files to another directory
-save results to file
+function look  
+{
+loc=${1}
+name=${2}
+#startdate=${3}
+#enddate=${4}
+#startsize=${5}
+#endsize=${6}
 
-tips:
-provide pulsating progress bars during find
-provide undo options (undo delete,edit,move,)
-provide backup file/folder and restore file/folder
-show files in folder (in case of folder search mode)
+#find $loc -name "$name" -newermt "$startdate" ! -newermt "$enddate" -size +$startsize"k" ! -size +$endsize"k" | yad --width=600 --height=400 --separator=" " --window-icon="gtk-find" --title "Search Results" --center --column "Files" --list --dclick-action="rox"
+}
+export -f look
 
+#yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator=" " --date-format="%Y-%m-%d" \
+#--field="Location:":MDIR "/root" \
+#--field="Filename:" "*" \
+#--field="Start Date:":DT "2000-01-01" \
+#--field="End Date:":DT "2016-12-31" \
+#--field="Start Size KB:":NUM "0" \
+#--field="End Size KB:":NUM "1024" \
+#--field="Find!gtk-find:BTN" 'bash -c "look %1 %2 %3 %4 %5 %6"' \
+#--button=gtk-help:'bash -c help' \
+#--button=gtk-quit:0
+
+yad --window-icon="gtk-find" --title="Look4 Files" --center --form --columns=2 --separator=" " --date-format="%Y-%m-%d" \
+--field="Location:":MDIR "/" --field="Filename:" "*" --field="Directories Only":CHK --field="Executables Only":CHK \
+--button=gtk-help:'bash -c help' --button=gtk-find:0 --button=gtk-quit:1
