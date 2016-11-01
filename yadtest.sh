@@ -39,16 +39,26 @@ i=1
 
 #output=$(curl https://domain.com/file.xml)
 readarray foo < <(grep -e '^Exec=' -e '^Name=' -e 'Icon=' /usr/share/applications/gvtest.desktop)
-echo ${foo[@]}
-echo ${foo[0]}
-echo ${foo[1]}
-echo ${foo[2]}
-
-#echo $res
+for i in {1..10};do
+echo "foo[$i]" ${foo[$i]}
+done
 }
 
+function awktest {
+awkres0=$(awk -F'=' '/^Name=/{print $0}' /usr/share/applications/brasero.desktop)
+awkres1=$(awk -F'=' '/^Name=/{print $1}' /usr/share/applications/brasero.desktop)
+awkres2=$(awk -F'=' '/^Name=/{print $2}' /usr/share/applications/brasero.desktop)
+readarray awkres20 < <(awk -F'=' '/^Name=/{print $2}' /usr/share/applications/brasero.desktop)
+
+echo $awkres0
+echo $awkres1
+echo $awkres2
+for i in {0..10};do
+echo "[$i]=" ${awkres20[$i]}
+done
+}
 #-----------------------------------MAIN----------------------------------#
 #pbardemo
-multigrep
-
+#multigrep
+awktest
 

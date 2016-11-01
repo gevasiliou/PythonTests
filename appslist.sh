@@ -132,55 +132,96 @@ while [ $stop == "false" ]; do
 if [ $fileedited -eq 0 ]; then
 selectfiles #If a file has been edited, just reload the list of previous selection.
 fi
+TimeStarted=$(date +%s.%N)
+#echo "Time Started=" $TimeStarted
 cd $location
-fileindex=0
+#fileindex=0 # the old one - multiple cat method.
 comindex=0
 
+fileindex=1 #added for the grep method.
+
 for i in $( ls $files); do
-	executable=$(cat "$i" |grep -v 'TryExec' |grep 'Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
-	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
-	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
-		if [[ $comment = "" ]]; then
-			comment=$comment2
-		fi	
-	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
-	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
-
-
-	fileindex=$(($fileindex + 1))
-	desktopfiles["$fileindex"]=$i	
-	filecomment["$fileindex"]=$comment
-	fmn["$fileindex"]=$mname
-	ficon["$fileindex"]=$icon	
-
-	while IFS= read -r line; do
-		comindex=$(($comindex + 1))
-#		printf '%s\n' "$line" 	# this prints correctly.
-		fileindex2=$(($fileindex * 10))
-		echo "$fileindex2"
-		echo "# $line" #| yad --progress --pulsate			# this also prints correctly! 
-		commands["$comindex"]=$line
-		if [[ "$comindex" -gt "$fileindex" ]]; then
-#			echo 'comindex greater than fileindex'
-			fileindex=$(($fileindex + 1))
-			desktopfiles["$fileindex"]=$i
-			filecomment["$fileindex"]=$comment
-			fmn["$fileindex"]=$mname
-			ficon["$fileindex"]=$icon
-		fi
-	done <<< "$executable"
-done
-
-#echo "command index last value:" $comindex
-#echo "file index last value:" $fileindex
+#	executable=$(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
+#	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+#	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
+#		if [[ $comment = "" ]]; then
+#			comment=$comment2
+#		fi	
+#	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
+#	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
+#
+#	fileindex=$(($fileindex + 1))
+#	desktopfiles["$fileindex"]=$i	
+#	filecomment["$fileindex"]=$comment
+#	fmn["$fileindex"]=$mname
+#	ficon["$fileindex"]=$icon	
+#
+#	while IFS= read -r line; do
+#		comindex=$(($comindex + 1))
+##		printf '%s\n' "$line" 	# this prints correctly.
+##		fileindex2=$(($fileindex * 10))
+##		echo "$fileindex2"
+##		echo "# $line" #| yad --progress --pulsate			# this echo prints correctly, but yad progress is not operating 
+#		commands["$comindex"]=$line
+#		if [[ "$comindex" -gt "$fileindex" ]]; then
+##			echo 'comindex greater than fileindex'
+#			fileindex=$(($fileindex + 1))
+#			desktopfiles["$fileindex"]=$i
+#			filecomment["$fileindex"]=$comment
+#			fmn["$fileindex"]=$mname
+#			ficon["$fileindex"]=$icon
+#		fi
+#	done <<< "$executable"
+##echo "command index last value:" $comindex
+##echo "file index last value:" $fileindex
 	
-k=1
+#k=1
 
-while [[ "$k" -le "$comindex" ]]; do
-#	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
-	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
-	k=$(($k + 1))
+#while [[ "$k" -le "$comindex" ]]; do
+##	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
+#	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
+#	k=$(($k + 1))
+#done
+
+#	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e 'Icon=' -e '^Comment=' -e '^Generic Name' $i) 
+	# this one line command needs 5 seconds for 316 desktop files!
+
+#	readarray executable < <(grep -e '^Exec=' $i) #|awk -F'=' '{print $2}')
+#	readarray comment < <(grep -e '^Comment=' $i) #|awk -F'=' '{print $2}')
+#	readarray generic < <(grep -e '^Generic Name' $i) #|awk -F'=' '{print $2}')
+#	readarray fname < <(grep -e '^Name=' $i) #|awk -F'=' '{print $2}')
+#	readarray ficon < <(grep -e '^Icon=' $i) #|awk -F'=' '{print $2}')
+#	# Multiple readarrays - multiple grep without awk need 22-23 sec.
+#	# Multiple readarrays - multiple grep WITH awk need 44 sec!!
+
+#	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
+#	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
+#	name=$(grep -e 'Name=' <<< "${foo[@]}")
+#	generic=$(grep -e 'Generic Name=' <<< "${foo[@]}")
+#	icon=$(grep -e 'Icon=' <<< "${foo[@]}")
+#	#  Grep at $foo array is slower than grep directly each file (32 seconds vs 22 seconds!)
+
+	readarray executable < <(awk -F'=' '/^Exec=/{print $2}' $i)
+	readarray comment < <(awk -F'=' '/^Comment=/{print $2}' $i)
+	readarray generic < <(awk -F'=' '/^Generic Name=/{print $2}' $i)
+	readarray fname < <(awk -F'=' '/^Name=/{print $2}' $i)
+	readarray ficon < <(awk -F'=' '/^Icon=/{print $2}' $i)
+	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep and awk) i get ~ 29 seconds . 
+
+	k=$fileindex
+	list+=( "$k" "${ficon[0]}" "${fname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+
 done
+
+TimeFinished=$(date +%s.%N)
+#echo "Time Finished=" $TimeFinished
+TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
+echo "File Access Required Time= " $TimeDiff
+#exit 0
+
+
 #echo "list for yad:" "${list[@]}"
 
 yad --list --title="Application Files Browser" --no-markup --width=1200 --height=600 --center --print-column=0 \
@@ -252,3 +293,20 @@ cd $now
 #	--button="Display":"/home/gv/PythonTests/yadabout.sh" --button="Run":"bash -c yad_call" --button="Cancel":0  \
 #	--column "ID" --column "File" --column "Exec" "${list[@]}"
 # the end
+
+
+# Script Performance
+# TimeStarted=$(date +%s.%N) --> The %s refers to seconds, the dot is literal, and the %N refers to nanoseconds
+# TimeFinished=$(date +%s.%N)
+# TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
+# The trick $((var1-var2)) is not working in bash when vars include decimanl points; works only with integers - no decimals . Other shells (like zsh) support this operation.
+
+# Script Run Time Results (SRT) for *.desktop in Vbox (1 cpu - 1.2 GB RAM)
+# Using multiple cat , echos disabled = ~ 61 seconds
+# Using grep with many patterns, and one if, no echos = ~73 second
+# Using one grep with many patterns , no ifs, no echos, nothing = ~5 seconds! Bug is that if a pattern is not found, array is messed up.
+# Using one grep - many patterns and just an array print = ~10 seconds.
+# Using multi cats, no ifs, no echos, only variable=cat = ~60 seconds.
+# Using multi greps , each assigned to it's array, no ifs, no echos = ~23 seconds.
+# Using multi greps , each assigned to it's array, no ifs, no echos but WITH pipe to awk = ~48 seconds.
+# Using multi arrays and multi direct awks instead of pipes, gives the correct result at 30 seconds.
