@@ -146,15 +146,27 @@ for i in $( ls $files); do
 	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
 	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
 
+#	executable=$(grep -e '^Exec=' $i |awk -F'=' '{print $2}')
+#	comment=$(grep -e '^Comment=' $i |awk -F'=' '{print $2}')
+#	comment2=$(grep -e '^GenericName=' $i |awk -F'=' '{print $2}' )
+#		if [[ $comment = "" ]]; then
+#			comment=$comment2
+#		fi	
+#	icon=$(grep -e '^Icon=' $i |awk -F'=' '{print $2}')	
+#	mname=$(grep -e '^Name=' $i |head -1 |awk -F'=' '{print $2}')
+
 	fileindex=$(($fileindex + 1))
 	desktopfiles["$fileindex"]=$i	
 	filecomment["$fileindex"]=$comment
 	fmn["$fileindex"]=$mname
 	ficon["$fileindex"]=$icon	
+
 	while IFS= read -r line; do
 		comindex=$(($comindex + 1))
 #		printf '%s\n' "$line" 	# this prints correctly.
-#		echo "$line"			# this also prints correctly! 
+		fileindex2=$(($fileindex * 10))
+		echo "$fileindex2"
+		echo "# $line" #| yad --progress --pulsate			# this also prints correctly! 
 		commands["$comindex"]=$line
 		if [[ "$comindex" -gt "$fileindex" ]]; then
 #			echo 'comindex greater than fileindex'
@@ -184,7 +196,7 @@ yad --list --title="Application Files Browser" --no-markup --width=1200 --height
 --dclick-action='bash -c "filedisplay"' \
 --button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
 --button="New Selection":2 --button=gtk-quit:1 --column "No" --column="Icon":IMG --column="Menu Name" \
---column "File" --column "Exec" --column "Description" "${list[@]}"
+--column "File" --column "Exec" --column "Description" "${list[@]}" 
 
 btn=$?
 #echo "button pressed:" $? "-" $btn
