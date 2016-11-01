@@ -146,14 +146,6 @@ for i in $( ls $files); do
 	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
 	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
 
-#	executable=$(grep -e '^Exec=' $i |awk -F'=' '{print $2}')
-#	comment=$(grep -e '^Comment=' $i |awk -F'=' '{print $2}')
-#	comment2=$(grep -e '^GenericName=' $i |awk -F'=' '{print $2}' )
-#		if [[ $comment = "" ]]; then
-#			comment=$comment2
-#		fi	
-#	icon=$(grep -e '^Icon=' $i |awk -F'=' '{print $2}')	
-#	mname=$(grep -e '^Name=' $i |head -1 |awk -F'=' '{print $2}')
 
 	fileindex=$(($fileindex + 1))
 	desktopfiles["$fileindex"]=$i	
