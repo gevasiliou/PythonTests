@@ -141,14 +141,16 @@ comindex=0
 fileindex=1 #added for the grep method.
 
 for i in $( ls $files); do
-	executable=$(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
+	readarray executable < <(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
-	comment2=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
+	comment2=$(cat "$i" |grep '^Generic Name=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
 	icon=$(cat "$i" |grep '^Icon=' |grep -Po '(?<=Icon=)[ --0-9A-Za-z/.]*')	
-	mname=$(cat "$i" |grep '^Name=' |head -1 |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
+	readarray mname < <(cat "$i" |grep '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
 	# this method achieves 9.3 at home
-	k=$fileindex
-	list+=( "$k" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+		if [[ $comment = "" ]]; then
+			comment=$comment2
+		fi	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
 	fileindex=$(($fileindex+1))
 
 #	executable=$(cat "$i" |grep '^Exec' |awk -F'=' '{print $2}')
@@ -157,9 +159,6 @@ for i in $( ls $files); do
 #	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
 #	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
 #	# this one goes to 10,3@home
-#		if [[ $comment = "" ]]; then
-#			comment=$comment2
-#		fi	
 
 #	fileindex=$(($fileindex + 1))
 #	desktopfiles["$fileindex"]=$i	
