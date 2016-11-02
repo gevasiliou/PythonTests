@@ -1,14 +1,20 @@
 #!/bin/bash
 #Great Tuto:http://smokey01.com/yad/
-clear
-export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
+#
 
-now=$(pwd) #Keep current working directory
+{ #Declarations
+export TMPFILE=/tmp/yadvalues #obviously this creates a super global variable accesible from script and functions!
+now=$(pwd) 
 stop="false"
 selections=""
 location=""
 files="" 
 fileedited=0
+declare -g list
+comindex=0
+fileindex=1 #Could be required to be 0, depending on the method used.
+#Declarations 
+}
 
 function yadlistselect { 
 #echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
@@ -127,143 +133,191 @@ while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
 done
 }
 
-#--------------------------------MAIN PROGRAM---------------------------------------------#
-while [ $stop == "false" ]; do
-if [ $fileedited -eq 0 ]; then
-selectfiles #If a file has been edited, just reload the list of previous selection.
+function printarray {
+arr=("${@}")
+ind=0
+	echo "Start of Array"	
+	echo "Array[@]=" "${arr[@]}"
+	for e in "${arr[@]}"; do
+		echo "Array[$ind]=" $e
+		ind=$(($ind+1))
+	done
+ 	printf "End of Array\n\n"
+
+}
+
+function performance {
+
+if [[ $1 == "start" ]]; then
+declare -g TimeStarted=$(date +%s.%N)
+declare -g Started="Yes"
+echo "Time Started=" $TimeStarted
 fi
-TimeStarted=$(date +%s.%N)
-#echo "Time Started=" $TimeStarted
-cd $location
-#fileindex=0 # the old one - multiple cat method.
-comindex=0
 
-fileindex=1 #added for the grep method.
+if [[ $1 = "stop" ]] && [[ $Started="Yes" ]]; then 
+declare -g TimeFinished=$(date +%s.%N)
+declare -g TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
+echo "Time Finished=" $TimeFinished
+echo "Run Time= " $TimeDiff
+fi
+}
 
-for i in $( ls $files); do
-	readarray executable < <(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
+function buildlist {
+	readarray -t executable < <(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
 	comment2=$(cat "$i" |grep '^Generic Name=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
 	icon=$(cat "$i" |grep '^Icon=' |grep -Po '(?<=Icon=)[ --0-9A-Za-z/.]*')	
-	readarray mname < <(cat "$i" |grep '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
-	# this method achieves 9.3 at home
+	readarray -t mname < <(cat "$i" |grep '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
+	# this method achieves 9.3 at home but goes to 60 secs at VBox!
+		if [[ $comment = "" ]]; then
+			comment=$comment2
+		fi
+#	printarray "${mname[@]}"
+
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist2 {
+	executable=$(cat "$i" |grep '^Exec' |awk -F'=' '{print $2}')
+	comment=$(cat "$i" |grep '^Comment=' |awk -F'=' '{print $2}')
+	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
+	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
+	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
+	# this one goes to 10,3@home
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist3 {
+	readarray -t executable < <(grep -e '^Exec=' $i |awk -F'=' '{print $2}')
+	readarray -t comment < <(grep -e '^Comment=' $i |awk -F'=' '{print $2}')
+	readarray -t comment2 < <(grep -e '^Generic Name' $i |awk -F'=' '{print $2}')
+	readarray -t mname < <(grep -e '^Name=' $i |awk -F'=' '{print $2}')
+	readarray -t icon < <(grep -e '^Icon=' $i |awk -F'=' '{print $2}')
+	# Multiple readarrays - multiple grep without awk 22-23 sec.
+	# Multiple readarrays - multiple grep WITH awk 44 sec!! (9@home)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist4 {
+	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i) 
+	# Above line - grep with multiple expressions goes to 2 secs at home / 5 secs at VBox
+	executable=""
+	comment=""
+	fname=""
+	ficon=""
+	generic=""	
+	for ii in "${foo[@]}"; do
+		foo1=$(echo "$ii" |awk -F'=' '{print $1}')
+#		echo $foo1
+		foo2=$(echo "$ii" |awk -F'=' '{print $2}')
+#		echo $foo2	
+
+		case $foo1 in
+			"Exec") executable=$foo2
+					#echo "exec=" $foo2
+					;;
+			'Comment') comment=$foo2
+						#echo "comment=" $foo2
+						;;
+			'Name') mname=$foo2
+					#echo "name=" $foo2
+					;;
+			'Generic Name') comment2=$foo2
+							#echo "generic=" $foo2
+							;;
+			'Icon') icon=$foo2
+					#echo "icon=" $foo2
+					;;
+		esac
 		if [[ $comment = "" ]]; then
 			comment=$comment2
 		fi	
+	done
 	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
 	fileindex=$(($fileindex+1))
+}
 
-#	executable=$(cat "$i" |grep '^Exec' |awk -F'=' '{print $2}')
-#	comment=$(cat "$i" |grep '^Comment=' |awk -F'=' '{print $2}')
-#	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
-#	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
-#	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
-#	# this one goes to 10,3@home
-
-#	fileindex=$(($fileindex + 1))
-#	desktopfiles["$fileindex"]=$i	
-#	filecomment["$fileindex"]=$comment
-#	fmn["$fileindex"]=$mname
-#	ficon["$fileindex"]=$icon	
-
-#	while IFS= read -r line; do
-#		comindex=$(($comindex + 1))
-##		printf '%s\n' "$line" 	# this prints correctly.
-##		fileindex2=$(($fileindex * 10))
-##		echo "$fileindex2"
-##		echo "# $line" #| yad --progress --pulsate			# this echo prints correctly, but yad progress is not operating 
-#		commands["$comindex"]=$line
-#		if [[ "$comindex" -gt "$fileindex" ]]; then
-##			echo 'comindex greater than fileindex'
-#			fileindex=$(($fileindex + 1))
-#			desktopfiles["$fileindex"]=$i
-#			filecomment["$fileindex"]=$comment
-#			fmn["$fileindex"]=$mname
-#			ficon["$fileindex"]=$icon
-#		fi
-#	done <<< "$executable"
-##echo "command index last value:" $comindex
-##echo "file index last value:" $fileindex
+function buildlist5 {
+	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i) 
+	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
+	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
+	mname=$(grep -e 'Name=' <<< "${foo[@]}")
+	comment2=$(grep -e 'Generic Name=' <<< "${foo[@]}")
+	icon=$(grep -e 'Icon=' <<< "${foo[@]}")
+	#  Grep at $foo array is slower than grep directly each file (32 seconds VBox - 16secs @home)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
 	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
 
-#	readarray executable < <(grep -e '^Exec=' $i |awk -F'=' '{print $2}')
-#	readarray comment < <(grep -e '^Comment=' $i |awk -F'=' '{print $2}')
-#	readarray generic < <(grep -e '^Generic Name' $i |awk -F'=' '{print $2}')
-#	readarray fname < <(grep -e '^Name=' $i |awk -F'=' '{print $2}')
-#	readarray ficon < <(grep -e '^Icon=' $i |awk -F'=' '{print $2}')
-	# Multiple readarrays - multiple grep without awk 22-23 sec.
-	# Multiple readarrays - multiple grep WITH awk 44 sec!! (9@home)
+function buildlist6 {
+	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i)
+	#echo ${foo[@]}
+	executable=$(echo "${foo[@]}" |awk -F'=' '/Exec=/{print $2}')
+	#echo $executable
+	comment=$(echo "${foo[@]}" |awk -F'=' '/Comment=/{print $2}')
+	mname=$(echo "${foo[@]}" |awk -F'=' '/Name=/{print $2}')
+	comment2=$(echo "${foo[@]}" |awk -F'=' '/Generic Name=/{print $2}')
+	icon=$(echo "${foo[@]}" |awk -F'=' '/Icon=/{print $2}')
+	#  Grep at $foo array is slower than grep directly each file (32 seconds VBox - 16secs @home)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
 
-#	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i) 
-#	# this single line goes to 2 secs at home
-#	executable=""
-#	comment=""
-#	fname=""
-#	ficon=""
-#	generic=""	
-#	for ii in "${foo[@]}"; do
-#		foo1=$(echo "$ii" |awk -F'=' '{print $1}')
-##		echo $foo1
-#		foo2=$(echo "$ii" |awk -F'=' '{print $2}')
-##		echo $foo2	
-#
-#		case $foo1 in
-#			"Exec") executable=$foo2
-#					#echo "exec=" $foo2
-#					;;
-#			'Comment') comment=$foo2
-#						#echo "comment=" $foo2
-#						;;
-#			'Name') fname=$foo2
-#					#echo "name=" $foo2
-#					;;
-#			'Generic Name') generic=$foo2
-#							#echo "generic=" $foo2
-#							;;
-#			'Icon') ficon=$foo2
-#					#echo "icon=" $foo2
-#					;;
-#		esac
-#	done
+function buildlist7 {
+	readarray -t executable < <(awk -F'=' '/^Exec=/{print $2}' $i)
+	readarray -t comment < <(awk -F'=' '/^Comment=/{print $2}' $i)
+	readarray -t comment2 < <(awk -F'=' '/^Generic Name=/{print $2}' $i)
+	readarray -t mname < <(awk -F'=' '/^Name=/{print $2}' $i)
+	readarray -t icon < <(awk -F'=' '/^Icon=/{print $2}' $i)
+#	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
+	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
 
-#	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
-#	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
-#	fname=$(grep -e 'Name=' <<< "${foo[@]}")
-#	generic=$(grep -e 'Generic Name=' <<< "${foo[@]}")
-#	ficon=$(grep -e 'Icon=' <<< "${foo[@]}")
-	#  Grep at $foo array is slower than grep directly each file (32 seconds - 16 @home)
+#--------------------------------MAIN PROGRAM---------------------------------------------#
+while [ $stop == "false" ]; do
+clear
+if [ $fileedited -eq 0 ]; then
+selectfiles #If a file has been edited, just reload the list of previous selection.
+fi
+cd $location
+performance start
 
-#	readarray executable < <(awk -F'=' '/^Exec=/{print $2}' $i)
-#	readarray comment < <(awk -F'=' '/^Comment=/{print $2}' $i)
-#	readarray generic < <(awk -F'=' '/^Generic Name=/{print $2}' $i)
-#	readarray fname < <(awk -F'=' '/^Name=/{print $2}' $i)
-#	readarray ficon < <(awk -F'=' '/^Icon=/{print $2}' $i)
-##	echo "Icon=" ${ficon[0]}	
-#	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 seconds (13 secs at home). 
-#
-
-#	k=$fileindex
-#	list+=( "$k" "${ficon[0]}" "${fname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
-#	fileindex=$(($fileindex+1))
-
+for i in $( ls $files); do
+#	buildlist #		57.4 at VBox 	|
+#	buildlist2 #	76 at VBox 		|
+	buildlist3 #	47.5 at VBox 	|
+#	buildlist4 #	100.6 at VBox 	|
+#	buildlist5 #	50.3 at VBox 	|
+#	buildlist6 #	57.2 at VBox 	|
+#	buildlist7 #	43.2 at VBox 	|
 done
 
-TimeFinished=$(date +%s.%N)
-#echo "Time Finished=" $TimeFinished
-TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
-echo "File Access Time= " $TimeDiff
+performance stop
 #exit 0
-
-#k=1
-
-#while [[ "$k" -le "$comindex" ]]; do
-##	echo $k " -- " ${desktopfiles[$k]} " -- " ${commands[$k]} " -- " ${filecomment[$k]} " -- " ${fmn[$k]}
-#	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
-#	k=$(($k + 1))
-#done
-
-
-#echo "list for yad:" "${list[@]}"
 
 yad --list --title="Application Files Browser" --no-markup --width=1200 --height=600 --center --print-column=0 \
 --select-action 'bash -c "yadlistselect %s "' \
@@ -291,7 +345,8 @@ unset list commands desktopfiles filecomment fmn
 fi
 done
 cd $now
- 
+exit
+{ #HowTos 
 # find / -name gnome-mines -type f -executable |egrep -v 'help|icon|locale'
 # if you assign commands in buttons id , then yad list does not exit (unless you press cancel, id 0) but yad selected row is not parsed to external command/script
 # --button="Display":'bash -c "filedisplay %s "' --> This one doesn't work in button, works only with --select-action. Also works on yad --form (using %1, %2, etc)
@@ -351,3 +406,33 @@ cd $now
 # Using multi greps , each assigned to it's array, no ifs, no echos = ~23 seconds.
 # Using multi greps , each assigned to it's array, no ifs, no echos but WITH pipe to awk = ~48 seconds.
 # Using multi arrays and multi direct awks instead of pipes, gives the correct result at 30 seconds.
+
+
+#	Code for manipulating cases that we have more exec commands in one desktop file
+#	fileindex=$(($fileindex + 1))
+#	desktopfiles["$fileindex"]=$i	
+#	filecomment["$fileindex"]=$comment
+#	fmn["$fileindex"]=$mname
+#	ficon["$fileindex"]=$icon	
+#
+#	while IFS= read -r line; do
+#		comindex=$(($comindex + 1))
+##		printf '%s\n' "$line" 	# this prints correctly.
+##		fileindex2=$(($fileindex * 10))
+##		echo "$fileindex2"
+##		echo "# $line" #| yad --progress --pulsate			# this echo prints correctly, but yad progress is not operating 
+#		commands["$comindex"]=$line
+#		if [[ "$comindex" -gt "$fileindex" ]]; then
+##			echo 'comindex greater than fileindex'
+#			fileindex=$(($fileindex + 1))
+#			desktopfiles["$fileindex"]=$i
+#			filecomment["$fileindex"]=$comment
+#			fmn["$fileindex"]=$mname
+#			ficon["$fileindex"]=$icon
+#		fi
+#	done <<< "$executable"
+##echo "command index last value:" $comindex
+##echo "file index last value:" $fileindex
+#	End of Manipulating Code	
+
+} 
