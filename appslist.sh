@@ -11,7 +11,7 @@ files=""
 fileedited=0
 
 function yadlistselect { 
-echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
+#echo "Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
 }
 export -f yadlistselect
@@ -141,21 +141,32 @@ comindex=0
 fileindex=1 #added for the grep method.
 
 for i in $( ls $files); do
-#	executable=$(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
-#	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	executable=$(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
+	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	comment2=$(cat "$i" |grep '^GenericName=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
+	icon=$(cat "$i" |grep '^Icon=' |grep -Po '(?<=Icon=)[ --0-9A-Za-z/.]*')	
+	mname=$(cat "$i" |grep '^Name=' |head -1 |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
+	# this method achieves 9.3 at home
+	k=$fileindex
+	list+=( "$k" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+
+#	executable=$(cat "$i" |grep '^Exec' |awk -F'=' '{print $2}')
+#	comment=$(cat "$i" |grep '^Comment=' |awk -F'=' '{print $2}')
 #	comment2=$(cat "$i" |grep '^GenericName=' |awk -F'=' '{print $2}' )
+#	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
+#	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
+#	# this one goes to 10,3@home
 #		if [[ $comment = "" ]]; then
 #			comment=$comment2
 #		fi	
-#	icon=$(cat "$i" |grep '^Icon=' |awk -F'=' '{print $2}')	
-#	mname=$(cat "$i" |grep '^Name=' |head -1 |awk -F'=' '{print $2}')
-#
+
 #	fileindex=$(($fileindex + 1))
 #	desktopfiles["$fileindex"]=$i	
 #	filecomment["$fileindex"]=$comment
 #	fmn["$fileindex"]=$mname
 #	ficon["$fileindex"]=$icon	
-#
+
 #	while IFS= read -r line; do
 #		comindex=$(($comindex + 1))
 ##		printf '%s\n' "$line" 	# this prints correctly.
@@ -175,6 +186,75 @@ for i in $( ls $files); do
 ##echo "command index last value:" $comindex
 ##echo "file index last value:" $fileindex
 	
+
+#	readarray executable < <(grep -e '^Exec=' $i |awk -F'=' '{print $2}')
+#	readarray comment < <(grep -e '^Comment=' $i |awk -F'=' '{print $2}')
+#	readarray generic < <(grep -e '^Generic Name' $i |awk -F'=' '{print $2}')
+#	readarray fname < <(grep -e '^Name=' $i |awk -F'=' '{print $2}')
+#	readarray ficon < <(grep -e '^Icon=' $i |awk -F'=' '{print $2}')
+	# Multiple readarrays - multiple grep without awk 22-23 sec.
+	# Multiple readarrays - multiple grep WITH awk 44 sec!! (9@home)
+
+#	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i) 
+#	# this single line goes to 2 secs at home
+#	executable=""
+#	comment=""
+#	fname=""
+#	ficon=""
+#	generic=""	
+#	for ii in "${foo[@]}"; do
+#		foo1=$(echo "$ii" |awk -F'=' '{print $1}')
+##		echo $foo1
+#		foo2=$(echo "$ii" |awk -F'=' '{print $2}')
+##		echo $foo2	
+#
+#		case $foo1 in
+#			"Exec") executable=$foo2
+#					#echo "exec=" $foo2
+#					;;
+#			'Comment') comment=$foo2
+#						#echo "comment=" $foo2
+#						;;
+#			'Name') fname=$foo2
+#					#echo "name=" $foo2
+#					;;
+#			'Generic Name') generic=$foo2
+#							#echo "generic=" $foo2
+#							;;
+#			'Icon') ficon=$foo2
+#					#echo "icon=" $foo2
+#					;;
+#		esac
+#	done
+
+#	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
+#	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
+#	fname=$(grep -e 'Name=' <<< "${foo[@]}")
+#	generic=$(grep -e 'Generic Name=' <<< "${foo[@]}")
+#	ficon=$(grep -e 'Icon=' <<< "${foo[@]}")
+	#  Grep at $foo array is slower than grep directly each file (32 seconds - 16 @home)
+
+#	readarray executable < <(awk -F'=' '/^Exec=/{print $2}' $i)
+#	readarray comment < <(awk -F'=' '/^Comment=/{print $2}' $i)
+#	readarray generic < <(awk -F'=' '/^Generic Name=/{print $2}' $i)
+#	readarray fname < <(awk -F'=' '/^Name=/{print $2}' $i)
+#	readarray ficon < <(awk -F'=' '/^Icon=/{print $2}' $i)
+##	echo "Icon=" ${ficon[0]}	
+#	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 seconds (13 secs at home). 
+#
+
+#	k=$fileindex
+#	list+=( "$k" "${ficon[0]}" "${fname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+#	fileindex=$(($fileindex+1))
+
+done
+
+TimeFinished=$(date +%s.%N)
+#echo "Time Finished=" $TimeFinished
+TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
+echo "File Access Time= " $TimeDiff
+#exit 0
+
 #k=1
 
 #while [[ "$k" -le "$comindex" ]]; do
@@ -182,44 +262,6 @@ for i in $( ls $files); do
 #	list+=( "$k" "${ficon[$k]}" "${fmn[$k]}" "${desktopfiles[$k]}" "${commands[$k]}" "${filecomment[$k]}" ) #this sets double quotes in each variable.
 #	k=$(($k + 1))
 #done
-
-#	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e 'Icon=' -e '^Comment=' -e '^Generic Name' $i) 
-	# this one line command needs 5 seconds for 316 desktop files!
-
-#	readarray executable < <(grep -e '^Exec=' $i) #|awk -F'=' '{print $2}')
-#	readarray comment < <(grep -e '^Comment=' $i) #|awk -F'=' '{print $2}')
-#	readarray generic < <(grep -e '^Generic Name' $i) #|awk -F'=' '{print $2}')
-#	readarray fname < <(grep -e '^Name=' $i) #|awk -F'=' '{print $2}')
-#	readarray ficon < <(grep -e '^Icon=' $i) #|awk -F'=' '{print $2}')
-#	# Multiple readarrays - multiple grep without awk need 22-23 sec.
-#	# Multiple readarrays - multiple grep WITH awk need 44 sec!!
-
-#	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
-#	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
-#	name=$(grep -e 'Name=' <<< "${foo[@]}")
-#	generic=$(grep -e 'Generic Name=' <<< "${foo[@]}")
-#	icon=$(grep -e 'Icon=' <<< "${foo[@]}")
-#	#  Grep at $foo array is slower than grep directly each file (32 seconds vs 22 seconds!)
-
-	readarray executable < <(awk -F'=' '/^Exec=/{print $2}' $i)
-	readarray comment < <(awk -F'=' '/^Comment=/{print $2}' $i)
-	readarray generic < <(awk -F'=' '/^Generic Name=/{print $2}' $i)
-	readarray fname < <(awk -F'=' '/^Name=/{print $2}' $i)
-	readarray ficon < <(awk -F'=' '/^Icon=/{print $2}' $i)
-	echo "Icon=" ${ficon[0]}	
-	# With this alternative method (direct awk instead of grep and awk) i get ~ 29 seconds . 
-
-	k=$fileindex
-	list+=( "$k" "${ficon[0]}" "${fname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
-	fileindex=$(($fileindex+1))
-
-done
-
-TimeFinished=$(date +%s.%N)
-#echo "Time Finished=" $TimeFinished
-TimeDiff=$(echo "$TimeFinished - $TimeStarted" | bc -l)
-echo "File Access Required Time= " $TimeDiff
-#exit 0
 
 
 #echo "list for yad:" "${list[@]}"
@@ -302,7 +344,7 @@ cd $now
 # The trick $((var1-var2)) is not working in bash when vars include decimanl points; works only with integers - no decimals . Other shells (like zsh) support this operation.
 
 # Script Run Time Results (SRT) for *.desktop in Vbox (1 cpu - 1.2 GB RAM)
-# Using multiple cat , echos disabled = ~ 61 seconds
+# Using multiple cat , echos disabled = ~ 61 seconds (10 at home)
 # Using grep with many patterns, and one if, no echos = ~73 second
 # Using one grep with many patterns , no ifs, no echos, nothing = ~5 seconds! Bug is that if a pattern is not found, array is messed up.
 # Using one grep - many patterns and just an array print = ~10 seconds.
