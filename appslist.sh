@@ -248,7 +248,8 @@ function buildlist4 {
 
 function buildlist5 {
 	readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' $i) 
-	executable=$(grep -e 'Exec=' <<< "${foo[@]}")	
+	executable=$(grep -e 'Exec=' <<< "${foo[@]}")
+	#echo $executable	
 	comment=$(grep -e 'Comment=' <<< "${foo[@]}")
 	mname=$(grep -e 'Name=' <<< "${foo[@]}")
 	comment2=$(grep -e 'Generic Name=' <<< "${foo[@]}")
@@ -307,13 +308,13 @@ cd $location
 performance start
 
 for i in $( ls $files); do
-#	buildlist #		57.4 at VBox 	|
-#	buildlist2 #	76 at VBox 		|
-	buildlist3 #	47.5 at VBox 	|
-#	buildlist4 #	100.6 at VBox 	|
-#	buildlist5 #	50.3 at VBox 	|
-#	buildlist6 #	57.2 at VBox 	|
-#	buildlist7 #	43.2 at VBox 	|
+#	buildlist #		57.4 at VBox 	| 9,16 at home
+#	buildlist2 #	76 at VBox 		| 11,6 at home
+#	buildlist3 #	47.5 at VBox 	| 8,9 at home
+#	buildlist4 #	100.6 at VBox 	| 31,6 t home
+#	buildlist5 #	50.3 at VBox 	| 18 at home
+#	buildlist6 #	57.2 at VBox 	| 12,5 home
+	buildlist7 #	43.2 at VBox 	| 12,5 home
 done
 
 performance stop
