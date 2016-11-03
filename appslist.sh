@@ -199,7 +199,8 @@ function buildlist3 {
 	readarray -t mname < <(grep -e '^Name=' $i |awk -F'=' '{print $2}')
 	readarray -t icon < <(grep -e '^Icon=' $i |awk -F'=' '{print $2}')
 	# Multiple readarrays - multiple grep without awk 22-23 sec.
-	# Multiple readarrays - multiple grep WITH awk 44 sec!! (9@home)
+	# Multiple readarrays - multiple grep WITH awk 44 sec - 9 at home.
+	# Using egrep and awk instead of grep : 51 sec at VB - ??? at home
 	if [[ $comment = "" ]]; then
 		comment=$comment2
 	fi
@@ -298,6 +299,76 @@ function buildlist7 {
 	fileindex=$(($fileindex+1))
 }
 
+function buildlist8 {
+	readarray -t executable < <(grep "^Exec=" $i |cut -f 2 -d '=')
+	readarray -t comment < <(grep "^Comment=" $i |cut -f 2 -d '=')
+	readarray -t comment2 < <(grep "^Generic Name=" $i |cut -f 2 -d '=')
+	readarray -t mname < <(grep "^Name=" $i |cut -f 2 -d '=')
+	readarray -t icon < <(grep "^Icon=" $i |cut -f 2 -d '=')
+#	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
+	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist9 {
+	executable=$(grep "^Exec=" $i |cut -f 2 -d '=' |head -1)
+	comment=$(grep "^Comment=" $i |cut -f 2 -d '=' |head -1)
+	comment2=$(grep "^Generic Name=" $i |cut -f 2 -d '=' |head -1)
+	mname=$(grep "^Name=" $i |cut -f 2 -d '=' |head -1)
+	icon=$(grep "^Icon=" $i |cut -f 2 -d '=' |head -1)
+#	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
+	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist10 {
+	readarray -t executable < <(grep -Po '(?<=^Exec=)[ --0-9A-Za-z/:space:]*' $i)
+	readarray -t comment < <(grep -Po '(?<=^Comment=)[ --0-9A-Za-z/:space:]*' $i)
+	readarray -t comment2 < <(grep -Po '(?<=^Generic Name=)[ --0-9A-Za-z/:space:]*' $i)
+	readarray -t mname < <(grep -Po '(?<=^Name=)[ --0-9A-Za-z/:space:]*' $i)
+	readarray -t icon < <(grep -Po '(?<=^Icon=)[ --0-9A-Za-z/:space:]*' $i)
+#	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
+	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+}
+
+function buildlist11 {
+	executable=$(grep -m 1 -Po '(?<=^Exec=)[ --0-9A-Za-z/:space:]*' $i )
+	comment=$(grep -m 1 -Po '(?<=^Comment=)[ --0-9A-Za-z/:space:]*' $i )
+	comment2=$(grep -m 1 -Po '(?<=^Generic Name=)[ --0-9A-Za-z/:space:]*' $i)
+	mname=$(grep -m 1 -Po '(?<=^Name=)[ --0-9A-Za-z/:space:]*' $i)
+	icon=$(grep -m 1 -Po '(?<=^Icon=)[ --0-9A-Za-z/:space:]*' $i)
+#	echo "Icon=" ${ficon[0]}	
+	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
+	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	fileindex=$(($fileindex+1))
+	# Mind the -m 1 trick in grep... stops after 1st match !
+}
+
+
 #--------------------------------MAIN PROGRAM---------------------------------------------#
 while [ $stop == "false" ]; do
 clear
@@ -308,13 +379,17 @@ cd $location
 performance start
 
 for i in $( ls $files); do
-#	buildlist #		57.4 at VBox 	| 9,16 at home
-#	buildlist2 #	76 at VBox 		| 11,6 at home
-#	buildlist3 #	47.5 at VBox 	| 8,9 at home
-#	buildlist4 #	100.6 at VBox 	| 31,6 t home
-#	buildlist5 #	50.3 at VBox 	| 18 at home
-#	buildlist6 #	57.2 at VBox 	| 12,5 home
-	buildlist7 #	43.2 at VBox 	| 12,5 home
+#	buildlist #		var = cat + grep + grep 							|57.4 at VBox 	| 9,16 at home
+#	buildlist2 #	var = cat + grep + awk 								|76 at VBox 	| 11,6 at home
+#	buildlist3 #	Readarray var = grep + awk							|47.5 at VBox 	| 8,9 at home
+#	buildlist4 #	readarray = all greps and then var=for i in array	|100.6 at VBox 	| 31,6 at home
+#	buildlist5 #	readarray = all greps and then var=grep array 		|50.3 at VBox 	| 18 at home
+#	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
+#	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
+#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		|
+#	buildlist9 # 	var=grep + cut + head -1							|53 at Vbox		|
+#	buildlist10 #	readarray var = one grep only  						|29.3 at Vbox(!)|
+	buildlist11 #	var=one grep only									|18.5 at Vbox(!)|
 done
 
 performance stop
@@ -435,5 +510,38 @@ exit
 ##echo "command index last value:" $comindex
 ##echo "file index last value:" $fileindex
 #	End of Manipulating Code	
+
+# Super Fast Search Tips:
+
+#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' (this is ~buildlist9)
+#real	0m0.116s --- 0.074 (>/dev/null)
+#user	0m0.012s --- 0.004
+#sys	0m0.064s --- 0.032
+
+#time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}'
+#real	0m0.140s --- 0.109 (>/dev/null)
+#user	0m0.012s --- 0.004
+#sys	0m0.048s --- 0.048
+
+#time awk  "/^Exec=/" /usr/share/applications/*.desktop
+#real	0m0.427s --- 0.124 (>/dev/null)
+#user	0m0.008s --- 0.028
+#sys	0m0.096s --- 0.048
+
+#time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*'
+#real	0m0.239s --- 0.193 (>/dev/null) 
+
+#time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*'
+#real	0m0.129s --- 0.095 (>/dev/null) 
+
+#time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=')
+#real	0m0.141s
+
+
+# Strange Speed Behaviors in VBox
+#time grep  "^Exec=" /usr/share/applications/*.desktop  --> real 0.224
+#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' --> real 0.150 (ps: using "cut -f 1-2" actually disables cut)
+
+#more about cut : http://www.computerhope.com/unix/ucut.htm
 
 } 
