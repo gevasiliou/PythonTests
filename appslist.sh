@@ -386,10 +386,10 @@ for i in $( ls $files); do
 #	buildlist5 #	readarray = all greps and then var=grep array 		|50.3 at VBox 	| 18 at home
 #	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
 #	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
-#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		|
-#	buildlist9 # 	var=grep + cut + head -1							|53 at Vbox		|
-#	buildlist10 #	readarray var = one grep only  						|29.3 at Vbox(!)|
-	buildlist11 #	var=one grep only									|18.5 at Vbox(!)|
+#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		|6.9
+#	buildlist9 # 	var=grep + cut + head -1							|53 at Vbox		|8.8
+#	buildlist10 #	readarray var = one grep only  						|29.3 at Vbox(!)|11
+	buildlist11 #	var=one grep only									|18.5 at Vbox(!)|12
 done
 
 performance stop
