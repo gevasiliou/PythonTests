@@ -165,6 +165,7 @@ fi
 function buildlist {
 	readarray -t executable < <(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
+	#;echo $comment;exit
 	comment2=$(cat "$i" |grep '^Generic Name=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
 	icon=$(cat "$i" |grep '^Icon=' |grep -Po '(?<=Icon=)[ --0-9A-Za-z/.]*')	
 	readarray -t mname < <(cat "$i" |grep '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
@@ -317,11 +318,11 @@ function buildlist8 {
 }
 
 function buildlist9 {
-	executable=$(grep "^Exec=" $i |cut -f 2 -d '=' |head -1)
-	comment=$(grep "^Comment=" $i |cut -f 2 -d '=' |head -1)
-	comment2=$(grep "^Generic Name=" $i |cut -f 2 -d '=' |head -1)
-	mname=$(grep "^Name=" $i |cut -f 2 -d '=' |head -1)
-	icon=$(grep "^Icon=" $i |cut -f 2 -d '=' |head -1)
+	executable=$(grep -m 1 "^Exec=" $i |cut -f 2 -d '=')
+	comment=$(grep -m 1 "^Comment=" $i |cut -f 2 -d '=')
+	comment2=$(grep -m 1 "^Generic Name=" $i |cut -f 2 -d '=')
+	mname=$(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
+	icon=$(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
 #	echo "Icon=" ${ficon[0]}	
 	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
 	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
@@ -386,10 +387,10 @@ for i in $( ls $files); do
 #	buildlist5 #	readarray = all greps and then var=grep array 		|50.3 at VBox 	| 18 at home
 #	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
 #	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
-#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		|6.9
-#	buildlist9 # 	var=grep + cut + head -1							|53 at Vbox		|8.8
-#	buildlist10 #	readarray var = one grep only  						|29.3 at Vbox(!)|11
-	buildlist11 #	var=one grep only									|18.5 at Vbox(!)|12
+#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
+	buildlist9 # 	var=grep -m1 + cut 									| at Vbox		| 7.5 at home
+#	buildlist10 #	readarray var = grep -Po only  						|29.3 at Vbox(!)| 11 at home
+#	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
 done
 
 performance stop
@@ -514,33 +515,50 @@ exit
 # Super Fast Search Tips:
 
 #time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' (this is ~buildlist9)
-#real	0m0.116s --- 0.074 (>/dev/null)
+#real	0m0.116s (0.045 home)--- >/dev/null 0.074 (0.045 home)
 #user	0m0.012s --- 0.004
 #sys	0m0.064s --- 0.032
 
 #time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}'
-#real	0m0.140s --- 0.109 (>/dev/null)
+#real	0m0.140s (0.050 home)--- >/dev/null 0.109 (0.050 home)
 #user	0m0.012s --- 0.004
 #sys	0m0.048s --- 0.048
 
 #time awk  "/^Exec=/" /usr/share/applications/*.desktop
-#real	0m0.427s --- 0.124 (>/dev/null)
+#real	0m0.427s (0.098 home)--- >/dev/null 0.124 (0.080 at home)
 #user	0m0.008s --- 0.028
 #sys	0m0.096s --- 0.048
 
 #time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*'
-#real	0m0.239s --- 0.193 (>/dev/null) 
+#real	0m0.239s --- 0.193 (>/dev/null) 0.045 at home with no print
 
 #time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*'
-#real	0m0.129s --- 0.095 (>/dev/null) 
+#real	0m0.129s --- 0.095 (>/dev/null) (0.040 home). At home this commands doesn't print results (grep version 2.26-1 64bit)
 
 #time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=')
-#real	0m0.141s
+#real	0m0.141s 
+# at home i got 0.050 using: 
+#time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]})
+
+
 
 
 # Strange Speed Behaviors in VBox
-#time grep  "^Exec=" /usr/share/applications/*.desktop  --> real 0.224
-#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' --> real 0.150 (ps: using "cut -f 1-2" actually disables cut)
+#time grep  "^Exec=" /usr/share/applications/*.desktop  --> real 0.224 (0.100 home)
+#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' --> real 0.150 (0.100 home)
+#(ps: using "cut -f 1-2" actually disables cut)
+
+#time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*'
+#This prints ok in home
+#real	0m0.246s
+#user	0m0.216s
+#sys	0m0.020s
+
+#time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop 
+#This prints ok at home
+#real	0m0.180s
+#user	0m0.136s
+#sys	0m0.020s
 
 #more about cut : http://www.computerhope.com/unix/ucut.htm
 
