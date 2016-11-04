@@ -369,8 +369,51 @@ function buildlist11 {
 	# Mind the -m 1 trick in grep... stops after 1st match !
 }
 
+function searchtest {
+local f=/home/gv/PythonTests/vblog.log
+rm $f
+
+echo -e "1-{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo \${executable[@]}; } 2>>$f" >>$f
+{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]}; } 2>>$f
+
+echo -e "2-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; } 2>>$f" >>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; } 2>>$f
+
+echo -e "3-{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; } 2>>$f" >>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; } 2>>$f
+
+echo -e "4-{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; } 2>>$f" >>$f
+{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; } 2>>$f
+
+echo -e "5-{ time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f" >>$f
+{ time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
+
+echo -e "6-{ time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f" >>$f
+{ time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
+
+echo -e "7-{ time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo \${executable[@]}) ; } 2>>$f">>$f
+{ time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]}) ; } 2>>$f
+
+echo -e "8-{ time grep  "^Exec=" /usr/share/applications/*.desktop ; } 2>>$f">>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop ; } 2>>$f
+
+echo -e "9-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; } 2>>$f">>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; } 2>>$f
+
+echo -e "10-{ time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f">>$f
+{ time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
+
+echo -e "11-{ time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; } 2>>$f">>$f
+{ time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; } 2>>$f
+
+echo -e "\n\n\n"
+cat $f
+}
+
 
 #--------------------------------MAIN PROGRAM---------------------------------------------#
+searchtest
+exit
 while [ $stop == "false" ]; do
 clear
 if [ $fileedited -eq 0 ]; then
@@ -388,9 +431,9 @@ for i in $( ls $files); do
 #	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
 #	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
 #	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
-	buildlist9 # 	var=grep -m1 + cut 									| at Vbox		| 7.5 at home
+#	buildlist9 # 	var=grep -m1 + cut 									|38.3 at Vbox	| 7.5 at home
 #	buildlist10 #	readarray var = grep -Po only  						|29.3 at Vbox(!)| 11 at home
-#	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
+	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
 done
 
 performance stop
@@ -512,9 +555,10 @@ exit
 ##echo "file index last value:" $fileindex
 #	End of Manipulating Code	
 
-# Super Fast Search Tips:
+# Search Performace:
 
-#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' (this is ~buildlist9)
+#time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' > search.log
+#(this is ~buildlist9)
 #real	0m0.116s (0.045 home)--- >/dev/null 0.074 (0.045 home)
 #user	0m0.012s --- 0.004
 #sys	0m0.064s --- 0.032
@@ -535,13 +579,8 @@ exit
 #time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*'
 #real	0m0.129s --- 0.095 (>/dev/null) (0.040 home). At home this commands doesn't print results (grep version 2.26-1 64bit)
 
-#time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=')
-#real	0m0.141s 
-# at home i got 0.050 using: 
 #time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]})
-
-
-
+#real 0m0.120 (0.050 HOME)
 
 # Strange Speed Behaviors in VBox
 #time grep  "^Exec=" /usr/share/applications/*.desktop  --> real 0.224 (0.100 home)
@@ -550,16 +589,21 @@ exit
 
 #time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*'
 #This prints ok in home
-#real	0m0.246s
-#user	0m0.216s
-#sys	0m0.020s
+#								|with var - no echo	
+#real	0m0.700 (0m0.246s HOME) |0m0.262
+#user	0m0.036	(0m0.216s HOME)	|0m0.072
+#sys	0m0.180 (0m0.020s HOME)	|0m0.120 
 
 #time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop 
 #This prints ok at home
-#real	0m0.180s
-#user	0m0.136s
-#sys	0m0.020s
+#								| with var - no echo
+#real	0m0.500 (0m0.180s HOME) |0m0.158
+#user	0m0.020 (0m0.136s HOME)	|0m0.032
+#sys	0m0.120 (0m0.020s HOME)	|0m0.080
 
 #more about cut : http://www.computerhope.com/unix/ucut.htm
 
+#root@debian:/home/gv/PythonTests# echo $-
+#himBHs
+}
 } 
