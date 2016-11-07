@@ -25,7 +25,7 @@ export -f yadlistselect
 function filedisplay { 
 source $TMPFILE
 filetodisplay=/usr/share/applications/$FILENAME
-yad --title="File Display" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --button="Go Back":0
+yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0
 }
 export -f filedisplay
 
@@ -34,29 +34,30 @@ function fileedit
 source $TMPFILE
 #echo "Received =" $0 " , " $1 " , " $2 " , " $3
 filetoedit=/usr/share/applications/$FILENAME
-abb=$(yad --title="Edit Files" --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
+abb=$(yad --title="Edit File: $filetoedit" --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
 --button=gtk-save:0 --button=gtk-save-as:10 --button="Go Back":1 --button=gtk-quit:3)
 fileaction=$?
-#echo "abb:" $abb
 abbsaveas=$abb
 
 case $fileaction in
 0)  
 	counter=1
-#	echo "Save Selected"
-	while IFS= read -r linenew; do
-		if [ $counter -eq 1 ]; then
-			echo $linenew > $filetoedit
-		else
-			echo $linenew >> $filetoedit 
-		fi
-	counter=$(($counter +1))
-	done <<< "$abb"
+	yad --title="Confirm Save" --center --text="Write Changes to $filetoedit?"
+	retsave=$?
+	if [[ $retsave -eq 0 ]]; then
+		while IFS= read -r linenew; do
+			if [ $counter -eq 1 ]; then
+				echo $linenew > $filetoedit
+			else
+				echo $linenew >> $filetoedit 
+			fi
+		counter=$(($counter +1))
+		done <<< "$abb"
+	fi
 	;;
 3) yad --text="Are you sure?"
 	ret2=$?
 	if [ $ret2 -eq 0 ]; then exit 3; fi # this exits completely the whole script.
-	#exit 3
 	;;
 10) 
 #	echo "Save As Selected"
@@ -383,88 +384,52 @@ function buildlist11 {
 }
 
 function buildlist12 {
+	IFS=$'\n'
 	readarray -t fi < <(printf '%s\n' $i)
-#	IFS=$'\n' printarray ${fi[@]}
-#	unset IFS
-#---------------------------------------------------------------------------------------#
 	readarray -t executable < <(grep  -m 1 '^Exec=' $i)
 	readarray -t noexecutable < <(grep  -L '^Exec=' $i)
-	IFS=$'\n'
+	readarray -t comment < <(grep -m 1 "^Comment=" $i )
+	readarray -t nocomment < <(grep -L "^Comment=" $i )	
+	readarray -t comment2 < <(grep -m 1 "^GenericName=" $i )
+	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
+	readarray -t mname < <(grep -m 1 "^Name=" $i )
+	readarray -t nomname < <(grep -L "^Name=" $i )	
+	readarray -t icon < <(grep -m 1 "^Icon=" $i )
+	readarray -t noicon < <(grep -L "^Icon=" $i )	
+
 	for items1 in ${noexecutable[@]}; do
 		executable+=($(echo "$items1"":Exec=None"))
 	done
-#	executable+=("$(grep -L '^Exec=' $i)"":Exec=None") # THis works, but only for 1 entry
-#	IFS=$'\n' 
-	sortexecutable=($(sort <<<"${executable[*]}"))
-#*	trimexecutable=($(grep  -Po '(?<=Exec=)[ --0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
-	trimexecutable=($(printf '%s\n' ${sortexecutable[@]} |cut -f 2 -d '=' ))
-#***	trimexecutable=($(cut -f 2 -d '=' <<<"${sortexecutable[*]}"))
-#	printarray ${trimexecutable[@]}
-#	unset IFS
 
-#---------------------------------------------------------------------------------------#
-	readarray -t comment < <(grep -m 1 "^Comment=" $i )
-	readarray -t nocomment < <(grep -L "^Comment=" $i )	
-#	IFS=$'\n'
 	for items2 in ${nocomment[@]}; do
 		comment+=($(echo "$items2"":Comment=None"))
 	done
-#	IFS=$'\n' 
-	sortcomment=($(sort <<<"${comment[*]}"))
-#*	trimcomment=($(grep -Po '(?<=Comment=)[ --0-9A-Za-z/]*' <<<"${sortcomment[*]}"))
-	trimcomment=($(printf '%s\n' ${sortcomment[@]} |cut -f 2 -d '=' ))
-#***	trimcomment=($(cut -f 2 -d '=' <<<"${sortcomment[*]}"))
-
-#	printarray ${trimcomment[@]}
-#	unset IFS
-#---------------------------------------------------------------------------------------#
-	readarray -t comment2 < <(grep -m 1 "^GenericName=" $i )
-	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
-#	IFS=$'\n'
 	for items3 in ${nocomment2[@]}; do
 		comment2+=($(echo "$items3"":GenericName=None"))
 	done
-#	IFS=$'\n' 
-	sortcomment2=($(sort <<<"${comment2[*]}"))
-#*	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
-	trimcomment2=($(printf '%s\n' ${sortcomment2[@]} |cut -f 2 -d '=' ))
-#***	trimcomment2=($(cut -f 2 -d '=' <<<"${sortcomment2[*]}"))
-#	printarray ${trimcomment2[@]}
-#	unset IFS
 
-#---------------------------------------------------------------------------------------#
-	readarray -t mname < <(grep -m 1 "^Name=" $i )
-	readarray -t nomname < <(grep -L "^Name=" $i )	
-#	IFS=$'\n'
 	for items4 in ${nomname[@]}; do
 		mname+=($(echo "$items4"":Name=None"))
 	done
-#	IFS=$'\n' 
-	sortmname=($(sort <<<"${mname[*]}"))
-#*	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
-	trimmname=($(printf '%s\n' ${sortmname[@]} |cut -f 2 -d '=' ))
-#***	trimmname=($(cut -f 2 -d '=' <<<"${sortmname[*]}"))
-#	printarray ${trimmname[@]}
-#	unset IFS
 
-#---------------------------------------------------------------------------------------#
-	readarray -t icon < <(grep -m 1 "^Icon=" $i )
-	readarray -t noicon < <(grep -L "^Icon=" $i )	
-#	IFS=$'\n'
 	for items5 in ${noicon[@]}; do
 		icon+=($(echo "$items5"":Icon=None"))
 	done
-#	IFS=$'\n' 
-	sorticon=($(sort <<<"${icon[*]}"))
-#*	trimicon=($(grep -Po '(?<=Icon=)[ --0-9A-Za-z/]*' <<<"${sorticon[*]}"))
-	trimicon=($(printf '%s\n' ${sorticon[@]} |cut -f 2 -d '=' ))
-#***	trimicon=($(cut -f 2 -d '=' <<<"${sorticon[*]}"))
 
-#	printarray ${trimicon[@]}
+	sortexecutable=($(sort <<<"${executable[*]}"))
+	sortcomment=($(sort <<<"${comment[*]}"))
+	sortcomment2=($(sort <<<"${comment2[*]}"))
+	sortmname=($(sort <<<"${mname[*]}"))
+	sorticon=($(sort <<<"${icon[*]}"))
+
+	trimexecutable=($(grep  -Po '(?<=Exec=)[ --0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
+	trimcomment=($(grep -Po '(?<=Comment=)[ --0-9A-Za-z/]*' <<<"${sortcomment[*]}"))
+	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
+	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
+	trimicon=($(grep -Po '(?<=Icon=)[ --0-9A-Za-z/]*' <<<"${sorticon[*]}"))
+
 	unset IFS
 
-#---------------------------------------------------------------------------------------#
-	
 	ae=0
 	for aeitem in ${fi[@]};do
 		if [[ ${trimcomment[ae]} = "None" ]]; then
@@ -600,7 +565,7 @@ performance start
 #	buildlist9 # 	var=grep -m1 + cut 									|38.3 at Vbox	| 7.5 at home
 #	buildlist10 #	readarray var = grep -Po only  						|29.3 at Vbox(!)| 11 at home
 #	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
-	i=$files;buildlist12
+	i=$files;buildlist12	#grep all files at once						|5 at VBox		| 1.8 at home
 #done
 
 performance stop
