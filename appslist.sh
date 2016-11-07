@@ -163,12 +163,12 @@ fi
 }
 
 function buildlist {
-	readarray -t executable < <(cat "$i" |grep '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
+	executable=$(cat "$i" |grep -m 1 '^Exec' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*')
 	comment=$(cat "$i" |grep '^Comment=' |grep -Po '(?<=Comment=)[ --0-9A-Za-z/.]*')
 	#;echo $comment;exit
 	comment2=$(cat "$i" |grep '^Generic Name=' |grep -Po '(?<=Generic Name=)[ --0-9A-Za-z/.]*')
 	icon=$(cat "$i" |grep '^Icon=' |grep -Po '(?<=Icon=)[ --0-9A-Za-z/.]*')	
-	readarray -t mname < <(cat "$i" |grep '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
+	mname=$(cat "$i" |grep -m 1 '^Name=' |grep -Po '(?<=Name=)[ --0-9A-Za-z/.]*')
 	# this method achieves 9.3 at home but goes to 60 secs at VBox!
 		if [[ $comment = "" ]]; then
 			comment=$comment2
@@ -301,20 +301,34 @@ function buildlist7 {
 }
 
 function buildlist8 {
-	readarray -t executable < <(grep "^Exec=" $i |cut -f 2 -d '=')
-	readarray -t comment < <(grep "^Comment=" $i |cut -f 2 -d '=')
-	readarray -t comment2 < <(grep "^Generic Name=" $i |cut -f 2 -d '=')
-	readarray -t mname < <(grep "^Name=" $i |cut -f 2 -d '=')
-	readarray -t icon < <(grep "^Icon=" $i |cut -f 2 -d '=')
-#	echo "Icon=" ${ficon[0]}	
-	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
-	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
-	if [[ $comment = "" ]]; then
-		comment=$comment2
-	fi
-	
-	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+	readarray -t fi < <(printf '%s\n' $i)
+	#exit
+	readarray -t executable < <(grep -m 1 "^Exec=" $i |cut -f 2 -d '=')
+	readarray -t comment < <(grep -m 1 "^Comment=" $i |cut -f 2 -d '=')
+	readarray -t comment2 < <(grep -m 1 "^Generic Name=" $i |cut -f 2 -d '=')
+	readarray -t mname < <(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
+	readarray -t icon < <(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
+	ae=0
+	for aeitem in ${fi[@]};do
+	list+=( "$fileindex" "${icon[$ae]}" "${mname[$ae]}" "${fi[$ae]}" "${executable[$ae]}" "${comment[$ae]}" ) #this sets double quotes in each variable.
 	fileindex=$(($fileindex+1))
+	ae=$(($ae+1))
+	done
+
+#	readarray -t executable < <(grep -m 1 "^Exec=" $i |cut -f 2 -d '=')
+#	readarray -t comment < <(grep -m 1 "^Comment=" $i |cut -f 2 -d '=')
+#	readarray -t comment2 < <(grep -m 1 "^Generic Name=" $i |cut -f 2 -d '=')
+#	readarray -t mname < <(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
+#	readarray -t icon < <(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
+#	echo "Icon=" ${ficon[0]}	
+#	if [[ $comment = "" ]]; then
+#		comment=$comment2
+#	fi
+#	
+#	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
+#	fileindex=$(($fileindex+1))
+
+
 }
 
 function buildlist9 {
@@ -324,8 +338,7 @@ function buildlist9 {
 	mname=$(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
 	icon=$(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
 #	echo "Icon=" ${ficon[0]}	
-	# With this alternative method (direct awk instead of grep pipe awk) i get ~ 29 sec VBox - 13 secs at home. 
-	# It is strange that this method works much faster than cat + grep in Vbox (60secs), but in home  cat+grep works better (9 secs)
+
 	if [[ $comment = "" ]]; then
 		comment=$comment2
 	fi
@@ -369,51 +382,201 @@ function buildlist11 {
 	# Mind the -m 1 trick in grep... stops after 1st match !
 }
 
+function buildlist12 {
+	readarray -t fi < <(printf '%s\n' $i)
+#	IFS=$'\n' printarray ${fi[@]}
+#	unset IFS
+#---------------------------------------------------------------------------------------#
+	readarray -t executable < <(grep  -m 1 '^Exec=' $i)
+	readarray -t noexecutable < <(grep  -L '^Exec=' $i)
+	IFS=$'\n'
+	for items1 in ${noexecutable[@]}; do
+		executable+=($(echo "$items1"":Exec=None"))
+	done
+#	executable+=("$(grep -L '^Exec=' $i)"":Exec=None") # THis works, but only for 1 entry
+#	IFS=$'\n' 
+	sortexecutable=($(sort <<<"${executable[*]}"))
+#*	trimexecutable=($(grep  -Po '(?<=Exec=)[ --0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
+	trimexecutable=($(printf '%s\n' ${sortexecutable[@]} |cut -f 2 -d '=' ))
+#***	trimexecutable=($(cut -f 2 -d '=' <<<"${sortexecutable[*]}"))
+#	printarray ${trimexecutable[@]}
+#	unset IFS
+
+#---------------------------------------------------------------------------------------#
+	readarray -t comment < <(grep -m 1 "^Comment=" $i )
+	readarray -t nocomment < <(grep -L "^Comment=" $i )	
+#	IFS=$'\n'
+	for items2 in ${nocomment[@]}; do
+		comment+=($(echo "$items2"":Comment=None"))
+	done
+#	IFS=$'\n' 
+	sortcomment=($(sort <<<"${comment[*]}"))
+#*	trimcomment=($(grep -Po '(?<=Comment=)[ --0-9A-Za-z/]*' <<<"${sortcomment[*]}"))
+	trimcomment=($(printf '%s\n' ${sortcomment[@]} |cut -f 2 -d '=' ))
+#***	trimcomment=($(cut -f 2 -d '=' <<<"${sortcomment[*]}"))
+
+#	printarray ${trimcomment[@]}
+#	unset IFS
+#---------------------------------------------------------------------------------------#
+	readarray -t comment2 < <(grep -m 1 "^GenericName=" $i )
+	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
+#	IFS=$'\n'
+	for items3 in ${nocomment2[@]}; do
+		comment2+=($(echo "$items3"":GenericName=None"))
+	done
+#	IFS=$'\n' 
+	sortcomment2=($(sort <<<"${comment2[*]}"))
+#*	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
+	trimcomment2=($(printf '%s\n' ${sortcomment2[@]} |cut -f 2 -d '=' ))
+#***	trimcomment2=($(cut -f 2 -d '=' <<<"${sortcomment2[*]}"))
+#	printarray ${trimcomment2[@]}
+#	unset IFS
+
+#---------------------------------------------------------------------------------------#
+	readarray -t mname < <(grep -m 1 "^Name=" $i )
+	readarray -t nomname < <(grep -L "^Name=" $i )	
+#	IFS=$'\n'
+	for items4 in ${nomname[@]}; do
+		mname+=($(echo "$items4"":Name=None"))
+	done
+#	IFS=$'\n' 
+	sortmname=($(sort <<<"${mname[*]}"))
+#*	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
+	trimmname=($(printf '%s\n' ${sortmname[@]} |cut -f 2 -d '=' ))
+#***	trimmname=($(cut -f 2 -d '=' <<<"${sortmname[*]}"))
+#	printarray ${trimmname[@]}
+#	unset IFS
+
+#---------------------------------------------------------------------------------------#
+	readarray -t icon < <(grep -m 1 "^Icon=" $i )
+	readarray -t noicon < <(grep -L "^Icon=" $i )	
+#	IFS=$'\n'
+	for items5 in ${noicon[@]}; do
+		icon+=($(echo "$items5"":Icon=None"))
+	done
+#	IFS=$'\n' 
+	sorticon=($(sort <<<"${icon[*]}"))
+#*	trimicon=($(grep -Po '(?<=Icon=)[ --0-9A-Za-z/]*' <<<"${sorticon[*]}"))
+	trimicon=($(printf '%s\n' ${sorticon[@]} |cut -f 2 -d '=' ))
+#***	trimicon=($(cut -f 2 -d '=' <<<"${sorticon[*]}"))
+
+#	printarray ${trimicon[@]}
+	unset IFS
+
+#---------------------------------------------------------------------------------------#
+	
+	ae=0
+	for aeitem in ${fi[@]};do
+		if [[ ${trimcomment[ae]} = "None" ]]; then
+			trimcomment[ae]=${trimcomment2[ae]}
+		fi
+		list+=( "$fileindex" "${trimicon[$ae]}" "${trimmname[$ae]}" "${fi[$ae]}" "${trimexecutable[$ae]}" "${trimcomment[$ae]}" ) #this sets double quotes in each variable.
+		fileindex=$(($fileindex+1))
+		ae=$(($ae+1))
+	done
+}
+
+
 function searchtest {
-local f=/home/gv/PythonTests/vblog.log
+clear
+local f=/home/gv/Desktop/PythonTests/toshlog.log
 rm $f
 
-echo -e "1-{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo \${executable[@]}; } 2>>$f" >>$f
-{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]}; } 2>>$f
 
-echo -e "2-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; } 2>>$f" >>$f
-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; } 2>>$f
+local textbtn=0
+local autorun=0
+local textsel=0
+while [[ $textbtn -eq 0 ]];do
 
-echo -e "3-{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; } 2>>$f" >>$f
-{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; } 2>>$f
+if [[ $autorun -eq 0 ]]; then 
+textsel=$(yad --entry --entry-text "Select")
+textbtn=$?
+fi
 
-echo -e "4-{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; } 2>>$f" >>$f
-{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; } 2>>$f
-
-echo -e "5-{ time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f" >>$f
+case $textsel in
+1)
+echo -e "1-{ time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; }" >>$f
 { time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
-
-echo -e "6-{ time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f" >>$f
+;;
+2)
+echo -e "2-{ time executable=\$(cat /usr/share/applications/*.desktop |grep '^Exec' |awk -F'=' '{print $2}'); }">>$f
+{ time executable=$(cat /usr/share/applications/*.desktop |grep '^Exec' |awk -F'=' '{print $2}') ; } 2>>$f
+;;
+3)
+echo -e "3-{ time readarray -t executable < <(grep -e '^Exec=' /usr/share/applications/*.desktop |awk -F'=' '{print $2}') ; }">>$f
+{ time readarray -t executable < <(grep -e '^Exec=' /usr/share/applications/*.desktop |awk -F'=' '{print $2}') ; } 2>>$f
+;;
+4) echo "Select Something Else please";;
+5)
+echo -e "5-{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable=\$(grep -e 'Exec=' <<< "\${foo[@]}") ; }">>$f
+{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable=$(grep -e 'Exec=' <<< "${foo[@]}") ; } 2>>$f
+;;
+6)
+echo -e "6-{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable=$(echo "\${foo[@]}" |awk -F'=' '/Exec=/{print $2}') ; }" >>$f
+{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable=$(echo "${foo[@]}" |awk -F'=' '/Exec=/{print $2}') ; } 2>>$f
+;;
+7)
+echo -e "7-{ time readarray -t executable < <(awk -F'=' '/^Exec=/{print $2}' /usr/share/applications/*.desktop) ; }">>$f
+{ time readarray -t executable < <(awk -F'=' '/^Exec=/{print $2}' /usr/share/applications/*.desktop) ; } 2>>$f
+;;
+8)
+echo -e "8-{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=') ; }" >>$f
+{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=') ; } 2>>$f
+;;
+9)
+echo -e "9-{ time grep  \"^Exec=\" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; }" >>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=' ; } 2>>$f
+;;
+10)
+echo -e "10-{ time readarray -t executable < <(grep -Po '(?<=^Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop) ; }" >>$f
+{ time readarray -t executable < <(grep -Po '(?<=^Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop) ; } 2>>$f
+;;
+11) 
+echo -e "11-{ time grep -m 1 -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; }">>$f
+{ time grep -m 1 -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; } 2>>$f
+;;
+12)
+echo -e "12-{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; }" >>$f
+{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; } 2>>$f
+;;
+13)
+echo -e "13-{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; }" >>$f
+{ time awk  "/^Exec=/" /usr/share/applications/*.desktop ; } 2>>$f
+;;
+14)
+echo -e "14-{ time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; }" >>$f
 { time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
-
-echo -e "7-{ time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo \${executable[@]}) ; } 2>>$f">>$f
-{ time (readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=');echo ${executable[@]}) ; } 2>>$f
-
-echo -e "8-{ time grep  "^Exec=" /usr/share/applications/*.desktop ; } 2>>$f">>$f
+;;
+15)
+echo -e "15-{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=') ; }">>$f
+{ time readarray -t executable < <(grep "^Exec=" /usr/share/applications/*.desktop |cut -f 2 -d '=') ; } 2>>$f
+;;
+16)
+echo -e "16-{ time grep  "^Exec=" /usr/share/applications/*.desktop ; }">>$f
 { time grep  "^Exec=" /usr/share/applications/*.desktop ; } 2>>$f
-
-echo -e "9-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; } 2>>$f">>$f
+;;
+17)
+echo -e "17-{ time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; }">>$f
 { time grep  "^Exec=" /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; } 2>>$f
-
-echo -e "10-{ time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f">>$f
+;;
+18)
+echo -e "18-{ time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; }">>$f
 { time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; } 2>>$f
+;;
 
-echo -e "11-{ time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; } 2>>$f">>$f
-{ time grep -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; } 2>>$f
+19) textbtn=1;;
+
+esac
 
 echo -e "\n\n\n"
 cat $f
+done
 }
 
 
 #--------------------------------MAIN PROGRAM---------------------------------------------#
-searchtest
-exit
+#searchtest
+#exit
 while [ $stop == "false" ]; do
 clear
 if [ $fileedited -eq 0 ]; then
@@ -422,7 +585,10 @@ fi
 cd $location
 performance start
 
-for i in $( ls $files); do
+
+#for i in $(ls $files); do
+
+##for i in ./$files; do #this also works fine
 #	buildlist #		var = cat + grep + grep 							|57.4 at VBox 	| 9,16 at home
 #	buildlist2 #	var = cat + grep + awk 								|76 at VBox 	| 11,6 at home
 #	buildlist3 #	Readarray var = grep + awk							|47.5 at VBox 	| 8,9 at home
@@ -430,11 +596,12 @@ for i in $( ls $files); do
 #	buildlist5 #	readarray = all greps and then var=grep array 		|50.3 at VBox 	| 18 at home
 #	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
 #	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
-#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
+#*	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
 #	buildlist9 # 	var=grep -m1 + cut 									|38.3 at Vbox	| 7.5 at home
 #	buildlist10 #	readarray var = grep -Po only  						|29.3 at Vbox(!)| 11 at home
-	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
-done
+#	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
+	i=$files;buildlist12
+#done
 
 performance stop
 #exit 0

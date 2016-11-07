@@ -1,0 +1,92 @@
+cut -f 2 -d '=' /usr/share/applications/*.desktop ==> Chaos . gets everything. delimeter can not be Exec=, only single char
+
+8-{ time readarray -t executable < <(grep ^Exec= /usr/share/applications/*.desktop |cut -f 2 -d '=') ; }
+real	0m0.031s
+user	0m0.008s
+sys	0m0.012s
+
+2-{ time executable=$(cat /usr/share/applications/*.desktop |grep '^Exec' |awk -F'=' '{print $2}'); }
+real	0m0.035s
+user	0m0.008s
+sys	0m0.008s
+
+
+1-{ time cat /usr/share/applications/*.desktop |grep '^Exec=' |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; }
+real	0m0.037s
+user	0m0.008s
+sys	0m0.020s
+
+9-{ time grep  ^Exec= /usr/share/applications/*.desktop |cut -f 2 -d '=' ; }
+real	0m0.040s
+user	0m0.012s
+sys	0m0.008s
+
+
+15-{ time readarray -t executable < <(grep ^Exec= /usr/share/applications/*.desktop |cut -f 2 -d '=') ; }
+real	0m0.037s
+user	0m0.012s
+sys	0m0.008s
+
+14-{ time grep '^Exec=' /usr/share/applications/*.desktop |grep -Po '(?<=Exec=)[ --0-9A-Za-z/]*' ; }
+real	0m0.039s
+user	0m0.012s
+sys	0m0.008s
+
+
+17-{ time grep  ^Exec= /usr/share/applications/*.desktop |cut -f 1-2 -d '=' ; }
+real	0m0.043s
+user	0m0.012s
+sys	0m0.012s
+
+16-{ time grep  "^Exec=" /usr/share/applications/*.desktop ; }
+real	0m0.056s
+user	0m0.016s
+sys	0m0.008s
+
+3-{ time readarray -t executable < <(grep -e '^Exec=' /usr/share/applications/*.desktop |awk -F'=' '{print }') ; }
+real	0m0.043s
+user	0m0.020s
+sys	0m0.004s
+
+5-{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable=$(grep -e 'Exec=' <<< "${foo[@]}") ; }
+real	0m0.074s
+user	0m0.020s
+sys	0m0.036s
+
+6-{ time readarray foo < <(grep -e '^Exec=' -e '^Name=' -e '^Icon=' -e '^Comment=' -e '^Generic Name=' /usr/share/applications/*.desktop);executable= ; }
+real	0m0.070s
+user	0m0.032s
+sys	0m0.028s
+
+7-{ time readarray -t executable < <(awk -F'=' '/^Exec=/{print }' /usr/share/applications/*.desktop) ; }
+real	0m0.106s
+user	0m0.052s
+sys	0m0.012s
+
+10-{ time readarray -t executable < <(grep -Po '(?<=^Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop) ; }
+real	0m0.159s
+user	0m0.132s
+sys	0m0.016s
+
+11-{ time grep -m 1 -Po '(?<=Exec=)[ --0-9A-Za-z/:space:]*' /usr/share/applications/*.desktop ; }
+real	0m0.137s
+user	0m0.076s
+sys	0m0.016s
+
+12-{ time grep  "^Exec=" /usr/share/applications/*.desktop |awk -F'=' '{print $2}' ; }
+real	0m0.048s
+user	0m0.012s
+sys	0m0.012s
+
+13-{ time awk  /^Exec=/ /usr/share/applications/*.desktop ; }
+real	0m0.097s
+user	0m0.056s
+sys	0m0.012s
+
+
+
+
+18-{ time cat /usr/share/applications/*.desktop |grep -Po '(?<=^Exec=)[ --0-9A-Za-z/]*' ; }
+real	0m0.308s
+user	0m0.188s
+sys	0m0.020s
