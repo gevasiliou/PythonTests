@@ -25,7 +25,7 @@ export -f yadlistselect
 function filedisplay { 
 source $TMPFILE
 filetodisplay=/usr/share/applications/$FILENAME
-yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0
+ftd=$(yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0)
 }
 export -f filedisplay
 
@@ -387,15 +387,16 @@ function buildlist12 {
 	IFS=$'\n'
 	readarray -t fi < <(printf '%s\n' $i)
 	readarray -t executable < <(grep  -m 1 '^Exec=' $i)
+#	printarray ${executable[@]}
 	readarray -t noexecutable < <(grep  -L '^Exec=' $i)
 	readarray -t comment < <(grep -m 1 "^Comment=" $i )
-	readarray -t nocomment < <(grep -L "^Comment=" $i )	
+	readarray -t nocomment < <(grep -L "^Comment=" $i )
 	readarray -t comment2 < <(grep -m 1 "^GenericName=" $i )
 	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
 	readarray -t mname < <(grep -m 1 "^Name=" $i )
-	readarray -t nomname < <(grep -L "^Name=" $i )	
+	readarray -t nomname < <(grep -L "^Name=" $i )
 	readarray -t icon < <(grep -m 1 "^Icon=" $i )
-	readarray -t noicon < <(grep -L "^Icon=" $i )	
+	readarray -t noicon < <(grep -L "^Icon=" $i )
 
 	for items1 in ${noexecutable[@]}; do
 		executable+=($(echo "$items1"":Exec=None"))
@@ -427,7 +428,8 @@ function buildlist12 {
 	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
 	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
 	trimicon=($(grep -Po '(?<=Icon=)[ --0-9A-Za-z/]*' <<<"${sorticon[*]}"))
-
+	
+	
 	unset IFS
 
 	ae=0
