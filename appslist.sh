@@ -24,7 +24,7 @@ export -f yadlistselect
 
 function filedisplay { 
 source $TMPFILE
-filetodisplay=/usr/share/applications/$FILENAME
+filetodisplay="$FILENAME"
 ftd=$(yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0)
 }
 export -f filedisplay
@@ -33,7 +33,7 @@ function fileedit
 { 
 source $TMPFILE
 #echo "Received =" $0 " , " $1 " , " $2 " , " $3
-filetoedit=/usr/share/applications/$FILENAME
+filetoedit=$FILENAME
 abb=$(yad --title="Edit File: $filetoedit" --width=800 --height=500 --center --text-info --filename=$filetoedit --wrap --editable \
 --button=gtk-save:0 --button=gtk-save-as:10 --button="Go Back":1 --button=gtk-quit:3)
 fileaction=$?
@@ -112,10 +112,12 @@ function selectfiles
 {
 ret2=1
 ret=1
+#startingdir="/usr/share/applications/"
+startingdir="/home/gv/Desktop/PythonTests/appsfiles/"
 while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
 	selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
 		--date-format="%Y-%m-%d" \
-		--field="Location":MDIR "/usr/share/applications/" --field="Filename" "gnome-m*.desktop" )
+		--field="Location":MDIR "$startingdir" --field="Filename" "g*.desktop" )
 	ret=$?
 	location=`echo $selections | awk -F',' '{print $1}'`  
 	files=`echo $selections | awk -F',' '{print $2}'`  
@@ -302,34 +304,18 @@ function buildlist7 {
 }
 
 function buildlist8 {
-	readarray -t fi < <(printf '%s\n' $i)
-	#exit
 	readarray -t executable < <(grep -m 1 "^Exec=" $i |cut -f 2 -d '=')
 	readarray -t comment < <(grep -m 1 "^Comment=" $i |cut -f 2 -d '=')
 	readarray -t comment2 < <(grep -m 1 "^Generic Name=" $i |cut -f 2 -d '=')
 	readarray -t mname < <(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
 	readarray -t icon < <(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
-	ae=0
-	for aeitem in ${fi[@]};do
-	list+=( "$fileindex" "${icon[$ae]}" "${mname[$ae]}" "${fi[$ae]}" "${executable[$ae]}" "${comment[$ae]}" ) #this sets double quotes in each variable.
+	#echo "Icon=" ${ficon[0]}	
+	if [[ $comment = "" ]]; then
+		comment=$comment2
+	fi
+	
+	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
 	fileindex=$(($fileindex+1))
-	ae=$(($ae+1))
-	done
-
-#	readarray -t executable < <(grep -m 1 "^Exec=" $i |cut -f 2 -d '=')
-#	readarray -t comment < <(grep -m 1 "^Comment=" $i |cut -f 2 -d '=')
-#	readarray -t comment2 < <(grep -m 1 "^Generic Name=" $i |cut -f 2 -d '=')
-#	readarray -t mname < <(grep -m 1 "^Name=" $i |cut -f 2 -d '=')
-#	readarray -t icon < <(grep -m 1 "^Icon=" $i |cut -f 2 -d '=')
-#	echo "Icon=" ${ficon[0]}	
-#	if [[ $comment = "" ]]; then
-#		comment=$comment2
-#	fi
-#	
-#	list+=( "$fileindex" "${icon[0]}" "${mname[0]}" "$i" "${executable[0]}" "${comment[0]}" ) #this sets double quotes in each variable.
-#	fileindex=$(($fileindex+1))
-
-
 }
 
 function buildlist9 {
@@ -387,17 +373,17 @@ function buildlist12 {
 	IFS=$'\n'
 	readarray -t fi < <(printf '%s\n' $i)
 	readarray -t executable < <(grep  -m 1 '^Exec=' $i)
-#	printarray ${executable[@]}
 	readarray -t noexecutable < <(grep  -L '^Exec=' $i)
 	readarray -t comment < <(grep -m 1 "^Comment=" $i )
 	readarray -t nocomment < <(grep -L "^Comment=" $i )
 	readarray -t comment2 < <(grep -m 1 "^GenericName=" $i )
-	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
+#a	readarray -t nocomment2 < <(grep -L "^GenericName=" $i )
 	readarray -t mname < <(grep -m 1 "^Name=" $i )
 	readarray -t nomname < <(grep -L "^Name=" $i )
 	readarray -t icon < <(grep -m 1 "^Icon=" $i )
 	readarray -t noicon < <(grep -L "^Icon=" $i )
-
+	#printarray ${nocomment[@]} #;exit
+	printf "%s\n" "NoExec Items"
 	for items1 in ${noexecutable[@]}; do
 		executable+=($(echo "$items1"":Exec=None"))
 	done
@@ -405,9 +391,10 @@ function buildlist12 {
 	for items2 in ${nocomment[@]}; do
 		comment+=($(echo "$items2"":Comment=None"))
 	done
-	for items3 in ${nocomment2[@]}; do
-		comment2+=($(echo "$items3"":GenericName=None"))
-	done
+	
+#a	for items3 in ${nocomment2[@]}; do
+#a		comment2+=($(echo "$items3"":GenericName=None"))
+#a	done
 
 	for items4 in ${nomname[@]}; do
 		mname+=($(echo "$items4"":Name=None"))
@@ -419,28 +406,33 @@ function buildlist12 {
 
 	sortexecutable=($(sort <<<"${executable[*]}"))
 	sortcomment=($(sort <<<"${comment[*]}"))
-	sortcomment2=($(sort <<<"${comment2[*]}"))
+#a	sortcomment2=($(sort <<<"${comment2[*]}"))
 	sortmname=($(sort <<<"${mname[*]}"))
 	sorticon=($(sort <<<"${icon[*]}"))
 
 	trimexecutable=($(grep  -Po '(?<=Exec=)[ --0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
 	trimcomment=($(grep -Po '(?<=Comment=)[ --0-9A-Za-z/]*' <<<"${sortcomment[*]}"))
-	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
+#a	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
 	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
 	trimicon=($(grep -Po '(?<=Icon=)[ --0-9A-Za-z/]*' <<<"${sorticon[*]}"))
 	
 	
-	unset IFS
+	#printarray ${fi[@]}
+	#unset IFS
 
 	ae=0
 	for aeitem in ${fi[@]};do
 		if [[ ${trimcomment[ae]} = "None" ]]; then
-			trimcomment[ae]=${trimcomment2[ae]}
+			trimcomment2=$(grep -m 1 "^GenericName=" $aeitem |cut -f 2 -d "=")
+			trimcomment[ae]=$trimcomment2 #this method seems to be faster than grep + sort all the non existant values.
+#a			trimcomment[ae]=${trimcomment2[ae]} 
 		fi
 		list+=( "$fileindex" "${trimicon[$ae]}" "${trimmname[$ae]}" "${fi[$ae]}" "${trimexecutable[$ae]}" "${trimcomment[$ae]}" ) #this sets double quotes in each variable.
 		fileindex=$(($fileindex+1))
 		ae=$(($ae+1))
+		#printarray ${list[@]}
 	done
+unset IFS
 }
 
 
@@ -549,11 +541,11 @@ clear
 if [ $fileedited -eq 0 ]; then
 selectfiles #If a file has been edited, just reload the list of previous selection.
 fi
-cd $location
+#cd $location
 performance start
 
 
-#for i in $(ls $files); do
+#for i in $(ls $location$files); do
 
 ##for i in ./$files; do #this also works fine
 #	buildlist #		var = cat + grep + grep 							|57.4 at VBox 	| 9,16 at home
@@ -563,11 +555,11 @@ performance start
 #	buildlist5 #	readarray = all greps and then var=grep array 		|50.3 at VBox 	| 18 at home
 #	buildlist6 #	readarray = all greps and then var=echo array + awk	|57.2 at VBox 	| 12,5 at home
 #	buildlist7 #	readarray var= Awk only								|43.2 at VBox 	| 12,5 at home
-#*	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
+#	buildlist8 # 	readarray var = grep + cut							|47 at VBox		| 7 at home
 #	buildlist9 # 	var=grep -m1 + cut 									|38.3 at Vbox	| 7.5 at home
 #	buildlist10 #	readarray var = grep -Po only  						|29.3 at Vbox(!)| 11 at home
 #	buildlist11 #	var=grep -m1 -Po only								|18.5 at Vbox(!)| 11 at home
-	i=$files;buildlist12	#grep all files at once						|5 at VBox		| 1.8 at home
+	i=$location$files;buildlist12	#grep all files at once						|5 at VBox		| 1.8 at home
 #done
 
 performance stop
