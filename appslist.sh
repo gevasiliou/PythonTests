@@ -547,7 +547,7 @@ performance start
 
 #for i in $(ls $location$files); do
 
-##for i in ./$files; do #this also works fine
+#for i in $location$files; do #this also works fine
 #	buildlist #		var = cat + grep + grep 							|57.4 at VBox 	| 9,16 at home
 #	buildlist2 #	var = cat + grep + awk 								|76 at VBox 	| 11,6 at home
 #	buildlist3 #	Readarray var = grep + awk							|47.5 at VBox 	| 8,9 at home
