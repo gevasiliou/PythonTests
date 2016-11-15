@@ -1,0 +1,3 @@
+setsid /usr/local/bin/Naming_Service ${OPTIONS_13016} &
+setsid /usr/local/bin/Naming_Service ${OPTIONS_13018} &
+setsid /usr/local/bin/Naming_Service ${OPTIONS} &

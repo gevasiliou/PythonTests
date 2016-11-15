@@ -1,0 +1,3 @@
+x=5
+y=7
+z=$(($x + $y)) #should be a valid bash syntax
