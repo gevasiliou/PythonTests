@@ -1,3 +1,17 @@
-x=5
-y=7
-z=$(($x + $y)) #should be a valid bash syntax
+^D 23554
+Q 123 325
+Y qwe325
+^P fiwkkwlds
+Y qrwe
+Y rtewt
+^A 284274 DFL 2939955 001
+F 2739
+^D 23556
+^k 2994
+^A 284274 DFL 2939966 002
+^k 29942
+^k 32423
+^A 284274 DFL 2939957 003
+F 23425
+^A 284274 DFL 2939958 004
+F 92823

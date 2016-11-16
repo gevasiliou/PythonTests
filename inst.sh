@@ -21,28 +21,20 @@ installed=`echo $selections | awk -F',' '{print $4}'`
 
 }
 
-#readarray -t fti < <(apt list xfce* |grep -v "installed" |grep -v "dbg" |cut -f 1 -d "/")
-
-#if [[ $1 == "" ]]; then
-#echo "No pattern provided".
-#exit
-#fi
-
+#-----------------------MAIN PROGRAM----------------------------------#
 selectpackages
-#exit
-#readarray -t fti < <(apt list $1 |grep -v "dbg" | grep -v "installed" |cut -f 1 -d "/")
-if [[ $installed == "Not Installed" ]];then
-readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "installed" |cut -f 1 -d "/")
-fi
 
-if [[ $installed == "Installed" ]];then
-readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/")
-fi
+case "$installed" in
+"Not Installed") 
+readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "installed" |cut -f 1 -d "/");;
+"Installed")
+readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
+"All")
+readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
+esac
 
 IFS=$'\n' 
-#printf "%s\n" ${fti[@]} #${pd[@]} 
-#exit
-c=${#fti[@]}
+c=${#fti[@]} # number of packages 
 
 for (( item=0; item<=$c; item++ )); do
 echo "${fti[item]}"
@@ -51,8 +43,6 @@ done
 
 pdshow=$(apt show ${pd[@]} |grep "Description:")
 pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
-#printf "%s\n" "pdpolicy" $pdpolicy
-
 pdss=($(printf "%s\n" ${pdshow[@]} |cut -f2 -d ":"))
 pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " "))
 pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " "))
@@ -64,12 +54,14 @@ pdssitem=$item
 #pdssitem=$(($item-1))
 pdpsitem=$pdssitem
 
-
+#Build the list for yad with double quotes and space.
 list+=( "FALSE" "${fti[item]}" "${pdss[pdssitem]}" "${pdpi[pdpsitem]}" "${pdpc[pdpsitem]}" )
 done
 
 toinstall=($(yad --list --title="Files Browser" --no-markup --width=800 --height=600 --center --checklist \
---print-column=2 --separator="\n" --column="Install":CHK --column="File" \
+--print-column=2 --separator="\n" \
+--button="gtk-ok":0 --button="gtk-cancel":1 --button="Info":5 \
+--column="Install":CHK --column="File" \
 --column="Description" --column="Installed" --column="Candidate" "${list[@]}"))
 #the --checklist option is required by yad in order to print all entries with value of "true". If you ommit this option, only the last entry is printed.
 #alternativelly with option --print-all you can print ALL the list with true - false in front.

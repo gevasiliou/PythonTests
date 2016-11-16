@@ -107,6 +107,7 @@ cat e.sh
 exit
 }
 
+function fileread2 {
 #IFS=$'\n'
 data=$(cat b.txt)
 headers=$(cat c.txt)
@@ -118,3 +119,36 @@ message+=$(echo "$data")
 #done <<< "$data" 
 echo -e "message=\n$message"
 unset IFS
+}
+
+function fileinarray {
+IFS=$'\n'
+readarray -t -O1 data< <(grep -h -e "\^D" -e "\^A" -e "^F" a.txt)
+posA=1
+for i in "${data[@]}"; do
+if [[ "$i" = "^A"* ]]; then
+	textA="${data[$posA]}"
+	posD=$posA
+	posF=$posA
+	textD=""
+	textF=""
+	while [ "$posD" -ge 1 ] && [[ "$textD" != "^D"* ]]; do
+	posD=$(($posD - 1))
+	textD="${data[$posD]}"
+	done
+
+	while [ "$posF" -le "${#data[@]}" ] && [[ "$textF" != "F"* ]]; do
+	posF=$(($posF + 1))
+	textF="${data[$posF]}"
+	done
+	textADF="$textA | $textD | $textF"
+	echo "ADF=$textADF"
+fi
+posA=$(($posA + 1))
+done
+unset IFS
+exit
+}
+
+posA=$(grep -hn "\^A" a.txt | cut -f 1 -d ":")
+echo $posA
