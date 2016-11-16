@@ -34,7 +34,7 @@ readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
 esac
 
 IFS=$'\n' 
-c=${#fti[@]} # number of packages 
+c=${#fti[@]} # c=number of packages, items in array fti
 
 for (( item=0; item<=$c; item++ )); do
 echo "${fti[item]}"
@@ -53,7 +53,6 @@ for (( item=0; item<=$c; item++ )); do
 pdssitem=$item
 #pdssitem=$(($item-1))
 pdpsitem=$pdssitem
-
 #Build the list for yad with double quotes and space.
 list+=( "FALSE" "${fti[item]}" "${pdss[pdssitem]}" "${pdpi[pdpsitem]}" "${pdpc[pdpsitem]}" )
 done
@@ -64,13 +63,12 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=800 --height
 --column="Install":CHK --column="File" \
 --column="Description" --column="Installed" --column="Candidate" "${list[@]}"))
 #the --checklist option is required by yad in order to print all entries with value of "true". If you ommit this option, only the last entry is printed.
-#alternativelly with option --print-all you can print ALL the list with true - false in front.
+#alternativelly with option --print-all you can print ALL the list including true - false selection of rows
 
 echo "Button Pressed:" $?
 printf "%s\n" ${toinstall[@]} #this prints the list correctly.
 
-#aptinstall
+#aptinstall #call the aptinstall function to install selected packages.
 
 unset IFS
-
 exit
