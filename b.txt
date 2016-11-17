@@ -1,3 +1,7 @@
-/home/
-/home/gv/
-/home/gv/Desktop/PythonTests/
+hello
+heggo
+helloso
+good
+god
+face
+fake

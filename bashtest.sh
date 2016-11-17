@@ -107,20 +107,6 @@ cat e.sh
 exit
 }
 
-function fileread2 {
-#IFS=$'\n'
-data=$(cat b.txt)
-headers=$(cat c.txt)
-echo "headers = $headers"
-message=$(echo "$headers")
-message+=$(echo "\n")
-#while IFS=$'\n' read -r line; do
-message+=$(echo "$data")
-#done <<< "$data" 
-echo -e "message=\n$message"
-unset IFS
-}
-
 function fileinarray {
 IFS=$'\n'
 readarray -t -O1 data< <(grep -h -e "\^D" -e "\^A" -e "^F" a.txt)
@@ -150,5 +136,49 @@ unset IFS
 exit
 }
 
-posA=$(grep -hn "\^A" a.txt | cut -f 1 -d ":")
-echo $posA
+function renamewithdirname {
+#http://stackoverflow.com/questions/40645931/can-i-get-only-parent-directory-for-naming-to-filename-in-unix
+#search for files, check existance and then appends to filename the last directory (i.e file a.zip is renamed to a_PythonTests.zip
+
+WORKDIR="/home/gv/Desktop/PythonTests" #assigned for my case
+find "$WORKDIR" -type f -name '*.zip' | while read file
+do
+  basename=$(basename "$file")
+  dirname=$(dirname "$file")
+  suffix=$(basename "$dirname")
+  if [[ "$basename" != *"_${suffix}.zip" ]]; then
+    mv -v "$file" "${dirname}/${basename%.zip}_${suffix}.zip"
+  fi
+done
+# GV way - similar to above but working only for one file:
+#dir="/home/gv/Desktop/PythonTests/"
+#filename="a"
+#filesuffix=".txt"
+#filedir=$(dirname "$dir$filename$filesuffix" | grep -o '[^/]*$')
+#echo "Directory of $filename$filesuffix : $filedir" 
+#oldname="$dir$filename$filesuffix"
+#ls -l $oldname
+#echo "Old name : $oldname"
+#echo -e "press any key \c";read anykey
+#newname="$dir$filename""_""$filedir""$filesuffix"
+#echo "New Name: $newname"
+#mv "$oldname" "$newname" #this works ok
+#find $dir -type f -name "$filename$filesuffix" -exec mv "$oldname" "$newname" \;
+#ls -l /home/gv/Desktop/PythonTests/*.txt
+}
+
+datasource=$(cat b.txt)
+newdata=""
+while IFS='' read -r line; do
+found=0
+readarray word < <(echo "$line" |fold -w1)
+	for eachletter in ${word[@]}; do
+		found=$(echo "$line" | grep -o $eachletter |wc -w)
+		if [[ $found -ge 2 ]] && [[ ${newdata[@]} != *"$line"* ]]; then 
+			newdata+=( "$line" )
+		fi
+	done
+unset word eachletter found
+done <<< "$datasource"
+echo -e "New Data \n" 
+printf '%s\n' ${newdata[@]}
