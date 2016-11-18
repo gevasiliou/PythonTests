@@ -167,6 +167,11 @@ done
 #ls -l /home/gv/Desktop/PythonTests/*.txt
 }
 
+function lettercheck { 
+#reads lines from a file containing only one word per line, and checks if this word has duplicate chars in any position.
+#To do this we store the line in an array of chars ($word) using the fold -w1 or grep -o . technique.
+#to verify if the char exists in word we use the wc -w trick (count after grep - gives a number of 2 or n if char is found 2 or n times in word).
+#
 datasource=$(cat b.txt)
 newdata=""
 while IFS='' read -r line; do
@@ -182,3 +187,21 @@ unset word eachletter found
 done <<< "$datasource"
 echo -e "New Data \n" 
 printf '%s\n' ${newdata[@]}
+}
+
+function simplenameread {
+read -p "Enter Name: " name #mind the -p option. i used to do it with echo -e "Enter Name\c";read name
+if [ "$name" == "" ]; then
+    sleep 1
+    echo "Oh Great! You haven't entered name."
+    exit
+else
+echo "You enter name $name"
+fi
+}
+
+#Check if a slash exist in the end and add it if it is missing
+#root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
+#/home/gv/Desktop/
+
+#multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
