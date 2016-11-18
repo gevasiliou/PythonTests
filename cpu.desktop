@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CPU
+Comment=
+Exec=gksu -g /home/gv/Desktop/PythonTests/cpu.sh
+Icon=mate-cpu-frequency-applet
+Path=
+Terminal=false
+StartupNotify=false
