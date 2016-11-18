@@ -205,3 +205,5 @@ fi
 #/home/gv/Desktop/
 
 #multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
+
+#grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
