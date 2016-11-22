@@ -1,0 +1,7 @@
+These are real config files from /home/username/.config/lxpanel/LXDE/panels
+Panel "left1" has been set up for right display only on external monitor 2
+(appears as monitor 1 in config file).
+Panels that will be displayed in monitor 1 have setting monitor=0.
+Panels that will be displayed in all monitors should have setting monitor=-1
+ 
+The file congig also is real and is placed outside the folder /LXDE/panels, just under LXDE. 

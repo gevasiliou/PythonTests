@@ -1,0 +1,92 @@
+# lxpanel <profile> config file. Manually editing is not recommended.
+# Use preference dialog in lxpanel to adjust config when you can.
+
+Global {
+  edge=right
+  monitor=1
+  height=40
+  transparent=1
+  background=0
+  tintcolor=#ffffff
+  alpha=105
+  align=center
+  iconsize=30
+  widthtype=percent
+  width=89
+  autohide=1
+  margin=3
+}
+Plugin {
+  type=menu
+  Config {
+    system {
+    }
+    separator {
+    }
+    item {
+      command=run
+    }
+    separator {
+    }
+    item {
+      command=logout
+      image=gnome-logout
+    }
+    image=/usr/share/lxpanel/images/my-computer.png
+  }
+}
+Plugin {
+  type=dclock
+  Config {
+    ClockFmt=%R
+    TooltipFmt=%A %x
+    BoldFont=1
+    IconOnly=0
+    CenterText=1
+  }
+}
+Plugin {
+  type=xkb
+  Config {
+    Model=pc105
+    LayoutsList=us
+    VariantsList=,
+    ToggleOpt=grp:shift_caps_toggle
+  }
+}
+Plugin {
+  type=launchbar
+  Config {
+    Button {
+      id=menu://applications/Universal Access/onboard.desktop
+    }
+    Button {
+      id=menu://applications/Universal Access/vmg.desktop
+    }
+    Button {
+      id=menu://applications/Internet/firefox-esr.desktop
+    }
+    Button {
+      id=menu://applications/Accessories/alacarte-made.desktop
+    }
+    Button {
+      id=menu://applications/System/gksu.desktop
+    }
+  }
+}
+Plugin {
+  type=separator
+  Config {
+  }
+}
+Plugin {
+  type=launchtaskbar
+  Config {
+    SameMonitorOnly=1
+    FlatButton=1
+    IconsOnly=0
+    LaunchTaskBarMode=2
+    ShowAllDesks=0
+  }
+  expand=1
+}

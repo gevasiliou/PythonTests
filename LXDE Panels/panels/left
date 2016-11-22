@@ -1,0 +1,58 @@
+# lxpanel <profile> config file. Manually editing is not recommended.
+# Use preference dialog in lxpanel to adjust config when you can.
+
+Global {
+  edge=bottom
+  monitor=0
+  height=40
+  widthtype=percent
+  width=31
+  iconsize=40
+  transparent=1
+  background=0
+  tintcolor=#0058ff
+  alpha=255
+  align=center
+  usefontcolor=0
+  setdocktype=1
+  setpartialstrut=0
+  autohide=1
+  heightwhenhidden=10
+}
+Plugin {
+  type=launchtaskbar
+  Config {
+    Button {
+      id=menu://applications/Internet/exo-web-browser.desktop
+    }
+    Button {
+      id=menu://applications/System/lxterminal.desktop
+    }
+    Button {
+      id=menu://applications/System/gksu.desktop
+    }
+    Button {
+      id=menu://applications/DesktopSettings/synaptic.desktop
+    }
+    Button {
+      id=menu://applications/Accessories/xfce4-appfinder.desktop
+    }
+    Button {
+      id=menu://applications/Accessories/mate-search-tool.desktop
+    }
+    Button {
+      id=menu://applications/Internet/teamviewer-teamviewer11.desktop
+    }
+    Button {
+      id=menu://applications/Accessories/xfce4-run.desktop
+    }
+    Button {
+      id=menu://applications/Accessories/alacarte-made.desktop
+    }
+    DisableUpscale=0
+    FlatButton=0
+    IconsOnly=0
+    LaunchTaskBarMode=0
+  }
+  expand=1
+}
