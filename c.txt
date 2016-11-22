@@ -1,25 +1,7 @@
-Random text here
-blab
-
-==============================================
-Here is the string I need
-==============================================
-
-------------------------
-random stuff
-------------------------
-
-other stuff
-
-==============================================
-Here is the 2nd string I need
-==============================================
-i dont need this string here
-
-Random stuff
-
-==============================================
-last string I need, that is the same across all files
-==============================================
-
-a lot of lines are following the last match
+hello
+heggo
+helloso
+good
+god
+face
+fake
