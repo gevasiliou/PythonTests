@@ -1,17 +1,11 @@
-^D 23554
-Q 123 325
-Y qwe325
-^P fiwkkwlds
-Y qrwe
-Y rtewt
-^A 284274 DFL 2939955 001
-F 2739
-^D 23556
-^k 2994
-^A 284274 DFL 2939966 002
-^k 29942
-^k 32423
-^A 284274 DFL 2939957 003
-F 23425
-^A 284274 DFL 2939958 004
-F 92823
+ConductID: null; RunOpSequenceCode: 12345678; ClientID: null; FescoOfferID: null; PriorityCode: null; RowNumberStart: 0; FetchSize: 0; ChannelTypes: ER,PART; NigoIndicator: null; TreatmentTypeCode: null; DivisionName: null; DivisionCode: null; }
+[11-21-2099 23:25:28] [OK #6:DAMN_BATCH ] T123Util             setT123Columns 
+ConductID: null; RunOpSequenceCode: 12345678; ClientID: null; FescoOfferID: null; PriorityCode: null; RowNumberStart: 0; FetchSize: 0; ChannelTypes: ER,PART; NigoIndicator: null; TreatmentTypeCode: null; DivisionName: null; DivisionCode: null; }
+[11-21-2099 23:25:28] [OK #6:DAMN_BATCH ] T123Util             setT123Columns 
+ConductID: null; RunOpSequenceCode: 12345678; ClientID: null; FescoOfferID: null; PriorityCode: null; RowNumberStart: 0; FetchSize: 0; ChannelTypes: ER,PART; NigoIndicator: null; TreatmentTypeCode: null; DivisionName: null; DivisionCode: null; }
+[11-21-2099 23:25:28] [OK #6:DAMN_BATCH ] T123Util             setT123Columns       WARN : UserDefined Tatty Error: SqlMapClient operation; uncategorized SQLException for SQL []; SQL state [72000]; error code [20001];
+--- The error occurred in com//tmo/asfjn/jdaf/tkenjrt/terkj.xml
+--- The error occurred while eating sandwich.
+--- Check the tim-tim-nothing-boy.
+--- Cause: java.sql.SQLException: ORA-00001: You suck.
+ORA-06512: at "test_amp_tim.pkg", line 78

@@ -25,12 +25,13 @@ fi
 
 #bc <<< "scale=2;$var1/$var2" or answer=$(bc <<< "scale=2;$var1/$var2")
 
-function finddivider {
+
+function readlog1 {
+finddivider () {
 groups=$(bc <<< "scale=1;$NoOfLines/$1")
 decimals=$(cut -f 2 -d "." <<<$groups)
 }
 
-function readlog1 {
 readarray -O 1 FileContents < <(cat test.log)
 NoOfLines=${#FileContents[@]}
 divider=3 # initial setting
@@ -205,5 +206,39 @@ fi
 #/home/gv/Desktop/
 
 #multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
-
 #grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
+
+#sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
+#get a range of lines with sed: sed -n '16224,16482p;16483q' filename
+#mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
+#To do that with variables: $ sed -n "$FL,$LL p" file.txt
+#sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
+#There is a direct awk alternative: awk '/Tatty Error/,/suck/' a.txt
+#you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
+#Replace a string with s/ switch
+#sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
+# More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
+#Replace foo with bar only if there is a baz later on the same line:
+#sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
+#Multiple replace operations: replace with different strings
+#You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
+#
+#Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
+
+function comparetwofiles {
+readarray data < <(comm --nocheck-order --output-delimiter "-"  b.txt c.txt)
+for ((i=0;i<${#data[@]};i++)); do
+va=$(grep -e "-" <<<"${data[$i]}")
+if [[ $va == "" ]]; then
+	echo ${data[$i]} " null"
+elif [[ $va == "--"* ]]; then 
+		data2=$(echo ${data[$i]} | grep -Po '[0-9]*')
+		echo $data2 " " $data2
+else
+	data2=$(echo ${data[$i]} | grep -Po '[0-9]*')
+	echo "null " $data2
+fi
+done
+
+}
+

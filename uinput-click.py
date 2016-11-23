@@ -1,37 +1,39 @@
 from evdev import InputDevice, InputEvent, UInput, AbsInfo, categorize, ecodes as e
 import evdev
 import time
-'''
+
 #device = evdev.InputDevice('/dev/input/event2')
 device = InputDevice('/dev/input/event10') # adjust the correct event number
 print(device)
 cap = device.capabilities(verbose=True,absinfo=True)
-#cap = device.capabilities()
+# device.capabilities is a property of the device object, not a variable. 
+# Alternativelly , device capabilities could be read without verbose and absinfo data as cap = device.capabilities()
+
 print('Device Capabilities:', cap) # Prints device capabilities in format Type : Values
 
 # Tutorial: Specify uinput device options
-'''
+
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
      e.EV_ABS : [
           (e.ABS_X, AbsInfo(value=3100, min=0, max=3264, fuzz=0, flat=0, resolution=13)),
           (e.ABS_Y, AbsInfo(1090, 0, 1856, 0, 0, 13))]
-} #this really works - mouse moved and right click menu appeared.Also looks steady=always working
-
+} 
+#capabilities above is a VARIABLE
 '''
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
      e.EV_ABS : [e.ABS_X, e.ABS_Y]
-}  # this method does not working
+}  # this simpliified Zyell method does not work in my system
 '''
-ui = UInput(capabilities)
+ui = UInput(capabilities) # create a new virtual device with capabilities variable as device.capabilities.
 #ui = UInput()
 print('UInput Capabilities:', ui.capabilities(verbose=True,absinfo=True))
 time.sleep(10)
 
 #Inject Event Example of Tutorial
-#ui.write(e.EV_ABS, e.ABS_X, 2555) #this works: moves mouse and injects right click.
-#ui.write(e.EV_ABS, e.ABS_Y, 226) #this works: moves mouse and injects right click.
+#ui.write(e.EV_ABS, e.ABS_X, 2555) #this works: moves mouse to 2555 and injects right click.
+#ui.write(e.EV_ABS, e.ABS_Y, 226) #this works: moves mouse to 226 and injects right click.
 
 ui.write(e.EV_ABS, e.ABS_X, 0) #this also works: Right click injected at wherever mouse it is
 ui.write(e.EV_ABS, e.ABS_Y, 0) #this also works: Right click injected at wherever mouse it is.
@@ -62,8 +64,7 @@ ui.syn()
 # Python-EvDev Tutorial : http://python-evdev.readthedocs.io/en/latest/tutorial.html
 
 
-
-# Inject an Event with context manager of Tutorial
+# Tutorial Example: Inject an Event with context manager
 #ev = InputEvent(1475500749, 371716, e.EV_KEY, e.BTN_RIGHT, 1)
 #with UInput() as ui:
 #    ui.write_event(ev)

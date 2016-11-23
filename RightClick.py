@@ -7,6 +7,9 @@ This is implemented with the evdev Python library on an ELAN touchscreen.
 Currently implements 2 types of right click options:
 1 finger long touch: Timeout of 1.7 seconds, movement cancels action
 2 finger tap: movement cancels action
+
+This is version No1 - The very first one by Zyell
+In this version right click menu appears only after long press release.
 """
 
 from evdev import InputDevice, ecodes, UInput, list_devices,AbsInfo
