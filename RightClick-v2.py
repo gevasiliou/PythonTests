@@ -30,6 +30,7 @@ from evdev import InputDevice, ecodes, UInput, list_devices
 from threading import Timer
 from pymouse import PyMouse
 import sys
+from datetime import datetime
 
 class TrackedEvent(object):
 
@@ -53,6 +54,10 @@ class TrackedEvent(object):
         self.click_delay = 0.7
         self.grabbed=False
 
+#    def stamp(self):
+#		self.stamp=datetime.now().time()
+#		return self.stamp;
+    
     def add_finger(self):
         """  Add a detected finger. """
         self.fingers += 1
@@ -61,7 +66,7 @@ class TrackedEvent(object):
     def remove_fingers(self):
         """ Remove detected finger upon release. """
         if self.fingers == 1:
-            print('[Remove_Fingers]: Total Fingers used= ', self.total_event_fingers)
+            print datetime.now(),':[Remove_Fingers]: Total Fingers used= ', self.total_event_fingers
         self.fingers -= 1
 
         if (self.fingers == 0 and
@@ -78,26 +83,26 @@ class TrackedEvent(object):
                 self.track_start.cancel()
                 self.track_start.join()
             except AttributeError:  # capture Nonetype track_start
-                if dbg: print('[Remove_Fingers]: Attribute Error = ', AttributeError)
+                if dbg: print datetime.now(),':[Remove_Fingers]: Attribute Error = ', AttributeError
                 pass
             try:
                 self.dev.ungrab()
-                if dbg: print('[Remove_Fingers]: Device UnGrab')
+                if dbg: print datetime.now(),':[Remove_Fingers]: Device UnGrab'
 
             except (OSError,IOError):  # capture case where grab was never initiated
-                if dbg: print ('[Remove_Fingers]: OS/IO Error = ', OSError,IOError)
+                if dbg: print datetime.now(),':[Remove_Fingers]: OS/IO Error Exception'
                 pass
 
         if self.fingers == 0:
             self.discard = 1
-            if dbg: print('[Remove_Fingers]: self.discard')
+            if dbg: print datetime.now(),':[Remove_Fingers]: Fingers 0 (Discard)'
 
     def position_event(self, event_code, value):
         """ tracks position to track movement of fingers """
         if self.position[event_code] is None:
             self.position[event_code] = value
         else:
-            if dbg: print('[Position_Event]: Touch offset:',abs(self.position[event_code] - value))
+            if dbg: print datetime.now(),':[Position_Event]: Touch offset:', abs(self.position[event_code] - value)
             if abs(self.position[event_code] - value) > self.vars[event_code]:
                 self._moved_event()
         if (self.fingers == 1 and self.position['ABS_X'] and
@@ -112,17 +117,18 @@ class TrackedEvent(object):
     def _long_press(self):
         if self.fingers == 1 and self.moved == 0:
             self._initiate_right_click()
-            if dbg: print('[_Long_Press]: Device Grab')
+            if dbg: print datetime.now(),':[_Long_Press]: Device Grab'
             self.dev.grab()
 
     def _moved_event(self):
         """ movement detected. """
         self.moved = 1
-        if dbg: print('[Moved_Event]: Moved over the limit')
+        if dbg: print datetime.now(),':[Moved_Event]: Moved over the limit (self.moved=1)'
 
     def _initiate_right_click(self):
         """ Internal method for initiating a right click at touch point. """
-        if dbg: print('[Initiate_Right_Click]: Right Click will be injected now')
+        if dbg: print datetime.now(),':[Initiate_Right_Click]: Right Click will be injected now'
+        '''
         with UInput(self.abilities) as ui:
 
             ui.write(ecodes.EV_ABS, ecodes.ABS_X, 0)
@@ -132,11 +138,11 @@ class TrackedEvent(object):
             ui.syn()
 
         '''
-		# I disable the pymouse method in order to troubleshoot the uinput bugs in my system.
         m = PyMouse()
         x , y = m.position()  # gets mouse current position coordinates
-        m.click(x, y, 2)  # the third argument represents the mouse button (1 click,2 right click,3 middle click)
-        '''
+        m.click(x, y, 1)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
+        m.click(x, y, 2)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
+        if dbg: print datetime.now(),':[Initiate_Right_Click]: Right Click injected at X,Y:', m.position()
 
 def initiate_gesture_find():
     """
@@ -147,7 +153,7 @@ def initiate_gesture_find():
     for device in list_devices():
         dev = InputDevice(device)
         if (dev.name == 'ELAN Touchscreen' or dev.name=='VirtualBox USB Tablet' or dev.name == 'Atmel Atmel maXTouch Digitizer'):
-            if dbg: print('device found:', dev.name, '-',dev, "\n")
+            if dbg: print datetime.now(),':[Gesture_Find]: Device found=', dev.name, '-',dev, "\n"
             break
     Abs_events = {}
     abilities = {ecodes.EV_ABS: [ecodes.ABS_X, ecodes.ABS_Y],
@@ -157,7 +163,7 @@ def initiate_gesture_find():
     res_y = 13  # touch unit resolution # units/mm in y direction
     # would be weird if above resolutions differed, but will treat generically
     codes = dev.capabilities()
-    if dbg: print('device capabilities: ',dev.capabilities(verbose=True,absinfo=True))
+    if dbg: print datetime.now(),':[Gesture Find]: Device capabilities= ',dev.capabilities(verbose=True,absinfo=True)
     for code in codes:
         if code == 3:
             for type_code in codes[code]:
@@ -199,15 +205,15 @@ def initiate_gesture_find():
 
 
 if __name__ == '__main__':
-	dbg = True #applied for testing. Normally this should be False
-    #dbg = False
-    if (len(sys.argv)>1 and sys.argv[1]=="--debug"):
-        print 'Debug option selected'
-        dbg = True
-    else:
-        print 'Run with --debug to get detailed info'
-    print('debug level:',dbg)
-    initiate_gesture_find()
+	#dbg = True #applied for testing. Normally this should be False
+	dbg = False
+	if len(sys.argv)>1 and sys.argv[1]=="--debug":
+		print 'Debug option selected'
+		dbg = True
+	else:
+		print 'Run with --debug to get detailed info'
+	print('debug level:',dbg)
+	initiate_gesture_find()
 
 '''
 We can add more options like:
@@ -215,3 +221,9 @@ argv --calibrate -> call a calibrate procedure to get correct options for res-x 
 argv --icon -> display a tray icon (or --noicon if icon is going to be displayed by default)
 argv --lowres -> apply a lower value in valx-valy (i.e value of 1.0 as per Zyell initial scrip)
 function screencapabilities detection : to ensure that touchscreen comply with the method described in script
+Nautilus is buggy. If you click once at whitespace, then you can not bring context menu in files/folders.
+Actually you can not even open them with double click , either by touch or by trackpad (!)
+You can select a folder , but you can not even do a right click.
+All right clicks after right click at whitespace, bring the whitespace menu and not the folder menu.
+And all this stuff with left click first. 
+'''
