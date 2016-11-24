@@ -243,11 +243,14 @@ done
 }
 
 function listfilesindir {
-for files in /home/gv/Desktop/PythonTests/*.sh; do
-old_filename=$files
-old_filename_stripped=$(basename -a $files)
+#for files in /home/gv/Desktop/PythonTests/*.sh; do
+IFS=$'\n'
+for files in $(find /home/gv/Desktop/PythonTests/ -name "*.txt" ); do
+old_filename="$files"
+old_filename_stripped=$(basename -a "$files")
 echo "filename full : $old_filename - file name stripped: $old_filename_stripped"
 done
+unset IFS
 # old_filename will look like this /user/***/documents/testmapa/afile.pdf
 # If you need to have only the filename without directory then you can use
 #old_filename=$(basename -a $files)
@@ -259,6 +262,7 @@ done
 #done
 }
 
+function logicalduplicate {
 #this one gets a text (or a line from file) and finds a logical duplicate line 
 word1+=( $(echo "this is my life" |fold -w1) )
 sortedword1=($(echo ${word1[@]} | tr " " "\n" | sort))
@@ -270,3 +274,5 @@ echo "${sortedword2[@]}"
 if [[ $sortedword1 == $sortedword2 ]]; then
 echo "Word 1 and Word 2 are the same, delete one of them"
 fi
+}
+listfilesindir
