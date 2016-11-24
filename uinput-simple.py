@@ -6,7 +6,7 @@ def stamp():
 	stamp=datetime.now().time()
 	return stamp;
 #set capabilities of the virtual uinput device.
-st=10
+
 capabilities = {
      e.EV_KEY : [e.BTN_LEFT, e.BTN_RIGHT],
      e.EV_ABS : [
