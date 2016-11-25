@@ -17,7 +17,7 @@ function selectpackages {
 selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
 		--date-format="%Y-%m-%d" \
 		--field="Pattern:" "xfce*" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
-		--field="Show installed":CB "All!Not Installed!Installed" )
+		--field="Show installed":CB "All!Not Installed!Installed!Experimental" )
 echo $selections
 pattern=`echo $selections | awk -F',' '{print $1}'`
 exclude1=`echo $selections | awk -F',' '{print $2}'`
@@ -36,6 +36,8 @@ readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "in
 readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
 "All")
 readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
+"Experimental")
+readarray -t fti < <(apt list --all-versions $pattern |grep "experimental" |cut -f1 -d " ");;
 esac
 
 IFS=$'\n' 
@@ -43,35 +45,47 @@ c=${#fti[@]} # c=number of packages, items in array fti
 
 for (( item=0; item<=$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
+#fti[$item]=$(echo ${fti[$item]} |cut -f1 -d"/")
 pd+=("${fti[$item]}")
+#echo "fti[$item] = ${fti[$item]}"
 done
-
-#echo 'Array pd'
-#for (( citem=1; citem<=$c; citem++ )); do
-#echo "pd[$citem]= ${pd[$citem]}"
-#done
 #exit
-
 aptshow=$(apt show ${pd[@]})
 pddescription=$(grep "Description:" <<< $aptshow)
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
 pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
-pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
-
-#pddescription=$(apt show ${pd[@]} |grep "Description:")
-#pdsizeDown=$(apt show ${pd[@]} |grep "Download-Size:")
-#pdsizeInst=$(apt show ${pd[@]} |grep "Installed-Size:")
 
 pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2 -d ":"))
-pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " "))
-pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " "))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
+
+if [[ $installed == "Experimental" ]]; then
+echo "grab versions differently here"
+pdpolicy=$(grep "Version:" <<< $aptshow)
+pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |cut -f2 -d ":"))
+
+pdpolicy2=$(apt policy $(cut -f1 -d"/" <<<${pd[@]}) |grep -e "Installed:")
+pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
+
+#pdpi=$(grep "Version:" <<< $aptshow)
+echo ${pdpolicy2[@]}
+echo ${pdpi[@]}
+exit
+else
+echo "Classic version grab"
+pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
+pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " "))
+pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " "))
+fi
+
+
+echo "$pddescription"
+echo "${pdss[@]}"
+#exit
 
 for (( pitem=1; pitem<=$c; pitem++ )); do
 #Build the list for yad with double quotes and space.
 list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" )
-#echo " list[$pitem] = ${list[$pitem]}"
 done
 #exit
 
@@ -94,6 +108,17 @@ exit
 #To be done:
 # You can assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
 # Command apt install --upgrade pkgname works , but pkgname* gets all pkgs (both installed and not installed)
-# nice trick:
-# the following command runs as one line in terminal:
+# 
+# Trick1: the following command asks for a package name , load all pkgs found in a array, and prompts you to install them.
+# It also runs as one line in terminal:
 # root@debi64:/home/gv/Desktop# read -p "give package name: " pkg;readarray pkgs< <(apt list --upgradable |egrep "^$pkg" |cut -f1 -d'/');echo ${pkgs[@]};for i in ${pkgs[@]};do read -p "press any key to install next package = $i or press s to skip: " ans;if [[ $ans != 's' ]];then apt install -y --upgrade $i;fi;done
+# 
+# Trick2: The following command gives info about all versions of pkgs, including experimental repo:
+# root@debi64:/home/gv/Desktop/PythonTests# apt list --all-versions xfce4* |cut -f1 -d" "
+# you can combine with grep experimental to see only pkgs available in experimental repo.
+# You then can install a package of a specific varsion using apt install pkg/experimental or apt -t experimental install pkg 
+# 
+#Trick3: By Running just apt list (no arguments) or apt list --all-versions will give you huge lists of ALL packages (installed and not installed) available in repos.
+# You can combine with grep "installed" (or even --installed switch) to see only the installed packages.
+
+# Trick4: You can also see the installed packages using dpkg-query --list instead of apt.
