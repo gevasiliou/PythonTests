@@ -212,9 +212,17 @@ fi
 #get a range of lines with sed: sed -n '16224,16482p;16483q' filename
 #mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
 #To do that with variables: $ sed -n "$FL,$LL p" file.txt
+
 #sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
 #There is a direct awk alternative: awk '/Tatty Error/,/suck/' a.txt
 #you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
+
+#Find a word in file/stdin and grep from this word up to the last \n = new line = eof.
+#Remember that $ represents "last" in regex
+#apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
+#You can do the same starting from a line up to eof. 
+#Also this should work sed -n '/matched/,$p' file , wher matched can be a line number or a string
+
 #Replace a string with s/ switch
 #sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
 # More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
@@ -275,4 +283,15 @@ if [[ $sortedword1 == $sortedword2 ]]; then
 echo "Word 1 and Word 2 are the same, delete one of them"
 fi
 }
-listfilesindir
+
+function jointwofiles{
+#based on the second field of file a.
+#can also be done with join --nocheck-order -1 2 -t"|" a.txt b.txt
+#mind the possible extra spaces in field 2 of file a
+while IFS="|" read -r line title1 rest; do
+title2=$(echo $title1)
+genre=$(grep -e "$title2" b.txt |cut -f2 -d"|")
+echo $line "|" $genre "|" $rest
+done <a.txt
+}
+
