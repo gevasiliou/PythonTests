@@ -201,7 +201,7 @@ echo "You enter name $name"
 fi
 }
 
-#Check if a slash exist in the end and add it if it is missing
+#Check if a slash '/' exist in the end of variable and add it if it is missing
 #root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 #/home/gv/Desktop/
 
@@ -233,6 +233,10 @@ fi
 #
 #Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
 
+#Trick to get only one line from file using head and tail
+# Usage: bash viewline myfile 4
+#head -n $2 "$1" | tail -n 1
+
 function comparetwofiles {
 readarray data < <(comm --nocheck-order --output-delimiter "-"  b.txt c.txt)
 for ((i=0;i<${#data[@]};i++)); do
@@ -251,7 +255,7 @@ done
 }
 
 function listfilesindir {
-#for files in /home/gv/Desktop/PythonTests/*.sh; do
+#for files in /home/gv/Desktop/PythonTests/*.sh; do #this does not handle subfolders and files with spaces in their name
 IFS=$'\n'
 for files in $(find /home/gv/Desktop/PythonTests/ -name "*.txt" ); do
 old_filename="$files"
@@ -260,7 +264,7 @@ echo "filename full : $old_filename - file name stripped: $old_filename_stripped
 done
 unset IFS
 # old_filename will look like this /user/***/documents/testmapa/afile.pdf
-# If you need to have only the filename without directory then you can use
+# If you need to have only the filename without directory}{/ then you can use
 #old_filename=$(basename -a $files)
 # this will result to old_filename=afile.pdf without directory info
 
@@ -273,9 +277,7 @@ unset IFS
 function logicalduplicate {
 #this one gets a text (or a line from file) and finds a logical duplicate line 
 word1+=( $(echo "this is my life" |fold -w1) )
-sortedword1=($(echo ${word1[@]} | tr " " "\n" | sort))
-word2+=( $(echo "is this my life" |fold -w1) )
-sortedword2=($(echo ${word1[@]} | tr " " "\n" | sort))
+sortedword1=($(echo ${word1[@]} | tr " " "\n" | sort))x)*
 echo "${sortedword1[@]}"
 echo "${sortedword2[@]}"
 
@@ -284,14 +286,27 @@ echo "Word 1 and Word 2 are the same, delete one of them"
 fi
 }
 
-function jointwofiles{
+function jointwofiles {
 #based on the second field of file a.
 #can also be done with join --nocheck-order -1 2 -t"|" a.txt b.txt
 #mind the possible extra spaces in field 2 of file a
+
 while IFS="|" read -r line title1 rest; do
 title2=$(echo $title1)
 genre=$(grep -e "$title2" b.txt |cut -f2 -d"|")
 echo $line "|" $genre "|" $rest
 done <a.txt
 }
+
+read -a extensions -p "give me extensions seperated by spaces:  " # rad extensions and put them in array $extensions
+for ext in ${extnsions[@]}; do  #for each extension stored in the array
+echo -e "- Working with extension $ext"
+destination="/Users/christopherdorman/desktop/folder$extension"
+miscelanious="/Users/christopherdorman/desktop/miscelanious"
+mkdir -p "$destination"
+mv  -v unsorted/*."$extension" "$destination";
+done
+mv  -v unsorted/*.* "$miscelanius"; 
+# since previously you moved the required extensions to particular folders
+# move what ever is left on the unsorted folder to the miscelanius folder
 
