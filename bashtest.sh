@@ -277,7 +277,7 @@ unset IFS
 function logicalduplicate {
 #this one gets a text (or a line from file) and finds a logical duplicate line 
 word1+=( $(echo "this is my life" |fold -w1) )
-sortedword1=($(echo ${word1[@]} | tr " " "\n" | sort))x)*
+sortedword1=($(echo ${word1[@]} | tr " " "\n" | sort))
 echo "${sortedword1[@]}"
 echo "${sortedword2[@]}"
 
@@ -299,14 +299,14 @@ done <a.txt
 }
 
 read -a extensions -p "give me extensions seperated by spaces:  " # rad extensions and put them in array $extensions
-for ext in ${extnsions[@]}; do  #for each extension stored in the array
+for ext in ${extensions[@]}; do  #for each extension stored in the array
 echo -e "- Working with extension $ext"
-destination="/Users/christopherdorman/desktop/folder$extension"
-miscelanious="/Users/christopherdorman/desktop/miscelanious"
+destination="/home/gv/Desktop/folder$ext"
+#misc="/Users/christopherdorman/desktop/misc"
 mkdir -p "$destination"
-mv  -v unsorted/*."$extension" "$destination";
+mv  -v unsorted/*.$ext "$destination";
 done
-mv  -v unsorted/*.* "$miscelanius"; 
+#mv  -v unsorted/*.* "$misc"; 
 # since previously you moved the required extensions to particular folders
 # move what ever is left on the unsorted folder to the miscelanius folder
 
