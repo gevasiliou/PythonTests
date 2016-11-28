@@ -139,7 +139,12 @@ exit
 # root@debi64:/home/gv/Desktop/PythonTests# apt list --all-versions xfce4* |cut -f1 -d" "
 # you can combine with grep experimental to see only pkgs available in experimental repo.
 # You then can install a package of a specific varsion using apt install pkg/experimental or apt -t experimental install pkg 
-# 
+# apt list --all-versions  |grep -v "installed" |grep experimental -> list all not installed files from experimental repo
+# apt list --installed --all-versions  |grep experimental -> Find and list experimental versions of all installed files
+# apt list --all-versions  |grep experimental -> list experimental versions of all the pkgs (both installed and not installed)
+# You can limit the listing like apt list --installed --all-versions xfce* |grep experimental
+
+#
 #Trick3: By Running just apt list (no arguments) or apt list --all-versions will give you huge lists of ALL packages (installed and not installed) available in repos.
 # You can combine with grep "installed" (or even --installed switch) to see only the installed packages.
 
