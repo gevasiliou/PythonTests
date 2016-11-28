@@ -298,6 +298,7 @@ echo $line "|" $genre "|" $rest
 done <a.txt
 }
 
+function extensions {
 read -a extensions -p "give me extensions seperated by spaces:  " # rad extensions and put them in array $extensions
 for ext in ${extensions[@]}; do  #for each extension stored in the array
 echo -e "- Working with extension $ext"
@@ -310,3 +311,23 @@ done
 # since previously you moved the required extensions to particular folders
 # move what ever is left on the unsorted folder to the miscelanius folder
 
+}
+
+function Rename_Extensionless_Files {
+#this looks for files without extension and adds .txt extension
+IFS=$'\n'
+direc="/home/gv/Desktop/PythonTests/"
+for fi in $(find $direc -maxdepth 1 -type f -regextype egrep -regex "(^$direc)+[^.]*"); do
+echo "File found: $fi"
+mv -v "$fi" "$fi.txt"
+done
+unset IFS
+#you can remove the maxdepth option to grab all files in subdirs.
+#Same job can be done in one line much better like this:
+#(http://unix.stackexchange.com/questions/313819/add-file-extension-to-files-that-have-no-extension)
+#find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
+#OR
+# find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
+#mind the ! operator that can also be written as -not
+
+}
