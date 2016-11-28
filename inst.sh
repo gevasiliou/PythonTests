@@ -144,3 +144,8 @@ exit
 # You can combine with grep "installed" (or even --installed switch) to see only the installed packages.
 
 # Trick4: You can also see the installed packages using dpkg-query --list instead of apt.
+
+# You can install the package apt-show-versions and locate all available versions of a package (or more packages)
+# For example this : apt-show-versions -a -r |grep -v "No experimental" |grep experimenta
+# use the -r option which enables regex to be used (useless in this case but usefull if you combine -r xfce*)
+# the -a options lists all versions, including experimental.
