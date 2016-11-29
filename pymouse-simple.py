@@ -1,5 +1,6 @@
 from evdev import UInput, AbsInfo
-from evdev import ecodes as e 
+#from evdev import ecodes as e
+from evdev import InputDevice, categorize, ecodes 
 import time
 from datetime import datetime
 from pymouse import PyMouse
@@ -10,6 +11,7 @@ def stamp():
 	return stamp;
 
 rep=1
+'''
 while rep == 1 :
 	print stamp(), ' Lets start this shit'
 	time.sleep(2)
@@ -21,3 +23,11 @@ while rep == 1 :
 	m.click(x, y, 2)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
 
 	print stamp(), 'right click injected at ', m.position()
+'''
+
+dev = InputDevice('/dev/input/event10')
+print(dev)
+for event in dev.read_loop():
+    if event.type == ecodes.EV_ABS:
+#       print(categorize(event))
+		print (event,"---",event.value)

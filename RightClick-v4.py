@@ -44,8 +44,8 @@ class TrackedEvent(object):
         """ Initialize tracking attributes. """
         self.dev = dev
         self.abilities = abilities
-        self.vars = {'ABS_X': var_x, 'ABS_Y': var_y}
-        self.position = {'ABS_X': None, 'ABS_Y': None}
+        self.vars = {'ABS_MT_POSITION_X': var_x, 'ABS_MT_POSITION_Y': var_y}
+        self.position = {'ABS_MT_POSITION_X': None, 'ABS_MT_POSITION_Y': None}
         self.fingers = 0
         self.total_event_fingers = 0
         self.discard = 0
@@ -104,8 +104,8 @@ class TrackedEvent(object):
             if dbg: print datetime.now(),':[Position_Event]: Touch offset:', abs(self.position[event_code] - value)
             if abs(self.position[event_code] - value) > self.vars[event_code]:
                 self._moved_event()
-        if (self.fingers == 1 and self.position['ABS_X'] and
-                self.position['ABS_Y'] and self.track_start is None):
+        if (self.fingers == 1 and self.position['ABS_MT_POSITION_X'] and
+                self.position['ABS_MT_POSITION_Y'] and self.track_start is None):
             self._trackit()
 
     def _trackit(self):
@@ -139,7 +139,7 @@ class TrackedEvent(object):
         '''
         m = PyMouse()
         x , y = m.position()  # gets mouse current position coordinates
-        m.click(x, y, 1)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
+        #m.click(x, y, 1)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
         m.click(x, y, 2)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
         if dbg: print datetime.now(),':[Initiate_Right_Click]: Right Click injected at X,Y:', m.position()
 
@@ -155,7 +155,7 @@ def initiate_gesture_find():
             if dbg: print datetime.now(),':[Gesture_Find]: Device found=', dev.name, '-',dev, "\n"
             break
     Abs_events = {}
-    abilities = {ecodes.EV_ABS: [ecodes.ABS_X, ecodes.ABS_Y],
+    abilities = {ecodes.EV_ABS: [ecodes.ABS_MT_POSITION_X, ecodes.ABS_MT_POSITION_Y],
                  ecodes.EV_KEY: (ecodes.BTN_LEFT, ecodes.BTN_RIGHT)}
     # Assuming QHD screen on my Yoga 2 Pro as default for resolution measures
     res_x = 13  # touch unit resolution # units/mm in x direction
@@ -168,13 +168,13 @@ def initiate_gesture_find():
             for type_code in codes[code]:
 
                 human_code = ecodes.ABS[type_code[0]]
-                if human_code == 'ABS_X':
+                if human_code == 'ABS_MT_POSITION_X':
                     vals = type_code[1]
-                    abilities[ecodes.EV_ABS][0] = (ecodes.ABS_X, vals)
+                    abilities[ecodes.EV_ABS][0] = (ecodes.ABS_MT_POSITION_X, vals)
                     res_x = vals[-1]
-                elif human_code == 'ABS_Y':
+                elif human_code == 'ABS_MT_POSITION_Y':
                     vals = type_code[1]
-                    abilities[ecodes.EV_ABS][1] = (ecodes.ABS_Y, vals)
+                    abilities[ecodes.EV_ABS][1] = (ecodes.ABS_MT_POSITION_Y, vals)
                     res_y = vals[-1]
                 Abs_events[type_code[0]] = human_code
     # Average  index finger width is 16-20 mm, assume 20 mm
@@ -192,7 +192,7 @@ def initiate_gesture_find():
             if MT_event is None:
                 MT_event = TrackedEvent(dev, abilities, var_x, var_y)
             event_code = Abs_events[event.code]
-            if event_code == 'ABS_X' or event_code == 'ABS_Y':
+            if event_code == 'ABS_MT_POSITION_X' or event_code == 'ABS_MT_POSITION_Y':
                 MT_event.position_event(event_code, event.value)
             elif event_code == 'ABS_MT_TRACKING_ID':
                 if event.value == -1:
