@@ -17,7 +17,7 @@ def rightclicktimer():
     if pressed==True and (abs(endx-startx) < 20) and (abs(endy-starty) < 20): 
 #		dev.grab()
 		m.click(x, y, 2)
-		k.tap_key('BTN_RIGHT')
+#		k.tap_key(273)
 
 dev = InputDevice('/dev/input/event7') #Run evtest to verify the correct event number. 
 print(dev)
