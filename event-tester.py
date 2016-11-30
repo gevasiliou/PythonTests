@@ -11,25 +11,12 @@ def stamp():
 	return stamp;
 
 rep=1
-'''
-while rep == 1 :
-	print stamp(), ' Lets start this shit'
-	time.sleep(2)
-	print 'You have 5 seconds to move your mouse pointer smowhere'
-	time.sleep(5) 
 
-	m = PyMouse()
-	x,y = m.position()  # gets mouse current position coordinates
-	m.click(x, y, 2)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
-
-	print stamp(), 'right click injected at ', m.position()
-'''
-
-#dev = InputDevice('/dev/input/event10') #Event10 is the ELAN in Toshiba (run evtest to verify)
-dev = InputDevice('/dev/input/event6') #Event6 is the Virtual Box Mouse in HP
-
+dev = InputDevice('/dev/input/event7') #Run evtest to verify the correct event number. 
 print(dev)
+
 for event in dev.read_loop():
-	if event.type == ecodes.EV_ABS: #With this IF you can limit what to be printed. Remove it to print everything.
+#	if event.type == ecodes.EV_ABS: #With this IF you can limit what to be printed. Remove it to print everything.
 #		print(categorize(event))
-		print AbsEvent(event),'-->','Event TimeStamp:', event.timestamp(), 'Event Code: ', event.code, ' Event Type: ',event.type, ' Event Value: ',event.value
+	print categorize(event),'-->','Event TimeStamp:', event.timestamp(), 'Event Code: ', event.code, ' Event Type: ',event.type, ' Event Value: ',event.value
+#		print AbsEvent(event)
