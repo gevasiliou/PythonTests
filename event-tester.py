@@ -12,7 +12,7 @@ def stamp():
 
 rep=1
 
-dev = InputDevice('/dev/input/event7') #Run evtest to verify the correct event number. 
+dev = InputDevice('/dev/input/event10') #Run evtest to verify the correct event number.
 print(dev)
 
 for event in dev.read_loop():

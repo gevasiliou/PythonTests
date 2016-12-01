@@ -4,6 +4,7 @@ from datetime import datetime
 from pymouse import PyMouse
 from pykeyboard import PyKeyboard
 from threading import Timer
+import subprocess
 
 def stamp():
 	stamp=datetime.now().time()
@@ -22,8 +23,10 @@ def rightclick():
 #	m.click(x1, y1, 1) # Injecting a left click before right click - This modifies the Nautilus behavior.
 #	m.release(x1, y1, 1) # I also tried to inject a left click release prior to right click injection.
 #	dev.grab() # Device grab / ungrap has not a serious effect in Nautilus. In XFCE Desktop , right click is kept even without grabbing the device.
+#	subprocess.check_call(['xinput', '--disable', 'ELAN Touchscreen'])
 	m.press(x1, y1, 2)
 	m.release(x1, y1, 2)
+#	subprocess.check_call(['xinput', '--enable', 'ELAN Touchscreen'])
 #	m2.click(x1, y1, 2) # I just thought to inject the right click with a different PyMouse Object - No success = Same Nautilus Behavior
 #	dev.ungrab()
 
@@ -32,7 +35,7 @@ def rightclick():
 #		m.click(x, y, 2)
 #		dev.ungrab()
 
-dev = InputDevice('/dev/input/event7') #Run evtest to verify the correct ELAN event number. 
+dev = InputDevice('/dev/input/event10') #Run evtest to verify the correct ELAN event number.
 print(dev) #Print the dev information
 m = PyMouse()
 #m2 = PyMouse() #Let's see what will happen if we register a seperate PyMouse object and inject right click with this.
@@ -107,3 +110,4 @@ The method of injecting a left click prior to right click proved to be problemat
 Maybe worth to try mouse injections with PyGTK3 :
 http://stackoverflow.com/questions/4542152/keyboard-mouse-events-on-desktop-root-window-with-pygtk-gtk-gdk-on-linux
 https://digitaloctave.co.uk/pages/gtk3/tutorial14.htm
+'''

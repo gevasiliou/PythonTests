@@ -21,7 +21,7 @@ while rep == 1 :
 	m = PyMouse()
 	x,y = m.position()  # gets mouse current position coordinates
 	m.move(x+10,y+10)
-	m.click(x+20, y+20, 3)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
+	m.click(x+20, y+20, 2)  # the third argument represents the mouse button (1 left click,2 right click,3 middle click)
 
 	print stamp(), 'right click injected at ', m.position()
 
