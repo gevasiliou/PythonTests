@@ -21,9 +21,11 @@ def rightclick():
 	deltatime=timeup - timedown
 	print 'Timer Finish. Pressed:',pressed,'Deltatime=',deltatime, ' Delta X:', abs(endx-startx), ' Delta Y:',abs(endy-starty)
 #	m.click(x1, y1, 1)
-	m.release(x1, y1, 1)
+#	m.release(x1, y1, 1)
+	dev.grab()
 	m.press(x1, y1, 2)
 	m.release(x1, y1, 2)
+	dev.ungrab()
 
 #	if pressed==True and (abs(endx-startx) < 20) and (abs(endy-starty) < 20): 
 #		dev.grab()
