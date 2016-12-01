@@ -89,3 +89,18 @@ for event in dev.read_loop():
 # This worked OK even inside Nautilus userspace and files/folders
 #  -------- Right Click Injection upon finger relase (Code End)
 '''
+
+'''
+How To test:
+a. tap in Desktop space: After one second the desktop context menu appears.
+b. tap in a desktop item: After a second item's context menu appears
+c. tap a Nautilus item: After a second item's context menu appears
+d. tap at Nautilus space : After a second item's context menu appears correctly.
+e. Repeat a,b,c,d with long press - no finger release: In all cases context menu will pop up except case d (nautilus space).
+
+Next Actions:
+We can try more Window Managers (i.e Caja, Nemo) to verify if the bug is also there
+The method of injecting a left click prior to right click proved to be problematic, since Nautilus seems to "break" and Nautilus functionallity is not restored even after terminating the script.
+Maybe worth to try mouse injections with PyGTK3 :
+http://stackoverflow.com/questions/4542152/keyboard-mouse-events-on-desktop-root-window-with-pygtk-gtk-gdk-on-linux
+https://digitaloctave.co.uk/pages/gtk3/tutorial14.htm
