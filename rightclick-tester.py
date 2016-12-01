@@ -100,6 +100,9 @@ e. Repeat a,b,c,d with long press - no finger release: In all cases context menu
 
 Next Actions:
 We can try more Window Managers (i.e Caja, Nemo) to verify if the bug is also there
+Nemo : With a classic mouse, right click during left click selection is not allowed , like in XFCE DE and Thunar.
+Caja : Same as Nemo.
+
 The method of injecting a left click prior to right click proved to be problematic, since Nautilus seems to "break" and Nautilus functionallity is not restored even after terminating the script.
 Maybe worth to try mouse injections with PyGTK3 :
 http://stackoverflow.com/questions/4542152/keyboard-mouse-events-on-desktop-root-window-with-pygtk-gtk-gdk-on-linux

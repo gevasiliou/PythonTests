@@ -149,8 +149,19 @@ exit
 # You can combine with grep "installed" (or even --installed switch) to see only the installed packages.
 
 # Trick4: You can also see the installed packages using dpkg-query --list instead of apt.
+#Moreover you can print the packages in a customized show format:
+#root@debi64:/home/gv# dpkg-query -W -f='${binary:Package},${Version},${Architecture},${binary:Summary}\n'
+#-W = --show , -F = --showformat. See man dpkg-query for more info
+#The comma between fields is printed. You can apply your own dilimiter or you can apply \t,\n,etc.
 
 # You can install the package apt-show-versions and locate all available versions of a package (or more packages)
-# For example this : apt-show-versions -a -r |grep -v "No experimental" |grep experimenta
-# use the -r option which enables regex to be used (useless in this case but usefull if you combine -r xfce*)
-# the -a options lists all versions, including experimental.
+# For example try this : apt-show-versions -a -r |grep -v "No experimental" |grep experimenta
+# -r enables regex to be used (useless in this case but usefull if you combine -r xfce*)
+# -a options lists all versions, including experimental.
+
+# One line dependency checker for a given package (similar to apt-cache depends pkgname):
+#root@debi64:/home/gv/Desktop/PythonTests# read -p "Package= " a;pkgs=$(apt show $a | grep Depends | awk -F'Depends: ' '{print $2}');IFS=', ';for p in $pkgs; do pkg=$(echo $p |grep -v -e '(' -e ')');if [[ $pkg != '' ]] ;then echo -e "$pkg\c";apt-cache -q policy $pkg |grep 'Installed';fi;done
+
+#You can expanded it in a script and provide also the "Candidate:" version field , or grep the version inside () provided by apt show
+# Thus you can have three columns: Required - Installed - Candidate. 
+# This is just informational. You do not need to install dependencies seperatelly - will be installed by defaul with apt install pkgname.
