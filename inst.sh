@@ -31,7 +31,8 @@ if [[ $next == "q" ]]; then
 exit
 elif [[ $next != "s" ]]; then
 #sleep 5
-apt install $i
+#apt install $i
+echo "This is just an echo for testing: Command that should run is APT INSTALL $i"
 fi
 echo "installation of package #$i# finished"
 done
@@ -41,9 +42,12 @@ function selectpackages {
 selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
 		--date-format="%Y-%m-%d" \
 		--field="Pattern:" "xfce*" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
-		--field="Show installed":CB "All!Not Installed!Installed!Experimental" )
+		--field="Show installed":CB "All!Not Installed!Installed!All Experimental!Installed vs Experimental" )
 echo $selections
 pattern=`echo $selections | awk -F',' '{print $1}'`
+if [[ $pattern = "*" ]]; then
+pattern=""
+fi
 exclude1=`echo $selections | awk -F',' '{print $2}'`
 exclude2=`echo $selections | awk -F',' '{print $3}'`
 installed=`echo $selections | awk -F',' '{print $4}'`
@@ -60,9 +64,12 @@ readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "in
 readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
 "All")
 readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
-"Experimental")
-#here the things are a bit different
+"All Experimental")
+#here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
 readarray -t fti < <(apt list --all-versions $pattern |grep "experimental" |cut -f1 -d " ");;
+"Installed vs Experimental")
+#here the things are a bit different. Get all experimental pkgs from the --installed list
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep "experimental" |cut -f1 -d " ");;
 esac
 
 IFS=$'\n' 
@@ -83,12 +90,14 @@ pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 
-if [[ $installed == "Experimental" ]]; then
+if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" ]; then
 echo "grab versions differently in experimental packages"
-pdpolicy=$(grep "Version:" <<< $aptshow)
-pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |cut -f2 -d ":")) #candidate
+pdpolicy=$(grep "Version:" <<< $aptshow) #get the candidate versions at experimental
+#pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |awk -F'Version:' '{print $2}')) #candidate
+pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate version stripped
 
-fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/'))
+#get installed version
+fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/')) #remove the /experimental string from pkg name 
 pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental
 pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
 
@@ -122,7 +131,7 @@ echo "Button Pressed:" $?
 echo "Package list to be installed"
 printf "%s\n" ${toinstall[@]} #this prints the list correctly.
 
-#aptinstall #call the aptinstall function to install selected packages.
+aptinstall #call the aptinstall function to install selected packages.
 
 unset IFS
 exit
