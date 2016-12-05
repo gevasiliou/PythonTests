@@ -1,0 +1,7 @@
+CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,
+FALSE,xfce-keyboard-shortcuts/experimental, xfce keyboard shortcuts configuration (transitional package),4.12.1-2, 4.13.1-1, 70.5 kB, 78.8 kB,
+FALSE,xfce4-power-manager/experimental, power manager for Xfce desktop,1.4.4-4, 1.6.0-1, 241 kB, 577 kB,
+FALSE,xfce4-power-manager-data/experimental, power manager for Xfce desktop, arch-indep files,1.4.4-4, 1.6.0-1, 564 kB, 3,567 kB,
+FALSE,xfce4-power-manager-plugins/experimental, power manager plugins for Xfce panel,1.4.4-4, 1.6.0-1, 168 kB, 237 kB,
+FALSE,xfce4-whiskermenu-plugin/experimental, Alternate menu plugin for the Xfce desktop environment,1.6.1-1, 2.0.1-1, 156 kB, 681 kB,
+FALSE,,,,,,,

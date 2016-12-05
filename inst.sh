@@ -6,8 +6,7 @@ export TMPFILE=/tmp/yadvalues
 }
 
 function pkgselect { 
-#yad --center --text="Selected: $2"
-#echo "Args Received =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
+#echo "Args Received by caller =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 #echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
 echo -e "PKGDIS=\"$2\"" > $TMPFILE
 
@@ -16,25 +15,43 @@ export -f pkgselect
 
 function pkgdisplay { 
 source $TMPFILE
-#filetodisplay="$FILENAME"
-#descr=$(apt show "$PKGDIS" |sed -n '/Description:/,$p')
-descr=$( apt show "$PKGDIS" )
-yad --title="Package Display-$PKGDIS" --no-markup --center --text="$descr" --width=800 --height=200 --button="Go Back":0
+#descr=$( apt show "$PKGDIS" )
+#yad --title="Package Display-$PKGDIS" --no-markup --center --text="${descr[@]}" --width=800 --height=200 --button="Go Back":0
+
+pkgdis2=$(echo $PKGDIS |cut -f1 -d"/")
+descr=$(echo -e "------------------# apt policy $pkgdis2 #---------------------- \n ")
+descr+=$( apt policy "$pkgdis2" )
+descr+=$(echo -e "\n ------------------# apt show $PKGDIS #----------------------\n ")
+descr+=$( apt show "$PKGDIS" )
+displ=$(yad --title="Package Display-$PKGDIS" --no-markup --text-info<<<"$descr" --center --width 800 --height=400 --editable --wrap --button="Go Back":0)
+#If you don't use this method (displ=$(yad....) then the whole yad text-info will be printed in the terminal.
 }
 export -f pkgdisplay
 
+function savepkglist {
+IFS= 
+#for some reason the expected IFS=$'\n' is messing things up
+printf "%s\n" ${LIST3[@]} >pkglist.dat # this prints the LIST3 correctly at file.
+
+if [[ $? == 0 ]]; then
+yad --text="Package List saved to comma separated file pkglist.dat"
+fi
+unset IFS
+}
+export -f savepkglist
+
 function aptinstall {
 for i in ${toinstall[@]}; do
-echo "preparing to install :" $i
-read -p "Press any key to continue installing $i or type s/q to skip/exit:" next
-if [[ $next == "q" ]]; then
-exit
-elif [[ $next != "s" ]]; then
-#sleep 5
-#apt install $i
-echo "This is just an echo for testing: Command that should run is APT INSTALL $i"
-fi
-echo "installation of package #$i# finished"
+	echo "preparing to install :" $i
+	read -p "Press any key to continue installing $i or type s/q to skip/exit:" next
+	if [[ $next == "q" ]]; then
+		exit 1
+	elif [[ $next != "s" ]]; then
+		#sleep 5
+		#apt install $i
+		echo "This is just an echo for testing: Command that should run is # apt install $i # " && echo "installation of package #$i# finished"
+		# Combining commands with && means that next command is executed only when prev command exited with code 0 = success.
+	fi
 done
 }
 
@@ -43,6 +60,11 @@ selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form 
 		--date-format="%Y-%m-%d" \
 		--field="Pattern:" "xfce*" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
 		--field="Show installed":CB "All!Not Installed!Installed!All Experimental!Installed vs Experimental" )
+if [[ $? == 1 ]]; then 
+echo "Exiting ... "
+exit 1
+fi
+
 echo $selections
 pattern=`echo $selections | awk -F',' '{print $1}'`
 if [[ $pattern = "*" ]]; then
@@ -51,6 +73,19 @@ fi
 exclude1=`echo $selections | awk -F',' '{print $2}'`
 exclude2=`echo $selections | awk -F',' '{print $3}'`
 installed=`echo $selections | awk -F',' '{print $4}'`
+
+}
+
+function printarray {
+arr=("${@}")
+ind=0
+	echo "Start of Array"	
+	echo "Array[@]=" "${arr[@]}"
+	for e in "${arr[@]}"; do
+		echo "Array[$ind]=" $e
+		ind=$(($ind+1))
+	done
+ 	printf "End of Array\n\n"
 
 }
 
@@ -66,10 +101,10 @@ readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
 readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep "experimental" |cut -f1 -d " ");;
+readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep "experimental" |cut -f1 -d " ");;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
 esac
 
 IFS=$'\n' 
@@ -111,19 +146,30 @@ fi
 
 #echo "${pdss[@]}"
 #exit
+list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n"))
 
 for (( pitem=0; pitem<=$c; pitem++ )); do
 #Build the list for yad with double quotes and space.
 list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" )
+#export LIST2+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" 
+list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pitem]},${pdszd[pitem]},${pdszi[pitem]},\n"))
+#Format of List2 is different. $list for yad has been built in order to be understood by yad = not \n chars inside.
+#We could export list to list2 as it was, but will be saved as one line in file.
+#It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
 done
-#exit
+#printarray ${list[@]}
+printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
+export LIST3=$(printf "%s\n" ${list2[@]})
 
 toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --height=600 --center --checklist \
 --select-action 'bash -c "pkgselect %s "' \
 --print-column=2 --separator="\n" \
---button="Display":'bash -c "pkgdisplay"' --button="gtk-ok":0 --button="gtk-cancel":1 --button="Info":5 \
+--button="Save List":'bash -c "savepkglist"' \
+--button="Display":'bash -c "pkgdisplay"' \
+--button="gtk-ok":0 --button="gtk-cancel":1 \
 --column="Install":CHK --column="File" \
---column="Description" --column="Installed" --column="Candidate" --column="Download Size" --column="Installed Size" "${list[@]}" ))
+--column="Description" --column="Installed" --column="Candidate" --column="Download Size" \
+--column="Installed Size" "${list[@]}" ))
 #the --checklist option is required by yad in order to print all entries with value of "true". If you ommit this option, only the last entry is printed.
 #alternativelly with option --print-all you can print ALL the list including true - false selection of rows
 
