@@ -118,7 +118,10 @@ while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
 #		--field="Location":MDIR "$startingdir" --field="Filename" "g*.desktop" )
 #
 #check box editable (CBE) solution 
-selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --item-separator="," --field="Location":CBE "/usr/share/applications/,/home/gv/Desktop/PythonTests/appsfiles/" --field="Filename" "g*.desktop")
+	selections=$(yad --title="Select Files" --window-icon="gtk-find" --center \
+				--form --separator="," --item-separator="," \
+				--field="Location":CBE "/usr/share/applications/,/home/gv/Desktop/PythonTests/appsfiles/" \
+				--field="Filename" "g*.desktop")
 	ret=$?
 	location=`echo $selections | awk -F',' '{print $1}' |sed 's![^/]$!&/!'`  
 	files=`echo $selections | awk -F',' '{print $2}'`  
