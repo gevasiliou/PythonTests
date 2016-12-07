@@ -59,7 +59,7 @@ function selectpackages {
 selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
 		--date-format="%Y-%m-%d" \
 		--field="Pattern:" "xfce*" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
-		--field="Show installed":CB "All!Not Installed!Installed!All Experimental!Installed vs Experimental" )
+		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
 if [[ $? == 1 ]]; then 
 echo "Exiting ... "
 exit 1
@@ -105,7 +105,11 @@ readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
 readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " " );;
+"All Unstable")
+readarray -t fti < <(apt list --all-versions $pattern |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+"Installed vs Unstable")
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 esac
 
 IFS=$'\n' 
@@ -116,7 +120,7 @@ echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 #echo "fti[$item] = ${fti[$item]}"
 done
-
+#exit
 aptshow=$(apt show ${pd[@]})
 pddescription=$(grep "Description:" <<< $aptshow)
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
@@ -126,9 +130,9 @@ pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 
-if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" ]; then
+if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
 echo "grab versions differently in experimental packages"
-pdpolicy=$(grep "Version:" <<< $aptshow) #get the candidate versions at experimental
+pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
 #pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |awk -F'Version:' '{print $2}')) #candidate
 pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate version stripped
 
