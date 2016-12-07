@@ -90,8 +90,9 @@ ind=0
 }
 
 #-----------------------MAIN PROGRAM----------------------------------#
+stop=0
+while [[ $stop -eq 0 ]];do
 selectpackages
-
 case "$installed" in
 "Not Installed") 
 readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "installed" |cut -f 1 -d "/");;
@@ -166,20 +167,40 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --print-column=2 --separator="\n" \
 --button="Save List":'bash -c "savepkglist"' \
 --button="Display":'bash -c "pkgdisplay"' \
---button="gtk-ok":0 --button="gtk-cancel":1 \
---column="Install":CHK --column="File" \
---column="Description" --column="Installed" --column="Candidate" --column="Download Size" \
---column="Installed Size" "${list[@]}" ))
+--button="gtk-ok":0 \
+--button="gtk-cancel":1 \
+--button="New Selection":10 \
+--column="Install":CHK \
+--column="File" \
+--column="Description" \
+--column="Installed" \
+--column="Candidate" \
+--column="Download Size" \
+--column="Installed Size" \
+"${list[@]}" ))
 #the --checklist option is required by yad in order to print all entries with value of "true". If you ommit this option, only the last entry is printed.
 #alternativelly with option --print-all you can print ALL the list including true - false selection of rows
 
-echo "Button Pressed:" $?
-echo "Package list to be installed"
-printf "%s\n" ${toinstall[@]} #this prints the list correctly.
-
-aptinstall #call the aptinstall function to install selected packages.
-
+btn=$?
+echo "Button Pressed:" $btn
+case $btn in 
+0) 	
+	echo "Package list to be installed"
+	printf "%s\n" ${toinstall[@]} #this prints the list correctly.
+	aptinstall #call the aptinstall function to install selected packages.
+	stop=1
+	unset IFS
+	;;
+1) 
+	stop=1
+	unset IFS
+	;;
+10)
+	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
+	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS
+esac	
 unset IFS
+done
 exit
 
 #To be done:

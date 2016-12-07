@@ -331,3 +331,14 @@ unset IFS
 #mind the ! operator that can also be written as -not
 
 }
+
+function splitword {
+echo "Welcome"
+read -p "Give me a word" resp
+readarray letter < <(echo "$resp" |fold -w1)
+for ((i=0;i<${#letter[@]};i++)); do
+echo "letter[$i] : ${letter[$i]}"
+done
+}
+
+splitword

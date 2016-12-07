@@ -112,12 +112,19 @@ ret=1
 #startingdir="/usr/share/applications/"
 startingdir="/home/gv/Desktop/PythonTests/appsfiles/"
 while [[ $ret2 -eq 1 ]] && [[ $ret -eq 1 ]]; do
-	selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
-		--date-format="%Y-%m-%d" \
-		--field="Location":MDIR "$startingdir" --field="Filename" "g*.desktop" )
+#Multi Dir Solution (MDIR). Provides an icon to browse for directory
+#	selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --separator="," \
+#		--date-format="%Y-%m-%d" \
+#		--field="Location":MDIR "$startingdir" --field="Filename" "g*.desktop" )
+#
+#check box editable (CBE) solution 
+selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --item-separator="," --field="Location":CBE "/usr/share/applications/,/home/gv/Desktop/PythonTests/appsfiles/" --field="Filename" "g*.desktop")
 	ret=$?
-	location=`echo $selections | awk -F',' '{print $1}'`  
+	location=`echo $selections | awk -F',' '{print $1}' |sed 's![^/]$!&/!'`  
 	files=`echo $selections | awk -F',' '{print $2}'`  
+#echo "Selection= $selection"
+echo "Full Path=$location$files"
+#exit
 
 	if [[ $ret -eq 1 ]]; then # Cancel Selected
 		yad --text="Are you sure?"
