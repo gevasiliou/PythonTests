@@ -24,8 +24,9 @@ export -f yadlistselect
 
 function filedisplay { 
 source $TMPFILE
-filetodisplay="$FILENAME"
-ftd=$(yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0)
+#filetodisplay="$FILENAME"
+#ftd=$(yad --title="File Display-$filetodisplay" --width=800 --height=500 --center --text-info --filename=$filetodisplay --wrap --editable --button="Go Back":0)
+ftd=$(yad --title="File Display-$FILENAME" --width=800 --height=500 --center --text-info --filename=$FILENAME --wrap --editable --button="Go Back":0)
 }
 export -f filedisplay
 
