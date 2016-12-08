@@ -41,14 +41,24 @@ unset IFS
 export -f savepkglist
 
 function aptinstall {
-for i in ${toinstall[@]}; do
+for i in ${toinstall[@]}; do #$toninstall array is global var assigned in the main programm by yad.
+	istrip1=$(echo $i |cut -f1 -d"/")
+	istrip2=$(echo $i |cut -f2 -d"/")
+	if [ $istrip2 == "experimental" ]; then
+	echo "Experimental Package Detected"
+	fi
+	#exit
 	echo "preparing to install :" $i
 	read -p "Press any key to continue installing $i or type s/q to skip/exit:" next
 	if [[ $next == "q" ]]; then
 		exit 1
 	elif [[ $next != "s" ]]; then
-		#sleep 5
-		apt install $i
+		if [ $istrip2 == "experimental" ]; then
+			echo "Experimental Package Detected"
+			apt install -t experimental $i
+		else 
+			apt install $i
+		fi
 		#echo "This is just an echo for testing: Command that should run is # apt install $i # " && echo "installation of package #$i# finished"
 		# Combining commands with && means that next command is executed only when prev command exited with code 0 = success.
 	fi
@@ -56,12 +66,18 @@ done
 }
 
 function selectpackages {
+if [[ "$1" != "" ]]; then # is arg $1 is not empty = arg is sent 
+ptrn="$1"
+else #if arg $1 is empty , apply the existed value.
+ptrn=$pattern
+fi
 selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
 		--date-format="%Y-%m-%d" \
-		--field="Pattern:" "xfce*" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
+		--field="Pattern:" "$ptrn" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
 		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
-if [[ $? == 1 ]]; then 
-echo "Exiting ... "
+
+if [ $? == 1 -o $? == 252 ]; then #1 is for Cancel Button, 252 is for ESC button
+echo "Script Exit."
 exit 1
 fi
 
@@ -91,8 +107,10 @@ ind=0
 
 #-----------------------MAIN PROGRAM----------------------------------#
 stop=0
+selectpackages "xfce*"
+
 while [[ $stop -eq 0 ]];do
-selectpackages
+#selectpackages
 case "$installed" in
 "Not Installed") 
 readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
@@ -105,7 +123,7 @@ readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
 readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " " );;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
 readarray -t fti < <(apt list --all-versions $pattern |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 "Installed vs Unstable")
@@ -151,16 +169,17 @@ fi
 
 #echo "${pdss[@]}"
 #exit
-list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n"))
+list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
 
 for (( pitem=0; pitem<=$c; pitem++ )); do
 #Build the list for yad with double quotes and space.
-list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" )
-#export LIST2+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" 
+list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" ) #to be used by yad only - no new lines (\n) allowed by yad list.
+
 list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pitem]},${pdszd[pitem]},${pdszi[pitem]},\n"))
-#Format of List2 is different. $list for yad has been built in order to be understood by yad = not \n chars inside.
-#We could export list to list2 as it was, but will be saved as one line in file.
-#It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
+# Format of List2 is different. $list for yad has been built in order to be understood by yad = not \n chars inside.
+# We could export list to list2 as it was, but will be saved later infiles as one line without \n. 
+# It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
+
 done
 #printarray ${list[@]}
 printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
@@ -168,7 +187,8 @@ export LIST3=$(printf "%s\n" ${list2[@]})
 
 toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --height=600 --center --checklist \
 --select-action 'bash -c "pkgselect %s "' \
---print-column=2 --separator="\n" \
+--print-column=2 \
+--separator="\n" \
 --button="Save List":'bash -c "savepkglist"' \
 --button="Display":'bash -c "pkgdisplay"' \
 --button="gtk-ok":0 \
@@ -192,16 +212,21 @@ case $btn in
 	echo "Package list to be installed"
 	printf "%s\n" ${toinstall[@]} #this prints the list correctly.
 	aptinstall #call the aptinstall function to install selected packages.
+	unset IFS
+	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
+	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall
+	# Reset all variables except variables in selectpackages function (pattern, etc)
+	# selectpacakges is not called again - previous selections are used. While loop will poll again all the data and thus list will be refreshed.
+	;;
+1) #Exit. Setting stop=1 while loop ends - script exits.
 	stop=1
 	unset IFS
 	;;
-1) 
-	stop=1
-	unset IFS
-	;;
-10)
+10) # New Selection
 	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
 	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS
+	selectpackages #by not sending an arg to selectpackages, previously values are used.
+	# Just unset all variables, and allow the while loop to be repeated
 esac	
 unset IFS
 done
@@ -245,3 +270,7 @@ exit
 #You can expanded it in a script and provide also the "Candidate:" version field , or grep the version inside () provided by apt show
 # Thus you can have three columns: Required - Installed - Candidate. 
 # This is just informational. You do not need to install dependencies seperatelly - will be installed by defaul with apt install pkgname.
+
+# Tips: A lot of yad dialogues work well with pipes.
+# For example this works perfectly : apt install geany |yad --text-info (it does not work with simple --text)
+
