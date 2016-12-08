@@ -48,8 +48,8 @@ for i in ${toinstall[@]}; do
 		exit 1
 	elif [[ $next != "s" ]]; then
 		#sleep 5
-		#apt install $i
-		echo "This is just an echo for testing: Command that should run is # apt install $i # " && echo "installation of package #$i# finished"
+		apt install $i
+		#echo "This is just an echo for testing: Command that should run is # apt install $i # " && echo "installation of package #$i# finished"
 		# Combining commands with && means that next command is executed only when prev command exited with code 0 = success.
 	fi
 done
@@ -95,7 +95,7 @@ while [[ $stop -eq 0 ]];do
 selectpackages
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list $pattern |grep -v -e $exclude1 -e $exclude2 -e "installed" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
 "Installed")
 readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
 "All")
@@ -138,14 +138,14 @@ pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate
 
 #get installed version
 fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/')) #remove the /experimental string from pkg name 
-pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental
+pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental format
 pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
 
 else
 echo "Classic version grab"
 pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
-pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " "))
-pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " "))
+pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " ")) #pdpi=pdpolicy installed
+pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " ")) #pdpc=pdpolicy candidate
 fi
 
 
