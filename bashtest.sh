@@ -328,7 +328,7 @@ unset IFS
 #find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 #OR
 # find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
-#mind the ! operator that can also be written as -not
+#mind the ! operator (can be written also as -not) . Actually find with ! finds files that their name does NOT match *.* format = extensionless files.
 
 }
 
