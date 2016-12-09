@@ -225,6 +225,7 @@ fi
 
 #Replace a string with s/ switch
 #sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
+#echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
 # More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 #Replace foo with bar only if there is a baz later on the same line:
 #sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
