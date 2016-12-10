@@ -76,11 +76,6 @@ while read i; do
 echo -e "$i:  \c" 
 ls -Fall "$i" | wc -l
 done < "b.txt"
-#ls alternative: 
-# find /home/gv -maxdepth 1 -type d -> list only directories
-# find /home/gv -maxdepth 1 -type f -> lists only files
-# find /home/gv -maxdepth 1 -> lists both
-# output of find can be piped to wc -l as well.
 }
 
 function valreplcae {
@@ -191,7 +186,7 @@ printf '%s\n' ${newdata[@]}
 }
 
 function simplenameread {
-read -p "Enter Name: " name #mind the -p option. i used to do it with echo -e "Enter Name\c";read name
+read -p "Enter Name: " name #mind the -p option (=prompt). i used to do it with echo -e "Enter Name\c";read name
 if [ "$name" == "" ]; then
     sleep 1
     echo "Oh Great! You haven't entered name."
@@ -200,43 +195,6 @@ else
 echo "You enter name $name"
 fi
 }
-
-#Check if a slash '/' exist in the end of variable and add it if it is missing
-#root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
-#/home/gv/Desktop/
-
-#multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
-#grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
-
-#sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
-#get a range of lines with sed: sed -n '16224,16482p;16483q' filename
-#mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
-#To do that with variables: $ sed -n "$FL,$LL p" file.txt
-
-#sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
-#There is a direct awk alternative: awk '/Tatty Error/,/suck/' a.txt
-#you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
-
-#Find a word in file/stdin and grep from this word up to the last \n = new line = eof.
-#Remember that $ represents "last" in regex
-#apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
-#You can do the same starting from a line up to eof. 
-#Also this should work sed -n '/matched/,$p' file , wher matched can be a line number or a string
-
-#Replace a string with s/ switch
-#sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
-#echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
-# More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
-#Replace foo with bar only if there is a baz later on the same line:
-#sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
-#Multiple replace operations: replace with different strings
-#You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
-#
-#Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
-
-#Trick to get only one line from file using head and tail
-# Usage: bash viewline myfile 4
-#head -n $2 "$1" | tail -n 1
 
 function comparetwofiles {
 readarray data < <(comm --nocheck-order --output-delimiter "-"  b.txt c.txt)
@@ -300,7 +258,7 @@ done <a.txt
 }
 
 function extensions {
-read -a extensions -p "give me extensions seperated by spaces:  " # rad extensions and put them in array $extensions
+read -a extensions -p "give me extensions seperated by spaces:  " # read extensions and put them in array $extensions
 for ext in ${extensions[@]}; do  #for each extension stored in the array
 echo -e "- Working with extension $ext"
 destination="/home/gv/Desktop/folder$ext"
@@ -329,7 +287,8 @@ unset IFS
 #find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 #OR
 # find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
-#mind the ! operator (can be written also as -not) . Actually find with ! finds files that their name does NOT match *.* format = extensionless files.
+#mind the ! operator (can be written also as -not) . 
+#Actually find with ! operator finds files that their name does NOT match *.* format = extensionless files.
 
 }
 
@@ -343,3 +302,66 @@ done
 }
 
 splitword
+
+{ # Various HowTo
+# Check if a slash '/' exist in the end of variable and add it if it is missing
+# root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
+# /home/gv/Desktop/
+
+# multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
+# grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
+
+# sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
+# get a range of lines with sed: sed -n '16224,16482p;16483q' filename
+# mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
+# To do that with variables: $ sed -n "$FL,$LL p" file.txt
+
+# sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
+# There is a direct awk alternative: awk '/Tatty Error/,/suck/' a.txt
+# you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
+
+# Find a word in file/stdin and grep from this word up to the last \n = new line = eof.
+# Remember that $ represents "last"-end of line in regex
+# apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
+# You can do the same starting from a line up to eof. 
+# Also this should work sed -n '/matched/,$p' file , wher matched can be a line number or a string
+
+# Replace a string with s/ switch
+# sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
+# echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
+# More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
+# Replace foo with bar only if there is a baz later on the same line:
+# sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
+# Multiple replace operations: replace with different strings
+# You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
+#
+# Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
+
+# Trick to get only one line from file using head and tail
+# Usage: bash viewline myfile 4
+# head -n $2 "$1" | tail -n 1
+#
+# ls alternatives
+# find /home/gv -maxdepth 1 -type d -> list only directories
+# find /home/gv -maxdepth 1 -type f -> lists only files
+# find /home/gv -maxdepth 1 -> lists both
+# output of find can be piped to wc -l as well.
+#
+# More Text Replace with sed
+# Consider file containing:
+# ltm node /test/10.90.0.1 {
+#    address 10.90.0.1
+#}
+# 1. Let's suppose you want to add at the end of address %200
+# sed '/address/ s/$/%200/' a.txt
+# s = replace, $= end of line
+# Alternatives
+# str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3"."$4"%200"}'<<<$str);echo $newstr 
+# awk '/address/ && sub("$","%200") || 1' file.txt
+#
+# 2. Lets suppose you want to replace the last digit with .20
+# sed '/address/ s/.[0-9]*$/.20/' a.txt
+# .[0-9]*$ = regex = starts with dot, contains numbers in range 0-9, multiple numbers (*) and then EOL ($)
+# alternatives
+# str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
+}

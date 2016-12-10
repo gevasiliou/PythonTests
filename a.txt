@@ -1,8 +1,10 @@
-We are learning NLP
-Good Bye
-Regular expression
-American University of Beirut
-Graduate Students
-Lab session
-Welcome to Lebanon
-Tomorrow Holiday
+ltm node /test/10.90.0.1 {
+address 10.90.0.1
+}
+ltm node /test/10.90.0.12 {
+address 10.90.0.12
+}
+
+ltm node /test/10.90.0.50 {
+address 10.90.0.50
+}
