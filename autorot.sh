@@ -18,22 +18,22 @@ do
 		case "$ORIENTATION" in
 		normal)
 		echo 'xrandr rotate normal'
-		#xrandr --output $screen --rotate normal 
+		xrandr --output $screen --rotate normal 
 		#gsettings set com.canonical.Unity.Launcher launcher-position Left
 		;;		
 		bottom-up)
 		echo 'xrandr rotate bottom-up'
-		#xrandr --output $screen --rotate inverted 
+		xrandr --output $screen --rotate inverted 
 		#gsettings set com.canonical.Unity.Launcher launcher-position Left
 		;;		
 		right-up)
 		echo 'xrandr rotate right-up'
-		#xrandr --output $screen --rotate right 
+		xrandr --output $screen --rotate right 
 		#gsettings set com.canonical.Unity.Launcher launcher-position Bottom
 		;;		
 		left-up)
 		echo 'xrandr rotate left-up'
-		#xrandr --output $screen --rotate left 
+		xrandr --output $screen --rotate left 
 		#gsettings set com.canonical.Unity.Launcher launcher-position Bottom
 		;;
 		esac
