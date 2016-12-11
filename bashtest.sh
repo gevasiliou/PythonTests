@@ -364,4 +364,15 @@ splitword
 # .[0-9]*$ = regex = starts with dot, contains numbers in range 0-9, multiple numbers (*) and then EOL ($)
 # alternatives
 # str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
+
+# Search for a process using top . Top seems to catch all processes:
+# top -p $(echo $(pgrep time) |sed 's/ /,/g')
+# pgrep search for processes matching pattern even partially. pidof could be used if exact process name is known.
+# Defaut output of pgrep is to seperate processes found with new lines. By echo \n is removed and a space is used.
+# If you replaace that space with a comma, then can be fed to top -p which accepts multiple pids (comma seperated)
+
+# Comparing files and variables:
+# diff can compare two files line by line.
+# You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
+
 }

@@ -7,8 +7,10 @@
 TOUCHSCREEN='ELAN Touchscreen' #as reported by evtest
 TRANSFORM='Coordinate Transformation Matrix'
 
-function gv()
-{
+function gv {
+TOUCHSCREEN='ELAN Touchscreen' #as reported by evtest
+TRANSFORM='Coordinate Transformation Matrix'
+
 echo 'Start of Function gv. Parameters Received:' $1 $2 $3 #Parameters inside function get a different number / name.
  
 screen=$(xrandr | grep 'connected' |grep -v 'disconnected' | grep -oE '[a-zA-Z]+[\-]+[^ ]') 
@@ -49,22 +51,22 @@ done
 echo 'End of Function gv' 
 exit 1
 }
+export -f gv
 
-function notifystop ()
-{
+function notifystop {
 echo 'Notify Stop'
-exec 2> /dev/null
+#exec 2> /dev/null
 #pidof monitor-sensor | xargs kill -9
 #pidof inotifywait | xargs kill -9
 pkill -f "monitor-sensor"
 pkill -f "monitor-sensor >> sensor.log 2>&1"
 pkill -f "inotifywait -e modify sensor.log"
-exit 1
+exit
 }
+export -f notifystop
 
-function byebye ()
-{
-exec 2> /dev/null
+function byebye {
+#exec 2> /dev/null
 echo 'Bye Bye to all!'
 #pidof monitor-sensor | xargs kill -9
 #pidof inotifywait | xargs kill -9
@@ -72,10 +74,13 @@ echo 'Bye Bye to all!'
 pkill -f "monitor-sensor"
 pkill -f "monitor-sensor >> sensor.log 2>&1"
 pkill -f "inotifywait -e modify sensor.log"
-pkill -f "yad --notification --command="./yadmenu.sh""
-exit 1
+pkill -f "autorot.sh"
+pkill -f "yad --notification --command=bash -c autorot"
+exit
 }
+export -f byebye
 
+function autorot {
 # ------------------------------------------------------- The main program ----------------------------- #
 echo 'Main Programm Starting'
 action=$(yad --width 300 --entry --title "AutoRotate" \
@@ -114,7 +119,11 @@ case $action in
 esac
 echo 'Main Programm End'
 exit 0
+}
+export -f autorot
 
+yad --notification --command="bash -c autorot"
+exit
 # I tried to use a kind of flags passing to the functions in order to avoid pkill for lock feature.
 # But is seems that once inotifywait runs once, will be always running as process.
 # As a result if you try to "skip" the inotify section with some "already running" logic checks, they do not work.
