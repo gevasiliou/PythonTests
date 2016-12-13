@@ -301,7 +301,15 @@ echo "letter[$i] : ${letter[$i]}"
 done
 }
 
-splitword
+for file in *.txt
+# rename files with name "a a (01).txt to "a a (001).txt" - file name containing spaces.
+do 
+number=$(grep -Eo '[0-9]*' <<<$file)
+newname=$(sed "s/([0-9]*).txt/(0$number).txt/"<<<$file)
+echo "old file = $file - new name=$newname"
+mv "$file" "$newname"
+done
+ls -l *.txt
 
 { # Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
@@ -374,5 +382,4 @@ splitword
 # Comparing files and variables:
 # diff can compare two files line by line.
 # You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
-
 }
