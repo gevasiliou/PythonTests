@@ -373,6 +373,9 @@ ls -l *.txt
 # alternatives
 # str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
+# Use a variable in sed
+# You just need to double qute the sed actions instead of single quotes.
+
 # Search for a process using top . Top seems to catch all processes:
 # top -p $(echo $(pgrep time) |sed 's/ /,/g')
 # pgrep search for processes matching pattern even partially. pidof could be used if exact process name is known.
@@ -382,4 +385,13 @@ ls -l *.txt
 # Comparing files and variables:
 # diff can compare two files line by line.
 # You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
+
+# Processes List and Kill
+# ps all and ps aux
+# list all of tty1 : ps -t tty1
+# Isolate pids: ps -t tty1 |cut -d" " -f1
+# Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
+# Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
+
+
 }
