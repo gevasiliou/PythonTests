@@ -301,6 +301,7 @@ echo "letter[$i] : ${letter[$i]}"
 done
 }
 
+function another_rename {
 for file in *.txt
 # rename files with name "a a (01).txt to "a a (001).txt" - file name containing spaces.
 do 
@@ -310,8 +311,55 @@ echo "old file = $file - new name=$newname"
 mv "$file" "$newname"
 done
 ls -l *.txt
+}
 
-{ # Various HowTo
+function trikc_rename {
+# This function handles filenames with spaces and renames them using mv (i.e file "a a (01<>).txx)
+# The tricky assignment of mv commands replaces unwanted characters with a low dash _
+find . -name "*.txx" |while read -r filei ;do
+bn=$(basename "$file")
+dn=$(dirname "$file")
+echo "Full Filename: $file - basename: $bn - Dirname: $dn"
+#cp -v "$i" "/home/gv/Desktop/dtmp/$bn"
+mv -v "$dn/$bn" "$dn/${bn//[\/<>:\\|*\'\"?]/_}"
+done
+}
+
+
+# find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator
+# find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
+# find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "$0".mp4' {} \;
+# find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
+# If printf is combined with -exec {} or bash -c $0, those variables still get the whole file name. printf is only used for print formating.
+# for f in "$(find . -type f -name "*.txx" -printf '%f\n')";do echo "$f";done -> Works perfect even with spaces in filenames due to double quotes in find.
+
+# find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "${0//[\/<>:\\|*\"?]/_}"' {} \; #this somehow worked but is mixing up directories.
+
+
+
+again=1
+dr="*"
+while [[ "$again" -eq "1" ]]; do
+	again=0
+	echo "Current Dir = $dr"
+	for i in $dr; do 
+		if [[ -d "$i" ]]; then
+			#echo "Directory $i found"
+			again=1
+		else #if it is not a directory 
+			mv "$i" "${i//[\/<>:\\|*\'\"?]/_}"
+			echo "$i"
+		fi
+	done
+
+	if [[ "$again" -eq "1" ]]; then
+		dr="$dr/*"
+		echo "Again is 1 . New Dir = $dr"
+	fi
+done
+
+
+# Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 # /home/gv/Desktop/
@@ -392,6 +440,3 @@ ls -l *.txt
 # Isolate pids: ps -t tty1 |cut -d" " -f1
 # Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 # Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
-
-
-}
