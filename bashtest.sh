@@ -338,7 +338,7 @@ done
 
 
 again=1
-dr="*"
+dr="."
 while [[ "$again" -eq "1" ]]; do
 	again=0
 	echo "Current Dir = $dr"
@@ -347,7 +347,7 @@ while [[ "$again" -eq "1" ]]; do
 			#echo "Directory $i found"
 			again=1
 		else #if it is not a directory 
-			mv "$i" "${i//[\/<>:\\|*\'\"?]/_}"
+			#mv "$i" "${i//[\/<>:\\|*\'\"?]/_}"
 			echo "$i"
 		fi
 	done
@@ -440,3 +440,24 @@ done
 # Isolate pids: ps -t tty1 |cut -d" " -f1
 # Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 # Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
+
+
+#List and Manipulating files with strange names.
+#Consider files with spaces in their name (i.e a a (01).txx)
+
+#In order you want to get the basename of this file the following command fails:
+#for file in "$(find . -name "*.txx")";do basename "$file";done
+#But if you just type find . -name "*.txx" files will be listed correctly.
+#Also this command works ok: for file in "$(find . -name "*.txx")";do echo "$file";done
+#Mind the double quotes outside $(find...)
+
+#To correctly handle file names with spaces you need to combine find with  while read.
+#This works ok: find . -name "*.txx" |while read -r line;do basename "$line";done
+
+#Also this works ok , and it is more simple to use: for file in *.txx;do basename "$file";done
+#The problem here is that this method doesn't go inside subdirs, while the find method does.
+#http://stackoverflow.com/questions/4638874/how-to-loop-through-a-directory-recursively-to-find-files-with-certain-extension
+#http://www.commandlinefu.com/commands/view/14209/repeat-any-string-or-char-n-times-without-spaces-between
+#http://wiki.bash-hackers.org/syntax/expansion/brace
+#http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
+#https://debian-administration.org/article/150/Easily_renaming_multiple_files.
