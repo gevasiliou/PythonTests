@@ -313,10 +313,10 @@ done
 ls -l *.txt
 }
 
-function trikc_rename {
+function trick_rename {
 # This function handles filenames with spaces and renames them using mv (i.e file "a a (01<>).txx)
 # The tricky assignment of mv commands replaces unwanted characters with a low dash _
-find . -name "*.txx" |while read -r filei ;do
+find . -name "*.txx" |while read -r file ;do
 bn=$(basename "$file")
 dn=$(dirname "$file")
 echo "Full Filename: $file - basename: $bn - Dirname: $dn"
@@ -336,30 +336,39 @@ done
 
 # find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "${0//[\/<>:\\|*\"?]/_}"' {} \; #this somehow worked but is mixing up directories.
 
+IFS=$'\n';startdir=$PWD;dr+=($(find $PWD -type d));for i in ${dr[@]}; do cd $i;for fl in *; do echo "Inside directpry $i i will mv : $fl to " "${fl//[\/<>:\\|*\'\"?]/_}";done;done;cd $startdir
 
-
-again=1
-dr="$PWD"
-while [[ "$again" -eq "1" ]]; do
-	again=0
-	echo "Current Dir = $dr"
-	for i in $dr; do 
-		if [[ -d "$i" ]]; then
-			#echo "Directory $i found"
-			again=1
-			
-		else #if it is not a directory 
-			#mv "$i" "${i//[\/<>:\\|*\'\"?]/_}"
-			echo "gonna mv : $dr/$i -" "$dr/${i//[\/<>:\\|*\'\"?]/_}"
-		fi
-	done
-
-	if [[ "$again" -eq "1" ]]; then
-		dr="$dr/*"
-		echo "Again is 1 . New Dir = $dr"
-	fi
+function test {
+IFS=$'\n'
+dr+=($(find $PWD -type d))
+for i in ${dr[@]};do 
+	echo "--: $i"
+	#read -p "press to enter $i"
+	cd $i
+	echo "Now you are on $PWD"
+		for fl in *;do 
+			echo "--Fl: $fl"
+			echo "Inisde directory $i i will mv : $fl -" "${fl//[\/<>:\\|*\'\"?]/_}"
+		done
+	#read -p "Press a key to go on"
 done
+#Output : Inisde directory /home/gv/Desktop/PythonTests/appsfiles/temp i will mv : a b (02?<>).txx - a b (02___).txx
 
+# Alternative
+#for i in "$(find $PWD)";do echo "gonna mv $i -" "${i//[\/<>:\\|*\'\"?]/_}";done  
+#This one will correctly list all files, but the {} expansion will also remove / from the whole path = folders name.
+#gonna mv /home/gv/Desktop/PythonTests/?[{rec-r(<ui>)t.txx - _home_gv_Desktop_PythonTests__[{rec-r(_ui_)t.txx
+#Seems mandatory to separate basename and dirname to avoid renaming / removing chars from the whole path.
+
+#for i in $(find $PWD);do echo "gonna mv $i -" "$(dirname $i)/$(basename ${i//[\/<>:\\|*\'\"?]/_})";done  |grep -v "appsfiles" 
+#gonna mv /home/gv/Desktop/PythonTests/?[{rec-r(<ui>)t.txx - /home/gv/Desktop/PythonTests/_home_gv_Desktop_PythonTests__[{rec-r(_ui_)t.txx
+
+#for i in $(find $PWD);do bn=$(basename $i);echo "gonna mv $i -" "$(dirname $i)/${bn//[\/<>:\\|*\'\"?]/_}";done  |grep -v "appsfiles"
+#gonna mv /home/gv/Desktop/PythonTests/?[{rec-r(<ui>)t.txx - /home/gv/Desktop/PythonTests/_[{rec-r(_ui_)t.txx
+
+}
+
+test
 
 # Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
@@ -465,3 +474,13 @@ done
 #http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 #https://debian-administration.org/article/150/Easily_renaming_multiple_files.
 #linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
+
+# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} -> removes only the first / 
+# a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} ->removes the last .zip (but not middle zip) 
+
+# root@debi64:/home/gv/Desktop/PythonTests# a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_})
+#_home_gv_Desktop_PythonTests_a___rt_eew_.zip
+
+#root@debi64:/home/gv/Desktop/PythonTests# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_})
+#a_rte.zip
+# Bash Manual : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
