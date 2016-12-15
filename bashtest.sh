@@ -330,7 +330,8 @@ done
 # find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 # find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "$0".mp4' {} \;
 # find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
-# If printf is combined with -exec {} or bash -c $0, those variables still get the whole file name. printf is only used for print formating.
+# If printf is combined with -exec {} or bash -c $0, those variables still get the whole file name./ 
+# printf is only used for print formating.
 # for f in "$(find . -type f -name "*.txx" -printf '%f\n')";do echo "$f";done -> Works perfect even with spaces in filenames due to double quotes in find.
 
 # find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "${0//[\/<>:\\|*\"?]/_}"' {} \; #this somehow worked but is mixing up directories.
@@ -338,7 +339,7 @@ done
 
 
 again=1
-dr="."
+dr="$PWD"
 while [[ "$again" -eq "1" ]]; do
 	again=0
 	echo "Current Dir = $dr"
@@ -346,9 +347,10 @@ while [[ "$again" -eq "1" ]]; do
 		if [[ -d "$i" ]]; then
 			#echo "Directory $i found"
 			again=1
+			
 		else #if it is not a directory 
 			#mv "$i" "${i//[\/<>:\\|*\'\"?]/_}"
-			echo "$i"
+			echo "gonna mv : $dr/$i -" "$dr/${i//[\/<>:\\|*\'\"?]/_}"
 		fi
 	done
 
@@ -440,6 +442,7 @@ done
 # Isolate pids: ps -t tty1 |cut -d" " -f1
 # Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 # Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
+#Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
 
 
 #List and Manipulating files with strange names.
@@ -461,3 +464,4 @@ done
 #http://wiki.bash-hackers.org/syntax/expansion/brace
 #http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 #https://debian-administration.org/article/150/Easily_renaming_multiple_files.
+#linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
