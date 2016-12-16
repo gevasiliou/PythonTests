@@ -336,7 +336,7 @@ done
 
 # find . -type f -name "*.txx" -exec bash -c 'mv -v "$0" "${0//[\/<>:\\|*\"?]/_}"' {} \; #this somehow worked but is mixing up directories.
 
-IFS=$'\n';startdir=$PWD;dr+=($(find $PWD -type d));for i in ${dr[@]}; do cd $i;for fl in *; do echo "Inside directpry $i i will mv : $fl to " "${fl//[\/<>:\\|*\'\"?]/_}";done;done;cd $startdir
+# IFS=$'\n';startdir=$PWD;dr+=($(find $PWD -type d));for i in ${dr[@]}; do cd $i;for fl in *; do echo "Inside directpry $i i will mv : $fl to " "${fl//[\/<>:\\|*\'\"?]/_}";done;done;cd $startdir
 
 function test {
 IFS=$'\n'
@@ -368,7 +368,80 @@ done
 
 }
 
-test
+function case_menu {
+while [ "$ch" != "4" ]
+do
+echo -e "1.System Information \n2.Calculation \n3.Server Configuration \n4.Exit"
+read -p "Enter Your Choice " ch
+case $ch in
+1 )     while [ "$ch1" != "d" ];do
+		echo -e " \t\t 1. System Information Menu"
+		echo -e "a.Basic Information \nb.Intermedite Information \nc.All Information \nd.Exit from case \ne.Exit from program"
+        read -p "Enter Your Choice" ch1
+			case $ch1 in
+			a ) echo "-->run basic information script";;
+			b ) echo "-->run intermediate information script";;
+			c ) echo "-->run allinformation script";;
+			d ) echo "-->Exit from case";;
+			e ) echo "-->Exit from program";;
+			esac
+        done
+        ;;
+2 )     echo "2. Calculation Menu"
+		echo -e "a.Addition \nb.Subtraction \nc.multiplication \nd.Exit from case \ne.Exit from program"
+        read -p "Enter your Choice " ch2
+        case $ch2 in
+        a ) echo "-->run add_numbers script";;
+        b ) echo "-->run sub_numbers script";;
+        c ) echo "-->run mul_numbers script";;
+        d ) echo "-->Exit from Loop";;
+        e ) echo "-->Exit from program";;
+        * ) echo "-->Please enter correct choice";;
+        esac
+        ;;
+3 ) echo "3. Server Menu";;
+4 ) echo "4. Exiting "
+	exit ;;
+* ) ;;
+esac
+done
+}
+
+function simple_case_loop {
+while [ "$ch1" != "d" ];do
+	echo -e "a.Basic Information \nb.Intermedite Information \nc.All Information \nd.Exit from case \ne.Exit from program"
+	read -p "Enter Your Choice  : " ch1
+	case $ch1 in
+		a ) echo "-->run basic information script";;
+		b ) echo "-->run intermediate information script";;
+		c ) echo "-->run allinformation script";;
+		d ) echo "-->Exit from case";;
+		e ) echo "-->Exit from program"
+			exit;;
+		* ) echo "Wrong Selection - Try Again"
+	esac
+done
+echo "Command X: This is command X after the case"
+}
+
+function menu_with_select {
+IFS=$'\n'
+op=( "Basic Information" "Intermedite Information" "All Information" "Exit from case" "Exit from program" )
+select ch1 in ${op[@]}; do
+echo "ch1 = $ch1"
+	case $ch1 in																		#or case $ch1 in
+			"Basic Information" ) 		echo "-->run basic information script";; 		#${op[0} )....;;
+			"Intermedite Information" ) echo "-->run intermediate information script";; #${op[1} )....;;
+			"All Information" ) 		echo "-->run allinformation script";; 			#${op[2} )....;;
+			"Exit from case" ) 			echo "-->Exit from case" 						#${op[3} )....;;
+										break;;
+			"Exit from program" ) 		echo "-->Exit from program" 					#${op[4} )....;;
+										exit;;
+			* ) 						echo "Wrong Selection - Try Again"
+	esac																				#esac
+done
+echo "Command X: This is command X after the menu"
+}
 
 # Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
@@ -475,12 +548,44 @@ test
 #https://debian-administration.org/article/150/Easily_renaming_multiple_files.
 #linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
-# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} -> removes only the first / 
-# a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} ->removes the last .zip (but not middle zip) 
-
-# root@debi64:/home/gv/Desktop/PythonTests# a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_})
-#_home_gv_Desktop_PythonTests_a___rt_eew_.zip
-
-#root@debi64:/home/gv/Desktop/PythonTests# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_})
-#a_rte.zip
 # Bash Manual : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+# http://ss64.com/bash/expr.html
+# https://debian-administration.org/article/150/Easily_renaming_multiple_files
+# a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
+# a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
+# a="this is some TEXT"; echo ${a: 5:7} 	-> is some
+# 66a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
+# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
+# a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
+# basename c.jpg .jpg -> c
+# basename c.jpg pg -> c.j #basename can be used as a tricky tool to remove chars from the end of ANY string but requires exact match
+# a="logfiletxt";basename $a txt -> logfile
+# a="logfile.txt";echo ${a/.txt} -> logfile #similar to basename but match starts from 1st char to the last. 1st occurence to be removed.
+# a="logfile.txt";echo ${a/fil} -> loge.txt
+# a="logfilefilo.txt";echo ${a/lo} -> gfilefilo.txt #only first occurence of exact pattern removed
+# a="logfilelofi.txt";echo ${a/lo} -> gfilelofi.txt #only first occurence of exact pattern removed
+# a="logfilelofi.txt";echo ${a//lo} -> gfilefi.txt #all occurences of exact pattern removed.
+# a="logfilelofi.txt";echo ${a/lf/_} -> logfilelofi.txt #no replacement made since lf is not present in $a (exact match)
+# a="logfilelofi.txt";echo ${a//[lf]/_} -> _og_i_e_o_i.txt #all occurences of l and f - not exact match due to [] regex synthax
+# a="logfilelofi.txt";echo ${a/*l/_} -> _ofi.txt #from start up and including last l
+# a="logfilelofi.txt";echo ${a/*g/_} -> _filelofi.txt #from start up & including last g
+# a="logfilelofi.txt";echo ${a/*l/} -> ofi.txt #from start up to last l (if no replace string is specified then delete)
+
+# for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
+# a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
+# bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
+# bash manual: command substitution $(cat file) can be replaced by the equivalent but faster $(< file).
+
+# a="some text here";echo ${a@Q} ->'some text here'
+# a="some text here";echo ${a@A} -> a='some text here' #operators available Q-E-P-A-a
+# a[0]="some text";a[1]="more text";echo ${a[@]} -> some text more text
+# a[0]="some text";a[1]="more text";echo ${a[@]@A} ->declare -a a=([0]="some text" [1]="more text")
+# a[0]="some text";a[1]="more text";echo ${a[@]@Q} ->'some text' 'more text'
+# expr 40 - 3 ->37 #expr is available in GNU Bash. 
+# expr substr "the is a kind of test" 5 10 -> is a kind  
+# a="the is a kind of test";echo ${a: 5:10} -> s a kind o
+# export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
+# IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
+
+
+
