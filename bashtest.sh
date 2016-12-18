@@ -443,6 +443,27 @@ done
 echo "Command X: This is command X after the menu"
 }
 
+function ifargisinteger {
+for i in $@;do
+if [ "$i" -eq "$i" ] 2>/dev/null #makes use of -eq operator suitable to compare numbers in bash
+then
+    echo "$i is an integer !!"
+else
+    echo "ERROR: not an integer."
+fi
+done
+}
+
+function ifargisnumber {
+for i in $@;do
+if [[ "$(bc <<< "scale=2; $i/$i")" == "1.00" ]] 2>/dev/null;then
+    echo "$i is a number and thus is accepted"
+else 
+	echo "Argument $i not accepted"
+fi
+done
+}
+
 # Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
@@ -549,19 +570,20 @@ echo "Command X: This is command X after the menu"
 #linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
 # Bash Manual : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+# https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 # http://ss64.com/bash/expr.html
 # https://debian-administration.org/article/150/Easily_renaming_multiple_files
 # a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 # a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 # a="this is some TEXT"; echo ${a: 5:7} 	-> is some
-# 66a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
+# a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
 # a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
 # a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
 # basename c.jpg .jpg -> c
 # basename c.jpg pg -> c.j #basename can be used as a tricky tool to remove chars from the end of ANY string but requires exact match
 # a="logfiletxt";basename $a txt -> logfile
 # a="logfile.txt";echo ${a/.txt} -> logfile #similar to basename but match starts from 1st char to the last. 1st occurence to be removed.
-# a="logfile.txt";echo ${a/fil} -> loge.txt
+# a="logfile.txt";echo ${a/fil} -> loge.txt #remove fil - exact match
 # a="logfilefilo.txt";echo ${a/lo} -> gfilefilo.txt #only first occurence of exact pattern removed
 # a="logfilelofi.txt";echo ${a/lo} -> gfilelofi.txt #only first occurence of exact pattern removed
 # a="logfilelofi.txt";echo ${a//lo} -> gfilefi.txt #all occurences of exact pattern removed.
@@ -570,9 +592,15 @@ echo "Command X: This is command X after the menu"
 # a="logfilelofi.txt";echo ${a/*l/_} -> _ofi.txt #from start up and including last l
 # a="logfilelofi.txt";echo ${a/*g/_} -> _filelofi.txt #from start up & including last g
 # a="logfilelofi.txt";echo ${a/*l/} -> ofi.txt #from start up to last l (if no replace string is specified then delete)
-
+# a="logfilelofi.txt";echo ${a/#/_} -> _logfilelofi.txt #replace first char with underscore
+# a="logfilelofi.txt";echo ${a/%/_} -> logfilelofi.txt_ #replace lst char with underscore
+# a="logfilelofi.txt";echo ${a/.txt/_} -> logfilelofi_ #replace .txt with underscore
+# a="logfilelofi.txt";echo ${a/.txt} -> logfilelofi #delete .txt
+# a="logfilelofi.mp3";echo ${a/.[a-z0-9A-Z]*/} -> logfilelofi #delete any extension with a dot and any of a-z,0-9 and A-Z range
+# CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip ->http://abc.xy.com #mind the special var declaration of CLIP.
 # for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
 # a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
+
 # bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
 # bash manual: command substitution $(cat file) can be replaced by the equivalent but faster $(< file).
 
@@ -581,11 +609,23 @@ echo "Command X: This is command X after the menu"
 # a[0]="some text";a[1]="more text";echo ${a[@]} -> some text more text
 # a[0]="some text";a[1]="more text";echo ${a[@]@A} ->declare -a a=([0]="some text" [1]="more text")
 # a[0]="some text";a[1]="more text";echo ${a[@]@Q} ->'some text' 'more text'
+# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${!a[@]} -> 0 1 2 #id of elements . This can be used in for i in ${a![@]} - i will be 0 , 1, 2 
+# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #number of elements
+# a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
+
 # expr 40 - 3 ->37 #expr is available in GNU Bash. 
 # expr substr "the is a kind of test" 5 10 -> is a kind  
 # a="the is a kind of test";echo ${a: 5:10} -> s a kind o
 # export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
 # IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
 
+#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname
+# path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
 
-
+#array=(0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h)
+#echo ${array[@]:7} -> 7 8 9 0 a b c d e f g h
+#echo ${array[@]:7:2} -> 7 8
+#echo ${array[@]: -7:2} -> b c
+#echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
+#echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h
+#echo ${array[@]:0:2} -> 0 1
