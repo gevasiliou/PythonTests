@@ -629,3 +629,7 @@ done
 #echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
 #echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h
 #echo ${array[@]:0:2} -> 0 1
+
+# Tricky sed usage if strings replace strange chars like slashes:
+# a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
+# Trick is that you can seperate actions with any char and not only /
