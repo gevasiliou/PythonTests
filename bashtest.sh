@@ -464,6 +464,23 @@ fi
 done
 }
 
+function copy_duplicate_files { 
+echo "Folder A"
+ls -l ./foldera/
+echo "Folder B"
+ls -l ./folderb/
+echo "Folder C"
+ls -l ./folderc/
+read -p "Press any key to start"
+duplicates=( "$(find foldera folderb -type f -exec basename {} \; |sort |uniq -d)" )
+for file in ${duplicates[@]}; do
+cp  "./foldera/$file" "./folderc/$file"
+done
+echo "Script Finish. Folder C"
+ls -l ./folderc/
+}
+
+
 # Various HowTo
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
@@ -633,3 +650,15 @@ done
 # Tricky sed usage if strings replace strange chars like slashes:
 # a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
 # Trick is that you can seperate actions with any char and not only /
+
+#Remove new line char from strings and replace it with space using trim (tr)
+# echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
+# With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
+
+
+#File Descripitors
+#http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
+#IF you try : test=$(java -version);echo $test then you will receive th output of java -version in your terminal but var test will be empty.
+#But if you try test=$(java -version 2>&1);echo $test works ok.
+#Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
+#With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.

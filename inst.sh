@@ -274,3 +274,12 @@ exit
 # Tips: A lot of yad dialogues work well with pipes.
 # For example this works perfectly : apt install geany |yad --text-info (it does not work with simple --text)
 
+
+# apt full-upgrade >fullupgrade.txt
+# cp fullupgrade.txt fullupgradenice.txt
+# sed -n '/upgraded/,$p' fullupgradenice.txt >fullupgradenice2.txt
+# geany fullupgradenice2.txt &
+# cat fullupgradenice2.txt |tr "\n" " " >fullupgradenice3.txt
+# cat fullupgradenice3.txt |sed -e 's/   / /g' >fullupgradenice4.txt
+# pattern=$(cat fullupgradenice4.txt);apt list $pattern >fullupgradepkgs.list #wait for apt list to finish... needs time
+# cat fullupgradepkgs.list |grep -v "testing" -> should give you only /stable packages and not unstable.
