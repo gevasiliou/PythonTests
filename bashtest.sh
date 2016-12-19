@@ -619,7 +619,7 @@ ls -l ./folderc/
 # a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
 
 # bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
-# bash manual: command substitution $(cat file) can be replaced by the equivalent but faster $(< file).
+# bash manual command substitution: Command $(cat file) can be replaced by the equivalent but faster $(< file).
 
 # a="some text here";echo ${a@Q} ->'some text here'
 # a="some text here";echo ${a@A} -> a='some text here' #operators available Q-E-P-A-a
@@ -630,14 +630,14 @@ ls -l ./folderc/
 # a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #number of elements
 # a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
 
+#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname
+# path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
+
 # expr 40 - 3 ->37 #expr is available in GNU Bash. 
 # expr substr "the is a kind of test" 5 10 -> is a kind  
 # a="the is a kind of test";echo ${a: 5:10} -> s a kind o
 # export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
 # IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
-
-#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname
-# path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
 
 #array=(0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h)
 #echo ${array[@]:7} -> 7 8 9 0 a b c d e f g h
@@ -645,7 +645,12 @@ ls -l ./folderc/
 #echo ${array[@]: -7:2} -> b c
 #echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
 #echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h
-#echo ${array[@]:0:2} -> 0 1
+#echo ${array[@]:0:2} -> 0 1 #extract part of array / sub-array
+# MYARR=(a b c d e f g)echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
+# MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
+
+# Rename using for and bash parameter expansion
+# for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
 
 # Tricky sed usage if strings replace strange chars like slashes:
 # a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
@@ -658,7 +663,44 @@ ls -l ./folderc/
 
 #File Descripitors
 #http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
-#IF you try : test=$(java -version);echo $test then you will receive th output of java -version in your terminal but var test will be empty.
+#IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 #But if you try test=$(java -version 2>&1);echo $test works ok.
 #Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
 #With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
+
+#Associative Arrays (declare -A array)
+# http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
+# http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
+# Works like dictionaries of advanced programming languages.
+# You can assign whatever index you want (i.e array[file])
+# declare -A MYMAP=( [foo]=bar [baz]=quux [corge]=grault ); echo ${MYMAP[foo]};echo ${MYMAP[baz]} -> bar \n quux
+# K=baz; MYMAP[$K]=quux;echo ${MYMAP[$K]} -->quux   #also echo ${MYMAP[baz]} works 
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo "${!MYMAP[@]}" --> foo a baz b
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $K; done  #loop on keys only - mind double quotes.
+# --> foo a 
+# --> baz b
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );for V in "${MYMAP[@]}"; do echo $V; done #loop on values only
+# --> bar
+# --> quux
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $K --- ${MYMAP[$K]}; done #loop on keys and values
+# --> foo a --- bar
+# --> baz b --- quux
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo ${#MYMAP[@]}  --> 2 # Number of keys in an associative array
+
+# Number Indexing of Associative Array :
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS[0]} --- ${MYMAP[${KEYS[0]}]}" -> foo a --- bar   # KEYS=(${!MYMAP[@]}) = a normal array containing all the keys of the associative array. You can then refer to associative array with numerical index (0,1,2,etc)
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
+# --> foo a --- bar
+# --> baz b --- quux
+
+# AWK
+# Great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc) while with cut you can use a single char.
+# echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
+# echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
+# -->value1,string1
+# -->value1,string2
+# -->value1,string3
+# -->value1,string4
+# In case of file , separated with new lines you need to apply this a bit different version: # awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+
+
