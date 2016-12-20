@@ -472,7 +472,7 @@ ls -l ./folderb/
 echo "Folder C"
 ls -l ./folderc/
 read -p "Press any key to start"
-duplicates=( "$(find foldera folderb -type f -exec basename {} \; |sort |uniq -d)" )
+duplicates=( "$(find foldera folderb -type f -exec basename {} \; |sort |uniq -d)" ) #uniq -d gives you only duplicate files by default
 for file in ${duplicates[@]}; do
 cp  "./foldera/$file" "./folderc/$file"
 done
@@ -480,8 +480,103 @@ echo "Script Finish. Folder C"
 ls -l ./folderc/
 }
 
+function concatenate_ids {
+header=$(head -1 a.txt) #get the 1st line and store it as header.
+readarray -t ids< <(awk -F" " '{print $1}' a.txt |uniq |tail -n+2) #tail helps to exlude the header. Uniq just prints ids once.
+echo "$header"
+for id in ${ids[@]}
+do
+data=($(grep $id a.txt))
+echo -e "${data[0]}\t${data[1]}\t${data[2]}\t${data[-1]}"
+done 
+# Target : Group Ids and keep start and End time of each IT
+# cat a.txt
+#Id       Chr     Start   End  
+#Prom_1   chr1    3978952 3978953  
+#Prom_1   chr1    3979165 3979166  
+#Prom_1   chr1    3979192 3979193  
+#Prom_2   chr1    4379047 4379048  
+#Prom_2   chr1    4379091 4379092  
+#Prom_2   chr1    4379345 4379346  
+#Prom_2   chr1    4379621 4379622  
+#Prom_3   chr1    5184469 5184470  
+#Prom_3   chr1    5184495 5184496 
+#
+# readarray -t ids< <(awk -F" " '{print $1}' a.txt |uniq |tail -n+2);declare -p ids
+# Output --> declare -a ids=([0]="Prom_1" [1]="Prom_2" [2]="Prom_3")
+# id="Prom_1";data=($(grep $id a.txt));declare -p data
+#Output --> declare -a data=([0]="Prom_1" [1]="chr1" [2]="3978952" [3]="3978953" [4]=$'\nProm_1' [5]="chr1" [6]="3979165" [7]="3979166" [8]=$'\nProm_1' [9]="chr1" [10]="3979192" [11]="3979193")
+# Mind the difference of data=(...) and readarray -t.
+# readarray is good for the jobe when fields are separated by new lines.
+# data=(..) or declare -a data assigns to different index any value separated by spaces and new lines. 
+# mind also the use of declare -p data which prints nice the array in terminal
+}
+
+function timestamp_check {
+#http://unix.stackexchange.com/questions/331610/print-statistics-of-a-text-file/331618#331622
+#Find if in one minute of a log file you have more than 60 events.
+readarray -t stamps < <(awk -F" " '{print $2,$3;}' c.txt |cut -f1-2 -d: |sort |uniq)
+for stamp in "${stamps[@]}";do
+ev=$(grep "$stamp" c.txt |wc -l)
+echo "In $stamp found $ev events "
+#if [ "$ev" -gt 60 ]; then
+#echo "In $stamp found $ev events "
+#fi
+done
+
+# Alternative Solution: 
+# awk '{ print $2,$3;}' c.txt |cut -c1-16 |sort |uniq -c |awk '{ if ($1 > 60) print $2 }' #time performance half of timestamp_check()
+# If you need to count, instead of grep + wc -l you can do it directly with awk-cut-sort-uniq -c. Uniq -c will not count correctly if file is not sorted.
+#cat c.txt
+#RepID12 01/01/2010 20:56:00 S10
+#RepID12 01/01/2010 20:56:00 S03
+#RepID20 01/01/2010 20:56:00 S17
+#RepID33 01/01/2010 20:56:00 S02
+#RepID33 01/01/2010 20:56:00 S18
+#RepID38 01/01/2010 20:56:00 S11
+#RepID39 01/01/2010 20:56:00 S20
+#RepID26 02/01/2010 01:39:00 S20
+#RepID29 02/01/2010 01:39:00 S16
+#RepID29 02/01/2010 01:39:00 S03
+#RepID22 02/01/2010 01:39:09 S01
+#RepID26 02/01/2010 01:39:09 S02
+#RepID40 02/01/2010 01:39:18 S02
+#RepID38 02/01/2010 01:39:09 S05
+#RepID31 02/01/2010 01:39:09 S06
+#RepID31 02/01/2010 01:39:09 S08
+#RepID09 02/01/2010 01:39:09 S09
+#RepID23 02/01/2010 01:39:18 S09
+#RepID19 02/01/2010 01:40:09 S09
+#RepID21 02/01/2010 01:40:18 S09
+#RepID28 02/01/2010 01:40:27 S09
+#RepID43 02/01/2010 01:40:09 S14
+#RepID12 02/01/2010 20:56:00 S10
+#RepID12 02/01/2010 20:56:00 S03
+#RepID20 02/01/2010 20:56:00 S17
+#RepID33 02/01/2010 20:56:00 S02
+#RepID33 02/01/2010 20:56:00 S18
+#RepID38 02/01/2010 20:56:00 S11
+#RepID39 02/01/2010 20:56:00 S20
+}
+
+
+function grep_by_custom_column {
+header=$(head -1 b.txt)
+read -p "Field Number" fld
+readarray -t countries< <(cut -f "$fld" -d":" b.txt |uniq |tail -n+2) #tail helps to exlude the header. Uniq just prints ids once.
+for country in ${countries[@]}
+do
+echo "$header" >> data_"$country"_.log
+grep $country b.txt >> data_"$country"_.log
+break #using break i can allow loop to run only one time.
+done 
+}
+
+timestamp_check
+
 
 # Various HowTo
+# Check out the split prog which can split a file to more files based on certain criteria (i.e from line N to line M)
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 # /home/gv/Desktop/
@@ -583,13 +678,14 @@ ls -l ./folderc/
 #http://www.commandlinefu.com/commands/view/14209/repeat-any-string-or-char-n-times-without-spaces-between
 #http://wiki.bash-hackers.org/syntax/expansion/brace
 #http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
-#https://debian-administration.org/article/150/Easily_renaming_multiple_files.
 #linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
-# Bash Manual : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+# BASH MANUAL : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+# BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
 # https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 # http://ss64.com/bash/expr.html
 # https://debian-administration.org/article/150/Easily_renaming_multiple_files
+
 # a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 # a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 # a="this is some TEXT"; echo ${a: 5:7} 	-> is some
@@ -610,9 +706,11 @@ ls -l ./folderc/
 # a="logfilelofi.txt";echo ${a/*g/_} -> _filelofi.txt #from start up & including last g
 # a="logfilelofi.txt";echo ${a/*l/} -> ofi.txt #from start up to last l (if no replace string is specified then delete)
 # a="logfilelofi.txt";echo ${a/#/_} -> _logfilelofi.txt #replace first char with underscore
-# a="logfilelofi.txt";echo ${a/%/_} -> logfilelofi.txt_ #replace lst char with underscore
+# a="logfilelofi.txt";echo ${a/%/_} -> logfilelofi.txt_ #replace last char with underscore
 # a="logfilelofi.txt";echo ${a/.txt/_} -> logfilelofi_ #replace .txt with underscore
 # a="logfilelofi.txt";echo ${a/.txt} -> logfilelofi #delete .txt
+# MYSTRING=xxxxxxxxxx;echo ${MYSTRING/#x/y}  # RESULT: yxxxxxxxxx # Here the sign # is like an anchor to beginning
+# MYSTRING=xxxxxxxxxx;echo ${MYSTRING/%x/y}  # RESULT: xxxxxxxxxy # Here symbol % is an anchor to the end of string
 # a="logfilelofi.mp3";echo ${a/.[a-z0-9A-Z]*/} -> logfilelofi #delete any extension with a dot and any of a-z,0-9 and A-Z range
 # CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip ->http://abc.xy.com #mind the special var declaration of CLIP.
 # for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
@@ -622,22 +720,38 @@ ls -l ./folderc/
 
 # a="somefile.txt";echo ${a%%.txt} -> somefile #delete from end exact match
 # a="somefile.txt";echo ${a%.txt} -->somefile
-# a="sometxtfile.txt";echo ${a%txt} -->sometxtfile.
-# a="sometxtfile.txt";echo ${a##txt} --> sometxtfile.txt #no valid -no effect
+# a="sometxtfile.txt";echo ${a%txt} -->sometxtfile. #delete from end only exact match. midle txt is not deleted.
+# a="sometxtfile.txt";echo ${a##txt} --> sometxtfile.txt #no valid -no effect 
 # a="sometxtfile.txt";echo ${a##some} --> txtfile.txt #delete pattern (xact match) from the beginning
 # a="sometxtfile.txt";echo ${a#some} --> txtfile.txt
-# a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect
+# a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
+# a="Be conservative in what you send";echo ${a#* } --> conservative in what you send #"Be" deleted. Single # removes the first word from beginning
+# a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
+# a="Be conservative in what you send";echo ${a% *} --> Be conservative in what you #first word from end deleted. 
+# a="Be conservative in what you.send";echo ${a% *} --> Be conservative in what #works only for space separated words (IFS makes some effect in the resulted text)
+# a="Be conservative in what you send";echo ${a%% *} --> Be #all words from the end deleted (space separated)
 
-
-# a="some text here";echo ${a@Q} ->'some text here'
+# a="some text here";echo ${a@Q} ->'some text here' #printing with single quotes
 # a="some text here";echo ${a@A} -> a='some text here' #operators available Q-E-P-A-a
 # a[0]="some text";a[1]="more text";echo ${a[@]} -> some text more text
 # a[0]="some text";a[1]="more text";echo ${a[@]@A} ->declare -a a=([0]="some text" [1]="more text")
 # a[0]="some text";a[1]="more text";echo ${a[@]@Q} ->'some text' 'more text'
-# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${!a[@]} -> 0 1 2 #id of elements . This can be used in for i in ${a![@]} - i will be 0 , 1, 2 
-# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #number of elements
-# a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
+# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${!a[@]} -> 0 1 2 #index of elements . This can be used in for i in ${a![@]} - i will be 0 , 1, 2 
+# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #Total number of elements
+# a[0]="some text";a[1]="more text";a[2]="much more text";echo ${a[-1]} -> much more text. Use of -1 in index prints the last array element.
+# a="This is some Text";echo "${a^^}" --> THIS IS SOME TEXT #All chars converted to uppercase
+# array=(This is some Text);echo "${array[@]^^}" --> THIS IS SOME TEXT #All chars converted to uppercase
+# array=(This is some Text);echo "${array[@],}" --> this is some text
+# array=(This is some Text);echo "${array[@],,}" --> this is some text #all chars in lower case
+# array=(This is some Text);echo "${array[@]^}" --> This Is Some Text
+# array=(This is a text);echo "${array[@]%is}" --> Th a text ("is" is deleted from all elements of array : array=([0]="This" [1]="is" [2]="a" [3]="text"))
+# http://wiki.bash-hackers.org/syntax/pe : "As for most parameter expansion features, working on arrays will handle each expanded element, for individual expansion and also for mass expansion."
+# array=(This is a text);echo "${array[@]/t/d}" ⇒ This is a dext #first found t replaced with d. Capital T is intact.
+# array=(This is a text);echo "${array[@]//t/d}" ⇒ This is a dexd #all t replaced with d
+# array=(This is a text);echo "${array[@]/[tT]/d}" -> dhis is a dext #First found small and first found capital T replaced using regex
 
+# a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
+# echo ${!BASH*} -> BASH BASH_ARGC BASH_ARGV BASH_COMMAND BASH_LINENO BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION
 #mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname #!$ returns the argument of last command /history
 #Similarry to !$ there is alsos !! which prints last commad (full) and last result
 # path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
@@ -648,17 +762,19 @@ ls -l ./folderc/
 # export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
 # IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
 
+# Print / Refer to array elements in a different way using parameters expansion / string manipulation
 #array=(0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h)
 #echo ${array[@]:7} -> 7 8 9 0 a b c d e f g h
 #echo ${array[@]:7:2} -> 7 8
 #echo ${array[@]: -7:2} -> b c
 #echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
-#echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h
+#echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h  #equivalent to echo ${array[@]}
 #echo ${array[@]:0:2} -> 0 1 #extract part of array / sub-array
+#echo ${array[@]:2:1} -> 2   #Start from position 0 and print 1 . eqivalent to echo ${array[2]} 
 # MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
 # MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
 # MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
-#--> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
+#Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
 
 # Rename using for and bash parameter expansion
 # for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
@@ -672,21 +788,21 @@ ls -l ./folderc/
 # With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
 
 
-#File Descripitors
+#FILE DESCRIPITORS
 #http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
 #IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 #But if you try test=$(java -version 2>&1);echo $test works ok.
 #Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
 #With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
 
-#Associative Arrays (declare -A array)
+#ASSOCIATIVE ARRAYS (declare -A array)
 # http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 # http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
 # Works like dictionaries of advanced programming languages.
 # You can assign whatever index you want (i.e array[file])
 # declare -A MYMAP=( [foo]=bar [baz]=quux [corge]=grault ); echo ${MYMAP[foo]};echo ${MYMAP[baz]} -> bar \n quux
 # K=baz; MYMAP[$K]=quux;echo ${MYMAP[$K]} -->quux   #also echo ${MYMAP[baz]} works 
-# declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo "${!MYMAP[@]}" --> foo a baz b
+# declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo "${!MYMAP[@]}" --> foo a baz b #prints only the keys
 # declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $K; done  #loop on keys only - mind double quotes.
 # --> foo a 
 # --> baz b
@@ -704,6 +820,13 @@ ls -l ./folderc/
 # --> foo a --- bar
 # --> baz b --- quux
 
+#PRACTICAL USE OF BASH PARAMETERS EXPANSION (http://wiki.bash-hackers.org/syntax/pe)
+#Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
+#Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
+#Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
+#Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
+#Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
+
 # AWK
 # Great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc) while with cut you can use a single char.
 # echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
@@ -713,5 +836,20 @@ ls -l ./folderc/
 # -->value1,string3
 # -->value1,string4
 # In case of file , separated with new lines you need to apply this a bit different version: # awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+
+# See this article for most AWK internal variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+#
+
+#awk -F ':' '$3==$4' file.txt -->  
+# echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
+# echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
+
+
+#WHEREIS & WHATIS
+#whereis finds where is the executable of a programm (whereis sed). 
+# whatis shows one-line info of the program.
+#Trick : whatis /bin/* 2>&1 |grep -v "nothing appropriate" |grep "file" -> Scans the whole bin directory for all executables/commands 
+# excluding "nothing appropriate" that appears in execs without a single line description and matching file in description
+
 
 
