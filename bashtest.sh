@@ -844,6 +844,11 @@ timestamp_check
 # echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
 # echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
+#Export AWK variables
+#$ mkfifo fifo
+#$ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
+#$ IFS== read var value < fifo
+#$ eval export $var=$value
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 
