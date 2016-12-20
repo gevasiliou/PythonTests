@@ -617,9 +617,17 @@ ls -l ./folderc/
 # CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip ->http://abc.xy.com #mind the special var declaration of CLIP.
 # for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
 # a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
-
 # bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
 # bash manual command substitution: Command $(cat file) can be replaced by the equivalent but faster $(< file).
+
+# a="somefile.txt";echo ${a%%.txt} -> somefile #delete from end exact match
+# a="somefile.txt";echo ${a%.txt} -->somefile
+# a="sometxtfile.txt";echo ${a%txt} -->sometxtfile.
+# a="sometxtfile.txt";echo ${a##txt} --> sometxtfile.txt #no valid -no effect
+# a="sometxtfile.txt";echo ${a##some} --> txtfile.txt #delete pattern (xact match) from the beginning
+# a="sometxtfile.txt";echo ${a#some} --> txtfile.txt
+# a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect
+
 
 # a="some text here";echo ${a@Q} ->'some text here'
 # a="some text here";echo ${a@A} -> a='some text here' #operators available Q-E-P-A-a
@@ -630,7 +638,8 @@ ls -l ./folderc/
 # a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #number of elements
 # a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
 
-#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname
+#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname #!$ returns the argument of last command /history
+#Similarry to !$ there is alsos !! which prints last commad (full) and last result
 # path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
 
 # expr 40 - 3 ->37 #expr is available in GNU Bash. 
@@ -646,8 +655,10 @@ ls -l ./folderc/
 #echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
 #echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h
 #echo ${array[@]:0:2} -> 0 1 #extract part of array / sub-array
-# MYARR=(a b c d e f g)echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
+# MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
 # MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
+# MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
+#--> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
 
 # Rename using for and bash parameter expansion
 # for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.

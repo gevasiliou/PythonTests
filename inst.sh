@@ -115,12 +115,12 @@ case "$installed" in
 "Not Installed") 
 readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
 "Installed")
-readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f1 -d "/");;
 "All")
-readarray -t fti < <(apt list $pattern |cut -f 1 -d "/");;
+readarray -t fti < <(apt list $pattern |cut -f1 -d "/");;
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " ");;
+readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
 readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
@@ -219,6 +219,10 @@ case $btn in
 	# selectpacakges is not called again - previous selections are used. While loop will poll again all the data and thus list will be refreshed.
 	;;
 1) #Exit. Setting stop=1 while loop ends - script exits.
+	stop=1
+	unset IFS
+	;;
+252) #Exit. Setting stop=1 while loop ends - script exits.
 	stop=1
 	unset IFS
 	;;
