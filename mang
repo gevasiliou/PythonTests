@@ -1,12 +1,40 @@
 #!/bin/bash
 # place this file under /usr/bin , and chmod +x this file in order to be able to call it 
+# You can call it from every folder , without extension . Just run "mang command"
 # For info pages (more advanced than man) you can install and use the tkinfo package (available in repos)
 # Tip: Using whatis command (i.e whatis cat) gives you a single line description. You can apply this to whole dir like whatis /usr/bin/*
 # Either tkinfo and man have options to looks inside directories or to display directory of man / info page been displayed.
+function printhelp {
+echo "  mang - man with GUI "
+echo "  Place this file under /usr/bin , and chmod +x this file in order to be able to call it from anywhere. " 
+echo "  Use --install to install at /usr/bin automatically"
+echo "  You can call it from every folder , without extension . Just run mang command "
+echo "  This prog does not work with info pages. For GUI at info pages you can install and use the tkinfo package (available in repos) "
+}
+#echo $0
 if [[ -z $1 ]];then
-echo "You need to provide a manual"
+	echo "You need to provide a command to show manual or --help for options"
 else
-man $1 |yad --text-info --height=500 --width=800 --center --title="Man Pages of $1" --wrap --show-uri &
+	if [ "$1" = "--help" ];then 
+		printhelp
+	elif [ "$1" = "--install" ];then
+		cp $0 /usr/bin
+		sleep 1
+		chmod +x /usr/bin/mang
+	else
+		tit=$(echo ${1^^})
+		if [ -e /usr/bin/yad ];then
+			man $1 |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri &	
+		elif [ -e /usr/bin/zenity ];then
+			echo "yad is missing"
+			man $1 |zenity --text-info --height=500 --width=800 --title="$tit Manual " &
+		else
+			echo "yad and zenity missing - starting man..."
+			sleep 1
+			man $1
+		fi
+	fi
 fi
+
 exit
 
