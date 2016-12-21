@@ -1,6 +1,8 @@
 #!/bin/bash
 # place this file under /usr/bin , and chmod +x this file in order to be able to call it 
 # For info pages (more advanced than man) you can install and use the tkinfo package (available in repos)
+# Tip: Using whatis command (i.e whatis cat) gives you a single line description. You can apply this to whole dir like whatis /usr/bin/*
+# Either tkinfo and man have options to looks inside directories or to display directory of man / info page been displayed.
 if [[ -z $1 ]];then
 echo "You need to provide a manual"
 else
