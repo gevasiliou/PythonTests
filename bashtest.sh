@@ -828,7 +828,16 @@ timestamp_check
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 
 # AWK
-# Great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc) while with cut you can use a single char.
+# Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
+# Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
+# If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
+# Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
+# For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
+# Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
+# Another great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc).
+# Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
+# echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
+
 # echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
 # echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
 # -->value1,string1
@@ -837,7 +846,7 @@ timestamp_check
 # -->value1,string4
 # In case of file , separated with new lines you need to apply this a bit different version: # awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
 
-# See this article for most AWK internal variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+# See this article for AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 #
 
 #awk -F ':' '$3==$4' file.txt -->  
@@ -849,6 +858,8 @@ timestamp_check
 #$ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
 #$ IFS== read var value < fifo
 #$ eval export $var=$value
+
+
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 
