@@ -18,13 +18,13 @@ else
 	if [ "$1" = "--help" ];then 
 		printhelp
 	elif [ "$1" = "--install" ];then
-		cp $0 /usr/bin
+		cp -v -i $0 /usr/bin
 		sleep 1
 		chmod +x /usr/bin/mang
 	else
 		tit=$(echo ${1^^})
 		if [ -e /usr/bin/yad ];then
-			man $1 |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri &	
+			man $1 |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri --no-markup &	
 		elif [ -e /usr/bin/zenity ];then
 			echo "yad is missing"
 			man $1 |zenity --text-info --height=500 --width=800 --title="$tit Manual " &
