@@ -12,6 +12,12 @@ echo "  You can call it from every folder , without extension . Just run mang co
 echo "  This prog does not work with info pages. For GUI at info pages you can install and use the tkinfo package (available in repos) "
 }
 #echo $0
+#mkfifo ${fifo=$(mktemp -u)}
+#exec {fd}<>${fifo}
+#info cat >>$fifo
+#yad --text-info <$fifo
+#exit
+
 if [[ -z $1 ]];then
 	echo "You need to provide a command to show manual or --help for options"
 else
