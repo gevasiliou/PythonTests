@@ -44,3 +44,11 @@ fi
 
 exit
 
+# To be Done
+# Search previous - next. Yad provides basic search with control + s which finds only the first occurence of the pattern
+# Recall mang with a different file
+# Provide a list of all the commands under /usr/bin , using also whatis to get single line description, select file and then man this file
+# Optimize operation for info pages. Ideally be a GUI info browswer.
+# About info : If you info a command with a lot of chapters all of the are send to yad.
+# If you info part ot a package (i.e info cat , which is part of coreutils) only the cat pages will be send to yad but if you info coreutils you get everything (and here is where i miss the advanced search)
+# Alternative script : Make a script "yadit" that will be called like "yadit whatever command" and automatically create a GUI for the command given (man,cat,ls,find,etc)

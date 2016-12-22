@@ -1,0 +1,2 @@
+alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
+alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log'

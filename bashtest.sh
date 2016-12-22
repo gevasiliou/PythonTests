@@ -576,6 +576,21 @@ timestamp_check
 
 
 # Various HowTo
+# Run a command as a different user : gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
+# Print environmental variables : export -p , printenv or just env, ( set -o posix ; set ) , declare -p (or -xp)
+# One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
+# For else conditions or for performing actions under false conditions you can use ! operator (not) in front of expression which will reverse exit code.
+# [ "$USER" = "root" ] && echo "hello root" -> hello root # displays nothing if user is not root
+# [ "$USER" = "root" ]  || [ "$LOGNAME" = "root" ] && echo "hello root" --> hello root #
+# [ "$USER" = "root" ]  || [ "$LOGNAME" = "root" ];echo $? -> 0 #zero = all ok = true
+# [ "$USER" = "root" ]  || [ "$LOGNAME" = "rot" ];echo $? -> 0 #zero = all ok = true due to the OR operator || (for and you should use &&)
+# [ "$USER" = "rot" ]  || [ "$LOGNAME" = "rot" ];echo $? --> 1 #one = not ok = false since i'm logged in as root and not rot
+# ! [ "$USER" = "rot" ]  || ! [ "$LOGNAME" = "rot" ];echo $? --> 0  #expression ok = true means that it is true that i'm not user rot or logname rot (true since i'm logged in as root)
+# When you gksu terminal from normal user account then $USER and $LOGNAME are set to root.
+
+# Run Google Chrome as Root : http://unix.stackexchange.com/questions/175967/how-to-run-google-chrome-as-root-in-linux/332128#332128
+# Easy trick : gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
+
 # Check out the split prog which can split a file to more files based on certain criteria (i.e from line N to line M)
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
