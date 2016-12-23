@@ -26,6 +26,8 @@ def AddMoney():
    global Money
    Money = Money + 199
 
+
+#----------------MAIN--------------------#
 printinfo( age=50, name="miki" )
 printinfo( 50, "miki" )
 total,multi=addnumbers(10,4)
