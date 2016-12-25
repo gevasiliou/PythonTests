@@ -1,0 +1,152 @@
+xorg-server (2:1.18.3-2) unstable; urgency=medium
+
+  X now defaults to using built-in modesetting video driver on Intel
+  hardware which is "4th gen GMA" and newer, so roughly speaking on hardware
+  from 2007 and up. If this triggers new bugs on your hw, please file them
+  against the xserver.
+
+  Continuing to use the -intel driver is possible by dropping the template
+  xorg.conf to /etc/X11:
+
+  # cp /usr/share/doc/xserver-xorg-video-intel/xorg.conf /etc/X11
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 19 Jul 2016 04:28:05 +0300
+
+(q to quit)
+
+Desktop / folder right click menu:
+Select folder/file , open with, custom command , give optional friendly name and will automatically added to right click -context- menu.
+add shortcut / launcher : lxshortcut -o /path/filename
+
+11. Desktop and Panel Links, Bash Script Launchers 
+http://lxlinux.com/#11
+
+/usr/share/applications
+Find file mate-search-tool , open with editor
+change entry OnlyShowIn=MATE; to MATE;XFCE;LXDE;
+Now the mate-search-tool appears on the Application Menu of LXDE (Accessories)
+
+
+Install alacarte from gnome.perfect menu editor.
+generated .desktop files found here: 
+/home/gv/.local/share/applications
+
+remove all wicd entris (apt-get purge wicd*),
+you can install network-manager and network-manager-gnome to use the default gnome/mate connection manager.
+Or you can install connman (by intel). If you just install package connman you will get the core command line package.
+For Debian the right package is cmst , a connman gtk user interface. I also tried connman-ui but not found a way to run it
+Finally i used cmst, configure the preferences for auto start minimized in system tray.
+I also got to install connman-vpn, since cmst was complaining about vpn errors.
+Maybe if you just install cmst will automatically install connman (core) and connman-vpn as dependencies.
+
+Remark about System Tray: System tray is an "object" capable to be added in any panel.
+If an application is configured to run in system tray, you must have added system tray in teh panel.
+System tray is NOT the whole panel. Is an object of the panel.
+In my case system tray object includes (finally) cmst and clipboard manager.
+
+modinfo rtl8192se
+systool -a -v -m rtl8192se
+Gives you details about parameters of module 
+to use systools you need sysfsutils installed
+apt-get install sysfsutils
+
+Alternativelly (this seems to work for me):
+go to /etc/modprob.d directory
+open file modesetting.conf
+add at the end:
+options rtl8192se modeset=1
+options rtl8192se fwlps=0 ips=0 swlps=0
+
+I verified with #systool -a -v -m rtl8192se
+  Parameters:
+    debug               = "0"
+    fwlps               = "N"
+    ips                 = "N"
+    swenc               = "N"
+    swlps               = "N"
+
+"N" stands for No=0 , this is what we need, since modinfo advises:
+root@debian32:/home/gv# modinfo rtl8192se
+filename:       /lib/modules/4.7.0-rc7-686-pae/kernel/drivers/net/wireless/realtek/rtlwifi/rtl8192se/rtl8192se.ko
+firmware:       rtlwifi/rtl8192sefw.bin
+description:    Realtek 8192S/8191S 802.11n PCI wireless
+license:        GPL
+author:         Larry Finger	<Larry.Finger@lwfinger.net>
+author:         Realtek WlanFAE	<wlanfae@realtek.com>
+author:         lizhaoming	<chaoming_li@realsil.com.cn>
+alias:          pci:v000010ECd00008174sv*sd*bc*sc*i*
+alias:          pci:v000010ECd00008173sv*sd*bc*sc*i*
+alias:          pci:v000010ECd00008172sv*sd*bc*sc*i*
+alias:          pci:v000010ECd00008171sv*sd*bc*sc*i*
+alias:          pci:v000010ECd00008192sv*sd*bc*sc*i*
+depends:        rtlwifi,rtl_pci,mac80211
+intree:         Y
+vermagic:       4.7.0-rc7-686-pae SMP mod_unload modversions 686 
+parm:           swenc:Set to 1 for software crypto (default 0)
+ (bool)
+parm:           ips:Set to 0 to not use link power save (default 1)
+ (bool)
+parm:           swlps:Set to 1 to use SW control power save (default 1)
+ (bool)
+parm:           fwlps:Set to 1 to use FW control power save (default 0)
+ (bool)
+parm:           debug:Set debug level (0-5) (default 0) (int)
+
+Alternative way : use a script like this:
+modprobe -r rtl8192se
+sleep 3s
+modprobe rtl8192se fwlps=0 ips=0 swlps=0
+This also worked for me (using connman as network manager)
+
+Bug: xfce4-power-manager : install with sudo. run as user, edjust options, check "tray icon", tray icon displayed, but on the next reboot user settings are lost - tray icon is also lost. 
+work arounds:
+http://askubuntu.com/questions/407287/change-xfce4-power-manager-option-from-terminal
+xfconf-query -> displays all chanels of xfce4
+xfconf-query -c xfce4-power-manager -l -> display properties of selected channel xfce4-power-manager
+xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lid-action-on-ac -> show the value of a specific channel property
+xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lid-action-on-ac -s 1 -> -s = set property value to 1 
+
+If you do not load power-manager it seems that the only propertie available is the acpi propertie (check /etc/acpi/events).
+
+Initial settings loaded at start up: /etc/xdg/xfce4/xfconf/xfce-perchannel-xml
+
+https://www.kernel.org/doc/Documentation/sysctl/vm.txt
+
+Unable to create an interface to connman on the system bus.
+CMST will not be able to communicate with connman.
+
+According to lxqt team is the iptables pkg who did the story.
+
+/home/gv/.config/lxpanel/LXDE
+/home/gv/.config/lxpanel/LXDE/panels
+The trick is that you can create a panel that will be assigned to monitor 2 = VGA-1
+Monitor 2 appears in config files as monitor=1 (monitor 0 is the monitor1=LVDS1 and monitor=-1 is applied when you select all monitors)
+For sure top and bottom panel are not present in VGA1 in Extended desktop mode
+Remark: Tray applet can be present only in ONE panel. Even if you apply all monitors to top panel, tray applet will be unique (placed at monitor VGA-1)
+
+You can call lxpanelctl restart to force panels to go off and on.
+
+Right Panel has been assigned to monitor 2 , but in mirror mode this panel is present in all monitors...So if you create a dedicate bottom panel on screen 2 , upon screen mirror this panel will overlap bottom panel of monitor 1. 
+Better to delete it and then you can restart the panels .
+I have the feeling that xrandr during application of new settings perform a kind of lxpanel restart. On the other hand, changes on lxanel are applied on the fly, without screen blinking.
+
+root@debian32:/home/gv# lxpanelctl 
+
+lxpanelctl - LXPanel Controller
+Usage: lxpanelctl <command>
+
+Available commands:
+menu			show system menu
+run			show run dialog
+config			show configuration dialog
+restart			restart lxpanel
+exit			exit lxpanel
+command <plugin> <cmd>	send a command to a plugin
+
+Onboard  Configuartion:
+
+You need to go at Start menu - Preferences - openbox configuration manager or just run obconf & from CLI.
+Goto Windows menu and check "Place new windows under the mouse". Also in "Prefer to place new windows on:" select the monitor with the mouse. 
+
+Moreover on default lxde panel (top or bottom, it depends on your set up) you need to go panel settings, panel applets, TaskBar (Window List) , Preferences, and check "Only show Windows on the same monitor as the task bar".
+This helps task bar / window list to display minimized apps of it's own monitor. Window List of LVDS-1 has minimized windows of LVDS-1. You need to apply a second win list on monitor 2 panel to hold minimized windows of monitor 2. If this option is disabled, all window list applets will display minimized icons from all monitors.

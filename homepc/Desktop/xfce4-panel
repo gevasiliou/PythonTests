@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name[en_US]=xfce panel
+Exec=gksu xfce4-panel

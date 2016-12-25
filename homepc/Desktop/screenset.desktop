@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ScreenSet
+Comment=
+Exec=gksu -g /home/gv/Desktop/PythonTests/twoscreens.sh
+Icon=view-fullscreen
+Path=
+Terminal=false
+StartupNotify=false
