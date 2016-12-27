@@ -81,7 +81,7 @@ exit
 export -f byebye
 
 function autorot {
-# ------------------------------------------------------- The main program ----------------------------- #
+# ------------------------------------------------------- The main function ----------------------------- #
 echo 'Main Programm Starting'
 action=$(yad --width 300 --entry --title "AutoRotate" \
     --image=gnome-shutdown \

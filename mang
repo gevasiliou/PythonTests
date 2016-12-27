@@ -28,16 +28,22 @@ else
 		sleep 1
 		chmod +x /usr/bin/mang
 	else
-		tit=$(echo ${1^^})
-		if [ -e /usr/bin/yad ];then
-			man $1 |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri --no-markup &	
-		elif [ -e /usr/bin/zenity ];then
-			echo "yad is missing"
-			man $1 |zenity --text-info --height=500 --width=800 --title="$tit Manual " &
+		tit=$(echo ${1^^}) #Capitalize all letters
+		manual=$(man $1 2>&1) #2>&1 is necessary since if no man available the error goes to stderr (&2) and manual will get no value since nothing is printed in stdout (&1)
+		if [[ "$manual" == "No manual"* ]]
+		then 
+			echo "$manual" && exit
 		else
-			echo "yad and zenity missing - starting man..."
-			sleep 1
-			man $1
+			if [ -e /usr/bin/yad ];then
+				man $1 |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri --no-markup &	
+			elif [ -e /usr/bin/zenity ];then
+				echo "yad is missing , using zenity"
+				man $1 |zenity --text-info --height=500 --width=800 --title="$tit Manual " &
+			else
+				echo "yad and zenity missing - starting classic bash man..."
+				sleep 1
+				man $1
+			fi
 		fi
 	fi
 fi

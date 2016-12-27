@@ -572,10 +572,36 @@ break #using break i can allow loop to run only one time.
 done 
 }
 
-timestamp_check
+function just_numbers {
+read -p "Give me num1:" num1
+read -p "Give me num2:" num2
+if (($num1==0)) || (($num2==0))
+#if ( $num1 -eq 0 ) || ( $num2 -eq 0 ) #Shellcheck gives no error for this syntax but my bash complains 
+then 
+	echo "One of the numbers given is zero. Exiting now..."
+	exit
+else 
+	echo "num1 + num2 = $((num1+num2))" #as advised by shellcheck.net you can ommit $ inside double parenthesis for numbers
+	echo "num1 - num2 = $((num1-num2))"
+	echo "num1 * num2 = $((num1*num2))"
+	echo "num1 / num2 = $((num1/num2))"
+	echo "num1 + num1 * num2 = $((num1+num1*num2))" 
+	echo "num1 + num1 * num2 = $(($num1+$num1*$num2))" #Just for testing that result is same as in previous example (no dollars)
+fi
+}
 
+echo "apt-get install phpmyadmin"
+sleep 10 && /home/gv/Desktop/PythonTests/remove.sh &
+exit
 
 # Various HowTo
+# Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
+# for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
+# It is nice that although we have an alias of yad with some flags , by calling yt with more flags those are also passed to yad.
+# Another cool alias could be => alias catg=''yad --text-info --center --width=800 --height=600 --no-markup --wrap <<<$(cat $1)' , where $1 could be an arg passed to alias.
+# But alias do not handle args. So is better to do it a separate script with name catg. putit in /usr/bin , chmod it to +x and you will be able to launch it from everywhere just like catg file
+# See the mang script that does similar job
+
 # Run a command as a different user : gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
 # Print environmental variables : export -p , printenv or just env, ( set -o posix ; set ) , declare -p (or -xp)
 # One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
