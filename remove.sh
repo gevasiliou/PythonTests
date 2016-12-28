@@ -1,5 +1,5 @@
 #!/bin/bash
 yad --text="Hello from script to remove"
-qterminal apt install mate-utils-common #or xterm -e 
-read -p "Press any key to exit"
+qterminal -e apt install mate-utils-common && read -p "Press any key to exit"
+# or use xterm -e
 exit
