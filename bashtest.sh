@@ -64,7 +64,8 @@ echo "$contents" > "$filename"
 done <<< "$datasource" 
 }
 
-function importvals {
+function importvars {
+#import vars from file and use them in your prog
 source ./a.txt
 echo "value x=" $x
 echo "value y=" $y
@@ -183,6 +184,11 @@ unset word eachletter found
 done <<< "$datasource"
 echo -e "New Data \n" 
 printf '%s\n' ${newdata[@]}
+# Alternative exercise : in a given string  find chars that are present only two times: 
+# read -p "Data :" data;echo $data |grep -o . |sort |uniq -c |grep 2
+# combine even with |egrep -o '[a-zA-Z]' at the end to remove number 2 from the grep 2 results.
+# remove grep 2 and you will have a print out of counting all chars.
+
 }
 
 function simplenameread {
@@ -766,7 +772,7 @@ exit
 # a="sometxtfile.txt";echo ${a##some} --> txtfile.txt #delete pattern (xact match) from the beginning
 # a="sometxtfile.txt";echo ${a#some} --> txtfile.txt
 # a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
-# a="Be conservative in what you send";echo ${a#* } --> conservative in what you send #"Be" deleted. Single # removes the first word from beginning
+# a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes the first word from beginning)
 # a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
 # a="Be conservative in what you send";echo ${a% *} --> Be conservative in what you #first word from end deleted. 
 # a="Be conservative in what you.send";echo ${a% *} --> Be conservative in what #works only for space separated words (IFS makes some effect in the resulted text)
@@ -829,12 +835,16 @@ exit
 # With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
 
 
-#FILE DESCRIPITORS
-#http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
-#IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
-#But if you try test=$(java -version 2>&1);echo $test works ok.
-#Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
-#With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
+# FILE DESCRIPITORS
+# http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
+# IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
+# But if you try test=$(java -version 2>&1);echo $test works ok.
+# Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
+# With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
+# Redirect stderr to file and stdout + stderr to screen :
+# exec 3>&1 
+# foo 2>&1 >&3 | tee stderr.txt
+
 
 #ASSOCIATIVE ARRAYS (declare -A array)
 # http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
