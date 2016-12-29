@@ -595,12 +595,26 @@ else
 	echo "num1 + num1 * num2 = $(($num1+$num1*$num2))" #Just for testing that result is same as in previous example (no dollars)
 fi
 }
+while IFS=";" read -a line;do 
+echo "${line[0]}...${line[1]}...${line[2]}"
+grep -oe "${line[2]}$" b.txt |wc -l
 
-echo "apt-get install phpmyadmin"
-sleep 10 && /home/gv/Desktop/PythonTests/remove.sh &
+#aa+=($(echo $a))
+#bb+=($(echo $b))
+#cc+=($(echo $c))
+done <b.txt
 exit
 
-# Various HowTo
+for ((k=0; k<${#cc[@]};k++));do 
+	if [[ $(grep -oe "${cc[$k]}"<<<"${cc[@]}" |wc -l) -lt 3 ]];then 
+		echo "${aa[k]};${bb[k]};"
+	else
+		echo "${aa[k]};${bb[k]};${cc[k]}"
+	fi
+done
+
+
+# VARIOUS HOW TO
 # Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
 # for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 # It is nice that although we have an alias of yad with some flags , by calling yt with more flags those are also passed to yad.
@@ -802,6 +816,10 @@ exit
 #mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname #!$ returns the argument of last command /history
 #Similarry to !$ there is alsos !! which prints last commad (full) and last result
 # path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
+
+# Check if an array contains a value : 
+# if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi
+# if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 
 # expr 40 - 3 ->37 #expr is available in GNU Bash. 
 # expr substr "the is a kind of test" 5 10 -> is a kind  
