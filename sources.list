@@ -9,13 +9,11 @@ deb http://httpredir.debian.org/debian/ testing main non-free contrib
 deb http://httpredir.debian.org/debian/ sid main non-free contrib
 deb http://httpredir.debian.org/debian/ experimental main non-free contrib
 
-deb http://security.debian.org/ jessie/updates main contrib non-free
-deb http://security.debian.org/ testing/updates main contrib non-free
-
-# jessie-updates, previously known as 'volatile'
 deb http://httpredir.debian.org/debian/ jessie-updates main contrib non-free
 deb http://httpredir.debian.org/debian/ testing-updates main contrib non-free
 
+deb http://security.debian.org/ jessie/updates main contrib non-free
+deb http://security.debian.org/ testing/updates main contrib non-free
 
 deb-src http://httpredir.debian.org/debian/ jessie main non-free contrib
 deb-src http://httpredir.debian.org/debian/ testing main non-free contrib

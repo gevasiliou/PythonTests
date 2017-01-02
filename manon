@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ -z $1 ]];then
+	echo "You need to provide a command to show manual or --help for options"
+	exit
+fi
+title=$1
+dt=$(links -dump https://linux.die.net/man/1/$1)
+tit="/die.net"
+if [[ $dt == *"Not Found"* ]]; then
+	echo "die.net failed. Trying mankier.com"
+	dt=$(links -dump  https://www.mankier.com/1/$1)
+	tit="/mankier"
+elif [[ $dt == *"Not Found"* ]]; then
+	echo "die.net and mankier.com failed. Trying man.he.net"
+	dt=$(links -dump  "http://man.he.net/?topic=$1&section=all")
+	tit="/man.he.net"
+else
+	echo "No man Found"
+fi
+
+yad --text-info<<<"$dt" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
