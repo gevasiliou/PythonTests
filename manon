@@ -5,18 +5,27 @@ if [[ -z $1 ]];then
 	exit
 fi
 title=$1
+if [[ -z $2 ]]; then 
+echo "Trying at die.net"
 dt=$(links -dump https://linux.die.net/man/1/$1)
 tit="/die.net"
-if [[ $dt == *"Not Found"* ]]; then
-	echo "die.net failed. Trying mankier.com"
+fi
+
+if [[ $dt == *"Not Found"* || $2 == "--mankier" ]]; then
+	echo "die.net skipped. Trying mankier.com"
 	dt=$(links -dump  https://www.mankier.com/1/$1)
 	tit="/mankier"
-elif [[ $dt == *"Not Found"* ]]; then
-	echo "die.net and mankier.com failed. Trying man.he.net"
+fi
+
+if [[ $dt == *"Not Found"* || $2 == "--manhenet" ]]; then
+	echo "die.net and mankier.com skpped . Trying man.he.net"
 	dt=$(links -dump  "http://man.he.net/?topic=$1&section=all")
 	tit="/man.he.net"
-else
+fi
+
+if [[ $dt == *"No matches"* ]]; then
 	echo "No man Found"
+	exit
 fi
 
 yad --text-info<<<"$dt" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
