@@ -772,6 +772,8 @@ fi
 # a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
 # a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes the first word from beginning)
 # a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
+# a="this.is.a.file.gz";echo ${a##*.} -->gz #all text deleted except last part (DOT separated)
+# a="apt";echo ${a:0:1} --> a #prints the first character of a variable (from zero give me 1)
 # a="Be conservative in what you send";echo ${a% *} --> Be conservative in what you #first word from end deleted. 
 # a="Be conservative in what you.send";echo ${a% *} --> Be conservative in what #works only for space separated words (IFS makes some effect in the resulted text)
 # a="Be conservative in what you send";echo ${a%% *} --> Be #all words from the end deleted (space separated)

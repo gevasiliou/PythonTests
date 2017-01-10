@@ -6,34 +6,62 @@ fi
 
 if [[ $2 == "--online" ]]; then
 	title=$1
-	unset dt	
+	unset dt0 dt data
+	
 	if [[ -z $3 ]]; then
-	echo "Trying at die.net"
-	#unset dt
-	dt=$(links -dump https://linux.die.net/man/1/$1)
-	tit="/die.net online"
+		echo "Trying at die.net"
+		#dt=$(links -dump https://linux.die.net/man/1/$1)
+		pkg=${1:0:1} #get the first char
+		dt0+=($(links -dump "https://linux.die.net/man/$pkg.html" |grep -E "^( )*+$1+\([0-9]\)")) #search die.net alphabetical pages
+		#declare -p dt0 && exit
+		if [[ ${#dt0[@]} -gt 1 ]];then
+			declare -p dt0
+			for i in ${dt0[@]};do 
+				if [[ $(awk -F"\(" '{print $1}'<<<$i |tr -d " ") == "$1" ]];then
+					dt=$i
+					echo "found $i == $dt"
+				fi
+			done
+		else
+			dt=$dt0
+		fi
+#		exit
+		if [[ -z $dt ]]; then 
+			echo "$1 not available in die.net"
+			data="Man page Not Found in die.net"
+		else
+			manname=$(awk -F"\(" '{print $1}'<<<$dt |tr -d " ")
+			section=$(awk -F"\(" '{print $2}'<<<$dt |cut -d")" -f1 |tr -d " ")
+			echo "$dt - $manname - $section"
+			data=$(links -dump https://linux.die.net/man/$section/$manname)
+			#echo "$data"
+			#declare -p dt
+			#exit
+			tit="/die.net online"
+		fi
 	fi
 	
-	if [[ $dt == *"Not Found"* || $3 == "--mankier" ]]; then
+	if [[ $data == *"Not Found"* || $3 == "--mankier" ]]; then
 		echo "die.net skipped. Trying mankier.com"
-		unset dt
-		dt=$(links -dump  https://www.mankier.com/1/$1)
+		unset dt data
+		data=$(links -dump  "https://www.mankier.com/?q=$1") 
+		#Mind the fantastic rediection of mankier. If package is foung, then you are automatically redirected to man page and you don't have to worry about man section (1..8)'
 		tit="/mankier online"
 	fi
 
-	if [[ $dt == *"Not Found"* || $3 == "--manhenet" ]]; then
+	if [[ $data == *"No results"* || $3 == "--manhenet" ]]; then #mankier return No results in search form if package is not found.
 		echo "die.net and mankier.com skpped . Trying man.he.net"
-		unset dt
-		dt=$(links -dump  "http://man.he.net/?topic=$1&section=all")
+		unset data
+		data=$(links -dump  "http://man.he.net/?topic=$1&section=all") #Mind that man.he.net supports section=all and thus you don't need to specify 1..8'
 		tit="/man.he.net online"
 	fi
 
-	if [[ $dt == *"No matches"* ]]; then
-		echo "No man Found"
+	if [[ $data == *"No matches"* ]]; then #man.he.net returns no matches for package if the package does not exist
+		echo "No manual found either at die.net, mankier.com or man.he.net. Exiting"
 		exit
 	fi
 
-	yad --text-info<<<"$dt" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
+	yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
 fi
 
 if [[ $2 == "--apt" ]]; then
@@ -319,14 +347,18 @@ exit
 # http://unix.stackexchange.com/questions/61461/how-to-extract-specific-files-from-tar-gz
 # https://blog.packagecloud.io/eng/2015/10/13/inspect-extract-contents-debian-packages/
 
-# Tips 
+# 5. Tips and Bugs
 # apt --print-uris source (or install) agrep 
 # Get file list of deb archive by web (debian package system / file tree)
 # function deb_list () { curl -s $(lsb_release -si | sed -e 's Ubuntu http://packages.ubuntu.com/ ' -e 's Debian https://packages.debian.org/ ')/$(lsb_release -sc)/all/$1/filelist | sed -n -e '/<pre>/,/<\/pre>/p' | sed -e 's/<[^>]\+>//g' -e '/^$/d'; }
 # man pages extension is .1 , .7, .8 depending on the man classification. 
 # in deb files man page is xxxx.1.gz but man can handle it / decompress it directly without neet to tar -xz or gunzip /unxz first
+# The --down or --apt solution (extract man from deb file) fails to detect / follow / display manpages that are in realiry symbolic links to other man pages inside the deb file.
+# Reason of failure is that symlink points to something like ./usr/share/man/man1/correctmanpage.1.gz which will be only available if you fully extract the deb package.
+# Instead of apt-get --print-uris download i also tried --print-uris install. But with install a lot of deb packages will be returned since a normal install operation will also install dependencies.
+# As a result --print-uris download will return the one and only correct deb file for the package you provided.
 
-# Read man from sources 
+# 6. Read man from sources 
 # apt --print-uris source yaboot
 # Usually returns orig.tar and debian.tar
 # Locate the man page using tar -tz or -tJ (-t = list files of archive)
