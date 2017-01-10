@@ -348,7 +348,7 @@ exit
 # https://blog.packagecloud.io/eng/2015/10/13/inspect-extract-contents-debian-packages/
 
 # 5. Tips and Bugs
-# apt --print-uris source (or install) agrep 
+# apt --print-uris source (or download) agrep 
 # Get file list of deb archive by web (debian package system / file tree)
 # function deb_list () { curl -s $(lsb_release -si | sed -e 's Ubuntu http://packages.ubuntu.com/ ' -e 's Debian https://packages.debian.org/ ')/$(lsb_release -sc)/all/$1/filelist | sed -n -e '/<pre>/,/<\/pre>/p' | sed -e 's/<[^>]\+>//g' -e '/^$/d'; }
 # man pages extension is .1 , .7, .8 depending on the man classification. 
@@ -358,7 +358,16 @@ exit
 # Instead of apt-get --print-uris download i also tried --print-uris install. But with install a lot of deb packages will be returned since a normal install operation will also install dependencies.
 # As a result --print-uris download will return the one and only correct deb file for the package you provided.
 
-# 6. Read man from sources 
+# 6. See any sources tar file
+# apt-get --print-uris source pkg
+# find the orig or debian xz or gz archive - copy full http source link
+# curl -sL -o- "source link" |tar -Jt (for xz) or -zt (for gz) -> You get a list of all files in archive. Copy the full path of the file you want
+# curl -sL -o- "source link" |tar -xJO (for xz) or -xzO (for gz) file_path_inside_archive -> should print to stdout the file
+# if the file you want is tar, then you need to further tar -x(z or J) or to unxz or to gunzip and then cut.
+# curl -s = silent, -L = follow moved pages (case of httpredir) -o- = force output to stdout (-o = output , last - = stdout)
+# tar -x = extract, -t=list files, -z=gz compressed, -J-xz compressed, -O force output to stdout.
+
+# 7. Read man from sources 
 # apt --print-uris source yaboot
 # Usually returns orig.tar and debian.tar
 # Locate the man page using tar -tz or -tJ (-t = list files of archive)
