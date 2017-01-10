@@ -595,24 +595,6 @@ else
 	echo "num1 + num1 * num2 = $(($num1+$num1*$num2))" #Just for testing that result is same as in previous example (no dollars)
 fi
 }
-while IFS=";" read -a line;do 
-echo "${line[0]}...${line[1]}...${line[2]}"
-grep -oe "${line[2]}$" b.txt |wc -l
-
-#aa+=($(echo $a))
-#bb+=($(echo $b))
-#cc+=($(echo $c))
-done <b.txt
-exit
-
-for ((k=0; k<${#cc[@]};k++));do 
-	if [[ $(grep -oe "${cc[$k]}"<<<"${cc[@]}" |wc -l) -lt 3 ]];then 
-		echo "${aa[k]};${bb[k]};"
-	else
-		echo "${aa[k]};${bb[k]};${cc[k]}"
-	fi
-done
-
 
 # VARIOUS HOW TO
 # Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
@@ -743,6 +725,8 @@ done
 
 # BASH MANUAL : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
 # BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
+# ADVANCED BASH SCRIPTING : ftp://ftp.monash.edu.au/pub/linux/docs/LDP/abs/html/abs-guide.html#PIPEREF
+# IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
 # https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 # http://ss64.com/bash/expr.html
 # https://debian-administration.org/article/150/Easily_renaming_multiple_files

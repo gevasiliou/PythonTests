@@ -1,31 +1,370 @@
 #!/bin/bash
-
 if [[ -z $1 ]];then
 	echo "You need to provide a command to show manual or --help for options"
 	exit
 fi
-title=$1
-if [[ -z $2 ]]; then 
-echo "Trying at die.net"
-dt=$(links -dump https://linux.die.net/man/1/$1)
-tit="/die.net"
+
+if [[ $2 == "--online" ]]; then
+	title=$1
+	unset dt	
+	if [[ -z $3 ]]; then
+	echo "Trying at die.net"
+	#unset dt
+	dt=$(links -dump https://linux.die.net/man/1/$1)
+	tit="/die.net online"
+	fi
+	
+	if [[ $dt == *"Not Found"* || $3 == "--mankier" ]]; then
+		echo "die.net skipped. Trying mankier.com"
+		unset dt
+		dt=$(links -dump  https://www.mankier.com/1/$1)
+		tit="/mankier online"
+	fi
+
+	if [[ $dt == *"Not Found"* || $3 == "--manhenet" ]]; then
+		echo "die.net and mankier.com skpped . Trying man.he.net"
+		unset dt
+		dt=$(links -dump  "http://man.he.net/?topic=$1&section=all")
+		tit="/man.he.net online"
+	fi
+
+	if [[ $dt == *"No matches"* ]]; then
+		echo "No man Found"
+		exit
+	fi
+
+	yad --text-info<<<"$dt" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
 fi
 
-if [[ $dt == *"Not Found"* || $2 == "--mankier" ]]; then
-	echo "die.net skipped. Trying mankier.com"
-	dt=$(links -dump  https://www.mankier.com/1/$1)
-	tit="/mankier"
+if [[ $2 == "--apt" ]]; then
+	loop=1
+	pkg="$1"
+	aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
+	echo "Package: $aptpkg"
+	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+	#initially i did it with --print-uris install but in case of yade, there are three deb files returned.
+	#on the other hand , the download option returns only the required yade package.
+	if [[ "$aptresp" == *"Unable to locate package"* ]];then
+		echo "Error. Either wrong package name or other error. Raw output of apt:"
+		apt-get --print-uris install $aptpkg
+		exit 1
+	fi
+
+	deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+	echo "deb file : $deb"
+	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No man pages found in deb package - These are the contents of the $deb:"
+			curl -sL -o- $deb |dpkg -c /dev/stdin
+			exit 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed s/"declare -a "//g
+		fi
+		
+		if [[ ${#manpage[@]} -eq 1 ]]; then
+			echo "One man page found - Display "
+			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
+			loop=0
+		else
+			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+			if [[ $ms == "a" ]]; then 
+				echo "Display all"
+				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[@]} |man /dev/stdin				
+			elif [[ $ms == "q" ]]; then
+				echo "exiting"
+				loop=0
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+				echo "Display ${manpage[$ms]}"
+				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+				echo "out of range - try again"
+			else
+				echo "Invalid Selection - Try Again"
+			fi
+		fi
+	done
+
 fi
 
-if [[ $dt == *"Not Found"* || $2 == "--manhenet" ]]; then
-	echo "die.net and mankier.com skpped . Trying man.he.net"
-	dt=$(links -dump  "http://man.he.net/?topic=$1&section=all")
-	tit="/man.he.net"
+if [[ $2 == "--down" ]]; then
+	pkg="$1"
+	loop=1
+	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
+	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1
+	echo "Package: $aptpkg"
+	apt-get download "$aptpkg" 2>/dev/null
+	debname=$(find . -name "$pkg*.deb")
+	echo "Deb Name = $debname"
+	datatar=$(ar t "$debname" |grep "data.tar")
+	echo "data.tar = $datatar"
+
+	if [[ ${datatar##*.} == "gz" ]];then 
+		options="z"
+	elif [[ ${datatar##*.} == "xz" ]];then
+		options="J"
+	else
+		echo "data.tar is not a gz or xz archive. Exiting"
+		exit 1
+	fi
+	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No man pages found in deb package - These are the contents of the $debname:"
+			ar p "$debname" "$datatar" | tar t"$options"
+			rm -f $debname
+			exit 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed s/"declare -a "//g
+		fi
+	
+		if [[ ${#manpage[@]} -eq 1 ]]; then
+			echo "One man page found - Display "
+			ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin #works ok
+			loop=0
+		else
+			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+			if [[ $ms == "a" ]]; then 
+				echo "Display all"
+				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin #works ok
+	#			loop=0
+			elif [[ $ms == "q" ]]; then
+				echo "exiting"
+				loop=0
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+				echo "Display ${manpage[$ms]}"
+				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
+	#			loop=0
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+				echo "out of range - try again"
+			else
+				echo "Invalid Selection - Try Again"
+			fi
+		fi
+	done
+	rm -f $debname
 fi
 
-if [[ $dt == *"No matches"* ]]; then
-	echo "No man Found"
-	exit
+if [[ $2 == "--debian" ]]; then
+echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
+pkg="$1"
+manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
+if [[ $manpage == *"no data found"* ]];then
+	unset manpage
+	echo "stable failed"
+	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
+	if [[ $manpage == *"no data found"* ]];then
+		unset manpage
+		echo "testing failed"
+		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+		if [[ $manpage == *"no data found"* ]];then
+			echo "unstable failed"
+			echo "no man page available in debian online for package $pkg"
+			exit 1
+		fi
+	fi
+fi
+awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
+# Also check http://manpages.ubuntu.com/manpages/xenial/en/man1/dman.1.html
+# Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
+# Another great tool to investigate seems to be python debmans: https://pypi.python.org/pypi/debmans/1.0.0 
+# https://debmans.readthedocs.io/en/latest/usage.html
 fi
 
-yad --text-info<<<"$dt" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
+if [[ $2 == "--debcheck" ]]; then
+echo "This is debian online manpages checker"
+unset pk
+unset pk1
+#pk+=($(apt list "$1" |cut -d" " -f1 |cut -d"/" -f1))
+pk1+=($(apt list "$1" |cut -d" " -f1 ))
+for i in ${pk1[@]};do
+	if [[ $(cut -d"/" -f2<<<"$i") == "experimental" ]];then
+		echo "Package $i is experimental - test skipped since debian man pages online does not hold experimental man pages"
+	else
+		pk+=($(cut -d"/" -f1 <<<"$i"))
+	fi
+done
+declare -p pk #&& sleep 5 && exit
+for pkg in ${pk[@]};do
+manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
+if [[ $manpage == *"no data found"* ]];then
+	unset manpage
+#	echo "stable failed"
+	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
+	if [[ $manpage == *"no data found"* ]];then
+		unset manpage
+#		echo "testing failed"
+		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+		if [[ $manpage == *"no data found"* ]];then
+#			echo "unstable failed"
+			echo "no man page available in debian online for package $pkg" | tee -a debmanonline.log
+#			exit 1
+		fi
+	fi
+fi
+done
+
+fi
+
+
+if [[ $2 == "--aptvsdeb" ]]; then
+	while IFS=" " read -r _ _ _ _ _ _ _ _ _ pkg;do
+		unset manpage
+		unset aptresp aptpkg
+		echo "Package in log: $pkg"
+	#	pkg="$1"
+		aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
+		echo "Package in apt: $aptpkg"
+		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+		echo "Apt Response: $aptresp"
+		if [ "$aptresp" == *"Unable to locate package"* -o "$aptresp" == *"Handler silently"* ];then
+			echo "Error. Either wrong package name or other error for $pkg. Raw output of apt:"
+	#		apt-get --print-uris install $aptpkg
+	#		exit 1
+	#	fi
+		else
+			deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+			echo "deb file : $deb"
+			manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+			if [[ -z $manpage ]];then
+				echo "No man pages found in deb package for $pkg. These are the contents of the $deb:"
+		#		curl -sL -o- $deb |dpkg -c /dev/stdin
+			else
+				echo "man page found: ${manpage[@]}"
+#				declare -p manpage |sed s/"declare -a "//g
+				echo "Package=$aptpkg, debmanpages=${manpage[@]}" >> debvsapt.log
+			fi
+		fi
+	done <debmanonline.log
+fi
+
+if [[ $2 == "--aptcheck" ]]; then
+		unset manpage aptresp aptpkg
+		pkg="$1"
+		aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
+		echo "Package in apt: $aptpkg"
+		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+		echo "Apt Response: $aptresp"
+		if [ "$aptresp" == *"Unable to locate package"* -o "$aptresp" == *"Handler silently"* ];then
+			echo "Error. Either wrong package name or other error for $pkg. Raw output of apt:"
+			apt-get --print-uris install $aptpkg
+			exit 1
+	#	fi
+		else
+			deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+			echo "deb file : $deb"
+			manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+			if [[ -z $manpage ]];then
+				echo "No man pages found in deb package for $pkg. These are the contents of the $deb:"
+				curl -sL -o- $deb |dpkg -c /dev/stdin
+			else
+				echo "man page found: ${manpage[@]}"
+				declare -p manpage |sed s/"declare -a "//g
+			fi
+		fi
+fi
+
+
+
+exit
+
+
+# 1. Curl Deb File and read the man page without downloading deb: 
+# curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ./usr/share/man/man8/avisd.8.gz |man /dev/stdin
+# mind that tar does not need -z or -J !
+# curl -s=silent, -L = Locate link if moved , and -o- is -o = output to file, and dash indicates output to stdout 
+# tar -x = xtract , -O = display extracted files on stdout instead of saving to file, -t = list files
+# For testing , bellow commands display deb contents inside data archive of deb: 
+# curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb -c (/dev/stdin is not necessary)
+# curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -t
+# dpkg -c <(curl -sL "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb") #also works ok
+# Another complete example
+# curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/axel/axel_2.11-1.1_amd64.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ./usr/share/man/man1/axel.1.gz |man /dev/stdin
+# locate full deb address using apt --print-uris install axel |grep axel (to keep out all the dependency debs)
+# even better to use apt --print-uris download axel. This will return the right package. install can return more debs (i.e try yade pkg)
+
+# 2. Working example with deb downloading
+# curl -sLO "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" # curl -O saves the file in CWD
+# ls -> avis_1.2.2-4_all.deb
+# ar p avis_1.2.2-4_all.deb data.tar.xz | tar -xJO ./usr/share/man/man8/avisd.8.gz |man /dev/stdin #works ok
+# tar -x = extract, -J = xz archive , -O output extracted file to stdout
+# Tips: 
+# This also works ok : ar -p `ls *.deb` data.tar.xz |unxz |tar -t . You can use unxz and gunzip to unzip xz and gz archives 
+# tar -t is used just for listing . unxz -l claims that does not support stdin (?!)
+
+# 3. Extract any compressed text file from downloaded deb:
+# apt-get download netcat
+# ar -p `ls *.deb` data.tar.xz |tar -Jt  #list files 
+# ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |gunzip |cat (or less or whatever)
+# or
+# ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |man /dev/stdin
+# man can operate as gunzip and cat on the same time, even if the file is a typical text file and not a man page.
+# for some reason tar fails to unzip the last gz file (but gunzip works ok):
+# ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |tar -xzO |cat
+# if the file is not compressed you can just run tar -O (output to stdout = screen)
+# ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/copyright
+
+# 4. Resources:
+# http://www.howtogeek.com/howto/uncategorized/linux-quicktip-downloading-and-un-tarring-in-one-step/
+# http://man.cx/<pkghere>
+# http://askubuntu.com/questions/92328/how-do-i-uncompress-a-tarball-that-uses-xz
+# http://superuser.com/questions/82923/how-to-list-files-of-a-debian-package-without-install
+#! https://www.g-loaded.eu/2008/01/28/how-to-extract-rpm-or-deb-packages/
+# https://www.gnu.org/software/tar/manual/html_node/Writing-to-an-External-Program.html#SEC87
+# https://www.cyberciti.biz/faq/howto-read-file-as-manpage-with-man-command/
+# http://linux-tips.com/t/how-to-extract-deb-package/169
+# http://unix.stackexchange.com/questions/61461/how-to-extract-specific-files-from-tar-gz
+# https://blog.packagecloud.io/eng/2015/10/13/inspect-extract-contents-debian-packages/
+
+# Tips 
+# apt --print-uris source (or install) agrep 
+# Get file list of deb archive by web (debian package system / file tree)
+# function deb_list () { curl -s $(lsb_release -si | sed -e 's Ubuntu http://packages.ubuntu.com/ ' -e 's Debian https://packages.debian.org/ ')/$(lsb_release -sc)/all/$1/filelist | sed -n -e '/<pre>/,/<\/pre>/p' | sed -e 's/<[^>]\+>//g' -e '/^$/d'; }
+# man pages extension is .1 , .7, .8 depending on the man classification. 
+# in deb files man page is xxxx.1.gz but man can handle it / decompress it directly without neet to tar -xz or gunzip /unxz first
+
+# Read man from sources 
+# apt --print-uris source yaboot
+# Usually returns orig.tar and debian.tar
+# Locate the man page using tar -tz or -tJ (-t = list files of archive)
+# curl -sL "http://httpredir.debian.org/debian/pool/non-free/a/agrep/agrep_4.17.orig.tar.gz" |tar -zt |egrep "agrep.[0-9]+$"
+# >agrep-4.17/agrep.1
+# curl -sL "http://debian.noc.ntua.gr/debian/pool/main/y/yaboot/yaboot_1.3.17.orig.tar.gz" |tar -xzO yaboot-1.3.17/man/yaboot.8 |man /dev/stdin
+# -x = extract
+# -z = gz archive. if tz archive, use -J
+# -O = print to stdout
+# man /dev/stdin : read man page from stdin
+
+# Complete Job: 
+# f=$(curl -sL "http://httpredir.debian.org/debian/pool/non-free/a/agrep/agrep_4.17.orig.tar.gz" |tar -zt |egrep "agrep.[0-9]+$")
+# curl -sL "http://httpredir.debian.org/debian/pool/non-free/a/agrep/agrep_4.17.orig.tar.gz" |tar -xzO $f |man /dev/stdin
+
+# Script based on source tar archives:
+# script fails often (i.e bzr) since man pages was not found neither in original tar nor debian tar.
+
+# In case you want to look in sources instead of the deb files, you could use  apt --print-uris source $pkg 2>&1 |grep "orig" |cut -d" " -f1 |sed s/\'//g) #isolate the link, remove ' in front/end of http add
+# Sources often include a file with name orig (=original) or with name debian = debian specific, that can be catched with s wapt --print-uris source $pkg 2>&1 |grep "debian.tar" |cut -d" " -f1 |sed s/\'//g)
+# This worked before to switch to deb file analysis:
+	#if [[ ${origsrc##*.} == "gz" ]];then #check last chars after the last dot
+		#f=$(curl -sL "$src" |tar -zt |grep -P "$pkg\.[0-9]$") #list archive files, find the man page
+		#if [[ -z $f ]];then #if man page not found in original source
+			#if [[ ${debsrc##*.} == "xz" ]];then #check debian extension
+				#echo "this is a xz archive"
+				#echo "Debian source is : $srcdeb"
+				#fdeb=$(curl -sL "$srcdeb" |tar -Jt |grep -P "$pkg.\.[0-9]$") #look for manual in debian source
+				#echo "Manual Found on debian.tar: $fdeb"
+			#fi
+		#else
+			#echo "Manual Found on original source: $f"
+		#fi
+
+	#read -p "press any key to read man"
+	
+		#if [[ -z $f ]];then
+			#curl -sL "$srcdeb" |tar -xJO $fdeb |man /dev/stdin
+		#else
+			#curl -sL "$src" |tar -xzO $f |man /dev/stdin
+		#fi
