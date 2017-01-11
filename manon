@@ -357,6 +357,11 @@ exit
 # Reason of failure is that symlink points to something like ./usr/share/man/man1/correctmanpage.1.gz which will be only available if you fully extract the deb package.
 # Instead of apt-get --print-uris download i also tried --print-uris install. But with install a lot of deb packages will be returned since a normal install operation will also install dependencies.
 # As a result --print-uris download will return the one and only correct deb file for the package you provided.
+# You can read any compressed page in your local system easily by using any of the following commands:
+# man /usr/share/doc/bash/README.commands.gz #make use of the man capability to decompress and display man or even regular files
+# zmore /usr/share/doc/bash/README.commands.gz |less #zmore is a default gz reader
+# cat /usr/share/doc/bash/README.commands.gz |gunzip |less #again for some reason the tar -xzO is not working to display the file
+
 
 # 6. See any sources tar file
 # apt-get --print-uris source pkg
