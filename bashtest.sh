@@ -827,6 +827,13 @@ fi
 # MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
 
+# Arguments : http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
+# START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
+# function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
+# Output --> declare -a args=([1]="c" [2]="b" [3]="a")
+
+#Reverse any word : echo "nixcraft" | rev
+
 # Rename using for and bash parameter expansion
 # for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
 

@@ -180,22 +180,31 @@ if [[ $2 == "--debian" ]]; then
 echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
 pkg="$1"
 manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
+found="Debian+8+jessie"
 if [[ $manpage == *"no data found"* ]];then
 	unset manpage
 	echo "stable failed"
 	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
+	found="Debian+testing+stretch"
 	if [[ $manpage == *"no data found"* ]];then
 		unset manpage
 		echo "testing failed"
 		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+		found="Debian+unstable+sid"
 		if [[ $manpage == *"no data found"* ]];then
 			echo "unstable failed"
 			echo "no man page available in debian online for package $pkg"
+			found=""
 			exit 1
 		fi
 	fi
 fi
+
+if [[ $2 == "--debian" && $3 == "--browser" ]]; then
+gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &
+else
 awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
+fi
 # Also check http://manpages.ubuntu.com/manpages/xenial/en/man1/dman.1.html
 # Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
 # Another great tool to investigate seems to be python debmans: https://pypi.python.org/pypi/debmans/1.0.0 
