@@ -596,6 +596,29 @@ else
 fi
 }
 
+function gitignore {
+#http://stackoverflow.com/questions/41608860/find-all-files-recursively-which-are-not-in-an-exclude-file/41624862#41624862
+args=()
+while read -r pattern; do
+  [[ ${#args[@]} -gt 0 ]] && args+=( '-o' )
+  [[ $pattern == */* ]]   && args+=( -path "./$pattern" ) || args+=( -name "$pattern" )
+done < .ignore
+
+find . -name '*.js' ! \( "${args[@]}" \)	
+
+# gv solution that fails under circumstances: find . -name '*.js' | grep -vEf .ignore or -vE "$(cat .ignore)"
+# .ignore contents:
+# *.min.js
+# directory/directory2/* (i applied foo/bar/*)
+# directory/file_56.js (i applied tmp/file_56.js)
+
+# problems with grep solution in GV answer:
+# 1. If you apply rule foo/bar/* this will also exclude find results from /anotherdir/foo/bar/* or even from foo/barrage/ directory
+# 2. If you apply rule /tmp/file_56.js	and you have also a directory called /sometmp/file_56.js , even the sometemp dir will be excluded.
+# 3. This file is excluded and it should not be excluded by the rules applied: a@min@js.js
+}
+
+
 # VARIOUS HOW TO
 # Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
 # for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
