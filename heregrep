@@ -1,0 +1,23 @@
+#! /bin/bash
+#cat <<End-of
+l="line 3"
+read -p "press any key:" k
+cat <<End-of-message
+-------------------------------------
+	This is line 1 of the message.
+This is line 2 of the message.
+This is $l of the message.
+This is line 4 of the message.
+This is the last line of the message.
+$k
+-------------------------------------
+End-of-message
+
+
+variable=$(cat <<SETVAR
+This variable
+runs over multiple lines.
+SETVAR
+)
+
+echo "$variable"

@@ -606,7 +606,32 @@ done < .ignore
 
 find . -name '*.js' ! \( "${args[@]}" \)	
 
-# gv solution that fails under circumstances: find . -name '*.js' | grep -vEf .ignore or -vE "$(cat .ignore)"
+function heredocs {
+	
+l="line 3"
+read -p "press any key:" k
+cat <<End-of-message
+-------------------------------------
+	This is line 1 of the message.
+This is line 2 of the message.
+This is $l of the message.
+This is line 4 of the message.
+This is the last line of the message.
+$k
+-------------------------------------
+End-of-message
+
+
+variable=$(cat <<SETVAR
+This variable
+runs over multiple lines.
+SETVAR
+)
+
+echo "$variable"
+}
+
+# gv solution that fails under circumstances: find . -name '*.js' | grep -vEf .ignore (or -vE "$(cat .ignore)")
 # .ignore contents:
 # *.min.js
 # directory/directory2/* (i applied foo/bar/*)
@@ -952,5 +977,54 @@ find . -name '*.js' ! \( "${args[@]}" \)
 #Trick : whatis /bin/* 2>&1 |grep -v "nothing appropriate" |grep "file" -> Scans the whole bin directory for all executables/commands 
 # excluding "nothing appropriate" that appears in execs without a single line description and matching file in description
 
+:<<HERE-DOCS
+Best explained : http://tldp.org/LDP/abs/html/here-docs.html
+Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
+
+when using here-doc format within a script, the input to cat comes from the script.
+Example:
+#! /bin/bash
+l="line 3"
+cat <<End-of-message
+-------------------------------------
+	This is line 1 of the message.
+This is line 2 of the message.
+This is $l of the message.
+This is line 4 of the message.
+This is the last line of the message.
+-------------------------------------
+End-of-message
+
+when the script finishes above lines are printed in stdout.
+If you apply cat <<-ENDOFMESSAGE (mind the dash) then white space is trimmed (except space)
+Tricky script usage:
+You can use the here-doc format to comment big blocks of text or code for debugging.
+format is :<<whatever ...... whatever
+if instead of :<< you use cat << , everything bellow tags will be printed on screen or to >file if defined.
+
+Another trick usage inside script:
+
+GetPersonalData ()
+{
+  read firstname
+  read lastname
+} # This certainly appears to be an interactive function, but . . .
 
 
+# Supply input to the above function.
+GetPersonalData <<RECORD001
+Bozo
+Bozeman
+RECORD001
+exit 0
+
+HERE-DOCS
+
+:<<Bash Tricks
+#### Special IFS settings used for string parsing. ####
+# Whitespace == :Space:Tab:Line Feed:Carriage Return:
+WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
+# No Whitespace == Line Feed:Carriage Return
+NO_WSP=$'\x0A'$'\x0D'
+
+later, you can just set IFS=${WSP_IFS}
