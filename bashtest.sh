@@ -1050,6 +1050,7 @@ Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#se
 The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 The Shopt Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html#The-Shopt-Builtin
 Shell Expansion: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_03_04.html
+Globbing: http://www.tldp.org/LDP/abs/html/globbingref.html
 
 Bash has by default enabled filename expansion.
 This means that a simple echo a* will print all the files starting with a (if any).
