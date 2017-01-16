@@ -6,8 +6,8 @@ fi
 
 if [[ $2 == "--online" ]]; then
 	title=$1
-	unset dt0 dt data
-	
+	unset dt0 dt data mson loopon
+	loopon=1
 	if [[ -z $3 ]]; then
 		echo "Trying at die.net"
 		#dt=$(links -dump https://linux.die.net/man/1/$1)
@@ -15,13 +15,32 @@ if [[ $2 == "--online" ]]; then
 		dt0+=($(links -dump "https://linux.die.net/man/$pkg.html" |grep -E "^( )*+$1+\([0-9]\)")) #search die.net alphabetical pages
 		#declare -p dt0 && exit
 		if [[ ${#dt0[@]} -gt 1 ]];then
-			declare -p dt0
-			for i in ${dt0[@]};do 
-				if [[ $(awk -F"\(" '{print $1}'<<<$i |tr -d " ") == "$1" ]];then
-					dt=$i
-					echo "found $i == $dt"
+			while [[ $loopon -eq 1 ]]; do
+				declare -p dt0
+				read -p "Select man pages to display by id or q to quit : " mson #case of wait : gives three different man pages (wait(1) wait(2) wait(3))
+				echo "You selected: $mson"
+				if [[ $mson == "q" ]]; then
+					echo "exiting"
+					loopon=0
+					exit 1
+				elif [[ $mson -le $((${#dt0[@]}-1)) ]]; then
+					echo "Display ${dt0[$mson]}" 	#for some reason pressing any letter assigns dt0[0] , obviously else goes into here instead of the last else
+					loopon=0
+					dt=${dt0[$mson]}
+				elif [[ $mson -gt $((${#dt0[@]}-1)) ]]; then
+					echo "out of range - try again"
+				else
+					echo "Invalid Selection - Try Again"
 				fi
 			done
+
+
+#			for i in ${dt0[@]};do 
+#				if [[ $(awk -F"\(" '{print $1}'<<<$i |tr -d " ") == "$1" ]];then
+#					dt=$i
+#					echo "found $i == $dt"
+#				fi
+#			done
 		else
 			dt=$dt0
 		fi
