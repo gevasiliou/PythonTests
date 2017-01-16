@@ -1018,9 +1018,24 @@ Bozeman
 RECORD001
 exit 0
 
+Use a cat here-doc to insert a new line to the end of an existed file
+cat <<EOF >>file.txt
+This line will be appended to the end of file
+EOF
+
+Use cat to insert a line in the BEGINNING of the file:
+cat <<EOF >file.txt
+This line will go at the beginning
+$(cat file.txt)
+EOF
+
+You can offcourse use tac instead of cat. But in tac lines of here-doc will be inserted from the last to the first.
+This is what tac does = reverse of cat.
+
+
 HERE-DOCS
 
-:<<Bash Tricks
+:<<Bash_Tricks
 #### Special IFS settings used for string parsing. ####
 # Whitespace == :Space:Tab:Line Feed:Carriage Return:
 WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
@@ -1028,3 +1043,39 @@ WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
 NO_WSP=$'\x0A'$'\x0D'
 
 later, you can just set IFS=${WSP_IFS}
+Bash_Tricks
+
+:<<Bash_Options Globbing ,filename expansion
+Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
+The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+The Shopt Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html#The-Shopt-Builtin
+Shell Expansion: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_03_04.html
+
+Bash has by default enabled filename expansion.
+This means that a simple echo a* will print all the files starting with a (if any).
+
+This is why sometimes the command apt list a* prints results and sometimes not. 
+If there is a file starting with a in the directory you run apt list a*, then a* is expanded due to bash filename expansion.
+
+You can disable this behavior using set -f , but this command will also disable the globbing in general, meaning that ls a* will result to literal a* and not global *
+
+Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
+
+To print all bash set parameters run #echo $SHELLOPTS && echo $-
+Typical Output: 
+braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
+himBHs
+
+To print all bash shopt parameters run #shopt -s && shopt -u
+Typical Output:
+extquote       	on
+force_fignore  	on
+hostcomplete   	on
+dirspell       	off
+dotglob        	off
+execfail       	off
+extdebug       	off
+extglob        	off
+failglob       	off
+
+Bash_Options
