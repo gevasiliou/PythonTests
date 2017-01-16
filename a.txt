@@ -1,3 +1,7 @@
 *.min.js
 foo/bar/*
 tmp/file_56.js
+just a new line
+
+another new line 
+will be EOF printed in file?

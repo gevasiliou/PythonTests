@@ -8,12 +8,6 @@
 #Remark: .bashrc of user has already above check condition but root .bashrc not.
 #Install it using cp .bash_aliases /home/gv/ and cp .bash_aliases /root/ or cp .bash_aliases $HOME/ (under root terminal)
 
-alias cp='cp -i'
-alias mv='mv -i'
-alias rm='rm -i'
-alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log'
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
+alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log'
 alias lsdir='ls -all |grep -E '^d''
-alias dirsize='du -h'
-# You can import the recent aliases by running root@debi64:# . ./.bash_aliases
-alias gitsend='git add . && git commit -m "update" && git push'
