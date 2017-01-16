@@ -17,3 +17,4 @@ alias lsdir='ls -all |grep -E '^d''
 alias dirsize='du -h'
 # You can import the recent aliases by running root@debi64:# . ./.bash_aliases
 alias gitsend='git add . && git commit -m "update" && git push'
+alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
