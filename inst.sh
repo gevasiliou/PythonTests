@@ -2,6 +2,7 @@
 
 { #Declarations
 export TMPFILE=/tmp/yadvalues
+set -f
 #Declarations 
 }
 
@@ -22,7 +23,12 @@ pkgdis2=$(echo $PKGDIS |cut -f1 -d"/")
 descr=$(echo -e "------------------# apt policy $pkgdis2 #---------------------- \n ")
 descr+=$( apt policy "$pkgdis2" )
 descr+=$(echo -e "\n ------------------# apt show $PKGDIS #----------------------\n ")
+descript=$( apt show "$PKGDIS" )
+if [[ "$descript" =~ "Description:" ]];then
 descr+=$( apt show "$PKGDIS" )
+else
+descr+=$(echo -e "\n ------------------# No description available #----------------------\n ")
+fi
 displ=$(yad --title="Package Display-$PKGDIS" --no-markup --text-info<<<"$descr" --center --width 800 --height=400 --editable --wrap --button="Go Back":0)
 #If you don't use this method (displ=$(yad....) then the whole yad text-info will be printed in the terminal.
 }
@@ -83,6 +89,9 @@ fi
 
 echo $selections
 pattern=`echo $selections | awk -F',' '{print $1}'`
+#pattern=$(echo -e \"$pattern\")
+echo "Pattern for apt list = $pattern"
+#sleep 5 && apt list "$pattern" 2>&1 && exit
 if [[ $pattern = "*" ]]; then
 pattern=""
 fi
@@ -113,21 +122,21 @@ while [[ $stop -eq 0 ]];do
 #selectpackages
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
 "Installed")
-readarray -t fti < <(apt list $pattern |grep  "installed" |cut -f1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |grep  "installed" |cut -f1 -d "/");;
 "All")
-readarray -t fti < <(apt list $pattern |cut -f1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |cut -f1 -d "/");;
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
+readarray -t fti < <(apt list --all-versions "$pattern" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
+readarray -t fti < <(apt list --installed --all-versions "$pattern" 2>&1 |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
-readarray -t fti < <(apt list --all-versions $pattern |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --all-versions "$pattern" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 "Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --installed --all-versions "$pattern" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 esac
 
 IFS=$'\n' 
@@ -144,7 +153,7 @@ pddescription=$(grep "Description:" <<< $aptshow)
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
 pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 
-pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2 -d ":"))
+pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 
@@ -234,6 +243,7 @@ case $btn in
 esac	
 unset IFS
 done
+set +f
 exit
 
 #To be done:
