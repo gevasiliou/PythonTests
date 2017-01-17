@@ -914,6 +914,10 @@ echo "$variable"
 # or even assign it to an alias:
 # alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
 # for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing " [ with \n[ 
+#
+# Use of find with custom output (printf):
+# find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
+ 
 
 # FILE DESCRIPITORS
 # http://www.tldp.org/LDP/abs/html/io-redirection.html
