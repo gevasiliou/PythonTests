@@ -1,14 +1,1 @@
-This is another fresh line
-*.min.js
-foo/bar/*
-tmp/file_56.js
-just a new line
-another new line 
-will be EOF printed in file?
-This is a fresh new line
-*.min.js
-foo/bar/*
-tmp/file_56.js
-just a new line
-another new line 
-will be EOF printed in file?
+something
