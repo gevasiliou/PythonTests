@@ -16,7 +16,8 @@ if [[ $2 == "--online" ]]; then
 		#declare -p dt0 && exit
 		if [[ ${#dt0[@]} -gt 1 ]];then
 			while [[ $loopon -eq 1 ]]; do
-				declare -p dt0
+				#declare -p dt0 |sed 's/declare -a dt0=//g' |tr -d '()' |tr ' ' '\n'
+				declare -p dt0 |sed 's/declare -a dt0=(//g' |tr ' ' '\n' |sed 's/)$//g'
 				read -p "Select man pages to display by id or q to quit : " mson #case of wait : gives three different man pages (wait(1) wait(2) wait(3))
 				echo "You selected: $mson"
 				if [[ $mson == "q" ]]; then
@@ -108,7 +109,7 @@ if [[ $2 == "--apt" ]]; then
 			exit 1
 		else
 			echo "man page found: ${#manpage[@]}"
-			declare -p manpage |sed s/"declare -a "//g
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 		
 		if [[ ${#manpage[@]} -eq 1 ]]; then
@@ -165,7 +166,7 @@ if [[ $2 == "--down" ]]; then
 			exit 1
 		else
 			echo "man page found: ${#manpage[@]}"
-			declare -p manpage |sed s/"declare -a "//g
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 	
 		if [[ ${#manpage[@]} -eq 1 ]]; then
@@ -243,7 +244,8 @@ for i in ${pk1[@]};do
 		pk+=($(cut -d"/" -f1 <<<"$i"))
 	fi
 done
-declare -p pk #&& sleep 5 && exit
+declare -p pk |sed 's/declare -a pk=(//g' |tr ' ' '\n' |sed 's/)$//g'
+#sleep 5 && exit
 for pkg in ${pk[@]};do
 manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
 if [[ $manpage == *"no data found"* ]];then
@@ -318,7 +320,7 @@ if [[ $2 == "--aptcheck" ]]; then
 				curl -sL -o- $deb |dpkg -c /dev/stdin
 			else
 				echo "man page found: ${manpage[@]}"
-				declare -p manpage |sed s/"declare -a "//g
+				declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 			fi
 		fi
 fi

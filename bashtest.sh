@@ -894,16 +894,53 @@ echo "$variable"
 # With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
 
 
+# Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
+# normal usage of diff is diff -y file1 file2.
+
+# Quick Tricky way to display arrays data:
+# declare -p array |sed 's/declare -a array=(//g' |tr ' ' '\n' |sed 's/)$//g'
+# if you just declare -p array then output is like this:
+# a=( 1 2 3);declare -p a --> declare -a a=([0]="1" [1]="2" [2]="3")
+# So the first sed gets rid of the 'declare -a a=(' part.
+# tr replaces spaces (between array elements) with new line
+# last sed deletes the last ) in the array
+# result : 
+# root@debi64:/home/gv/Desktop/PythonTests# a=( 1 2 3);declare -p a |sed 's/declare -a a=(//g' |tr ' ' '\n' |sed 's/)$//g'
+# [0]="1"
+# [1]="2"
+# [2]="3"
+# You can then further select id of an array directly (see manon script)
+# You can also have a function for this : function pa { declare -p $1 |sed s/"declare -a $1=("//g |tr ' ' '\n' |sed 's/)$//g';};pa a
+# or even assign it to an alias:
+# alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
+# for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing " [ with \n[ 
+
 # FILE DESCRIPITORS
+# http://www.tldp.org/LDP/abs/html/io-redirection.html
 # http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
+# basic fd : 0=stdin , 1=stdout , 2=stderr
 # IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 # But if you try test=$(java -version 2>&1);echo $test works ok.
-# Obviously you can assign in vars output of commands that send their output to &1 (=stdout) and not to &2 (stderr).
+# Obviously this happens because java app prints it's version to stderr and not to stdout.
+# By default you can not assign in vars output of commands that send their output to &2 (=stderr) and not to &1 (stdout).
 # With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
 # Redirect stderr to file and stdout + stderr to screen :
 # exec 3>&1 
 # foo 2>&1 >&3 | tee stderr.txt
-
+#
+# Tricky redirection from bins missing man pages:
+# man -w binaryfile 2>&1 >/dev/null (-w prints man page location)
+# In case of a normal bin file (i.e grep) then nothing is printed. In case of a bin that do not have a man page (i.e getweb) then
+# the error message is printed.
+# mind also that a=$(man -w getweb >/dev/null) will also print the error message, even if $a is NOT echoed and also $a will be blank.
+# the redirection >/dev/null is in reality equal to 1>/dev/null, meaning redirecting stdout (&1) to dev/null
+# mind also that examples:
+# man -w grepp 2>/dev/null -> although the package / bin is wrong = no man page , nothing is printed on screen since stderr is forwarded to /dev/null
+# man -w grep 1>/dev/null -> equivalent to man -w grep >/dev/null
+# man -w grep 2>/dev/null -> since there is a man page for grep, the location is printed on screen since this redirection affects only &2 = stderr
+# man -w grepp &>/dev/null -> this syntax forwards both stdout and stderr and as result nothing is printed either for grepp (no man page) or grep (valid man page)
+#
+# With annotate-output shell script of devscripts you can run any command and it's output will be marked by O or E depending on where it's printed (0 for stdout, E for stderr). It is also provide Info (I) about exit code
 
 #ASSOCIATIVE ARRAYS (declare -A array)
 # http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
@@ -1045,7 +1082,8 @@ NO_WSP=$'\x0A'$'\x0D'
 later, you can just set IFS=${WSP_IFS}
 Bash_Tricks
 
-:<<Bash_Options Globbing ,filename expansion
+:<<Bash_Options 
+Globbing ,bash filename expansion, bash options ans shopt options
 Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
 The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 The Shopt Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html#The-Shopt-Builtin
@@ -1057,8 +1095,14 @@ This means that a simple echo a* will print all the files starting with a (if an
 
 This is why sometimes the command apt list a* prints results and sometimes not. 
 If there is a file starting with a in the directory you run apt list a*, then a* is expanded due to bash filename expansion.
+This was revealed using set -x on bash before command execution.
+With -x bash informs you - prints out - the command that is going to be executed.
 
-You can disable this behavior using set -f , but this command will also disable the globbing in general, meaning that ls a* will result to literal a* and not global *
+And this filename expansion confuses people since apt list a* is actually interpreted as apt list allfilesbeginningwitha, but apt list xfce* works without quotes if there are not files beginning with xfce.
+
+You can disable this behavior using "set -f" , but this command will also disable the globbing in general, meaning that ls a* will result to literal a* and not global *
+
+Or you can just run apt list "a*" and this will work fine.
 
 Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
 
@@ -1079,4 +1123,4 @@ extdebug       	off
 extglob        	off
 failglob       	off
 
-Bash_Options
+Bash_Options End

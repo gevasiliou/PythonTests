@@ -18,3 +18,16 @@ alias lsdir='ls -all |grep -E '^d''
 alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
+alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
+:<<usage_of_printarray
+root@debi64:/home/gv/Desktop/PythonTests# ab=( "one" "two" "fi ve" )
+root@debi64:/home/gv/Desktop/PythonTests# printarray
+please provide a var
+root@debi64:/home/gv/Desktop/PythonTests# printarray ab
+[0]="one
+[1]="two
+[2]="fi ve"
+
+mind that this works even if there is space in the array elements , like "fi ve"
+if you supply to printarray with a non valid variable, declare will complain (that is normal)
+usage_of_printarray
