@@ -19,6 +19,9 @@ alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
+alias mandiff='function __mdf { diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70); };__mdf'
+#mandiff = compare with diff an installed man page with online one by mankier.com
+
 :<<usage_of_printarray
 root@debi64:/home/gv/Desktop/PythonTests# ab=( "one" "two" "fi ve" )
 root@debi64:/home/gv/Desktop/PythonTests# printarray

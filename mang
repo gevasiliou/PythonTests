@@ -62,7 +62,7 @@ exit
 :<<man_differences
 Display differences between manpages (http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-samehttp://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same)
 diff_man() { diff -u <(man "$1") <(man --manpath="/old/path/to/man" "$1"); } - works better with diff -y (side by side comparison)
-diff -y <(man grep) <(man agrep)
+diff -w -y <(man grep) <(man agrep) (-w ignores all the whitespace and compares just real text lines)
 man_differences
 
 :<<noman

@@ -1,8 +1,27 @@
 #!/bin/bash
-if [[ -z $1 ]];then
-	echo "You need to provide a command to show manual or --help for options"
-	exit
-fi
+helpme() {
+	    cat <<EOF
+This script search online man pages in various ways.
+Usage: manon [packagename] [option1] [option2]
+  Option1:
+    --help				This usage screen.
+    --online [option2]			Use online services to retrieve requested man page (die.net, mankier.com and man.he.net)
+					If option2 is ommited , starting from die.net
+    --apt				Extract and display the man page from the deb package without downloading it. 
+    --down				Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
+    --debian			Search particulary in debian manpages online platform 
+  
+  Option 2:
+	--mankier			Skip die.net look at mankier.com
+	--manhenet			Skip die.net and mankier.com and look directly in man.he.net
+	--browser			When used with --debian instead of displaying man page in terminal opens the default browser.
+	--nodelete			When used with --down the deb package will not be deleted.
+
+
+EOF
+}	
+
+[[ -z $1 || -z $2 ]] && helpme && exit
 
 if [[ $2 == "--online" ]]; then
 	title=$1
@@ -54,9 +73,6 @@ if [[ $2 == "--online" ]]; then
 			section=$(awk -F"\(" '{print $2}'<<<$dt |cut -d")" -f1 |tr -d " ")
 			echo "$dt - $manname - $section"
 			data=$(links -dump https://linux.die.net/man/$section/$manname)
-			#echo "$data"
-			#declare -p dt
-			#exit
 			tit="/die.net online"
 		fi
 	fi
@@ -65,7 +81,7 @@ if [[ $2 == "--online" ]]; then
 		echo "die.net skipped. Trying mankier.com"
 		unset dt data
 		data=$(links -dump  "https://www.mankier.com/?q=$1") 
-		#Mind the fantastic rediection of mankier. If package is foung, then you are automatically redirected to man page and you don't have to worry about man section (1..8)'
+		#Mind the fantastic redirection of mankier. If package is foung, then you are automatically redirected to man page and you don't have to worry about man section (1..8)'
 		tit="/mankier online"
 	fi
 
@@ -329,6 +345,11 @@ fi
 
 exit
 
+# compare man pages:
+# http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
+# diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=grep" |less |fold -s -w 70) <(man grep |less |fold -s -w 70)
+# diff_man() { diff -y <(man --manpath="/old/path/to/man" "$1") <(man "$1"); }
+# Using process substitution = each process get a named fifo and it is treated as a file. 
 
 # 1. Curl Deb File and read the man page without downloading deb: 
 # curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ./usr/share/man/man8/avisd.8.gz |man /dev/stdin
