@@ -701,6 +701,9 @@ echo "$variable"
 #
 # Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
 
+# Sed replace a string in a line with pattern: sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
+# above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
+#
 # Trick to get only one line from file using head and tail
 # Usage: bash viewline myfile 4
 # head -n $2 "$1" | tail -n 1

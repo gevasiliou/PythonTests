@@ -21,10 +21,11 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
 alias mandiff='function __mdf { diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70); };__mdf'
 #mandiff = compare with diff an installed man page with online one by mankier.com
-alias lsaptonline='function __aso (){ tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1); tmpdeb=$(echo "${tmpdeb: 1:-1}");dpkg -c <(curl -sL -o- $tmpdeb); } ;__aso'
-alias aptshow='function __aptshow(){ apt show $1 2>/dev/null |grep -A2 -e "Package:" -e "Description:" |grep -v -e "Version\|Priority\|Maintainer\|Installed-"; };__aptshow'
+alias lsaptonline='function __aso (){ local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1); tmpdeb=$(echo "${tmpdeb: 1:-1}");dpkg -c <(curl -sL -o- $tmpdeb); } ;__aso'
+alias aptshowlight='function __aptshowlight(){ apt show $1 2>/dev/null |grep -A2 -e "Package:" -e "Description:" |grep -v -e "Version\|Priority\|Maintainer\|Installed-"; };__aptshowlight'
 #aptshow : runs apt show on given arg $1 , and prints only package name, section and Description. Combine with yadit.
 #notice that if you specify to -A (after context) more lines than really available the results are not correct.
+alias aptshowsmart='function __aptshowsmart(){ local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1);apt show $ass |less; };__aptshowsmart'
 
 :<<usage_of_printarray
 root@debi64:/home/gv/Desktop/PythonTests# ab=( "one" "two" "fi ve" )

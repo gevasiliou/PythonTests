@@ -122,27 +122,27 @@ while [[ $stop -eq 0 ]];do
 #selectpackages
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list "$pattern" |grep -v -e "$exclude1" -e "$exclude2" -e "installed" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |grep -v -e "$exclude1" -e "$exclude2" -e "installed" -e "Listing" |cut -f 1 -d "/");;
 "Installed")
-readarray -t fti < <(apt list "$pattern" |grep  "installed" |cut -f1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |grep -v "Listing" |grep  "installed" |cut -f1 -d "/");;
 "All")
-readarray -t fti < <(apt list "$pattern" |cut -f1 -d "/");;
+readarray -t fti < <(apt list "$pattern" |grep -v "Listing" |cut -f1 -d "/");;
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions "$pattern" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
+readarray -t fti < <(apt list --all-versions "$pattern" |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions "$pattern" 2>&1 |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
+readarray -t fti < <(apt list --installed --all-versions "$pattern" 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
-readarray -t fti < <(apt list --all-versions "$pattern" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --all-versions "$pattern" |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 "Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions "$pattern" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --installed --all-versions "$pattern" |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 esac
 
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 
-for (( item=0; item<=$c; item++ )); do
+for (( item=0; item<$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 done
@@ -293,7 +293,12 @@ exit
 #To be done:
 # You can assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
 # Command apt install --upgrade pkgname works , but pkgname* gets all pkgs (both installed and not installed)
-# 
+#
+# Trick: Get apt list in a regular var - not array
+# ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1);apt show $ass |less
+# Since apt list skips the virtual packages , instead of apt show pkg* you can use above command and thus apt show will call only 
+# valid packages reported by apt list. I have also an alias for this (aptshowsmart) 
+#
 # Trick1: the following command asks for a package name , load all pkgs found in a array, and prompts you to install them.
 # It also runs as one line in terminal:
 # root@debi64:/home/gv/Desktop# read -p "give package name: " pkg;readarray pkgs< <(apt list --upgradable |egrep "^$pkg" |cut -f1 -d'/');echo ${pkgs[@]};for i in ${pkgs[@]};do read -p "press any key to install next package = $i or press s to skip: " ans;if [[ $ans != 's' ]];then apt install -y --upgrade $i;fi;done
