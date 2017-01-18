@@ -142,12 +142,12 @@ esac
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 
+:<<oldcode
 for (( item=0; item<=$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
-#echo "fti[$item] = ${fti[$item]}"
 done
-#exit
+
 aptshow=$(apt show ${pd[@]})
 pddescription=$(grep "Description:" <<< $aptshow)
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
@@ -156,6 +156,27 @@ pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
+oldcode
+
+for (( item=0; item<=$c; item++ )); do
+echo "fti[$item] = ${fti[$item]}"
+aptshow=$(apt show ${fti[$item]})
+pddescription=$(grep "Description:" <<< $aptshow)
+if [[ $pddescription != "" ]];then 
+	pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
+	pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
+	pdss+=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
+	pdszd+=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
+	pdszi+=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
+else
+	pddescription="not available"
+	pdsizeDown="not available"
+	pdsizeInst="not available"
+	pdss+=( "not availble" )
+	pdszd+=( "NA" )
+	pdszi+=( "NA" )
+fi
+done
 
 if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
 echo "grab versions differently in experimental packages"
