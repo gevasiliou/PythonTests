@@ -782,6 +782,8 @@ echo "$variable"
 # a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 # a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 # a="this is some TEXT"; echo ${a: 5:7} 	-> is some
+# a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char
+
 # a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
 # a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
 # a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
@@ -820,7 +822,7 @@ echo "$variable"
 # a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
 # a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes the first word from beginning)
 # a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
-# a="this.is.a.file.gz";echo ${a##*.} -->gz #all text deleted except last part (DOT separated)
+# a="this.is.a.file.gz";echo ${a##*.} -->gz #all text deleted except last part (DOT separated) or delete from begining until the last dot found
 # a="apt";echo ${a:0:1} --> a #prints the first character of a variable (from zero give me 1)
 # a="Be conservative in what you send";echo ${a% *} --> Be conservative in what you #first word from end deleted. 
 # a="Be conservative in what you.send";echo ${a% *} --> Be conservative in what #works only for space separated words (IFS makes some effect in the resulted text)
@@ -880,6 +882,15 @@ echo "$variable"
 # function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 # Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
+#PRACTICAL USE OF BASH PARAMETERS EXPANSION (http://wiki.bash-hackers.org/syntax/pe)
+#Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
+#Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
+#Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
+#Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
+#Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
+# Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
+# --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
+
 #Reverse any word : echo "nixcraft" | rev
 
 # Rename using for and bash parameter expansion
@@ -892,6 +903,10 @@ echo "$variable"
 #Remove new line char from strings and replace it with space using trim (tr)
 # echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
 # With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
+
+#List all kernel modules that are loaded (i.e lsmod)
+# cat /lib/modules/$(uname -r)/modules.dep
+# find /lib/modules/$(uname -r) -type f -name \*.ko
 
 
 # Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
@@ -971,12 +986,6 @@ echo "$variable"
 # --> foo a --- bar
 # --> baz b --- quux
 
-#PRACTICAL USE OF BASH PARAMETERS EXPANSION (http://wiki.bash-hackers.org/syntax/pe)
-#Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
-#Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
-#Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
-#Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
-#Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 
 # AWK
 # Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.

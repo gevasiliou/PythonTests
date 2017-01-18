@@ -386,7 +386,16 @@ exit
 # if the file is not compressed you can just run tar -O (output to stdout = screen)
 # ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/copyright
 
-# 4. Resources:
+# 4. Display contents of an not installed package without downloading
+# apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g #this will isolate the full deb link
+# dpkg -c <(curl -sL -o- $(apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g)) #this does the job
+# though this fails to be registered an a alias due to the sed that tries to remove ' character from start/end.
+# Alternative ${var: 1:-1} removes first and last char and now it works!
+# alias lsaptonline='function __aso (){ tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1); tmpdeb=$(echo "${tmpdeb: 1:-1}");dpkg -c <(curl -sL -o- $tmpdeb); } ;__aso'
+
+
+
+# 5. Resources:
 # http://www.howtogeek.com/howto/uncategorized/linux-quicktip-downloading-and-un-tarring-in-one-step/
 # http://man.cx/<pkghere>
 # http://askubuntu.com/questions/92328/how-do-i-uncompress-a-tarball-that-uses-xz

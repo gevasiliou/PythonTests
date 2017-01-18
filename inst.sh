@@ -142,13 +142,13 @@ esac
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 
-:<<oldcode
 for (( item=0; item<=$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 done
-
 aptshow=$(apt show ${pd[@]})
+#echo "$aptshow" |grep "virtual"
+#exit
 pddescription=$(grep "Description:" <<< $aptshow)
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
 pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
@@ -156,8 +156,9 @@ pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
-oldcode
 
+
+:<<newcode
 for (( item=0; item<=$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 aptshow=$(apt show ${fti[$item]})
@@ -177,6 +178,28 @@ else
 	pdszi+=( "NA" )
 fi
 done
+newcode
+
+# To be noted:
+# when using apt list a*, virtual packages were also listed.
+# As a result, the apt show of virtual packages returns
+# Package: abiword-gnome
+# State: not a real package (virtual)
+# PS: run apt show "a*" |grep -i -C20 "State:"
+# This has not Description and thus the description array broke.
+# But in VM machine , apt version 1.3.1 , apt list is not displaying virtual packages (!), thus this scripts does not break since apt show is called using the pkgs listed by apt-list
+# This can be verified by running 'apt list "abi*" ' (abiword-gnome is missing) and also 'apt list -a abiword-gnome' returns nothing.
+# apt show abiword-gnome returns:
+# Package: abiword-gnome
+# State: not a real package (virtual)
+# N: Can't select candidate version from package abiword-gnome as it has no candidate
+# N: Can't select versions from package 'abiword-gnome' as it is purely virtual
+# N: No packages found
+# apt --version : apt 1.3.1 (amd64) (ps: it is further upgradable to 1.4~beta3 amd64)
+# uname -a : Linux debi64 4.8.0-1-amd64 #1 SMP Debian 4.8.5-1 (2016-10-28) x86_64 GNU/Linux
+# The behavior of home pc is different i think. To be checked.
+# Also mind that in home pc kernel is version 4.7, while on VM we have 4.8.5
+# Tip : You can see changelog of any pkg by "apt-get changelog pkg (apt in my case)"
 
 if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
 echo "grab versions differently in experimental packages"
