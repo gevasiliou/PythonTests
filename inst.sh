@@ -114,6 +114,47 @@ ind=0
 
 }
 
+function readmanpage {
+	source $TMPFILE
+	pkg="$PKGDIS"
+	aptpkg="$PKGDIS"
+	echo "Package: $aptpkg"
+	apt-get download "$aptpkg" 2>/dev/null
+	debname=$(find . -name "$pkg*.deb")
+	echo "Deb Name = $debname"
+	datatar=$(ar t "$debname" |grep "data.tar")
+	echo "data.tar = $datatar"
+
+	if [[ ${datatar##*.} == "gz" ]];then 
+		options="z"
+	elif [[ ${datatar##*.} == "xz" ]];then
+		options="J"
+	else
+		echo "data.tar is not a gz or xz archive. Exiting" |yad --text-info --height 500 --width 500
+		return 1
+	fi
+	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+		if [[ -z $manpage ]];then
+			debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
+			echo -e "No man pages found in deb package. Deb Contents= \n \n $debcontents" |yad --text-info --center --height 500 --width 500
+			rm -f $debname
+			return 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			#declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+	
+		if [[ ${#manpage[@]} -eq 1 ]]; then
+			echo "One man page found - Display "
+			ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
+		else
+				echo "Display all"
+				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri --no-markup
+		fi
+	rm -f $debname
+}
+export -f readmanpage
+
 #-----------------------MAIN PROGRAM----------------------------------#
 stop=0
 selectpackages "xfce*"
@@ -142,14 +183,16 @@ esac
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 
-for (( item=0; item<$c; item++ )); do
+for (( item=0; item<=$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 done
 aptshow=$(apt show ${pd[@]})
+declare -p aptshow
 #echo "$aptshow" |grep "virtual"
 #exit
-pddescription=$(grep "Description:" <<< $aptshow)
+pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
+declare -p pddescription && set +f && exit
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
 pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 
@@ -200,7 +243,7 @@ newcode
 # The behavior of home pc is different i think. To be checked.
 # Also mind that in home pc kernel is version 4.7, while on VM we have 4.8.5
 # Tip : You can see changelog of any pkg by "apt-get changelog pkg (apt in my case)"
-
+# breaks at apt-spy virtual package
 if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
 echo "grab versions differently in experimental packages"
 pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
@@ -242,6 +285,7 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --select-action 'bash -c "pkgselect %s "' \
 --print-column=2 \
 --separator="\n" \
+--button="Show manual":'bash -c "readmanpage"' \
 --button="Save List":'bash -c "savepkglist"' \
 --button="Display":'bash -c "pkgdisplay"' \
 --button="gtk-ok":0 \
