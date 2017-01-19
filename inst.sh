@@ -191,8 +191,9 @@ aptshow=$(apt show ${pd[@]})
 declare -p aptshow
 #echo "$aptshow" |grep "virtual"
 #exit
-pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
-declare -p pddescription && set +f && exit
+pddescription=$(grep -e "Description:" <<< $aptshow)
+#pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
+#declare -p pddescription && set +f && exit
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
 pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 
@@ -226,24 +227,40 @@ newcode
 # To be noted:
 # when using apt list a*, virtual packages were also listed.
 # As a result, the apt show of virtual packages returns
-# Package: abiword-gnome
-# State: not a real package (virtual)
+# Package: abiword-gnome - State: not a real package (virtual)
 # PS: run apt show "a*" |grep -i -C20 "State:"
 # This has not Description and thus the description array broke.
 # But in VM machine , apt version 1.3.1 , apt list is not displaying virtual packages (!), thus this scripts does not break since apt show is called using the pkgs listed by apt-list
 # This can be verified by running 'apt list "abi*" ' (abiword-gnome is missing) and also 'apt list -a abiword-gnome' returns nothing.
-# apt show abiword-gnome returns:
-# Package: abiword-gnome
-# State: not a real package (virtual)
-# N: Can't select candidate version from package abiword-gnome as it has no candidate
-# N: Can't select versions from package 'abiword-gnome' as it is purely virtual
-# N: No packages found
+# apt show abiword-gnome returns: --> Package: abiword-gnome --> State: not a real package (virtual)
 # apt --version : apt 1.3.1 (amd64) (ps: it is further upgradable to 1.4~beta3 amd64)
 # uname -a : Linux debi64 4.8.0-1-amd64 #1 SMP Debian 4.8.5-1 (2016-10-28) x86_64 GNU/Linux
+#
 # The behavior of home pc is different i think. To be checked.
 # Also mind that in home pc kernel is version 4.7, while on VM we have 4.8.5
 # Tip : You can see changelog of any pkg by "apt-get changelog pkg (apt in my case)"
-# breaks at apt-spy virtual package
+# breaks at apt-spy plg in home pc. 
+# At Home pc - apt 1.4-beta 3 - apt show apt-spy returns that it is a virtual package.
+# On VBox apt show apt-spy returns correctly description , everything.
+# Search term of apt-s* in VBox returns packages apt-show-source, apt-show-versions, apt-spy, apt-src
+# As proved, in VBox we don't have apt pinning enabled. All versions are reported by apt policy with priority 500 (stable, testing,sid) and priority 1 for experimental.
+# apt various config files exist in /etc/apt/apt.conf.d directory.
+# Maybe apt pinning is the conflict , since home pc is restricted to testing and package apt-spy exists only in sid.
+# check man apt_preferences for advise in the package pin numbers. Seems that negative numbers are not a good idea.
+#
+# Package: apt-spy
+# Version: 3.2.2-1
+# Priority: optional
+# Section: admin
+# Maintainer: Stefano Canepa <sc@linux.it>
+# Installed-Size: 108 kB
+# Depends: libc6 (>= 2.3), libcurl3 (>= 7.16.2)
+# Download-Size: 29.5 kB
+# APT-Sources: http://httpredir.debian.org/debian sid/main amd64 Packages
+# Description: writes a sources.list file based on bandwidth tests Parses the list of mirrors downloaded from ftp.debian.org and then based on
+# the region specified by the user each of testes mirrors for bandwidth, at the end it writes /etc/apt/sources.list.d/apt-spy.list using the best mirror it found out.
+
+
 if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
 echo "grab versions differently in experimental packages"
 pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
