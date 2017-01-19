@@ -1,3 +1,0 @@
-*.py
-/tmp/*
-/foo/bar/*
