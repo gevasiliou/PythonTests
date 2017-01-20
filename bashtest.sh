@@ -887,6 +887,8 @@ echo "$variable"
 # Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
 <<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+# Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+# Scroll to the end of page for more one-liners.
 # http://wiki.bash-hackers.org/syntax/pe
 #Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
 #Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt

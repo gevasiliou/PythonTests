@@ -414,11 +414,12 @@ esac
 unset IFS
 done
 echo -e "Temp Files to remove:\n"
-cat $DEBLIST
+cat $DEBLIST |sort |uniq
 ls tmpdeb/
 for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
 rm -fv tmpdeb/deblist.log
 rmdir -v tmpdeb
+rm *.FAILED
 set +f
 exit
 
