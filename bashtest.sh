@@ -775,6 +775,7 @@ echo "$variable"
 #linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
 # BASH MANUAL : http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+# BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
 # BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
 # ADVANCED BASH SCRIPTING : ftp://ftp.monash.edu.au/pub/linux/docs/LDP/abs/html/abs-guide.html#PIPEREF
 # IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
@@ -885,7 +886,8 @@ echo "$variable"
 # function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 # Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
-#PRACTICAL USE OF BASH PARAMETERS EXPANSION (http://wiki.bash-hackers.org/syntax/pe)
+<<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+# http://wiki.bash-hackers.org/syntax/pe
 #Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
 #Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
 #Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
@@ -893,6 +895,8 @@ echo "$variable"
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 # Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 # --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
+
+# Using subshells: $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
 
 #Reverse any word : echo "nixcraft" | rev
 
@@ -906,6 +910,21 @@ echo "$variable"
 #Remove new line char from strings and replace it with space using trim (tr)
 # echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
 # With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
+
+# Print anything nicely with column program
+Example : mount |column -t (-t stands for table . Auto cols detection & separation according to whitespace. )
+if columns are separated by delimiter, define it using -s
+For files you can directly run $column -t file.txt
+
+#Use dnstools to read a wikipedia page in terminal:
+dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
+I have an alias for that
+Alternative : host -t txt hacker.wp.dg.cx
+
+See : http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+
+PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+
 
 #List all kernel modules that are loaded (i.e lsmod)
 # cat /lib/modules/$(uname -r)/modules.dep
@@ -938,8 +957,11 @@ echo "$variable"
  
 
 # FILE DESCRIPITORS
+# Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
 # http://www.tldp.org/LDP/abs/html/io-redirection.html
 # http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
+# http://unix.stackexchange.com/questions/13724/file-descriptors-shell-scripting
+# http://www.tldp.org/LDP/abs/html/ioredirintro.html
 # basic fd : 0=stdin , 1=stdout , 2=stderr
 # IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 # But if you try test=$(java -version 2>&1);echo $test works ok.
@@ -963,6 +985,44 @@ echo "$variable"
 # man -w grepp &>/dev/null -> this syntax forwards both stdout and stderr and as result nothing is printed either for grepp (no man page) or grep (valid man page)
 #
 # With annotate-output shell script of devscripts you can run any command and it's output will be marked by O or E depending on where it's printed (0 for stdout, E for stderr). It is also provide Info (I) about exit code
+# Main usage of file descriptors is when you need to split your code like this;
+# exec >data-file #equivalent to 1>data-file = redirect stdout to a data-file
+# exec 3>log-file
+# echo "first line of data"  #though you don't specify fd , it is redirected to data_file due to the very first exec
+# echo "this is a log line" >&3 #this goes to fd3 = log file
+# if something_bad_happens; then echo error message >&2; fi #this goes to fd2 (not specially defined in this example)
+# exec &>-  # close the data output file
+# echo "output file closed" >&3
+# But again you don't gain anything with fds. You can send output directly to >anyfile in case of echo
+# On the other hand , by assigning stdout to ata-file (just >data-file) you can capture messages from scripts/programms etc that would
+# normally go to stdout.
+# correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
+
+:<<FIFO_NAMEDPIPES
+FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
+Maybe some commands do not accept input by refular files but from fifos and/or file descriptors. 
+
+To create a FIFO pipe use "mkfifo mypipe1"
+This actually creates a kind of FIFO file with name mypipe1 (can be seen with ls). 
+Command "file mypipe1" will advise that this is a fifo.
+Delete a fifo by rm mypipe1, as with any regular file.
+You can echo something to this FIFO using echo "something" >mypipe1 . Mind that terminal prompt is trapped.
+And you can then retrieve the buffer data (i.e from another shell) using cat mypipe1 or cat <mypipe1 and terminal1 and terminal2 prompt are released
+After cat , the fifo is empty - can be verified by trying to cat again.
+Once you cat fifo in terminal2 and info has no data , terminal 2 remains trapped awaiting for data to come.
+But once data comes in , will be printed and prompt will be freed.
+Yad designed uses fifos in this example: https://sourceforge.net/p/yad-dialog/wiki/Frontend%20for%20find+grep%20commands/
+Another example is the wikipedia netcat small proxy
+mkfifo backpipe; nc -l 12345  0<backpipe | nc www.google.com 80 1>backpipe
+This makes the fifo, and redirects local connections to port 12345 to google (default netcat operation)
+but also redirects response back to browser!! (this is not netcat default operation)
+You can verify if a fifo is present with if [[ ! -p "$pipe" ]];then mkfifo XXX;fi
+
+There are various techniques to cheat the fifo "one-shot" behavior.
+In terminal 1 if you run cat >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
+terminal 2 will print immediately whatever comes in fifo.
+see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+FIFO_NAMEDPIPES
 
 #ASSOCIATIVE ARRAYS (declare -A array)
 # http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/

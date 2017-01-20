@@ -2,7 +2,12 @@
 
 { #Declarations
 export TMPFILE=/tmp/yadvalues
-set -f
+mkdir -v tmpdeb
+export DEBLIST=./tmpdeb/deblist.log
+set -f 
+#set -f controls bash behavior for filename expansion. 
+#default is +f meaning that when you use "a*" bash expands this to all local files starting with a. 
+#That was affecting also apt list behavior since apt list a* expanded a* to local filenames , and thus if in a directory files starting with a exist, apt returns nothing.
 #Declarations 
 }
 
@@ -49,6 +54,7 @@ export -f savepkglist
 
 function aptinstall {
 for i in ${toinstall[@]}; do #$toninstall array is global var assigned in the main programm by yad.
+	if [[ "$i" =~ "Package:" || "$i" =~ "Deb Name" || "$i" =~ "data.tar" ]]; then continue;fi 
 	istrip1=$(echo $i |cut -f1 -d"/")
 	istrip2=$(echo $i |cut -f2 -d"/")
 	if [ $istrip2 == "experimental" ]; then
@@ -142,8 +148,11 @@ function listdeb {
 		return 1
 	fi
 	debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
-	echo -e "${debname:2}\n\n$debcontents" |yad --text-info --center --height 500 --width 500
-	rm -f $debname
+	debmancontents=$(ar p "$debname" "$datatar" | tar t"$options" |grep "man/man" |grep -v "/$")
+	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
+	#rm -f $debname
+	echo "$PWD/${debname:2}">>$DEBLIST
+	echo "$PWD/${debname:2}" >6&
 }
 export -f listdeb
 
@@ -152,12 +161,12 @@ function readmanpage {
 	pkg="$PKGDIS"
 	aptpkg="$PKGDIS"
 	if [[ "$PKGVER" != "(none)" ]];then
-		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg Manual " --wrap --show-uri --no-markup \
+		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg LOCAL Manual " --wrap --show-uri --no-markup \
 		--button="Try Online":10 \
 		--button="gtk-ok":0 \
 		--button="gtk-cancel":1
 		resp=$?
-		[[ "$resp" -ne 10 ]] && return 0
+		[[ "$resp" -ne 10 ]] && return 0 #If you select other than "Try Online" then exit (otherwise go on).
 	fi
 	echo "Package: $aptpkg"
 	debname=$(find . -name "$pkg*.deb")
@@ -180,8 +189,9 @@ function readmanpage {
 	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
 		if [[ -z $manpage ]];then
 			debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
-			echo -e "No man pages found in deb package. \n${debname:2} Contents \n \n $debcontents" |yad --text-info --center --height 500 --width 500
-			rm -f $debname
+			debmancontents=$(ar p "$debname" "$datatar" | tar t"$options" |grep "man/man" |grep -v "/$")
+			echo -e "No man pages found in deb : ${debname:2}\n\nmanpages listing:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
+			echo "$PWD/${debname:2}">>$DEBLIST
 			return 1
 		else
 			echo "man page found: ${#manpage[@]}"
@@ -192,29 +202,27 @@ function readmanpage {
 			echo "man page found - Display "
 			#ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
 			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" $manpage))
-			tit="$pkg Manual"
+			tit="$pkg ONLINE Manual"
 		else
 			echo "Display all"
 			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
 			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
-			tit="$pkg All Manuals"
+			tit="$pkg ALL ONLINE Manuals"
 		fi
 	yad --text-info<<<"$mpg" --height=500 --width=800 --center --title="$tit" --wrap --show-uri --no-markup \
 	--button="Show Deb":10 \
 	--button="gtk-ok":0 \
 	--button="gtk-cancel":1
 	resp1=$?
-	[[ "$resp1" -eq 10 ]] && listdeb || rm -f $debname
-
+	[[ "$resp1" -eq 10 ]] && listdeb #|| rm -f $debname
+	echo "$PWD/${debname:2}">>$DEBLIST
 }
 export -f readmanpage
 
-#-----------------------MAIN PROGRAM----------------------------------#
+#------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 stop=0
 selectpackages "xfce*"
-#toremove=()
 while [[ $stop -eq 0 ]];do
-#selectpackages
 case "$installed" in
 "Not Installed") 
 readarray -t fti < <(apt list "$pattern" |grep -v -e "$exclude1" -e "$exclude2" -e "installed" -e "Listing" |cut -f 1 -d "/");;
@@ -236,8 +244,8 @@ esac
 
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
-
-for (( item=0; item<=$c; item++ )); do
+[[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
+for (( item=0; item<$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 done
@@ -352,6 +360,7 @@ done
 printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
 export LIST3=$(printf "%s\n" ${list2[@]})
 
+unset toinstall
 toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --height=600 --center --checklist \
 --select-action 'bash -c "pkgselect %s "' \
 --print-column=2 \
@@ -376,6 +385,7 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 
 btn=$?
 echo "Button Pressed:" $btn
+declare -p toinstall
 case $btn in 
 0) 	
 	echo "Package list to be installed"
@@ -403,9 +413,12 @@ case $btn in
 esac	
 unset IFS
 done
-#declare -p removeit
-#echo "removeit=${removeit[@]}"
-#rm -i ${toremove[@]}
+echo -e "Temp Files to remove:\n"
+cat $DEBLIST
+ls tmpdeb/
+for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
+rm -fv tmpdeb/deblist.log
+rmdir -v tmpdeb
 set +f
 exit
 

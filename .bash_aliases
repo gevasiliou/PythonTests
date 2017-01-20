@@ -26,6 +26,8 @@ alias aptshowlight='function __aptshowlight(){ apt show $1 2>/dev/null |grep -A2
 #aptshow : runs apt show on given arg $1 , and prints only package name, section and Description. Combine with yadit.
 #notice that if you specify to -A (after context) more lines than really available the results are not correct.
 alias aptshowsmart='function __aptshowsmart(){ local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1);apt show $ass |less; };__aptshowsmart'
+alias wiki='function __wiki() { dig +short txt $1.wp.dg.cx; };__wiki'
+#wiki returns wikipedia entrys in terminal. Uses dig (apt install dnsutils)
 
 :<<usage_of_printarray
 root@debi64:/home/gv/Desktop/PythonTests# ab=( "one" "two" "fi ve" )
