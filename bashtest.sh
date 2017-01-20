@@ -923,7 +923,33 @@ dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
 I have an alias for that
 Alternative : host -t txt hacker.wp.dg.cx
 
-See : http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+Quick backup : cp filename{,.bak}
+
+Quick move: $ mv /path/to/file{,_old}
+
+Trace root with ping together: $ mtr google.com
+
+Find the last command that begins with "whatever," but avoid running it : $ !whatever:p
+
+Change to the previous working directory : $ cd - (insted of cd $OLDPWD)
+
+Serve the current directory at http://localhost:8000/ : $ python -m SimpleHTTPServer 8000
+
+Run the last command as root : $ sudo !! (also simple !! just repeats last command)
+
+Capture video of a linux desktop : $ ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg
+
+Read the first line from a file and put it in a variable : $ read -r line < file OR IFS= read -r line < file
+
+Read a random line from a file and put it in a variable : $ read -r random_line < <(shuf file)
+When bash sees <(shuf file) it opens a special file /dev/fd/n, where n is a free file descriptor, 
+
+Extract the filename from the path : filename=${path##*/} 
+Extract dirname : dirname=${path%/*}
+
+Resource: 
+http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 
 PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 
