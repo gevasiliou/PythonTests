@@ -351,6 +351,40 @@ exit
 # diff_man() { diff -y <(man --manpath="/old/path/to/man" "$1") <(man "$1"); }
 # Using process substitution = each process get a named fifo and it is treated as a file. 
 
+:<<manpagealert
+script to display all binaries missing man pages
+
+Search for files who miss manpages
+http://unix.stackexchange.com/questions/337619/is-there-a-way-to-find-installed-binary-packages-which-dont-have-manpages/337761#337761
+Based on the source code of manpage_alert script, part of devscripts package, this solution works fine:
+F=( "/bin/*" "/sbin/*" "/usr/bin/*" "/usr/sbin/*" "/usr/games/*" );for f in ${F[@]};do for ff in $f;do if ! mp=$(man -w -S 1:6:8 "${ff##*/}" 2>&1 >/dev/null);then echo "$mp" |grep -v "man 7 undocumented";fi;done;done
+
+Actually each binary in folders bin,sbin,usr/bin and usr/sbin is called by man recursivelly.
+-w switch prints man page location and -S defines particular section of man pages.
+Redirections of 2>&1 and >/dev/null makes the man command to print nothing if there is a valid man page location.
+If the command man complains about missing man page, then this message is printed.
+actually even if you run man -w grep >/dev/null nothing will be printed but if you run man -w getweb >/dev/null then bellow error message is printed:
+No manual entry for getweb - See 'man 7 undocumented' for help when manual pages are not available.
+
+Error message is printed on stderr instead of stdout. As usuall error messages printed can not be stored in vars, unless you redirect stderr to stdout (2>&1)
+Mind that even this command will print the err message, though that var $a is not echoed:
+root@debi:# a=$(man -w getweb >/dev/null)
+Which means that stderr will be printed to your screen no matter what, and $a will be a blanc var.
+
+F=( "/bin/*" "/sbin/*" "/usr/bin/*" "/usr/sbin/*" "/usr/games/*" )
+for f in ${F[@]};do 
+  for ff in $f;do
+    if ! mp=$(man -w -S 1:8:6 "${ff##*/}" 2>&1 >/dev/null);then 
+       echo "$mp" |grep -v "man 7 undocumented" #man 7 undocumented is printed in a separate line.
+    fi
+  done
+done
+
+Oneliner:
+F=( "/bin/*" "/sbin/*" "/usr/bin/*" "/usr/sbin/*" "/usr/games/*" );for f in ${F[@]};do for ff in $f;do if ! mp=$(man -w -S 1:6:8 "${ff##*/}" 2>&1 >/dev/null);then echo "$mp" |grep -v "man 7 undocumented";fi;done;done
+
+manpagealert
+
 # 1. Curl Deb File and read the man page without downloading deb: 
 # curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ./usr/share/man/man8/avisd.8.gz |man /dev/stdin
 # mind that tar does not need -z or -J !

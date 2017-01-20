@@ -7,10 +7,11 @@ set -f
 }
 
 function pkgselect { 
-#echo "Args Received by caller =" $0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
+#echo "Args Received by caller = $@" |yad --text-info
+#$0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 #echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
-echo -e "PKGDIS=\"$2\"" > $TMPFILE
-
+echo -e "PKGDIS=\"$2\"\nPKGVER=\"$4\"" > $TMPFILE
+#cat $TMPFILE |yad --text-info
 }
 export -f pkgselect
 
@@ -90,11 +91,16 @@ fi
 echo $selections
 pattern=`echo $selections | awk -F',' '{print $1}'`
 #pattern=$(echo -e \"$pattern\")
-echo "Pattern for apt list = $pattern"
-#sleep 5 && apt list "$pattern" 2>&1 && exit
 if [[ $pattern = "*" ]]; then
 pattern=""
 fi
+
+if [[ "${pattern: -1}" != "*" ]]; then
+pattern=$(echo "$pattern""*")
+fi
+echo "Pattern for apt list = $pattern"
+#sleep 5 && apt list "$pattern" 2>&1 && exit
+
 exclude1=`echo $selections | awk -F',' '{print $2}'`
 exclude2=`echo $selections | awk -F',' '{print $3}'`
 installed=`echo $selections | awk -F',' '{print $4}'`
@@ -114,13 +120,51 @@ ind=0
 
 }
 
-function readmanpage {
+function listdeb {
 	source $TMPFILE
 	pkg="$PKGDIS"
 	aptpkg="$PKGDIS"
 	echo "Package: $aptpkg"
-	apt-get download "$aptpkg" 2>/dev/null
 	debname=$(find . -name "$pkg*.deb")
+	if [[ "$debname" == "" ]];then 
+		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+		debname=$(find . -name "$pkg*.deb")
+	fi
+	echo "Deb Name = $debname"
+	datatar=$(ar t "$debname" |grep "data.tar")
+	echo "data.tar = $datatar"
+
+	if [[ ${datatar##*.} == "gz" ]];then 
+		options="z"
+	elif [[ ${datatar##*.} == "xz" ]];then
+		options="J"
+	else
+		return 1
+	fi
+	debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
+	echo -e "${debname:2}\n\n$debcontents" |yad --text-info --center --height 500 --width 500
+	rm -f $debname
+}
+export -f listdeb
+
+function readmanpage {
+	source $TMPFILE
+	pkg="$PKGDIS"
+	aptpkg="$PKGDIS"
+	if [[ "$PKGVER" != "(none)" ]];then
+		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg Manual " --wrap --show-uri --no-markup \
+		--button="Try Online":10 \
+		--button="gtk-ok":0 \
+		--button="gtk-cancel":1
+		resp=$?
+		[[ "$resp" -ne 10 ]] && return 0
+	fi
+	echo "Package: $aptpkg"
+	debname=$(find . -name "$pkg*.deb")
+	if [[ "$debname" == "" ]];then 
+		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+		debname=$(find . -name "$pkg*.deb")
+	fi
 	echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
 	echo "data.tar = $datatar"
@@ -136,7 +180,7 @@ function readmanpage {
 	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
 		if [[ -z $manpage ]];then
 			debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
-			echo -e "No man pages found in deb package. Deb Contents= \n \n $debcontents" |yad --text-info --center --height 500 --width 500
+			echo -e "No man pages found in deb package. \n${debname:2} Contents \n \n $debcontents" |yad --text-info --center --height 500 --width 500
 			rm -f $debname
 			return 1
 		else
@@ -145,20 +189,30 @@ function readmanpage {
 		fi
 	
 		if [[ ${#manpage[@]} -eq 1 ]]; then
-			echo "One man page found - Display "
-			ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
+			echo "man page found - Display "
+			#ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
+			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" $manpage))
+			tit="$pkg Manual"
 		else
-				echo "Display all"
-				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$tit Manual " --wrap --show-uri --no-markup
+			echo "Display all"
+			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
+			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
+			tit="$pkg All Manuals"
 		fi
-	rm -f $debname
+	yad --text-info<<<"$mpg" --height=500 --width=800 --center --title="$tit" --wrap --show-uri --no-markup \
+	--button="Show Deb":10 \
+	--button="gtk-ok":0 \
+	--button="gtk-cancel":1
+	resp1=$?
+	[[ "$resp1" -eq 10 ]] && listdeb || rm -f $debname
+
 }
 export -f readmanpage
 
 #-----------------------MAIN PROGRAM----------------------------------#
 stop=0
 selectpackages "xfce*"
-
+#toremove=()
 while [[ $stop -eq 0 ]];do
 #selectpackages
 case "$installed" in
@@ -188,7 +242,7 @@ echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
 done
 aptshow=$(apt show ${pd[@]})
-declare -p aptshow
+#declare -p aptshow
 #echo "$aptshow" |grep "virtual"
 #exit
 pddescription=$(grep -e "Description:" <<< $aptshow)
@@ -302,6 +356,7 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --select-action 'bash -c "pkgselect %s "' \
 --print-column=2 \
 --separator="\n" \
+--button="Show Deb Pkg":'bash -c "listdeb"' \
 --button="Show manual":'bash -c "readmanpage"' \
 --button="Save List":'bash -c "savepkglist"' \
 --button="Display":'bash -c "pkgdisplay"' \
@@ -348,6 +403,9 @@ case $btn in
 esac	
 unset IFS
 done
+#declare -p removeit
+#echo "removeit=${removeit[@]}"
+#rm -i ${toremove[@]}
 set +f
 exit
 
