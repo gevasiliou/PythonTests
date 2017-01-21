@@ -947,6 +947,9 @@ When bash sees <(shuf file) it opens a special file /dev/fd/n, where n is a free
 Extract the filename from the path : filename=${path##*/} 
 Extract dirname : dirname=${path%/*}
 
+declare a value to hold upper case letter : declare -u foo . Even if you assign small letters , echo $foo will print capital letters
+declare -l is used for lowercase vars.
+
 Resource: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
