@@ -122,11 +122,23 @@ ind=0
 
 }
 
+function listdebapt {
+	source $TMPFILE
+	pkg="$PKGDIS"
+	aptpkg="$PKGDIS"
+	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+	debname=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+	debcontents=$(dpkg -c <(curl -sL -o- $debname)) 
+	debmancontents=$(grep "man/man" <<<"$debcontents" |grep -v "/$")
+	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
+}
+export -f listdebapt
+
 function listdeb {
 	source $TMPFILE
 	pkg="$PKGDIS"
 	aptpkg="$PKGDIS"
-	echo "Package: $aptpkg"
+	#echo "Package: $aptpkg"
 	debname=$(find . -name "$pkg*.deb")
 	if [[ "$debname" == "" ]];then 
 		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
@@ -143,8 +155,8 @@ function listdeb {
 	else
 		return 1
 	fi
-	debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
-	debmancontents=$(ar p "$debname" "$datatar" | tar t"$options" |grep "man/man" |grep -v "/$")
+	debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
+	debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
 	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
 	#rm -f $debname
 	echo "$PWD/${debname:2}">>$DEBLIST
@@ -182,10 +194,11 @@ function readmanpage {
 		echo "data.tar is not a gz or xz archive. Exiting" |yad --text-info --height 500 --width 500
 		return 1
 	fi
-	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep "man/man" |grep -vE "\/$" |grep -v "^l" |awk '{print $NF}'))
+	#declare -p manpage |yad --text-info
 		if [[ -z $manpage ]];then
-			debcontents=$(ar p "$debname" "$datatar" | tar t"$options")
-			debmancontents=$(ar p "$debname" "$datatar" | tar t"$options" |grep "man/man" |grep -v "/$")
+			debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
+			debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
 			echo -e "No man pages found in deb : ${debname:2}\n\nmanpages listing:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
 			echo "$PWD/${debname:2}">>$DEBLIST
 			return 1
@@ -199,18 +212,44 @@ function readmanpage {
 			#ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
 			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" $manpage))
 			tit="$pkg ONLINE Manual"
+			echo "$PWD/${debname:2}">>$DEBLIST
 		else
 			#echo "Display all"
 			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
-			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
-			tit="$pkg ALL ONLINE Manuals"
+			#echo "${manpage[@]}" |yad --text-info --height=500 --width=800 --wrap
+			manpagetodisplay=$(yad --list --title="Files Browser" --no-markup --width=500 --height=600 --center \
+			--print-column=2 \
+			--button="Show All":10 \
+			--button="gtk-ok":0 \
+			--button="gtk-cancel":1 \
+			--column="Man Pages" "${manpage[@]}")
+			#echo "$manpagetodisplay" |yad --text-info --height=500 --width=800 --wrap
+			manyad=$?
+			if [[ "$manyad" -eq 0 ]]; then
+				manpagetodisplay=$(echo "${manpagetodisplay:0:-1}") #there is a bloody | in the end , due to yad
+				#echo "manyad=0=display only $manpagetodisplay" |yad --text-info
+				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" "$manpagetodisplay"))
+				tit="$pkg Man Page $manpagetodisplay"
+				echo "$PWD/${debname:2}">>$DEBLIST
+			elif [[ "$manyad" -eq 10 ]]; then
+				#echo "manyad=10=display all" |yad --text-info
+				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
+				tit="$pkg - ALL ONLINE Manuals"
+				echo "$PWD/${debname:2}">>$DEBLIST
+			else
+				#echo "manyad=1 = exit" |yad --text-info
+				echo "$PWD/${debname:2}">>$DEBLIST
+				return 1
+			fi
 		fi
 	yad --text-info<<<"$mpg" --height=500 --width=800 --center --title="$tit" --wrap --show-uri --no-markup \
-	--button="Show Deb":10 \
-	--button="gtk-ok":0 \
-	--button="gtk-cancel":1
+	--button="Show Deb":'bash -c "listdeb"' \
+	--button="Back":10 \
+	--button="Exit":0
 	resp1=$?
-	[[ "$resp1" -eq 10 ]] && listdeb 
+	[[ "$resp1" -eq 10 && ${#manpage[@]} -gt 1 ]] && unset manpagetodisplay manpage debcontents debmancontents && readmanpage
+
+#	[[ "$resp1" -eq 10 ]] && listdeb 
 	echo "$PWD/${debname:2}">>$DEBLIST
 #Bug: All the simple echo  instead of screen was going to array aptinstall on the main program. It seems that yad list call method (inside array) was sucking echoes inside. 
 }
@@ -258,15 +297,14 @@ echo "Pattern for apt list = $pattern"
 }
 
 function exitright {
-echo -e "Temp Files to remove:\n"
+echo -e "Temp Files to remove:"
 cat $DEBLIST |sort |uniq
 ls tmpdeb/
 for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
 rm -fv tmpdeb/deblist.log
+rm -fv *.FAILED
 rmdir -v tmpdeb
-rm *.FAILED
 set +f
-#comment
 }
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
@@ -445,7 +483,11 @@ exit
 # Usefull when you want to verify the performance in commands that produce large output.
 
 #To be done:
-# Provide a yad list if more than 1 manpage found in deb.
+# How to provide local man page of apt-get? apt-get is not a package (apt list apt-get returns nothing)
+# on the other hand, man apt brings only apt manual , not apt-get even if combined with --all switch
+# The apt.deb has inside all manuals, thus at least the "try online" option works and gives you the list of all manuals included in apt.
+#
+#
 # Jump to readmanual from listdeb
 # Assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
 # Command apt install --upgrade pkgname works , but pkgname* gets all pkgs (both installed and not installed)
