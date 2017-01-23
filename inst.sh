@@ -85,8 +85,8 @@ function selectpackages {
 #ptrn=$pattern
 #fi
 
-selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --date-format="%Y-%m-%d" \
-		--field="Pattern1:" "$ptrn" --field="Pattern2:" "$ptrn2" --field="Apt Search:CHK" "" \
+selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --buttons-layout=center --columns=2 --align=right --separator="," --date-format="%Y-%m-%d" \
+		--field="Pattern1:" "$pattern1" --field="Pattern2:" "$pattern2" --field="Apt Operation:CB" "apt list!apt search" \
 		--field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
 		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
 
@@ -113,7 +113,7 @@ function printarray {
 arr=("${@}")
 ind=0
 	echo "Start of Array"	
-	echo "Array[@]=" "${arr[@]}"
+#	echo "Array[@]=" "${arr[@]}"
 	for e in "${arr[@]}"; do
 		echo "Array[$ind]=" $e
 		ind=$(($ind+1))
@@ -132,9 +132,9 @@ function listdeb {
 		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
 		debname=$(find . -name "$pkg*.deb")
 	fi
-	echo "Deb Name = $debname"
+	#echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
-	echo "data.tar = $datatar"
+	#echo "data.tar = $datatar"
 
 	if [[ ${datatar##*.} == "gz" ]];then 
 		options="z"
@@ -148,7 +148,7 @@ function listdeb {
 	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
 	#rm -f $debname
 	echo "$PWD/${debname:2}">>$DEBLIST
-	echo "$PWD/${debname:2}" >6&
+	#echo "$PWD/${debname:2}" >6&
 }
 export -f listdeb
 
@@ -164,15 +164,15 @@ function readmanpage {
 		resp=$?
 		[[ "$resp" -ne 10 ]] && return 0 #If you select other than "Try Online" then exit (otherwise go on).
 	fi
-	echo "Package: $aptpkg"
+	#echo "Package: $aptpkg"
 	debname=$(find . -name "$pkg*.deb")
 	if [[ "$debname" == "" ]];then 
 		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
 		debname=$(find . -name "$pkg*.deb")
 	fi
-	echo "Deb Name = $debname"
+	#echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
-	echo "data.tar = $datatar"
+	#echo "data.tar = $datatar"
 
 	if [[ ${datatar##*.} == "gz" ]];then 
 		options="z"
@@ -189,18 +189,18 @@ function readmanpage {
 			echo -e "No man pages found in deb : ${debname:2}\n\nmanpages listing:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
 			echo "$PWD/${debname:2}">>$DEBLIST
 			return 1
-		else
-			echo "man page found: ${#manpage[@]}"
+		#else
+			#echo "man page found: ${#manpage[@]}"
 			#declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 	
 		if [[ ${#manpage[@]} -eq 1 ]]; then
-			echo "man page found - Display "
+			#echo "man page found - Display "
 			#ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
 			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" $manpage))
 			tit="$pkg ONLINE Manual"
 		else
-			echo "Display all"
+			#echo "Display all"
 			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
 			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
 			tit="$pkg ALL ONLINE Manuals"
@@ -210,8 +210,9 @@ function readmanpage {
 	--button="gtk-ok":0 \
 	--button="gtk-cancel":1
 	resp1=$?
-	[[ "$resp1" -eq 10 ]] && listdeb #|| rm -f $debname
+	[[ "$resp1" -eq 10 ]] && listdeb 
 	echo "$PWD/${debname:2}">>$DEBLIST
+#Bug: All the simple echo  instead of screen was going to array aptinstall on the main program. It seems that yad list call method (inside array) was sucking echoes inside. 
 }
 export -f readmanpage
 
@@ -220,10 +221,10 @@ echo "You are in function search manipulate"
 echo "Selections = $selections"
 echo "Pattern1 for apt search = $pattern1"
 echo "Pattern2 for apt search = $pattern2"
-search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/")
+search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 
 if [[ $pattern2 != "" ]];then
-	search2=$(apt search $pattern2 |grep "/" |cut -f1 -d "/")
+	search2=$(apt search $pattern2 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 	pattern="$search1 $search2"
 	pattern=$(tr '\n' ' ' <<<"$pattern")
 else
@@ -269,10 +270,11 @@ set +f
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 stop=0
-#selectpackages "xfce*"
+
+while [[ $stop -eq 0 ]];do
 selectpackages
 
-if [[ $aptsearch == "TRUE" ]];then
+if [[ $aptsearch == "apt search" ]];then
 echo "apt search selected"
 search_manipulate
 else
@@ -280,35 +282,41 @@ echo "apt list selected"
 aptlist_manipulate
 fi
 #exit
-while [[ $stop -eq 0 ]];do
+#while [[ $stop -eq 0 ]];do
 echo "Installed=$installed ---- Pattern=$pattern"
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" -e "Listing" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -e "installed" -e "Listing" |cut -f 1 -d "/" |grep -v -e "$exclude1" -e "$exclude2");;
 "Installed")
-readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/" |grep -v -e "$exclude1" -e "$exclude2");; 
 "All")
-readarray -t fti < <(apt list $pattern |grep -v -e "Listing" -e "$exclude1" -e "$exclude2" |cut -f1 -d "/");;
+readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" -e "$exclude1" -e "$exclude2");; 
+# We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" operation.
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep -v -e "$exclude1" -e "$exclude2");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
+readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");;
 "Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");;
 esac
-declare -p fti
+#declare -p fti
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 [[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
 [[ $c -gt 1000 ]] && echo "More than 1000 pkgs found. Will list only first 1000 pkgs" && c=1000
-for (( item=0; item<$c; item++ )); do
-echo "fti[$item] = ${fti[$item]}"
+for (( item=0; item<=$c; item++ )); do
+if [[ -z "${fti[$item]}" ]];then 
+continue
+else
+echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
+fi
 done
+
 aptshow=$(apt show ${pd[@]})
 #declare -p aptshow
 #echo "$aptshow" |grep "virtual"
@@ -324,40 +332,14 @@ pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 
 # To be noted:
-# when using apt list a*, virtual packages were also listed.
-# As a result, the apt show of virtual packages returns
-# Package: abiword-gnome - State: not a real package (virtual)
-# PS: run apt show "a*" |grep -i -C20 "State:"
-# This has not Description and thus the description array broke.
-# But in VM machine , apt version 1.3.1 , apt list is not displaying virtual packages (!), thus this scripts does not break since apt show is called using the pkgs listed by apt-list
+# when using apt show a*, virtual packages were also listed.
+# As a result, the apt show of virtual packages returns not a real package as description and this mess things up.
+# Example: Package: abiword-gnome - State: not a real package (virtual)
+# Hopefully apt list is not displaying virtual packages (!). So if you apt show the packages returned by apt list and not the pattern you will be ok. 
 # This can be verified by running 'apt list "abi*" ' (abiword-gnome is missing) and also 'apt list -a abiword-gnome' returns nothing.
 # apt show abiword-gnome returns: --> Package: abiword-gnome --> State: not a real package (virtual)
-# apt --version : apt 1.3.1 (amd64) (ps: it is further upgradable to 1.4~beta3 amd64)
-# uname -a : Linux debi64 4.8.0-1-amd64 #1 SMP Debian 4.8.5-1 (2016-10-28) x86_64 GNU/Linux
-#
-# The behavior of home pc is different i think. To be checked.
-# Also mind that in home pc kernel is version 4.7, while on VM we have 4.8.5
-# Tip : You can see changelog of any pkg by "apt-get changelog pkg (apt in my case)"
-# breaks at apt-spy plg in home pc. 
-# At Home pc - apt 1.4-beta 3 - apt show apt-spy returns that it is a virtual package.
-# On VBox apt show apt-spy returns correctly description , everything.
-# Search term of apt-s* in VBox returns packages apt-show-source, apt-show-versions, apt-spy, apt-src
-# As proved, in VBox we don't have apt pinning enabled. All versions are reported by apt policy with priority 500 (stable, testing,sid) and priority 1 for experimental.
-# apt various config files exist in /etc/apt/apt.conf.d directory.
-# Maybe apt pinning is the conflict , since home pc is restricted to testing and package apt-spy exists only in sid.
-# check man apt_preferences for advise in the package pin numbers. Seems that negative numbers are not a good idea.
-#
-# Package: apt-spy
-# Version: 3.2.2-1
-# Priority: optional
-# Section: admin
-# Maintainer: Stefano Canepa <sc@linux.it>
-# Installed-Size: 108 kB
-# Depends: libc6 (>= 2.3), libcurl3 (>= 7.16.2)
-# Download-Size: 29.5 kB
-# APT-Sources: http://httpredir.debian.org/debian sid/main amd64 Packages
-# Description: writes a sources.list file based on bandwidth tests Parses the list of mirrors downloaded from ftp.debian.org and then based on
-# the region specified by the user each of testes mirrors for bandwidth, at the end it writes /etc/apt/sources.list.d/apt-spy.list using the best mirror it found out.
+# Depending on apt pinning priorities, apt list / apt show may return some virtual packages (happened when sid had priority <1)
+# Another suspicious package to return "virtual package" is apt-spy.
 
 
 if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
@@ -384,6 +366,7 @@ fi
 list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
 
 for (( pitem=0; pitem<=$c; pitem++ )); do
+[[ -z "${fti[$pitem]}" ]] && continue
 #Build the list for yad with double quotes and space.
 list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" ) #to be used by yad only - no new lines (\n) allowed by yad list.
 
@@ -393,8 +376,7 @@ list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pite
 # It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
 
 done
-#printarray ${list[@]}
-printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
+#printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
 export LIST3=$(printf "%s\n" ${list2[@]})
 
 unset toinstall
@@ -422,7 +404,9 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 
 btn=$?
 echo "Button Pressed:" $btn
-declare -p toinstall
+#printarray ${list[@]} && exit
+#printarray ${toinstall[@]} && exit
+#declare -p toinstall
 case $btn in 
 0) 	
 	echo "Package list to be installed"
@@ -445,7 +429,7 @@ case $btn in
 10) # New Selection
 	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
 	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS
-	selectpackages #by not sending an arg to selectpackages, previously values are used.
+	#selectpackages #by not sending an arg to selectpackages, previously values are used.
 	# Just unset all variables, and allow the while loop to be repeated
 esac	
 unset IFS
@@ -453,15 +437,20 @@ done
 exitright
 exit
 
+# GREP Tips:
+# If you are in doubt about the results of a command like an extra grep you can compare results of previous command with new command like this:
+# diff -w -y <(apt search manpages |grep "/" |cut -d"/" -f1 |grep -E '^[a-zA-Z0-9]') <(apt search manpages |grep "/" |cut -d"/" -f1)
+# Differences will be noted with > symbol and then you can manually verify that the results of the new command (extra grep) is as expected.
+# Usefull when you want to verify the performance in commands that produce large output.
+
 #To be done:
-# One more search field to be able to look for pkgs i.e apt-* and geany*
-# Graphic apt search keyword - use as a description the returned description from apt search
+# Provide a yad list if more than 1 manpage found in deb.
 # Jump to readmanual from listdeb
-# You can assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
+# Assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
 # Command apt install --upgrade pkgname works , but pkgname* gets all pkgs (both installed and not installed)
 #
-# Trick: Get apt list in a regular var - not array
-# ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1);apt show $ass |less
+# Trick: Apt list in a regular var - not array
+# ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1);apt show $ass |less #or use tr '\n' ' ' . The point is to remove new lines and insert a space between pkgnames.
 # Since apt list skips the virtual packages , instead of apt show pkg* you can use above command and thus apt show will call only 
 # valid packages reported by apt list. I have also an alias for this (aptshowsmart) 
 #
