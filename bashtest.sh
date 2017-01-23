@@ -675,27 +675,30 @@ echo "$variable"
 # multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
 # grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
+# SED
 # sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
 # get a range of lines with sed: sed -n '16224,16482p;16483q' filename
 # mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
 # To do that with variables: $ sed -n "$FL,$LL p" file.txt
 
 # sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
-# There is a direct awk alternative: awk '/Tatty Error/,/suck/' a.txt
+# awk alternative: awk '/Tatty Error/,/suck/' a.txt
 # you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
 
 # Find a word in file/stdin and grep from this word up to the last \n = new line = eof.
 # Remember that $ represents "last"-end of line in regex
 # apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
 # You can do the same starting from a line up to eof. 
-# Also this should work sed -n '/matched/,$p' file , wher matched can be a line number or a string
+# Also this works sed -n '/matched/,$p' file , wherw matched can be a line number or a string
 
 # Replace a string with s/ switch
 # sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
 # echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
 # More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
+#
 # Replace foo with bar only if there is a baz later on the same line:
 # sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
+#
 # Multiple replace operations: replace with different strings
 # You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
 #
@@ -950,17 +953,31 @@ Extract dirname : dirname=${path%/*}
 declare a value to hold upper case letter : declare -u foo . Even if you assign small letters , echo $foo will print capital letters
 declare -l is used for lowercase vars.
 
-Resource: 
+
+Resources: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 
 PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+
+# Identify any command type /location : $type command (try i.e type grep and type eval)
+
+# Cut Tricks 
+# use cut to isolate part of text: cut -c9-10 file ==> gets characters from 9 to 10. similary you can get c1-5 to get only the 5 first chars of EACH file line.
+# Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
 
 
 #List all kernel modules that are loaded (i.e lsmod)
 # cat /lib/modules/$(uname -r)/modules.dep
 # find /lib/modules/$(uname -r) -type f -name \*.ko
 
+
+# Understanding EVAL:
+# 1) foo=10 x=foo
+# 2) y='$'$x
+# 3) echo $y --> $foo
+# 5) eval y='$'$x
+# 6) echo $y --> 10
 
 # Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
 # normal usage of diff is diff -y file1 file2.
@@ -1098,9 +1115,11 @@ FIFO_NAMEDPIPES
 # -->value1,string2
 # -->value1,string3
 # -->value1,string4
-# In case of file , separated with new lines you need to apply this a bit different version: # awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+# In case of file , separated with new lines you need to apply this a bit different version: 
+# awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
 
-# See this article for AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+# See this article for AWK reserved variables :
+# http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 #
 
 #awk -F ':' '$3==$4' file.txt -->  
@@ -1113,7 +1132,14 @@ FIFO_NAMEDPIPES
 #$ IFS== read var value < fifo
 #$ eval export $var=$value
 
+#Switch position of comma separated fields:
+# echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
+# textA,textC,textB,dateD
+# OFS affects only the display separator. If omited space (default OFS) will be used.
 
+# print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
+
+# Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 

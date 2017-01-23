@@ -1,5 +1,13 @@
-a b c 10
-d e f 11
-g h i 15
-j k l 15
-p l m 35
+Schwifty1
+Schwifty2
+Schwifty3
+Schwifty4
+Schwifty5
+Schwifty6
+Schwifty7
+Schwifty8
+Schwifty9
+Schwifty10
+Schwifty11
+Schwifty12
+Schwifty13

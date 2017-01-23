@@ -79,38 +79,34 @@ done
 }
 
 function selectpackages {
-if [[ "$1" != "" ]]; then # is arg $1 is not empty = arg is sent 
-ptrn="$1"
-else #if arg $1 is empty , apply the existed value.
-ptrn=$pattern
-fi
-selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," \
-		--date-format="%Y-%m-%d" \
-		--field="Pattern:" "$ptrn" --field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
+#if [[ "$1" != "" ]]; then # is arg $1 is not empty = arg is sent 
+#ptrn="$1"
+#else #if arg $1 is empty , apply the existed value.
+#ptrn=$pattern
+#fi
+
+selections=$(yad --title="Select Files"--window-icon="gtk-find" --center --form --separator="," --date-format="%Y-%m-%d" \
+		--field="Pattern1:" "$ptrn" --field="Pattern2:" "$ptrn2" --field="Apt Search:CHK" "" \
+		--field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
 		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
 
 if [ $? == 1 -o $? == 252 ]; then #1 is for Cancel Button, 252 is for ESC button
 echo "Script Exit."
+exitright
 exit 1
 fi
 
 echo $selections
-pattern=`echo $selections | awk -F',' '{print $1}'`
+#exit
+pattern1=`echo $selections | awk -F',' '{print $1}'`
+pattern2=`echo $selections | awk -F',' '{print $2}'`
+aptsearch=`echo $selections | awk -F',' '{print $3}'`
 #pattern=$(echo -e \"$pattern\")
-if [[ $pattern = "*" ]]; then
-pattern=""
-fi
+exclude1=`echo $selections | awk -F',' '{print $4}'`
+exclude2=`echo $selections | awk -F',' '{print $5}'`
+installed=`echo $selections | awk -F',' '{print $6}'`
 
-if [[ "${pattern: -1}" != "*" ]]; then
-pattern=$(echo "$pattern""*")
-fi
-echo "Pattern for apt list = $pattern"
-#sleep 5 && apt list "$pattern" 2>&1 && exit
-
-exclude1=`echo $selections | awk -F',' '{print $2}'`
-exclude2=`echo $selections | awk -F',' '{print $3}'`
-installed=`echo $selections | awk -F',' '{print $4}'`
-
+#exit
 }
 
 function printarray {
@@ -219,32 +215,96 @@ function readmanpage {
 }
 export -f readmanpage
 
+function search_manipulate {
+echo "You are in function search manipulate"
+echo "Selections = $selections"
+echo "Pattern1 for apt search = $pattern1"
+echo "Pattern2 for apt search = $pattern2"
+search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/")
+
+if [[ $pattern2 != "" ]];then
+	search2=$(apt search $pattern2 |grep "/" |cut -f1 -d "/")
+	pattern="$search1 $search2"
+	pattern=$(tr '\n' ' ' <<<"$pattern")
+else
+	pattern="$search1"
+	pattern=$(tr '\n' ' ' <<<"$pattern")
+fi
+echo "Pattern for apt list that comes after = $pattern"
+}
+
+function aptlist_manipulate {
+#all these lines were before at function selectpackages
+if [[ $pattern1 = "*" ]]; then
+pattern1=""
+fi
+
+if [[ "${pattern1: -1}" != "*" ]]; then
+pattern1=$(echo "$pattern1""*")
+fi
+
+if [[ $pattern2 != "" ]];then
+	if [[ "${pattern2: -1}" != "*" ]]; then
+		pattern2=$(echo "$pattern2""*")
+	fi
+	pattern="$pattern1 $pattern2"
+else
+	pattern="$pattern1"
+fi
+
+echo "Pattern for apt list = $pattern"
+#sleep 5 && apt list "$pattern" 2>&1 && exit
+}
+
+function exitright {
+echo -e "Temp Files to remove:\n"
+cat $DEBLIST |sort |uniq
+ls tmpdeb/
+for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
+rm -fv tmpdeb/deblist.log
+rmdir -v tmpdeb
+rm *.FAILED
+set +f
+}
+
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 stop=0
-selectpackages "xfce*"
+#selectpackages "xfce*"
+selectpackages
+
+if [[ $aptsearch == "TRUE" ]];then
+echo "apt search selected"
+search_manipulate
+else
+echo "apt list selected"
+aptlist_manipulate
+fi
+#exit
 while [[ $stop -eq 0 ]];do
+echo "Installed=$installed ---- Pattern=$pattern"
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list "$pattern" |grep -v -e "$exclude1" -e "$exclude2" -e "installed" -e "Listing" |cut -f 1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -v -e "$exclude1" -e "$exclude2" -e "installed" -e "Listing" |cut -f 1 -d "/");;
 "Installed")
-readarray -t fti < <(apt list "$pattern" |grep -v "Listing" |grep  "installed" |cut -f1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/");;
 "All")
-readarray -t fti < <(apt list "$pattern" |grep -v "Listing" |cut -f1 -d "/");;
+readarray -t fti < <(apt list $pattern |grep -v -e "Listing" -e "$exclude1" -e "$exclude2" |cut -f1 -d "/");;
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions "$pattern" |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d ",");;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions "$pattern" 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
+readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d",");; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
-readarray -t fti < <(apt list --all-versions "$pattern" |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 "Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions "$pattern" |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d",");;
 esac
-
+declare -p fti
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 [[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
+[[ $c -gt 1000 ]] && echo "More than 1000 pkgs found. Will list only first 1000 pkgs" && c=1000
 for (( item=0; item<$c; item++ )); do
 echo "fti[$item] = ${fti[$item]}"
 pd+=("${fti[$item]}")
@@ -262,29 +322,6 @@ pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
-
-
-:<<newcode
-for (( item=0; item<=$c; item++ )); do
-echo "fti[$item] = ${fti[$item]}"
-aptshow=$(apt show ${fti[$item]})
-pddescription=$(grep "Description:" <<< $aptshow)
-if [[ $pddescription != "" ]];then 
-	pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
-	pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
-	pdss+=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
-	pdszd+=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
-	pdszi+=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
-else
-	pddescription="not available"
-	pdsizeDown="not available"
-	pdsizeInst="not available"
-	pdss+=( "not availble" )
-	pdszd+=( "NA" )
-	pdszi+=( "NA" )
-fi
-done
-newcode
 
 # To be noted:
 # when using apt list a*, virtual packages were also listed.
@@ -413,17 +450,13 @@ case $btn in
 esac	
 unset IFS
 done
-echo -e "Temp Files to remove:\n"
-cat $DEBLIST |sort |uniq
-ls tmpdeb/
-for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
-rm -fv tmpdeb/deblist.log
-rmdir -v tmpdeb
-rm *.FAILED
-set +f
+exitright
 exit
 
 #To be done:
+# One more search field to be able to look for pkgs i.e apt-* and geany*
+# Graphic apt search keyword - use as a description the returned description from apt search
+# Jump to readmanual from listdeb
 # You can assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.
 # Command apt install --upgrade pkgname works , but pkgname* gets all pkgs (both installed and not installed)
 #

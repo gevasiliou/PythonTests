@@ -235,6 +235,9 @@ if [[ $manpage == *"no data found"* ]];then
 		fi
 	fi
 fi
+# As of January 2017 you can use the global page https://manpages.debian.org/jump?q=$1 which will jump you directly to corect section
+# combine with awk to remove the first lines : 
+# links -dump https://manpages.debian.org/jump?q=ngrep |awk "/Scroll to navigation/,0"
 
 if [[ $2 == "--debian" && $3 == "--browser" ]]; then
 gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &
