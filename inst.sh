@@ -266,6 +266,7 @@ rm -fv tmpdeb/deblist.log
 rmdir -v tmpdeb
 rm *.FAILED
 set +f
+#comment
 }
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
