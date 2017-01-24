@@ -630,7 +630,6 @@ SETVAR
 
 echo "$variable"
 }
-
 # gv solution that fails under circumstances: find . -name '*.js' | grep -vEf .ignore (or -vE "$(cat .ignore)")
 # .ignore contents:
 # *.min.js
@@ -644,7 +643,25 @@ echo "$variable"
 }
 
 
+function testfunction { echo "You just entered $1";};
+
+SENTENCE=""
+while read word
+do
+    testfunction "$word"
+done
+echo $SENTENCE
+
+
+exit
 # VARIOUS HOW TO
+# Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
+# -F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
+# -x = line grep to ensure matching whole lines 
+# -v = reverse the grep = display not matching lines
+# -f = load words/lines from file file2.txt
+# file1.txt = the file to be grepped 
+
 # Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
 # for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 # It is nice that although we have an alias of yad with some flags , by calling yt with more flags those are also passed to yad.
@@ -677,6 +694,7 @@ echo "$variable"
 # grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
 # S E D
+# SED Cheat Sheet and OneLiners: http://sed.sourceforge.net/sed1line.txt
 # sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
 # get a range of lines with sed: sed -n '16224,16482p;16483q' filename
 # mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
@@ -1160,6 +1178,15 @@ UAT/ECC/Global/MES/1206/MRP-S23
 UAT/ECC/Glal/ME/120/MRP-  S23.xml
 Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
 Mind that separate {} create a newline to out file.
+
+Search for a pattern with not known occurencies:
+awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
+This is usefull if we dont know how many "name:" entries exist per line
+If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
+If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
+If line has more than 3 the -F solution will miss the rest entries.
+
+Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 

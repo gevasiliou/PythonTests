@@ -79,11 +79,8 @@ done
 }
 
 function selectpackages {
-#if [[ "$1" != "" ]]; then # is arg $1 is not empty = arg is sent 
-#ptrn="$1"
-#else #if arg $1 is empty , apply the existed value.
-#ptrn=$pattern
-#fi
+[[ "$1" != "" ]] && pattern1="$1"
+[[ "$2" != "" ]] && pattern2="$2"
 
 selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --buttons-layout=center --columns=2 --align=right --separator="," --date-format="%Y-%m-%d" \
 		--field="Pattern1:" "$pattern1" --field="Pattern2:" "$pattern2" --field="Apt Operation:CB" "apt list!apt search" \
@@ -168,9 +165,11 @@ export -f listdeb
 
 function readmanpage {
 	source $TMPFILE
+	firstcall="yes" #initial state to display local man the very first time
 	pkg="$PKGDIS"
 	aptpkg="$PKGDIS"
-	if [[ "$PKGVER" != "(none)" ]];then
+	[[ "$1" == "no" ]] && firstcall="no" #If it is a recall then you are not in local man thus you need to go back to deb contents.
+	if [[ "$PKGVER" != "(none)" && "$firstcall" == "yes" ]];then #the first time we wanna display the local man
 		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg LOCAL Manual " --wrap --show-uri --no-markup \
 		--button="Try Online":10 \
 		--button="gtk-ok":0 \
@@ -196,8 +195,11 @@ function readmanpage {
 		echo "data.tar is not a gz or xz archive. Exiting" |yad --text-info --height 500 --width 500
 		return 1
 	fi
+	unset manpage manpage2
 	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep "man/man" |grep -vE "\/$" |grep -v "^l" |awk '{print $NF}'))
-	#declare -p manpage |yad --text-info
+	manpage+=($(echo "__________________OTHER_FILES_________________________________"))
+	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep -v -e "^l" -e "^d" -e "man/man"|grep -e "doc" -e ".gz" |grep -vE "\/$" |awk '{print $NF}'))
+	#declare -p manpage |yad --text-info --wrap
 		if [[ -z $manpage ]];then
 			debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
 			debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
@@ -219,23 +221,26 @@ function readmanpage {
 			#echo "Display all"
 			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
 			#echo "${manpage[@]}" |yad --text-info --height=500 --width=800 --wrap
-			manpagetodisplay=$(yad --list --title="Files Browser" --no-markup --width=500 --height=600 --center \
+			manpagetodisplay=$(yad --list --title="Deb Browser" --no-markup --width=500 --height=600 --center \
 			--print-column=2 \
 			--button="Show All":10 \
 			--button="gtk-ok":0 \
 			--button="gtk-cancel":1 \
 			--column="Man Pages:${#manpage[@]}" "${manpage[@]}")
-			#echo "$manpagetodisplay" |yad --text-info --height=500 --width=800 --wrap
 			manyad=$?
-			if [[ "$manyad" -eq 0 ]]; then
+			#echo "$manpagetodisplay" |yad --text-info --height=500 --width=800 --wrap
+			
+			if [[ "$manyad" -eq 0 ]]; then #OK / Select File to Display
 				manpagetodisplay=$(echo "${manpagetodisplay:0:-1}") #there is a bloody | in the end , due to yad
 				#echo "manyad=0=display only $manpagetodisplay" |yad --text-info
 				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" "$manpagetodisplay"))
 				tit="$pkg Man Page $manpagetodisplay"
 				echo "$PWD/${debname:2}">>$DEBLIST
-			elif [[ "$manyad" -eq 10 ]]; then
+			elif [[ "$manyad" -eq 10 ]]; then #Show All
 				#echo "manyad=10=display all" |yad --text-info
-				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]}))
+				for i in ${manpage[@]};do [[ "$i" != *"OTHER_FILES"* ]] && manpage2+=( "$i" );done;
+				#echo "${manpage2[@]}" |yad --text-info --wrap
+				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage2[@]}))
 				tit="$pkg - ALL ONLINE Manuals"
 				echo "$PWD/${debname:2}">>$DEBLIST
 			else
@@ -249,7 +254,7 @@ function readmanpage {
 	--button="Back":10 \
 	--button="Exit":0
 	resp1=$?
-	[[ "$resp1" -eq 10 && ${#manpage[@]} -gt 1 ]] && unset manpagetodisplay manpage debcontents debmancontents && readmanpage
+	[[ "$resp1" -eq 10 && ${#manpage[@]} -gt 1 ]] && unset manpagetodisplay manpage manpage2 debcontents debmancontents && readmanpage no
 
 #	[[ "$resp1" -eq 10 ]] && listdeb 
 	echo "$PWD/${debname:2}">>$DEBLIST
@@ -262,8 +267,8 @@ echo "You are in function search manipulate"
 echo "Selections = $selections"
 echo "Pattern1 for apt search = $pattern1"
 echo "Pattern2 for apt search = $pattern2"
-search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 
+search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 if [[ $pattern2 != "" ]];then
 	search2=$(apt search $pattern2 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 	pattern="$search1 $search2"
@@ -277,12 +282,13 @@ echo "Pattern for apt list that comes after = $pattern"
 
 function aptlist_manipulate {
 #all these lines were before at function selectpackages
-if [[ $pattern1 = "*" ]]; then
-pattern1=""
-fi
 
-if [[ "${pattern1: -1}" != "*" ]]; then
-pattern1=$(echo "$pattern1""*")
+if [[ $pattern1 = "*" ]]; then
+	pattern1=""  #If user enters an asterisk then apt list blanc will bring all pkgs.
+elif [[ "${pattern1: -1}" != "*" && "${pattern1: -1}" != "$" ]]; then
+	pattern1=$(echo "$pattern1""*")
+elif [[ "${pattern1: -1}" == "$" ]]; then
+	pattern1="${pattern1:0:-1}"
 fi
 
 if [[ $pattern2 != "" ]];then
@@ -311,9 +317,10 @@ set +f
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 stop=0
-
+initpkg1="$1"
+initpkg2="$2"
 while [[ $stop -eq 0 ]];do
-selectpackages
+selectpackages $initpkg1 $initpkg2
 
 if [[ $aptsearch == "apt search" ]];then
 echo "apt search selected"
@@ -469,7 +476,7 @@ case $btn in
 	;;
 10) # New Selection
 	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
-	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS
+	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
 	#selectpackages #by not sending an arg to selectpackages, previously values are used.
 	# Just unset all variables, and allow the while loop to be repeated
 esac	
