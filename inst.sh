@@ -157,10 +157,12 @@ function listdeb {
 	fi
 	debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
 	debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
-	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
+	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
 	#rm -f $debname
 	echo "$PWD/${debname:2}">>$DEBLIST
 	#echo "$PWD/${debname:2}" >6&
+# Display also other zipped text / changelog files
+# ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/xul-ext-password-editor/changelog.Debian.gz |gunzip |less -f /dev/stdin
 }
 export -f listdeb
 
@@ -222,7 +224,7 @@ function readmanpage {
 			--button="Show All":10 \
 			--button="gtk-ok":0 \
 			--button="gtk-cancel":1 \
-			--column="Man Pages" "${manpage[@]}")
+			--column="Man Pages:${#manpage[@]}" "${manpage[@]}")
 			#echo "$manpagetodisplay" |yad --text-info --height=500 --width=800 --wrap
 			manyad=$?
 			if [[ "$manyad" -eq 0 ]]; then

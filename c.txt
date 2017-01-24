@@ -1,0 +1,7 @@
+ OQ-63/ECC/Global/MES/CZ/adWerum-CZ-Adapter
+ OQ-63/ECC/Global/MES/54/ECC-MRP-S05
+ OQ-63/ECC/Global/MES/CZ/adWerum-CZ-Adapter
+ OQ-63/ECC/Global/MES/54/ECC-MRP-S05.ear
+ OQ-63/ECC/Global/MES/CZ/adWerum-CZ-Adapter
+ OQ-63/ECC/Global/MES/CZ/adWerum-CZ-Adapter
+ OQ-63/ECC/Global/MES/54/ECC-MRP-S05.xml

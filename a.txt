@@ -1,13 +1,4 @@
-Schwifty1
-Schwifty2
-Schwifty3
-Schwifty4
-Schwifty5
-Schwifty6
-Schwifty7
-Schwifty8
-Schwifty9
-Schwifty10
-Schwifty11
-Schwifty12
-Schwifty13
+<app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
+<app name="OQ/ediedbn/adSFSF/adSFSF-CL" ear="OQ/ebn/aSF/adSF- CL.ear"  xml="OQ/ediedbn/adSFSF/adSSF-CL.xml"/>
+<app name="OQ/ediedbn/adaEBS/adOrBS-HR-CL"  ear="OQ/ediedbn/adOraS/araEBS- HR-CL.ear" xml="OQ/eddbn/aOraEBS/adOEBS-   HR-CL.xml"/>
+<app name="UAT/CZ/LIMS/T068_01/LIMS-QA-S03" ear="UAT/CZ/LIS/T068_01/LIS-QA-     .ear" xml="UAT/CZ/LIMS/T068_01/LIMS-QA-S03.xml"/>

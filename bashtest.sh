@@ -671,11 +671,12 @@ echo "$variable"
 # Check if a slash '/' exist in the end of variable and add it if it is missing
 # root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 # /home/gv/Desktop/
+# The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. Then is simple: if last char is not / then a=a+/
 
 # multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
 # grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
-# SED
+# S E D
 # sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
 # get a range of lines with sed: sed -n '16224,16482p;16483q' filename
 # mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
@@ -707,15 +708,6 @@ echo "$variable"
 # Sed replace a string in a line with pattern: sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
 # above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
 #
-# Trick to get only one line from file using head and tail
-# Usage: bash viewline myfile 4
-# head -n $2 "$1" | tail -n 1
-#
-# ls alternatives
-# find /home/gv -maxdepth 1 -type d -> list only directories
-# find /home/gv -maxdepth 1 -type f -> lists only files
-# find /home/gv -maxdepth 1 -> lists both
-# output of find can be piped to wc -l as well.
 #
 # More Text Replace with sed
 # Consider file containing:
@@ -738,12 +730,22 @@ echo "$variable"
 # Use a variable in sed
 # You just need to double qute the sed actions instead of single quotes.
 
+# Trick to get only one line from file using head and tail
+# Usage: bash viewline myfile 4
+# head -n $2 "$1" | tail -n 1
+#
+# FIND - LS ALTERNATIVE
+# find /home/gv -maxdepth 1 -type d -> list only directories
+# find /home/gv -maxdepth 1 -type f -> lists only files
+# find /home/gv -maxdepth 1 -> lists both
+# output of find can be piped to wc -l as well.
+#
 # Search for a process using top . Top seems to catch all processes:
 # top -p $(echo $(pgrep time) |sed 's/ /,/g')
 # pgrep search for processes matching pattern even partially. pidof could be used if exact process name is known.
 # Defaut output of pgrep is to seperate processes found with new lines. By echo \n is removed and a space is used.
 # If you replaace that space with a comma, then can be fed to top -p which accepts multiple pids (comma seperated)
-
+#
 # Comparing files and variables:
 # diff can compare two files line by line.
 # You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
@@ -789,7 +791,7 @@ echo "$variable"
 # a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 # a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 # a="this is some TEXT"; echo ${a: 5:7} 	-> is some
-# a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char
+# a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char - OR - get from char 1 up to lst char-1
 
 # a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
 # a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
@@ -818,7 +820,6 @@ echo "$variable"
 # for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
 # a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
 # bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
-# bash manual command substitution: Command $(cat file) can be replaced by the equivalent but faster $(< file).
 
 # a="somefile.txt";echo ${a%%.txt} -> somefile #delete from end exact match
 # a="somefile.txt";echo ${a%.txt} -->somefile
@@ -888,6 +889,10 @@ echo "$variable"
 # START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 # function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 # Output --> declare -a args=([1]="c" [2]="b" [3]="a")
+
+# Command substitution : Use contents of file as parameter: $(<file)
+# Command $(cat file) can be replaced by the equivalent but faster $(< file).
+# example: echo "$(<file.txt) -- similar to cat file.txt
 
 <<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 # Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
@@ -979,9 +984,15 @@ PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 # 5) eval y='$'$x
 # 6) echo $y --> 10
 
-# Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
+# DIFF
+#Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
 # normal usage of diff is diff -y file1 file2.
-
+# Tricks:
+# If you are in doubt about the results of a command like an extra grep you can compare results of previous command with new command like this:
+# diff -w -y <(apt search manpages |grep "/" |cut -d"/" -f1 |grep -E '^[a-zA-Z0-9]') <(apt search manpages |grep "/" |cut -d"/" -f1)
+# Differences will be noted with > symbol and then you can manually verify that the results of the new command (extra grep) is as expected.
+# Usefull when you want to verify the performance in commands that produce large output.
+#
 # Quick Tricky way to display arrays data:
 # declare -p array |sed 's/declare -a array=(//g' |tr ' ' '\n' |sed 's/)$//g'
 # if you just declare -p array then output is like this:
@@ -1140,6 +1151,15 @@ FIFO_NAMEDPIPES
 # print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
 
 # Print up to EOF after a matched string: awk '/matched string/,0' a.txt
+
+Use multiple delimiters:
+$ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
+Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
+Output: 
+UAT/ECC/Global/MES/1206/MRP-S23   
+UAT/ECC/Glal/ME/120/MRP-  S23.xml
+Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
+Mind that separate {} create a newline to out file.
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 

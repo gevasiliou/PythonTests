@@ -1,3 +1,8 @@
-g e f 15
-n k l 20
-w x z 40
+UAT/ECC/Global/MES/1206/MRP-S23   
+UAT/ECC/Glal/ME/120/MRP-  S23.xml
+OQ/ediedbn/adSFSF/adSFSF-CL 
+OQ/ediedbn/adSFSF/adSSF-CL.xml
+OQ/ediedbn/adaEBS/adOrBS-HR-CL  
+OQ/eddbn/aOraEBS/adOEBS-   HR-CL.xml
+UAT/CZ/LIMS/T068_01/LIMS-QA-S03 
+UAT/CZ/LIMS/T068_01/LIMS-QA-S03.xml
