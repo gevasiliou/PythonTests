@@ -695,22 +695,40 @@ exit
 
 # S E D
 # SED Cheat Sheet and OneLiners: http://sed.sourceforge.net/sed1line.txt
+# Read Cheat Sheet in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 # sed: http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
 # get a range of lines with sed: sed -n '16224,16482p;16483q' filename
-# mind the 16483q command. Instructs sed to quit. Without this , sed will keep scanning up to EOF.
+# mind the 16483q command. q instructs sed to quit. Without q sed will keep scanning up to EOF.
 # To do that with variables: $ sed -n "$FL,$LL p" file.txt
+# SED script separators : All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
 
-# sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2
+# SED FROM WORD1 TO WORD2
+# sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2 (1st match - next matches of word2 ignored)
 # awk alternative: awk '/Tatty Error/,/suck/' a.txt
-# you can get line numbering if you first cat -n the file , but you will need an extra pipe for that.
+# you can get easy line numbering if you pipe to "cat -n" or to "nl" in the penalty of usings an extra pipe = more resources for that.
 
 # Find a word in file/stdin and grep from this word up to the last \n = new line = eof.
 # Remember that $ represents "last"-end of line in regex
 # apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
+
 # You can do the same starting from a line up to eof. 
 # Also this works sed -n '/matched/,$p' file , wherw matched can be a line number or a string
 
-# Replace a string with s/ switch
+# SED FROM LINE X to LINE Y
+# sed -n '8,12p'
+
+# SED PRINT FROM REGEX UPTO EOF
+# sed -n '/regexp/,$p'
+
+# SED Print lines match regex 
+# sed -n '/regexp/p' #grep emulation
+# sed -n '/regexp/!p' #grep -v
+
+# SED print lines before /after a regexp, but not the line containing the regexp
+# sed -n '/regexp/{g;1!p;};h' #the line before match
+# sed -n '/regexp/{n;p;}' 	#the line after match
+
+# SED REPLACE (s/original/replaced/)
 # sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
 # echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
 # More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
@@ -751,7 +769,8 @@ exit
 # Trick to get only one line from file using head and tail
 # Usage: bash viewline myfile 4
 # head -n $2 "$1" | tail -n 1
-#
+
+
 # FIND - LS ALTERNATIVE
 # find /home/gv -maxdepth 1 -type d -> list only directories
 # find /home/gv -maxdepth 1 -type f -> lists only files
@@ -879,10 +898,6 @@ exit
 #Similarry to !$ there is alsos !! which prints last commad (full) and last result
 # path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
 
-# Check if an array contains a value : 
-# if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi
-# if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
-
 # expr 40 - 3 ->37 #expr is available in GNU Bash. 
 # expr substr "the is a kind of test" 5 10 -> is a kind  
 # a="the is a kind of test";echo ${a: 5:10} -> s a kind o
@@ -908,14 +923,16 @@ exit
 # function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 # Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
-# Command substitution : Use contents of file as parameter: $(<file)
-# Command $(cat file) can be replaced by the equivalent but faster $(< file).
-# example: echo "$(<file.txt) -- similar to cat file.txt
 
 <<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 # Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 # Scroll to the end of page for more one-liners.
 # http://wiki.bash-hackers.org/syntax/pe
+# Command substitution : Use contents of file as parameter: $(<file)
+# Command $(cat file) can be replaced by the equivalent but faster $(< file).
+# example: echo "$(<file.txt) -- similar to cat file.txt
+# if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
+# if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
 #Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
 #Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
@@ -1170,7 +1187,7 @@ FIFO_NAMEDPIPES
 
 # Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
-Use multiple delimiters:
+AWK - Use multiple delimiters:
 $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
 Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
 Output: 
@@ -1228,7 +1245,7 @@ GetPersonalData ()
 } # This certainly appears to be an interactive function, but . . .
 
 
-# Supply input to the above function.
+# Supply input to the VARIABLES of above function.
 GetPersonalData <<RECORD001
 Bozo
 Bozeman
@@ -1248,6 +1265,44 @@ EOF
 
 You can offcourse use tac instead of cat. But in tac lines of here-doc will be inserted from the last to the first.
 This is what tac does = reverse of cat.
+
+Create Script from Script
+Also see http://linuxcommand.org/wss0030.php
+
+#!/bin/bash 
+# This is master script
+# Various code of master script
+cat > /home/$USER/bin/SECOND_SCRIPT <<- EOT
+#!/bin/bash
+# This is a secondary script generated by master script.
+    # - This shall be the second script which automaticall gets placed elsewhere
+    # - This shall not be executed when executing the main script
+    # - Code within this script shall not appear within the terminal of the main script
+	# Comment are also send to secondary script.	
+    # Settings
+
+    LOCALMUSIC="$HOME/Music"
+    ALERT="/usr/share/sounds/pop.wav"
+    PLAYER="mpv --vo null"
+(more lines of code here)
+EOT # Secondary script finished
+# Rest Code of Master Script Continues
+
+source external code inside your script (instead of sourcing the whole script)
+http://unix.stackexchange.com/questions/160256/can-you-source-a-here-document
+
+source <(sed -n '/function justatest/,/\}/p' .bash_aliases) && justatest
+The function justatest is sourced correctly.
+
+More examples:
+source <(cat << EOF
+A=42
+EOF
+)
+echo $A --> prints 42
+
+Alternative : Directly eval the code 
+eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
 
 
 HERE-DOCS
@@ -1291,11 +1346,12 @@ Typical Output:
 braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
 himBHs
 
-To print all bash shopt parameters run #shopt -s && shopt -u
+To print all bash shopt parameters run #shopt. Combine with -s to see options set to ON or -u to see options set to OFF
 Typical Output:
 extquote       	on
 force_fignore  	on
 hostcomplete   	on
+...................
 dirspell       	off
 dotglob        	off
 execfail       	off

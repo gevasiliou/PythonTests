@@ -1,2 +1,4 @@
 http://www.catonmat.net/downloads
 http://www.catonmat.net/blog/bash-one-liners-explained-part-one/
+
+http://sed.sourceforge.net/sed1line.txt
