@@ -1,7 +1,7 @@
-otherwordA
-otherwordB
-dweferf
-fr
-grgr
-otherwordC
-otherwordD
+tar
+tar*tar
+tar*
+tar* something here
+tartar
+guitar
+p a t a r

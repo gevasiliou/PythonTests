@@ -1,0 +1,2 @@
+http://www.catonmat.net/downloads
+http://www.catonmat.net/blog/bash-one-liners-explained-part-one/
