@@ -21,7 +21,7 @@ alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 
-function dpkgnum { dpkg -L "$1" |nl;} #prints info about a package with numbering of the entries.
+function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
 
 function printarray () { 
 # ab=( "one" "two" "fi ve" );printarray --> please provide a var
