@@ -9,6 +9,11 @@ set -f
 #default is +f meaning that when you use "a*" bash expands this to all local files starting with a. 
 #That was affecting also apt list behavior since apt list a* expanded a* to local filenames , and thus if in a directory files starting with a exist, apt returns nothing.
 #Declarations 
+stop=0
+initpkg1="$1" #if sent by terminal ; otherwise will remain empty
+initpkg2="$2"
+exclude1="dev" #default values
+exclude2="dbg"
 }
 
 function pkgselect { 
@@ -79,12 +84,13 @@ done
 }
 
 function selectpackages {
-[[ "$1" != "" ]] && pattern1="$1"
+#if something is sent here, then do it pattern. Otherwise the previous pattern will be kept (is not unsetted).
+[[ "$1" != "" ]] && pattern1="$1" 
 [[ "$2" != "" ]] && pattern2="$2"
 
 selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --buttons-layout=center --columns=2 --align=right --separator="," --date-format="%Y-%m-%d" \
 		--field="Pattern1:" "$pattern1" --field="Pattern2:" "$pattern2" --field="Apt Operation:CB" "apt list!apt search" \
-		--field="Exclude1:" "dbg" --field="Exclude2:" "dev" \
+		--field="Exclude1:" "$exclude1" --field="Exclude2:" "$exclude2" \
 		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
 
 if [ $? == 1 -o $? == 252 ]; then #1 is for Cancel Button, 252 is for ESC button
@@ -103,6 +109,12 @@ exclude1=`echo $selections | awk -F',' '{print $4}'`
 exclude2=`echo $selections | awk -F',' '{print $5}'`
 installed=`echo $selections | awk -F',' '{print $6}'`
 
+[[ $exclude1 == "" && $exclude2 == "" ]] && exclude="-v -e ////\\\\\/////" # I tried exclude="-e \"\"" but grep complains. Will be almost impossible a pkg to have this slash pattern in it's pkgname
+[[ $exclude1 != "" && $exclude2 != "" ]] && exclude="-v -e $exclude1 -e $exclude2"
+[[ $exclude1 == "" && $exclude2 != "" ]] && exclude="-v -e $exclude2"
+[[ $exclude1 != "" && $exclude2 == "" ]] && exclude="-v -e $exclude1"
+
+echo "exclude=$exclude"
 #exit
 }
 
@@ -195,10 +207,10 @@ function readmanpage {
 	debname=$(find . -name "$pkg*.deb")
 	if [[ "$debname" == "" ]];then
 		debsize=$(sed 's/\,//g' <<<"$PKGDEBSIZE") && sizebytes="${debsize:0:-2}" && sizebytes="${sizebytes%.*}" && sizepower="${debsize: -2}"
-		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 ))
-		[[ $sizepower == "MB" ]] && sizebytes=$(( $sizebytes * 1000 ))		
+		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 )) #Bytes
+		[[ $sizepower == "MB" ]] && sizebytes=$(( $sizebytes * 1000 )) #Mbytes	
 		#echo "size power = $sizepower / bytes=$sizebytes" |yad --text-info
-		if [[ "$sizebytes" -gt 4000 ]];then 
+		if [[ "$sizebytes" -gt 4000 ]];then #raise a confirmation if size is greater than 4000KB = 4MB
 			yad --text-info<<<"This deb has a download size of $PKGDEBSIZE. Sure you want to get it?" --height 100 --width 600 --center
 			sure=$?
 		else
@@ -206,7 +218,7 @@ function readmanpage {
 		fi 
 		
 		if [[ sure -eq 0 ]];then
-			apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+			apt-get download "$aptpkg" 2>/dev/null |yad --height 200 --width 200 --progress --pulsate --auto-close --title="Downloading $aptpkg"
 			debname=$(find . -name "$pkg*.deb")
 		else
 			return 1
@@ -259,7 +271,7 @@ function readmanpage {
 			manyad=$?
 			#echo "$manpagetodisplay" |yad --text-info --height=500 --width=800 --wrap
 			
-			if [[ "$manyad" -eq 0 ]]; then #OK / Select File to Display
+			if [[ "$manyad" -eq 0  && "$manpagetodisplay" != *"OTHER_FILES"* ]]; then #OK / Select File to Display
 				manpagetodisplay=$(echo "${manpagetodisplay:0:-1}") #there is a bloody | in the end , due to yad
 				#echo "manyad=0=display only $manpagetodisplay" |yad --text-info
 				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" "$manpagetodisplay"))
@@ -272,7 +284,7 @@ function readmanpage {
 				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage2[@]}))
 				tit="$pkg - ALL ONLINE Manuals"
 				echo "$PWD/${debname:2}">>$DEBLIST
-			else
+			else 
 				#echo "manyad=1 = exit" |yad --text-info
 				echo "$PWD/${debname:2}">>$DEBLIST
 				return 1
@@ -330,6 +342,7 @@ else
 fi
 
 echo "Pattern for apt list = $pattern"
+echo "Excluded Value= $exclude"
 #sleep 5 && apt list "$pattern" 2>&1 && exit
 }
 
@@ -345,17 +358,16 @@ set +f
 }
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
-stop=0
-initpkg1="$1"
-initpkg2="$2"
 while [[ $stop -eq 0 ]];do
 selectpackages $initpkg1 $initpkg2
 
 if [[ $aptsearch == "apt search" ]];then
 echo "apt search selected"
+echo "exclude value=$exclude"
 search_manipulate
 else
 echo "apt list selected"
+echo "exclude value=$exclude"
 aptlist_manipulate
 fi
 #exit
@@ -363,22 +375,23 @@ fi
 echo "Installed=$installed ---- Pattern=$pattern"
 case "$installed" in
 "Not Installed") 
-readarray -t fti < <(apt list $pattern |grep -e "installed" -e "Listing" |cut -f 1 -d "/" |grep -v -e "$exclude1" -e "$exclude2");;
+readarray -t fti < <(apt list $pattern |grep -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
 "Installed")
-readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/" |grep -v -e "$exclude1" -e "$exclude2");; 
+readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/" |grep $exclude);; 
 "All")
-readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" -e "$exclude1" -e "$exclude2");; 
-# We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" operation.
+#readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep -v -e "$exclude1" -e "$exclude2");; 
+readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
+# We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" pattern
 "All Experimental")
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep -v -e "$exclude1" -e "$exclude2");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 "Installed vs Experimental")
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");; #we need to cut even for coma to catch the case "experimental,now"
+readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
 "All Unstable")
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");;
+readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 "Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep -v -e "$exclude1" -e "$exclude2");;
+readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 #declare -p fti
 IFS=$'\n' 

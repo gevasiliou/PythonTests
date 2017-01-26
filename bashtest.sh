@@ -662,11 +662,28 @@ exit
 # -f = load words/lines from file file2.txt
 # file1.txt = the file to be grepped 
 
+# READ FILES  (mapfile, readarray, read -r , etc)
+# http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
+# http://wiki.bash-hackers.org/commands/builtin/read
+# http://wiki.bash-hackers.org/commands/builtin/mapfile
+# http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
+# mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
+
+# The classic while read -r var1 var2 ;do ....;done<file.txt which will assign var1 to first field of line 1 and var2 to second field.
+# Withoud defining IFS, the default IFS is used. You can define IFS=' ' for space delimiter, or ':' for semicol delimiter, etc
+# To read whole lines use IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
+
+# you can combine also multi read (line read / field read) like this:
+# while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
+# It will assign filelines to line and then with different IFS will split line to fields.
+# Bug : var1 get's only the last line
+  
 # Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
 # for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 # It is nice that although we have an alias of yad with some flags , by calling yt with more flags those are also passed to yad.
 # Another cool alias could be => alias catg=''yad --text-info --center --width=800 --height=600 --no-markup --wrap <<<$(cat $1)' , where $1 could be an arg passed to alias.
-# But alias do not handle args. So is better to do it a separate script with name catg. putit in /usr/bin , chmod it to +x and you will be able to launch it from everywhere just like catg file
+# But alias do not handle args. So is better to do it a separate script with name catg or put a function in .bash_aliases file. 
+# if you make a script putit in /usr/bin , chmod it to +x and you will be able to launch it from everywhere just like catg file
 # See the mang script that does similar job
 
 # Run a command as a different user : gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
@@ -952,7 +969,7 @@ exit
 
 # Tricky sed usage if strings replace strange chars like slashes:
 # a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
-# Trick is that you can seperate actions with any char and not only /
+# Trick is that you can seperate actions with any char and not only /. If sed separators are left / (default) and patterns also include / then you need to escape pattern / (using \/) and the sed command becomes a mesh.
 
 #Remove new line char from strings and replace it with space using trim (tr)
 # echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
@@ -995,6 +1012,12 @@ Extract dirname : dirname=${path%/*}
 declare a value to hold upper case letter : declare -u foo . Even if you assign small letters , echo $foo will print capital letters
 declare -l is used for lowercase vars.
 
+assign same value to multiple commands using bash parameter expansion: eval {a,b,c}="some text" # Without eval is not operating.
+
+Trick to create a couple of lowercase and uppercase letters:
+declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due to declare -u in the beginning.
+PS: Alternative for lower/upper case is ${a^^} and ${a,,}
+
 
 Resources: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
@@ -1020,6 +1043,7 @@ PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 # 3) echo $y --> $foo
 # 5) eval y='$'$x
 # 6) echo $y --> 10
+# Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
 
 # DIFF
 #Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
@@ -1146,66 +1170,80 @@ FIFO_NAMEDPIPES
 # --> baz b --- quux
 
 
-# AWK
-# Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
-# Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
-# If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
-# Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
-# For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
-# Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
-# Another great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc).
-# Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
-# echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
+ AWK
+ Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
+ Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
+ If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
+ Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
+ For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
+ Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
+ Another great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc).
+ Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
+ echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
 
-# echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
-# echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
-# -->value1,string1
-# -->value1,string2
-# -->value1,string3
-# -->value1,string4
-# In case of file , separated with new lines you need to apply this a bit different version: 
-# awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+ echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
+ echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
+ -->value1,string1
+ -->value1,string2
+ -->value1,string3
+ -->value1,string4
+ In case of file , separated with new lines you need to apply this a bit different version: 
+ awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
 
-# See this article for AWK reserved variables :
-# http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
-#
+ See this article for AWK reserved variables :
+ http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 
-#awk -F ':' '$3==$4' file.txt -->  
-# echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
-# echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
-#Export AWK variables
-#$ mkfifo fifo
-#$ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
-#$ IFS== read var value < fifo
-#$ eval export $var=$value
+ awk -F ':' '$3==$4' file.txt -->  
+ echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
+ echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
-#Switch position of comma separated fields:
-# echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
-# textA,textC,textB,dateD
-# OFS affects only the display separator. If omited space (default OFS) will be used.
+ Export AWK variables
+ $ mkfifo fifo
+ $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
+ $ IFS== read var value < fifo
+ $ eval export $var=$value
 
-# print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
+ Switch position of comma separated fields:
+ echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
+ textA,textC,textB,dateD
+ OFS affects only the display separator. If omited space (default OFS) will be used.
 
-# Print up to EOF after a matched string: awk '/matched string/,0' a.txt
+ print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
 
-AWK - Use multiple delimiters:
-$ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
-Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
-Output: 
-UAT/ECC/Global/MES/1206/MRP-S23   
-UAT/ECC/Glal/ME/120/MRP-  S23.xml
-Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
-Mind that separate {} create a newline to out file.
+ Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
-Search for a pattern with not known occurencies:
-awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
-This is usefull if we dont know how many "name:" entries exist per line
-If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
-If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
-If line has more than 3 the -F solution will miss the rest entries.
+ AWK - Use multiple delimiters:
+ $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
+ Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
+ Output: 
+ UAT/ECC/Global/MES/1206/MRP-S23   
+ UAT/ECC/Glal/ME/120/MRP-  S23.xml
+ Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
+ Mind that separate {} create a newline to out file.
 
-Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
+ Search for a pattern with not known occurencies:
+ awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
+ This is usefull if we dont know how many "name:" entries exist per line
+ If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
+ If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
+ If line has more than 3 the -F solution will miss the rest entries.
+
+ Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
+
+ AWK: Produce a sed script to replace values to a file with entries from another file
+ http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
+ Consider a user map containing multiple lines with "userid username" (seperated by space)
+ Consider a text file (letter.txt) contaiining paragraphs with reference to the users as userid.
+ We want to replace all userids in letter file with their realnames present in name mapping file.
+ Tricky solution: Transform map file (each line) to the format 's/userid/username/g' and then call sed -f <transformed mapfile> <text file that needs replacements>
+ The awk part: $ awk '{ printf("s/<@%s>/%s/g\n", $1, $2) }' user_map.txt >script.sed
+ The sed part: $ sed -f script.sed letter.txt 
+ BASH Way: var="$(cat file.txt)";while read -r id name;do var="${var//@$id/$name}";done<mapfile.txt;echo "$var"
+ SED Way : while read -r id name;do sed -i "s/\@$id/$name/g" textfile.txt;done<mapfile.txt
+ SED Bug : File is opened and "seded" multiple times (but either the Kusulananda solution does sed multiple times, correct?)
+ On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
+ Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
 
 #WHEREIS & WHATIS
 #whereis finds where is the executable of a programm (whereis sed). 

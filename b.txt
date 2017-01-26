@@ -1,7 +1,2 @@
-somewordA
-somewordB
-dweferf
-fr
-grgr
-somewordC
-somewordD
+chr1_937201_937501  
+chr1_937501_937801  
