@@ -1,0 +1,1684 @@
+setxkbmap (1)       :set the keyboard using the X Keyboard Extension
+gtk-builder-convert (1):Glade file conversion utility
+pdfinfo (1)         :Portable Document Format (PDF) document information extractor (version 3.03)
+ispell (1)          :Interactive spelling checking
+ispell (5)          :format of ispell dictionaries and affix files
+setterm (1)         :set terminal attributes
+dh_bash-completion (1):install bash completions for package
+imagetops (1)       :generic image to ps filter
+pnmcat (1)          :concatenate portable anymaps
+systemd-socket-activate (1):Test socket activation of daemons
+locale (7)          :description of multilanguage support
+locale (1)          :get locale-specific information
+locale (5)          :describes a locale definition file
+ps2ascii (1)        :Ghostscript translator from PostScript or PDF to ASCII
+wish8.5 (1)         :Simple windowing shell
+fc-cache (1)        :build font information cache files
+xman (1)            :Manual page display program for the X Window System
+ucfr (1)            :Update Configuration File Registry: associate packages with configuration files
+timeout (1)         :run a command with a time limit
+sbigtopgm (1)       :convert an SBIG CCDOPS file into a portable graymap
+xset (1)            :user preference utility for X
+inotifywait (1)     :wait for changes to files using inotify
+zenity (1)          :display GTK+ dialogs
+eject (1)           :eject removable media
+ppmtoxpm (1)        :convert a portable pixmap into an X11 pixmap
+showrgb (1)         :display an rgb color-name database
+glxgears (1)        :``gears'' demo for GLX
+lobase (1)          :LibreOffice office suite
+systemd-detect-virt (1):Detect execution in a virtualized environment
+pbmtowbmp (1)       :convert a portable bitmap to a wireless bitmap (wbmp) file
+sudoreplay (8)      :replay sudo session logs
+unopkg (1)          :LibreOffice Extension Manager
+xcutsel (1)         :interchange between cut buffer and selection
+wish8.6 (1)         :Simple windowing shell
+whiptail (1)        :display dialog boxes from shell scripts
+desktop-file-install (1):Installation and edition of desktop files
+ldd (1)             :print shared object dependencies
+pamfile (1)         :describe a Netpbm (PAM or PNM) file
+shasum (1)          :Print or Check SHA Checksums
+pgmhist (1)         :print a histogram of the values in a portable graymap
+sputoppm (1)        :convert an Atari uncompressed Spectrum file into a portable pixmap
+logger (1)          :enter messages into the system log
+st4topgm (1)        :convert an SBIG ST4 format file into a portable graymap
+lavadecode (1)      :Decode a LAVAFLOW stream into human readable form.
+ipcs (1)            :show information on IPC facilities
+ppmtouil (1)        :convert a portable pixmap into a Motif UIL icon file
+apt-listchanges (1) :Show new changelog entries from Debian package archives
+xcalc (1)           :scientific calculator for X
+mk_modmap (8)       :translate a Linux keytable file into an xmodmap file
+pbmclean (1)        :flip isolated pixels in portable bitmap
+dpkg-scansources (1):create Sources index files
+h2ph (1)            :convert .h C header files to .ph Perl header files
+xfce4-session-settings (1):Session settings for Xfce
+winicontoppm (1)    :convert a Windows .ico file into 1 or more portable pixmap files
+ionice (1)          :set or get process I/O scheduling class and priority
+xfce4-accessibility-settings (1):Accessibility settings for Xfce
+pnmcolormap (1)     :create quantization color map for a portable anymap
+ppmpat (1)          :make a pretty pixmap
+tload (1)           :graphic representation of system load average
+xsubpp (1)          :compiler to convert Perl XS code into C code
+xditview (1)        :display ditroff output
+pbmupc (1)          :create a Universal Product Code bitmap
+pacat (1)           :Play back or record raw or encoded audio streams on a PulseAudio sound server
+genrb (1)           :compile a resource bundle
+evemu-play (1)      :create a virtual input device and replay an event sequence
+sensors (1)         :print sensors information
+pbmtog3 (1)         :convert a portable bitmap into a Group 3 fax file
+tput (1)            :initialize a terminal or query terminfo database
+dh_compress (1)     :compress files and fix symlinks in package build directories
+lsw (1)             :list windows
+lowriter (1)        :LibreOffice office suite
+xwdtopnm (1)        :convert a X11 or X10 window dump file into a portable anymap
+dpkg-architecture (1):set and determine the architecture for package building
+timedatectl (1)     :Control the system time and date
+file-roller (1)     :archive manager for GNOME
+dh_auto_install (1) :automatically runs make install or similar
+exo-open (1)        :Open URLs and launch preferred applications
+sum (1)             :checksum and count the blocks in a file
+lsinitramfs (8)     :list content of an initramfs image
+pip (1)             :A tool for installing and managing Python packages
+nproc (1)           :print the number of processing units available
+dh_autotools-dev_updateconfig (1):update config.sub and config.guess
+gnome-keyring-3 (1) :The gnome-keyring commandline tool
+yad (1)             :display GTK+ dialogs in shell scripts
+rtmpdump (1)        :RTMP streaming media client
+xdg-screensaver (1) :command line tool for controlling the screensaver
+x86_64-linux-gnu-c++filt (1):Demangle C++ and Java symbols.
+dh_auto_configure (1):automatically configure a package prior to building
+Xorg (1)            :X11R7 X server
+mpaste (1)          :command-line client for https://paste.mate-desktop.org
+x86_64-linux-gnu-ld.gold (1):The GNU ELF linker
+word-list-compress (1):word list compressor/decompressor for GNU Aspell
+procan (1)          :Multipurpose relay (SOcket CAT)
+mkfontdir (1)       :create an index of X font files in a directory
+ctags-exuberant (1) :Generate tag files for source code
+groff (1)           :front-end for the groff document formatting system
+ntfsdecrypt (8)     :decrypt or update NTFS files encrypted according to EFS
+msgattrib (1)       :attribute matching and manipulation on message catalog
+pcre-config (1)     :program to return PCRE configuration
+proxy (1)           :Display the proxy server that should be used to reach a given a network resource
+cd-it8 (1)          :Color Manager Testing Tool
+md5sum (1)          :compute and check MD5 message digest
+psicc (1)           :little cms PostScript converter.
+oakdecode (1)       :Decode an OAKT printer stream into human readable form.
+locate.findutils (1):list files in databases that match a pattern
+pdfunite (1)        :Portable Document Format (PDF) page merger
+grub-kbdcomp (1)    :generate a GRUB keyboard layout file
+x86_64-linux-gnu-strings (1):print the strings of printable characters in files.
+xzmore (1)          :view xz or lzma compressed (text) files
+yuvsplittoppm (1)   :convert a Y- and a U- and a V-file into a portable pixmap
+prename (1)         :renames multiple files
+dpkg-scanpackages (1):create Packages index files
+tr (1)              :translate or delete characters
+gettext (1)         :translate message
+gettext (3)         :translate message
+apt (8)             :command-line interface
+ischroot (1)        :detect if running in a chroot
+dh_python2 (1)      :calculates Python dependencies, adds maintainer scripts to byte compile files, etc.
+pmap (1)            :report memory map of a process
+ncal (1)            :displays a calendar and the date of Easter
+qterminal (1)       :QT-based multitab terminal emulator
+gsbj (1)            :Format and print text for BubbleJet printer using ghostscript
+systemd-run (1)     :Run programs in transient scope units, service units, or timer-scheduled service units
+broadwayd (1)       :Broadway display server
+xsetwacom (1)       :commandline utility to query and modify wacom driver settings.
+dh_makeshlibs (1)   :automatically create shlibs file and call dpkg-gensymbols
+rdjpgcom (1)        :display text comments from a JPEG file
+ppmtopcx (1)        :convert a portable pixmap into a PCX file
+ppmtoicr (1)        :convert a portable pixmap into NCSA ICR format
+socat (1)           :Multipurpose relay (SOcket CAT)
+ssh (1)             :OpenSSH SSH client (remote login program)
+dh_installxmlcatalogs (1):install and register XML catalog files
+audtool (1)         :a small tool to control Audacious from the command line.
+zeisstopnm (1)      :convert a Zeiss confocal file into a portable anymap
+loadunimap (8)      :load the kernel unicode-to-font mapping table
+grub-file (1)       :check file type
+kcookiejar5 (8)     :Command line interface to the KDE HTTP cookie daemon
+rpcgen (1)          :an RPC protocol compiler
+pacmd (1)           :Reconfigure a PulseAudio sound server during runtime
+newgrp (1)          :log in to a new group
+xbiff (1)           :mailbox flag for X
+xgamma (1)          :Alter a monitor's gamma correction through the X server
+calendar (1)        :reminder service
+xfsettingsd (1)     :XSettings daemon for Xfce
+podselect (1)       :print selected sections of pod documentation on standard output
+ppmcolormask (1)    :produce mask of areas of a certain color in a PPM file
+fc-validate (1)     :validate font files
+pdf2dsc (1)         :generate a PostScript page list of a PDF document
+crontab (1)         :maintain crontab files for individual users (Vixie Cron)
+crontab (5)         :tables for driving cron
+xsetpointer (1)     :set an X Input device as the main pointer
+pdfsig (1)          :Portable Document Format (PDF) digital signatures tool
+pnmenlarge (1)      :read a portable anymap and enlarge it N times
+amidi (1)           :read from and write to ALSA RawMIDI ports
+ctest (1)           :CTest Command-Line Reference
+grub-script-check (1):check grub.cfg for syntax errors
+dpkg-gencontrol (1) :generate Debian control files
+chfn (1)            :change real user name and information
+lwp-request (1p)    :Simple command line user agent
+fc-cat (1)          :read font information cache files
+gdk-pixbuf-pixdata (1):GDK Pixbuf library
+apt-sortpkgs (1)    :Utility to sort package index files
+lxqt-config-appearance (1):GUI appearance application of LXQt: the faster and lighter QT Desktop Environment
+nstat (8)           :network statistics tools.
+dh_link (1)         :create symlinks in package build directories
+gencfu (1)          :Generates Unicode Confusable data files
+grub-menulst2cfg (1):transform legacy menu.lst into grub.cfg
+resizepart (8)      :tell the kernel about the new size of a partition
+prove (1)           :Run tests through a TAP harness.
+pnmtile (1)         :replicate a portable anymap into a specified size
+pnmalias (1)        :antialias a portable anyumap.
+t1binary (1)        :convert PostScript Type 1 font from ASCII to binary
+xdriinfo (1)        :query configuration information of DRI drivers
+printf (1)          :format and print data
+printf (3)          :formatted output conversion
+base64 (1)          :base64 encode/decode data and print to standard output
+esc-m (1)           :ease viewing output of driver data
+composite-im6.q16 (1):overlaps one image over another.
+file-rename (1p)    :renames multiple files
+pamstretch-gen (1)  :use pamstretch and pnmscale to scale by non-integer values
+automake-1.15 (1)   :manual page for automake 1.15
+toe (1)             :table of (terminfo) entries
+sq (1)              :squeeze or unsqueeze a sorted word list
+dh_listpackages (1) :list binary packages debhelper will act on
+x86_64-linux-gnu-gcc-ranlib-6 (1):a wrapper around ranlib adding the:plugin option
+faked-tcp (1)       :daemon that remembers fake ownership/permissions of files manipulated by fakeroot processes.
+xgc (1)             :X graphics demo
+xsane (1)           :scanner frontend for SANE
+gpgv (1)            :Verify OpenPGP signatures
+iecset (1)          :Set or dump IEC958 status bits
+ipcmk (1)           :make various IPC resources
+dbus-launch (1)     :Utility to start a message bus from a shell script
+btattach (1)        :attach serial devices to BlueZ stack
+pbmtopi3 (1)        :convert a portable bitmap into an Atari Degas .pi3 file
+gencat (1)          :Generate message catalog
+utmpdump (1)        :dump UTMP and WTMP files in raw format
+fc-query (1)        :query font files
+xterm (1)           :terminal emulator for X
+transset (1)        :Set transparency on a window
+sddm-greeter (1)    :sddm display manager greeter
+mutagen-inspect (1) :view Mutagen-supported audio tags
+splain (1)          :produce verbose warning diagnostics
+2to3-2.7 (1)        :Python2 to Python3 converter
+lsipc (1)           :show information on IPC facilities currently employed in the system
+exifautotran (1)    :Transforms Exif files so that Orientation becomes 1
+iconv (1)           :convert text from one character encoding to another
+iconv (3)           :perform character set conversion
+sha224sum (1)       :compute and check SHA224 message digest
+cmake (1)           :CMake Command-Line Reference
+neotoppm (1)        :convert an Atari Neochrome .neo into a portable pixmap
+[ (1)               :check file types and compare values
+lzmainfo (1)        :show information stored in the .lzma file header
+preparetips5 (1)    :extract text from tips file
+dh_installmime (1)  :install mime files into package build directories
+bccmd (1)           :Utility for the CSR BCCMD interface
+msgfmt (1)          :compile message catalog to binary format
+smplayer (1)        :The best GUI frontend for MPlayer
+7z (1)              :A file archiver with high compression ratio format
+gslp (1)            :Format and print text using ghostscript
+routel (8)          :list routes with pretty output format
+viewres (1)         :graphical class browser for Xt
+zlib-flate (1)      :raw zlib compression program
+xfce4-panel (1)     :A panel for the Xfce4 desktop environment
+pax11publish (1)    :PulseAudio X11 Credential Utility
+mscompress (1)      :compress data using LZ77 algorithm
+dh_autoreconf (1)   :Call autoreconf:f:i and keep track of the changed files.
+podebconf-report-po (1):send outdated debconf PO files to the last translators
+ffprobe (1)         :ffprobe media prober
+xfwm4-settings (1)  :General settings for Xfce window manager
+pamcut (1)          :cut a rectangle out of a PAM, PBM, PGM, or PPM image
+autoupdate (1)      :Update a configure.in to a newer Autoconf
+h2xs (1)            :convert .h C header files to Perl extensions
+ucfq (1)            :query the ucf database
+showkey (1)         :examine the codes sent by the keyboard
+printenv (1)        :print all or part of environment
+dh (1)              :debhelper command sequencer
+getconf (1)         :Query system configuration variables
+foo2hiperc (1)      :Convert Ghostscript pbmraw or bitcmyk format into a HIPERC printer stream
+pbmlife (1)         :apply Conway's rules of Life to a portable bitmap
+djpeg (1)           :decompress a JPEG file to an image file
+setleds (1)         :set the keyboard leds
+pnmtops (1)         :convert portable anymap to PostScript
+scanimage (1)       :scan an image
+tifftopnm (1)       :convert a TIFF file into a portable anymap
+mscore (1)          :MuseScore 2 sheet music editor.
+logname (1)         :print user's login name
+munchlist (1)       :Interactive spelling checking
+cancel (1)          :cancel jobs
+namei (1)           :follow a pathname until a terminal point is found
+slabtop (1)         :display kernel slab cache information in real time
+x86_64-linux-gnu-ranlib (1):generate index to archive.
+dh_installinfo (1)  :install info files
+mmcli (8)           :Control and monitor the ModemManager
+pnmtosir (1)        :convert a portable anymap into a Solitaire format
+grub-mkrelpath (1)  :make a system path relative to its root
+mtrace (1)          :interpret the malloc trace log
+mtrace (3)          :malloc tracing
+dh_auto_build (1)   :automatically builds a package
+xfce4-power-manager (1):The Xfce 4 Power manager
+sddm (1)            :the simple desktop display manager
+lsx (1)             :list executables
+dbus-run-session (1):start a process as a new D-Bus session
+pfbtopfa (1)        :Convert Postscript .pfb fonts to .pfa format using ghostscript
+debconf-gettextize (1):extract translations of debconf templates into PO files
+pnmpaste (1)        :paste a rectangle into a portable anymap
+min12xxw (1)        :Convert pbmraw streams to Minolta PagePro 12xxW languages
+foo2hp2600-wrapper (1):Convert Postscript into a ZJS printer stream
+agrep (1)           :search a file for a string or regular expression, with approximate matching capabilities
+xgettext (1)        :extract gettext strings from source
+411toppm (1)        :convert Sony Mavica .411 image to ppm
+lxqt-sudo (1)       :execute a command as privileged user
+git-shell (1)       :Restricted login shell for Git-only SSH access
+unicode_stop (1)    :revert keyboard and console from unicode mode
+xkbwatch (1)        :XKB extension user utility
+spd-say (1)         :send text-to-speech output request to speech-dispatcher
+editdiff (1)        :fix offsets and counts of a hand-edited diff
+pgmtolispm (1)      :convert a portable graymap into Lisp Machine format
+p7zip (1)           :Wrapper on 7-Zip file archiver with high compression ratio
+startx (1)          :initialize an X session
+dh_installmenu (1)  :install Debian menu files into package build directories
+whereis (1)         :locate the binary, source, and manual page files for a command
+hostnamectl (1)     :Control the system hostname
+screendump (1)      :dump the contents of a virtual console to stdout
+migrate-pubring-from-classic-gpg (1):Migrate a public keyring from "classic" to "modern" GnuPG
+x86_64-linux-gnu-ar (1):create, modify, and extract from archives
+ucf (1)             :Update Configuration File: preserve user changes in configuration files
+kbxutil (1)         :List, export, import Keybox data
+dh_testroot (1)     :ensure that a package is built as root
+rstart (1)          :a sample implementation of a Remote Start client
+pgmtoppm (1)        :colorize a portable graymap into a portable pixmap
+ptargrep (1)        :Apply pattern matching to the contents of files in a tar archive
+ppmtotga (1)        :convert portable pixmap into a TrueVision Targa file
+filterdiff (1)      :extract or exclude diffs from a diff file
+xdg-open (1)        :opens a file or URL in the user's preferred application
+ssh-agent (1)       :authentication agent
+soelim (1)          :interpret .so requests in groff input
+peekfd (1)          :peek at file descriptors of running processes
+ppmbrighten (1)     :change an images Saturation and Value from an HSV map
+pnmconvol (1)       :general MxN convolution on a portable anymap
+deallocvt (1)       :deallocate unused virtual consoles
+pgmnoise (1)        :create a graymap made up of white noise
+psfxtable (1)       :handle Unicode character tables for console fonts
+mate-color-select (1):Select a color from a palette or from screen
+msgen (1)           :create English message catalog
+mimetype (1p)       :Determine file type
+pbmtoatk (1)        :convert portable bitmap to Andrew Toolkit raster object
+x11perfcomp (1)     :X11 server performance comparison program
+gtk-launch (1)      :Launch an application
+msgconv (1)         :character set conversion for message catalog
+py3clean (1)        :removes .pyc and .pyo files
+glxheads (1)        :exercise multiple GLX connections
+cupstestdsc (1)     :test conformance of postscript files (deprecated)
+prlimit (1)         :get and set process resource limits
+prlimit (2)         :get/set resource limits
+vlimit (3)          :get/set resource limits
+autoscan (1)        :Generate a preliminary configure.in
+enchant-lsmod (1)   :Show information about available spell-checking modules and dictionaries.
+foo2oak-wrapper (1) :Convert Postscript into an OAKT printer stream
+inotifywatch (1)    :gather filesystem access statistics using inotify
+pnmtosgi (1)        :convert a portable anymap to a SGI image file
+enchant (1)         :a spellchecker
+startxfce4 (1)      :initialize an Xfce session
+filan (1)           :Multipurpose relay (SOcket CAT)
+grops (1)           :PostScript driver for groff
+gtester-report (1)  :test report formatting utility
+prezip (1)          :prefix delta compressor for Aspell
+xsetmode (1)        :set the mode for an X Input device
+foo2qpdl-wrapper (1):Convert Postscript into a QPDL printer stream
+pnmremap (1)        :replace colors in a PPM image with colors from another set
+xvidtune (1)        :video mode tuner for Xorg
+dvipdf (1)          :Convert TeX DVI file to PDF using ghostscript and dvips
+xscreensaver-command (1):control a running xscreensaver process
+lxqt-session (1)    :Session manager of LXQt: The Lightweight Qt Desktop Environment
+xscreensaver-demo (1):interactively control the background xscreensaver daemon
+gpg-zip (1)         :encrypt or sign files into an archive
+linux-check-removal (1):check whether removal of a kernel is safe
+ppmfade (1)         :generate a transition between two image files using special effects.
+ps2epsi (1)         :generate conforming Encapsulated PostScript
+nslookup (1)        :query Internet name servers interactively
+font2c (1)          :Write PostScript Type 0 or Type 1 font as C code
+lwp-mirror (1p)     :Simple mirror utility
+clear (1)           :clear the terminal screen
+dpkg-mergechangelogs (1):3-way merge of debian/changelog files
+pcimodules (8)      :List kernel driver modules available for all currently plugged in PCI devices
+pnmcomp (1)         :composite (overlay) two portable anymap files together
+pnmtoplainpnm (1)   :convert portable any map to plain (ASCII) anymap format
+lpoptions (1)       :display or set printer options and defaults
+xedit (1)           :simple text editor for X
+info (1)            :read Info documents
+info (5)            :readable online documentation
+sha1sum (1)         :compute and check SHA1 message digest
+pr (1)              :convert text files for printing
+gnome-keyring-daemon (1):The gnome-keyring daemon
+ps2pdf (1)          :Convert PostScript to PDF using ghostscript
+getkeycodes (8)     :print kernel scancode-to-keycode mapping table
+wc (1)              :print newline, word, and byte counts for each file
+cmp (1)             :compare two files byte by byte
+xdg-mime (1)        :command line tool for querying information about file type handling and adding descriptions for new file types
+watch (1)           :execute a program periodically, showing output fullscreen
+evemu-record (1)    :print information and events from an input device
+grub-mount (1)      :export GRUB filesystem with FUSE
+resize (1)          :set environment and terminal settings to current xterm window size
+xdg-icon-resource (1):command line tool for (un)installing icon resources
+ngettext (1)        :translate message and choose plural form
+ngettext (3)        :translate message and choose plural form
+lxqt-panel (1)      :Desktop panel for LXQt: The Lightweight Qt Desktop Environment
+pgmtofs (1)         :convert portable graymap to Usenix FaceSaver(tm) format
+pinentry-gnome3 (1) :PIN or pass-phrase entry dialog for GnuPG
+select-editor (1)   :select your default sensible-editor from all installed editors
+dh_strip (1)        :strip executables, shared libraries, and some static libraries
+foo2hp (1)          :Convert Ghostscript pbmraw or bitcmyk format into a ZJS printer stream
+cvlc (1)            :the VLC media player
+gcc-ranlib-5 (1)    :a wrapper around ranlib adding the:plugin option
+pgmcrater (1)       :create cratered terrain by fractal forgery
+ppmchange (1)       :change all pixels of one color to another in a portable pixmap
+systemd-analyze (1) :Analyze system boot-up performance
+pbmtocmuwm (1)      :convert a portable bitmap into a CMU window manager bitmap
+jpegtopnm (1)       :convert JPEG/JFIF file to portable pixmap or graymap
+fix-qdf (1)         :repair PDF files in QDF form after editing
+kbdinfo (1)         :obtain information about the status of a console
+od (1)              :dump files in octal and other formats
+loffice (1)         :LibreOffice office suite
+unwrapdiff (1)      :demangle word-wrapped patches
+ristretto (1)       :lightweight picture-viewer for the Xfce desktop environment
+pnmtorle (1)        :convert a Netpbm image file into an RLE image file.
+xfce4-appfinder (1) :Xfce 4 Appfinder
+gdk-pixbuf-csource (1):C code generation utility for GdkPixbuf images
+nohup (1)           :run a command immune to hangups, with output to a non-tty
+tabs (1)            :set tabs on a terminal
+partx (8)           :tell the kernel about the presence and numbering of on-disk partitions
+aseqdump (1)        :show the events received at an ALSA sequencer port
+pgmbentley (1)      :Bentleyize a portable graymap
+lsb_release (1)     :print distribution-specific information
+btmon (1)           :Bluetooth monitor
+shred (1)           :overwrite a file to hide its contents, and optionally delete it
+bsd-from (1)        :print names of those who have sent mail
+pamdice (1)         :slice a Netpbm image into many horizontally and/or vertically
+gio (1)             :GIO commandline tool
+fallocate (1)       :preallocate or deallocate space to a file
+fallocate (2)       :manipulate file space
+pnmtotiffcmyk (1)   :convert a portable anymap into a CMYK encoded TIFF file
+foomatic-ppd-options (1):show the PPD options
+ppmtopj (1)         :convert a portable pixmap to an HP PaintJet file
+JxrDecApp (1)       :JPEG XR Decoder Utility
+pwdx (1)            :report current working directory of a process
+lcf (1)             :Determine which of the historical versions of a config is installed
+base32 (1)          :base32 encode/decode data and print to standard output
+nemo (1)            :the Cinnamon File Manager
+nemo-connect-server (1):To Access a remote server
+xstdcmap (1)        :X standard colormap utility
+dh_clean (1)        :clean up package build directories
+dh_strip_nondeterminism (1p):strip uninteresting, nondeterministic information from files
+xrandr (1)          :primitive command line interface to RandR extension
+Xrandr (3)          :X Resize, Rotate and Reflection extension.
+dpkg-trigger (1)    :a package trigger utility
+pyclean (1)         :removes .pyc and .pyo files
+msgunfmt (1)        :uncompile message catalog from binary format
+x86_64-linux-gnu-readelf (1):Displays information about ELF files.
+kf5-config (1)      :Prints Qt(TM) and Frameworks installation paths
+ps2lexmark (1)      :Postscript to Lexmark 2050 Series protocol translator
+macptopbm (1)       :convert a MacPaint file into a portable bitmap
+giftopnm (1)        :convert a GIF file into a portable anymap
+ppmcolors (1)       :generate a color map of all colors of a certain maxval
+du (1)              :estimate file space usage
+pbmtoppa (1)        :convert PBM image to HP Printer Performance Architecture (PPA)
+ppmtowinicon (1)    :convert 1 or more portable pixmaps into a Windows .ico file
+dh_installinit (1)  :install service init files into package build directories
+koi8rxterm (1)      :X terminal emulator for KOI8-R environments
+bmtoa (1)           :bitmap editor and converter utilities for the X Window System
+xkill (1)           :kill a client by its X resource
+pnmcut (1)          :cut a rectangle out of a portable anymap
+paste (1)           :merge lines of files
+dh_shlibdeps (1)    :calculate shared library dependencies
+runcon (1)          :run command with specified security context
+cpufreq-aperf (1)   :Calculates the average frequency over a time period
+env (1)             :run a program in a modified environment
+caja-autorun-software (1):Autorun Software in Caja
+pavucontrol (1)     :A volume control for the PulseAudio sound server
+xmore (1)           :plain text display program for the X Window System
+localectl (1)       :Control the system locale and keyboard layout settings
+ilbmtoppm (1)       :convert an ILBM file into a portable pixmap
+grub-glue-efi (1)   :generate a fat binary for EFI
+bitmap (1)          :bitmap editor and converter utilities for the X Window System
+sdiff (1)           :side-by-side merge of file differences
+xfce4-screenshooter (1):application to take screenshots
+gsettings (1)       :GSettings configuration tool
+zipinfo (1)         :list detailed information about a ZIP archive
+exo-preferred-applications (1):Xfce Preferred Applications Framework
+xfd (1)             :display all the characters in an X font
+lomath (1)          :LibreOffice office suite
+autoreconf (1)      :Update generated configuration files
+man (7)             :macros to format man pages
+man (1)             :an interface to the on-line reference manuals
+rletopnm (1)        :convert a Utah Raster Tools RLE image file into a PNM image file.
+scriptreplay (1)    :play back typescripts, using timing information
+aplay (1)           :command-line sound recorder and player for ALSA soundcard driver
+basename (1)        :strip directory and suffix from filenames
+basename (3)        :parse pathname components
+pathchk (1)         :check whether file names are valid or portable
+dh_gencontrol (1)   :generate and install control file
+xfce4-session-logout (1):Logs out from Xfce
+unzipsfx (1)        :self-extracting stub for prepending to ZIP archives
+xhost (1)           :server access control program for X
+geany (1)           :a small and lightweight IDE
+catman (8)          :create or update the pre-formatted manual pages
+xfce4-taskmanager (1):a task (system process) manager for Xfce.
+thinkjettopbm (1)   :convert HP ThinkJet printer commands file to PBM
+pnmmontage (1)      :create a montage of portable anymaps
+xlsfonts (1)        :server font list displayer for X
+showconsolefont (8) :Show the current EGA/VGA console screen font
+dh_dkms (1)         :correctly handle DKMS usage by a kernel module package
+tificc (1)          :little cms ICC profile applier for TIFF.
+opldecode (1)       :Decode a Raster Object (opl) stream into human readable form.
+cups-calibrate (8)  :ESP CUPS Printer Calibration Tool
+tasksel (8)         :a user interface for installing tasks
+pl2pm (1)           :Rough tool to translate Perl4 .pl files to Perl5 .pm modules.
+fstopgm (1)         :convert a Usenix FaceSaver(tm) file into a portable graymap
+pgmtopbm (1)        :convert a portable graymap into a portable bitmap
+comm (1)            :compare two sorted files line by line
+podebconf-display-po (1):display content of a PO file in a debconf interface
+dh_installdeb (1)   :install files into the DEBIAN directory
+perlbug (1)         :how to submit bug reports on Perl
+x86_64-linux-gnu-objcopy (1):copy and translate object files
+system-config-printer (1):configure a CUPS server
+transicc (1)        :little cms ColorSpace conversion calculator.
+dh_installudev (1)  :install udev rules files
+msgmerge (1)        :merge message catalog and template
+rendercheck (1)     :simple tests of the X Render extension.
+pdffonts (1)        :Portable Document Format (PDF) font analyzer (version 3.03)
+taskset (1)         :set or retrieve a process's CPU affinity
+ppmrainbow (1)      :Generate a rainbow
+ngrep (8)           :network grep
+gresource (1)       :GResource tool
+foomatic-compiledb (1):Compile the Foomatic printer/driver database
+ppmtolj (1)         :convert a portable pixmap to an HP LaserJet PCL 5 Color file
+lscpu (1)           :display information about the CPU architecture
+lpr (1)             :print files
+users (1)           :print the user names of users currently logged in to the current host
+gendict (1)         :Compiles word list into ICU string trie dictionary
+luit (1)            :Locale and ISO 2022 support for Unicode terminals
+foo2lava (1)        :Convert Ghostscript pbmraw or bitcmyk format into a LAVAFLOW or a OPL printer stream
+light-locker (1)    :screen locker
+lodraw (1)          :LibreOffice office suite
+killall (1)         :kill processes by name
+ppmtoneo (1)        :convert a portable pixmap into an Atari Neochrome .neo file
+mawk (1)            :pattern scanning and text processing language
+ppmtomitsu (1)      :convert a portable pixmap to a Mitsubishi S340-10 file
+tjbench (1)         :benchmark the performance of libjpeg-turbo
+qpdf (1)            :PDF transformation software
+pdftohtml (1)       :program to convert PDF files into HTML, XML and PNG images
+rgb3toppm (1)       :combine three portable graymaps into one portable pixmap
+xscreensaver (1)    :extensible screen saver and screen locking framework
+exfalso (1)         :audio tag editor
+systemd-delta (1)   :Find overridden configuration files
+pbmmake (1)         :create a blank bitmap of a specified size
+traceproto.db (1)   :print the route packets trace to network host
+pdfimages (1)       :Portable Document Format (PDF) image extractor (version 3.03)
+pnminvert (1)       :invert a portable anymap
+xdg-desktop-menu (1):command line tool for (un)installing desktop menu items
+defmt-c (1)         :a sample ispell deformatter for C, C++, and shell sources
+ppmtoyuv (1)        :convert a portable pixmap into an Abekas YUV file
+wget (1)            :The non-interactive network downloader.
+links (1)           :lynx-like alternative character mode WWW browser
+pango-view (1)      :Pango text viewer
+dbus-update-activation-environment (1):update environment used for D-Bus session services
+findaffix (1)       :Interactive spelling checking
+dh_bugfiles (1)     :install bug reporting customization files into package build directories
+xbmtopbm (1)        :convert an X11 or X10 bitmap into a portable bitmap
+dpkg-statoverride (1):override ownership and mode of files
+foo2hbpl2 (1)       :Convert Ghostscript pbmraw or bitcmyk format into a ZJS printer stream
+catchsegv (1)       :Catch segmentation faults in programs
+stream-im6.q16 (1)  :a lightweight tool to stream one or more pixel components of the image or portion of the image to your choice of storage formats.
+ssh-keyscan (1)     :gather ssh public keys
+pkexec (1)          :Execute a command as another user
+xarchiver (1)       :GTK+ frontend for most used compression formats
+ffserver (1)        :ffserver video server
+pbmtoxbm (1)        :convert a portable bitmap into an X11 bitmap
+libpng16-config (1) :get information about installed libpng library
+t1disasm (1)        :disassemble PostScript Type 1 font
+kwallet-query (1)   :KDE Wallet command-line manipulation tool
+xconsole (1)        :monitor system console messages with X
+update-desktop-database (1):Build cache database of MIME types handled by desktop files
+speech-dispatcher (1):server process managing speech requests in Speech Dispatcher
+scp (1)             :secure copy (remote file copy program)
+mpv (1)             :a media player
+bc (1)              :An arbitrary precision calculator language
+uptime (1)          :Tell how long the system has been running.
+volname (1)         :return volume name
+xdt-csource (1)     :C code generation utility for arbitrary data
+palmtopnm (1)       :convert a Palm pixmap into a portable anymap
+mdatopbm (1)        :convert a Microdesign .mda or .mdp file into a portable bitmap
+intltool-merge (8)  :merge translated strings into various types of file
+pbmtoplot (1)       :convert a portable bitmap into a Unix plot(5) file
+pbmmask (1)         :create a mask bitmap from a regular bitmap
+diff (1)            :compare files line by line
+head (1)            :output the first part of files
+HEAD (1p)           :Simple command line user agent
+foo2xqx-wrapper (1) :Convert Postscript into a XQX printer stream
+xdpyinfo (1)        :display information utility for X
+envsubst (1)        :substitutes environment variables in shell format strings
+zipdetails (1)      :display the internal structure of zip files
+delpart (8)         :tell the kernel to forget about a partition
+pi3topbm (1)        :convert an Atari Degas .pi3 file into a portable bitmap
+cmst (1)            :Connman System Tray
+strace (1)          :trace system calls and signals
+dh_installgsettings (1):install GSettings overrides and set dependencies
+pnmrotate (1)       :rotate a portable anymap by some angle
+numfmt (1)          :Convert numbers from/to human-readable strings
+pnmscalefixed (1)   :scale a portable anymap quickly, but less accurate
+pnmindex (1)        :build a visual index of a bunch of anymaps
+gcc-nm-5 (1)        :a wrapper around nm adding the:plugin option
+xdg-email (1)       :command line tool for sending mail using the user's preferred e-mail composer
+unzip (1)           :list, test and extract compressed files in a ZIP archive
+reportbug (1)       :reports a bug to a debbugs server
+expand (1)          :convert tabs to spaces
+pngtopnm (1)        :convert a Portable Network Graphics file into portable anymap
+slxdecode (1)       :Decode a SLX stream into human readable form.
+loweb (1)           :LibreOffice office suite
+speaker-test (1)    :command-line speaker test tone generator for ALSA
+asciitopgm (1)      :convert ASCII graphics into a portable graymap
+msguniq (1)         :unify duplicate translations in message catalog
+t1ascii (1)         :convert PostScript Type 1 font from binary to ASCII
+ps2pdf12 (1)        :Convert PostScript to PDF 1.2 (Acrobat 3-and-later compatible) using ghostscript
+loimpress (1)       :LibreOffice office suite
+ijoin (1)           :Interactive spelling checking
+printafm (1)        :Print the metrics from a Postscript font in AFM format using ghostscript
+tset (1)            :terminal initialization
+stat (1)            :display file or file system status
+stat (2)            :get file status
+foo2zjs (1)         :Convert Ghostscript pbmraw or bitcmyk format into a ZJS printer stream
+whoami (1)          :print effective userid
+pnmpsnr (1)         :compute the difference between two portable anymaps
+gpasswd (1)         :administer /etc/group and /etc/gshadow
+update-mime-database (1):a program to build the Shared MIME-Info database cache
+ppmtopict (1)       :convert a portable pixmap into a Macintosh PICT file
+compare-im6.q16 (1) :mathematically and visually annotate the difference between an image and its reconstruction.
+kbuildsycoca5 (8)   :Rebuilds the KService desktop file system configuration cache.
+ppmdither (1)       :ordered dither for color images
+usbhid-dump (8)     :dump USB HID device report descriptors and streams
+pkcon (1)           :PackageKit console client
+tkinfo (1)          :program to view GNU Info files
+catdoc (1)          :reads MS-Word file and puts its content as plain text on standard output
+gimp-2.8 (1)        :an image manipulation and paint program.
+dbus-daemon (1)     :Message bus daemon
+pdftoppm (1)        :Portable Document Format (PDF) to Portable Pixmap (PPM) converter (version 3.03)
+x86_64-linux-gnu-strip (1):Discard symbols from object files.
+pnmtofits (1)       :convert a portable anymap into FITS format
+chrt (1)            :manipulate the real-time attributes of a process
+foomatic-ppdfile (1):Generate a PPD file for a given printer/driver combo
+t1mac (1)           :translate a PFA or PFB PostScript Type 1 font into Macintosh format
+rawtoppm (1)        :convert raw RGB bytes into a portable pixmap
+rvlc (1)            :the VLC media player
+pbmtextps (1)       :render text into a bitmap via postscript
+rfcomm (1)          :RFCOMM configuration utility
+chattr (1)          :change file attributes on a Linux file system
+interdiff (1)       :show differences between two diff files
+pdftops (1)         :Portable Document Format (PDF) to PostScript converter (version 3.03)
+xfce4-terminal (1)  :A Terminal emulator for X
+dpkg-parsechangelog (1):parse Debian changelog files
+pip2 (1)            :A tool for installing and managing Python packages
+sensible-editor (1) :sensible editing, paging, and web browsing
+dotlockfile (1)     :Utility to manage lockfiles
+chage (1)           :change user password expiry information
+foomatic-perl-data (1):generate Perl data structures from XML
+eqn (1)             :format equations for troff or MathML
+lspci (8)           :list all PCI devices
+tty (4)             :controlling terminal
+tty (1)             :print the file name of the terminal connected to standard input
+cpan5.24-x86_64-linux-gnu (1):easily interact with CPAN from the command line
+foo2xqx (1)         :Convert Ghostscript pbmraw into a XQX printer stream
+file (1)            :determine file type
+python3.5 (1)       :an interpreted, interactive, object-oriented programming language
+bootctl (1)         :Control the firmware and boot manager settings
+busctl (1)          :Introspect the bus
+cvt (1)             :calculate VESA CVT mode lines
+update-gconf-defaults (8):generate GConf defaults shipped in Debian packages
+zdump (8)           :timezone dumper
+lp (4)              :line printer devices
+lp (1)              :print files
+dh_installmanpages (1):old-style man page installer (deprecated)
+rev (1)             :reverse lines characterwise
+xvinfo (1)          :Print out X-Video extension adaptor information
+xeyes (1)           :a follow the mouse X demo
+chcon (1)           :change file security context
+systemd-path (1)    :List and query system and user paths
+perf (1)            :performance analysis tools for Linux
+sort (1)            :sort lines of text files
+pnmfile (1)         :describe a portable anymap
+querybts (1)        :view outstanding bug reports on a debbugs server
+ppmshift (1)        :shift lines of a portable pixmap left or right by a random amount
+symcryptrun (1)     :Call a simple symmetric encryption tool
+pbmtoicon (1)       :convert a portable bitmap into a Sun icon
+dehtmldiff (1)      :get usable diff from an HTML page
+xdg-user-dirs-update (1):Update XDG user dir configuration
+glxinfo (1)         :show information about the GLX implementation
+libnetcfg (1)       :configure libnet
+lxqt-runner (1)     :Application runner module of LXQt, the Lightweight Desktop Environment
+hpijs (1)           :HP IJS server for the GhostScript IJS client driver
+animate-im6.q16 (1) :animates an image or image sequence on any X server.
+tzselect (8)        :select a timezone
+tzselect (1)        :view timezones
+localedef (1)       :compile locale definition files
+traceroute.db (1)   :print the route packets trace to network host
+imgtoppm (1)        :convert an Img-whatnot file into a portable pixmap
+pnmdepth (1)        :change the maxval in a portable anymap
+pnmtorast (1)       :convert a portable pixmap into a Sun rasterfile
+ps2pdfwr (1)        :Convert PostScript to PDF without specifying CompatibilityLevel, using ghostscript
+msgexec (1)         :process translations of message catalog
+mogrify-im6.q16 (1) :resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. Mogrify overwrites the original image file, wh...
+dh_movefiles (1)    :move files out of debian/tmp into subpackages
+aclocal-1.15 (1)    :manual page for aclocal 1.15
+dircolors (1)       :color setup for ls
+UPower (7)          :System-wide Power Management
+upower (1)          :UPower command line tool
+systemd-resolve (1) :Resolve domain names, IPV4 and IPv6 addresses, DNS resource records, and services
+thunar-volman (1)   :controls configuration of thunar's removable media
+foomatic-combo-xml (1):<put a short description here>
+mimeopen (1p)       :Open files by mimetype
+pnm2ppa (1)         :convert portable anymap (PNM) images to HP's PPA printer format.
+dm-tool (1)         :a tool to control the display manager
+x86_64-linux-gnu-gprof (1):display call graph profile data
+import-im6.q16 (1)  :saves any visible window on an X server and outputs it as an image file. You can capture a single window, the entire screen, or any rectangul...
+cmuwmtopbm (1)      :convert a CMU window manager bitmap into a portable bitmap
+lxqt-leave (1)      :Dialog to easily select logout, reboot, shutdown, suspend, hibernate, and lock screen
+mkfifo (1)          :make FIFOs (named pipes)
+mkfifo (3)          :make a FIFO special file (a named pipe)
+ndg_httpclient (1)  :enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
+brushtopbm (1)      :convert a doodle brush file into a portable bitmap
+xssstate (1)        :display X screensaver state
+tail (1)            :output the last part of files
+mesg (1)            :display (or do not display) messages from other users
+dpkg-vendor (1)     :queries information about distribution vendors
+pbmto10x (1)        :convert a portable bitmap into Gemini 10X printer graphics
+setkeycodes (8)     :load kernel scancode-to-keycode mapping table entries
+f2py2.7 (1)         :Fortran to Python interface generator
+ppmqvga (1)         :8 plane quantization
+py3compile (1)      :byte compile Python 3 source files
+thunar-settings (1) :display thunar(1) preferences dialog
+pbmtonokia (1)      :convert a portable bitmap to Nokia Smart Messaging Formats
+curl (1)            :transfer a URL
+msgcat (1)          :combines several message catalogs
+oclock (1)          :round X clock
+mgrtopbm (1)        :convert a MGR bitmap into a portable bitmap
+gacutil (1)         :Global Assembly Cache management utility.
+gipddecode (1)      :Decode a GIPD stream into human readable form.
+dh_autotools-dev_restoreconfig (1):restore config.sub and config.guess
+systemd-cat (1)     :Connect a pipeline or program's output with the journal
+evemu-describe (1)  :print information and events from an input device
+anytopnm (1)        :attempt to convert an unknown type of image file to a portable anymap
+xzdiff (1)          :compare compressed files
+foo2zjs-wrapper (1) :Convert Postscript into a ZJS printer stream
+alsabat (1)         :command-line sound tester for ALSA sound card driver
+factor (1)          :factor numbers
+gettextize (1)      :install or upgrade gettext infrastructure
+xlogo (1)           :X Window System logo
+xfce4-session (1)   :Starts up the Xfce Desktop Environment
+gksu-properties (1) :Configure the behaviour of gksu
+who (1)             :show who is logged on
+ppdhtml (1)         :cups html summary generator (deprecated)
+screen (1)          :screen manager with VT100/ANSI terminal emulation
+shuf (1)            :generate random permutations
+pnmtoxwd (1)        :convert a portable anymap into an X11 window dump
+arecordmidi (1)     :record Standard MIDI Files
+wmname (1)          :prints/sets window manager name
+xdg-desktop-icon (1):command line tool for (un)installing icons to the desktop
+xfburn (1)          :Simple CD/DVD burning tool
+galternatives (1)   :A front-end to the update-alternatives
+skill (1)           :send a signal or report process status
+usb-devices (1)     :print USB device details
+amixer (1)          :command-line mixer for ALSA soundcard driver
+pbmtomgr (1)        :convert a portable bitmap into a MGR bitmap
+nsupdate (1)        :Dynamic DNS update utility
+ckbcomp (1)         :compile a XKB keyboard description to a keymap suitable for loadkeys or kbdcontrol
+autoconf (1)        :Generate configuration scripts
+gsettings-schema-convert (1):GConf to GSettings schema conversion
+piconv (1)          :- iconv(1), reinvented in perl
+kpackagetool5 (1)   :Install, list, remove Plasma packages
+xfce4-keyboard-settings (1):Keyboard settings for Xfce
+pbmtomda (1)        :convert a portable bitmap to a Microdesign .mda
+visual-regexp (1)   :program to visualise and debug regular expressions
+vmstat (8)          :Report virtual memory statistics
+sha384sum (1)       :compute and check SHA384 message digest
+pasuspender (1)     :Temporarily suspend PulseAudio
+troff (1)           :the troff processor of the groff text formatting system
+debconf-set-selections (1):insert new values into the debconf database
+foo2zjs-pstops (1)  :Add PS code for foo2*-wrapper
+ppdmerge (1)        :merge ppd files (deprecated)
+plog (1)            :starts up, shuts down or lists the log of PPP connections
+evince-previewer (1):show a printing preview of PostScript and PDF documents
+tz_convert (1)      :Timezone converter from operating system tz format into libical format used by Orage and several other calander tools.
+f2py (1)            :Fortran to Python interface generator
+nautilus (1)        :a file manager for GNOME
+pcmanfm-qt (1)      :A lightweight Qt-based file manager for X Window.
+systemd-cgls (1)    :Recursively show control group contents
+setarch (8)         :change reported architecture in new program environment and set personality flags
+ul (1)              :do underlining
+editres (1)         :a dynamic resource editor for X Toolkit applications
+bsd-write (1)       :send a message to another user
+addpart (8)         :tell the kernel about the existence of a partition
+grub-mkimage (1)    :make a bootable image of GRUB
+unexpand (1)        :convert spaces to tabs
+sha512sum (1)       :compute and check SHA512 message digest
+hex2hcd (1)         :firmware converter
+Thunar (1)          :File Manager for the Xfce Desktop Environment
+thunar (1)          :File Manager for the Xfce Desktop Environment
+ps2ps (1)           :Ghostscript PostScript "distiller"
+dpkg-deb (1)        :Debian package archive (.deb) manipulation tool
+dh_auto_test (1)    :automatically runs a package's test suites
+pdfseparate (1)     :Portable Document Format (PDF) page extractor
+gemtopnm (1)        :convert a GEM .img file into a portable anymap
+xprop (1)           :property displayer for X
+poff (1)            :starts up, shuts down or lists the log of PPP connections
+unlink (1)          :call the unlink function to remove the specified file
+unlink (2)          :delete a name and possibly the file it refers to
+lprm (1)            :cancel print jobs
+linux-version (1)   :operate on Linux kernel version strings
+ppmntsc (1)         :make a portable pixmap look like taken from an American TV
+colrm (1)           :remove columns from a file
+lxqt-policykit-agent (1):Polkit agent for LXQt: the faster and lighter QT Desktop Environment
+pnmscale (1)        :scale a portable anymap
+debconf-communicate (1):communicate with debconf
+caja (1)            :The MATE File Manager
+seq (1)             :print a sequence of numbers
+printerbanner (1)   :print large banner on printer
+gamma4scanimage (1) :create a gamma table for scanimage
+lsns (8)            :list namespaces
+youtube-dl (1)      :download videos from youtube.com or other video platforms
+pnmtojpeg (1)       :convert PNM image to a JFIF ("JPEG") image
+udisksctl (1)       :The udisks command line tool
+xev (1)             :print contents of X events
+icombine (1)        :Interactive spelling checking
+ppmtoilbm (1)       :convert a portable pixmap into an ILBM file
+cut (1)             :remove sections from each line of files
+getopt (1)          :parse command options (enhanced)
+getopt (3)          :Parse command-line options
+lwp-dump (1p)       :See what headers and content is returned for a URL
+dh_installexamples (1):install example files into package build directories
+pbmtoepsi (1)       :convert a portable bitmap into an encapsulated PostScript style preview bitmap
+hipercdecode (1)    :Decode a HIPERC stream into human readable form.
+ppmquantall (1)     :run ppmquant on a bunch of files all at once, so they share a common colormap
+ppmtoleaf (1)       :convert portable pixmap to Interleaf image format
+alsamixer (1)       :soundcard mixer for ALSA soundcard driver, with ncurses interface
+getent (1)          :get entries from Name Service Switch libraries
+msgcmp (1)          :compare message catalog and template
+xfce4-power-manager-settings (1):Settings dialog for the Xfce 4 Power manager
+cd-create-profile (1):Color Manager Profile Creation Tool
+quodlibet (1)       :audio library manager and player
+cjet (1)            :converts HP PCL to Canon CaPSL format
+splitfont (1)       :extract characters from an ISO-type font.
+cpufreq-info (1)    :Utility to retrieve cpufreq kernel information
+aplaymidi (1)       :play Standard MIDI Files
+pnmtopalm (1)       :convert a portable anymap into a Palm pixmap
+realpath (1)        :print the resolved path
+realpath (3)        :return the canonicalized absolute pathname
+vlc (1)             :the VLC media player
+pod2html (1)        :convert .pod files to .html files
+update-alternatives (1):maintain symbolic links determining default commands
+dh_installlogrotate (1):install logrotate config files
+foo2hiperc-wrapper (1):Convert Postscript into a HIPERC printer stream
+arm2hpdl (1)        :Add HP download header/trailer to an ARM ELF binary.
+run-with-aspell (1) :script to help use GNU Aspell as an ispell replacement
+xinput (1)          :utility to configure and test X input devices
+cjpeg (1)           :compress an image file to a JPEG file
+mid3v2 (1)          :audio tag editor similar to 'id3v2'
+nvlc (1)            :the VLC media player
+pnmgamma (1)        :perform gamma correction on a portable anymap
+dh_gconf (1)        :install GConf defaults files and register schemas
+pbmpage (1)         :create a one page test pattern for printing
+mkfontscale (1)     :create an index of scalable font files for X
+perlivp (1)         :Perl Installation Verification Procedure
+perl5.24.1 (1)      :The Perl 5 language interpreter
+wrjpgcom (1)        :insert text comments into a JPEG file
+gtk-builder-tool (1):GtkBuilder file utility
+stterm (1)          :suckless tools terminal aka simple terminal
+xfdesktop (1)       :The Xfce 4 Desktop Environment's desktop manager
+gdbus (1)           :Tool for working with D-Bus objects
+ssh-copy-id (1)     :use locally available keys to authorise logins on a remote machine
+system-config-printer-applet (1):print job manager
+dpkg-name (1)       :rename Debian packages to full package names
+7zr (1)             :A file archiver with high compression ratio format
+c89-gcc (1)         :ANSI (1989) C compiler
+neqn (1)            :format equations for ascii output
+git-upload-pack (1) :Send objects packed back to git-fetch-pack
+ppmflash (1)        :brighten a picture up to complete white-out
+t1asm (1)           :assemble PostScript Type 1 font
+icu-config (1)      :output ICU build options
+tclsh8.6 (1)        :Simple shell containing Tcl interpreter
+autom4te (1)        :Generate files and scripts thanks to M4
+foo2qpdl (1)        :Convert Ghostscript pbmraw or bitcmyk format into a QPDL printer stream
+dh_ucf (1)          :register configuration files with ucf
+python2.7 (1)       :an interpreted, interactive, object-oriented programming language
+xlsatoms (1)        :list interned atoms defined on server
+dh_update_autotools_config (1):Update autotools config files
+dpkg-query (1)      :a tool to query the dpkg database
+xfce4-dict (1)      :a client program to query different dictionaries
+audacious (1)       :an advanced audio player.
+pnmhistmap (1)      :draw a histogram for a PGM or PPM file
+pnmnorm (1)         :normalize the contrast in a Netbpm image
+diff3 (1)           :compare three files line by line
+xfontsel (1)        :point and click selection of X11 font names
+dh_icons (1)        :Update caches of Freedesktop icons
+pbmtoptx (1)        :convert a portable bitmap into Printronix printer graphics
+recode-sr-latin (1) :convert Serbian text from Cyrillic to Latin script
+xfce4-display-settings (1):Display settings for Xfce
+pactl (1)           :Control a running PulseAudio sound server
+lsattr (1)          :list file attributes on a Linux second extended file system
+po2debconf (1)      :merge master templates file and PO files
+evince-thumbnailer (1):create png thumbnails from PostScript and PDF documents
+xpmtoppm (1)        :convert an X11 pixmap into a portable pixmap
+updatedb.findutils (1):update a file name database
+cpan (1)            :easily interact with CPAN from the command line
+sensible-pager (1)  :sensible editing, paging, and web browsing
+tgatoppm (1)        :convert TrueVision Targa file into a portable pixmap
+dh_systemd_start (1):start/stop/restart systemd unit files
+chardetect3 (1)     :universal character encoding detector
+dh_installpam (1)   :install pam support files
+tic (1)             :the terminfo entry-description compiler
+pstruct (1)         :Dump C structures as generated from "cc:g:S" stabs
+ppmdist (1)         :simplistic grayscale assignment for machine generated, color images
+spd-conf (1)        :A simple tool for basic configuration of Speech Dispatcher and problem diagnostics
+passwd (1)          :change user password
+passwd (1ssl)       :compute password hashes
+passwd (5)          :the password file
+xxd (1)             :make a hexdump or do the reverse.
+mtvtoppm (1)        :convert output from the MTV or PRT ray tracers into a portable pixmap
+xload (1)           :system load average display for X
+procinfo (8)        :display system statistics gathered from /proc
+gconftool-2 (1)     :GNOME configuration tool
+buildhash (1)       :Interactive spelling checking
+lslocks (8)         :list local system locks
+spctoppm (1)        :convert an Atari compressed Spectrum file into a portable pixmap
+chardetect (1)      :universal character encoding detector
+pinentry-curses (1) :PIN or pass-phrase entry dialog for GnuPG
+aconnect (1)        :ALSA sequencer connection manager
+dmenu_run (1)       :dynamic menu
+caja-file-management-properties (1):Caja File Management Preferences
+gpgconf (1)         :Modify .gnupg home directories
+ppmtopuzz (1)       :convert a portable pixmap into an X11 "puzzle" file
+dirmngr (8)         :CRL and OCSP daemon
+ptx (1)             :produce a permuted index of file contents
+dpkg-buildflags (1) :returns build flags to use during package build
+stest (1)           :filter a list of files by properties
+x86_64-linux-gnu-as (1):the portable GNU assembler.
+pycompile (1)       :byte compile Python source files
+x86_64-linux-gnu-gcc-nm-6 (1):a wrapper around nm adding the:plugin option
+colcrt (1)          :filter nroff output for CRT previewing
+start-pulseaudio-x11 (1):PulseAudio Sound Server X11 Startup Script
+jpgicc (1)          :little cms ICC profile applier for JPEG.
+dmenu (1)           :dynamic menu
+host (1)            :DNS lookup utility
+apt-extracttemplates (1):Utility to extract debconf config and templates from Debian packages
+pkcheck (1)         :Check whether a process is authorized
+whatis (1)          :display one-line manual page descriptions
+exo-desktop-item-edit (1):Create icons on the desktop
+dpkg-distaddfile (1):add entries to debian/files
+split (1)           :split a file into pieces
+pbmtopsg3 (1)       :convert PBM images to Postscript with G3 fax compression
+pnmtopng (1)        :convert a portable anymap into a Portable Network Graphics file
+pstopnm (1)         :convert a PostScript file into a portable anymap
+2to3-3.5 (1)        :Python2 to Python3 converter
+resizecons (8)      :change kernel idea of the console size
+gouldtoppm (1)      :convert Gould scanner file into a portable pixmap
+unshare (1)         :run program with some namespaces unshared from parent
+unshare (2)         :disassociate parts of the process execution context
+pon (1)             :starts up, shuts down or lists the log of PPP connections
+xbrlapi (1)         :X11 BrlAPI helper for Linux/Unix
+pnmtofiasco (1)     :Convert a portable anymap to FIASCO compressed file
+dh_builddeb (1)     :build Debian binary packages
+prtstat (1)         :print statistics of a process
+ppmtomap (1)        :extract all colors from a portable pixmap
+jpegtran (1)        :lossless transformation of JPEG files
+rgrep (1)           :print lines matching a pattern
+ppmquant (1)        :quantize the colors in a portable pixmap down to a specified number
+mid3iconv (1)       :convert ID3 tag encodings
+7za (1)             :A file archiver with high compression ratio format
+mate-about (1)      :Learn more about MATE
+pinky (1)           :lightweight finger
+fitstopnm (1)       :convert a FITS file into a portable anymap
+localc (1)          :LibreOffice office suite
+lxqt-openssh-askpass (1):Password access over ssh module of LXQt: the faster and lighter Qt Desktop Environment
+clear_console (1)   :clear the console
+pnmflip (1)         :perform one or more flip operations on a portable anymap
+nsenter (1)         :run program with namespaces of other processes
+l2test (1)          :L2CAP testing
+xfce4-mouse-settings (1):Mouse settings for Xfce
+json_pp (1)         :JSON::PP command utility
+startlxqt (1)       :script to initialize and launch LXQt sessions
+pbmreduce (1)       :read a portable bitmap and reduce it N times
+debconf-escape (1)  :helper when working with debconf's escape capability
+gobject-query (1)   :display a tree of types
+ppmtompeg (1)       :encodes MPEG-1 bitstreams
+pbmtogo (1)         :convert a portable bitmap into compressed GraphOn graphics
+bashbug (1)         :report a bug in bash
+mandb (8)           :create or update the manual page index caches
+dpkg-genchanges (1) :generate Debian .changes files
+cpack (1)           :CPack Command-Line Reference
+precat (1)          :prefix delta compressor for Aspell
+ffmpeg (1)          :ffmpeg video converter
+kernel-install (8)  :Add and remove kernel and initramfs images to and from /boot
+l2ping (1)          :Send L2CAP echo request and receive answer
+fc-list (1)         :list available fonts
+lspgpot (1)         :extracts the ownertrust values from PGP keyrings and list them in GnuPG ownertrust format.
+ppdpo (1)           :ppd message catalog generator (deprecated)
+rename.ul (1)       :rename files
+conjure-im6.q16 (1) :interprets and executes scripts written in the Magick Scripting Language (MSL).
+xfce4-appearance-settings (1):Appearance settings for Xfce
+leaftoppm (1)       :convert Interleaf image format to a portable anymap
+line (1)            :read one line
+ximtoppm (1)        :convert an Xim file into a portable pixmap
+autoheader (1)      :Create a template header for configure
+dbus-cleanup-sockets (1):clean up leftover sockets in a directory
+ps2pdf14 (1)        :Convert PostScript to PDF 1.4 (Acrobat 5-and-later compatible) using ghostscript
+lispmtopgm (1)      :convert a Lisp Machine bitmap file into pgm format
+lnstat (8)          :unified linux network statistics
+preunzip (1)        :prefix delta compressor for Aspell
+ppmtosixel (1)      :convert a portable pixmap into DEC sixel format
+colormgr (1)        :Color Manager Testing Tool
+script (1)          :make typescript of terminal session
+dc (1)              :an arbitrary precision calculator
+pi1toppm (1)        :convert an Atari Degas .pi1 into a portable pixmap
+pkmon (1)           :PackageKit console client
+wordview (1)        :displays text contained in MS-Word file in X window
+gpg (1)             :OpenPGP encryption and signing tool
+wall (1)            :write a message to all users
+pgmramp (1)         :generate a grayscale ramp
+linkicc (1)         :little cms device link generator.
+printer-profile (1) :Profile using X-Rite ColorMunki and Argyll CMS
+git (1)             :the stupid content tracker
+Git (3pm)           :Perl interface to the Git version control system
+pnmmargin (1)       :add a border to a portable anymap
+gencnval (1)        :compile the converters aliases file
+pstree (1)          :display a tree of processes
+dh_installifupdown (1):install if-up and if-down hooks
+bdftruncate (1)     :generate truncated BDF font from ISO 10646-1-encoded BDF font
+ipcrm (1)           :remove certain IPC resources
+globaltime (1)      :International multiclock timeconverter for the Xfce Desktop Environment. It is part of Orage
+debconf-show (1)    :query the debconf database
+dh_installdocs (1)  :install documentation into package build directories
+intltool-prepare (8):Prepare software to make use of intltool
+mapscrn (8)         :load screen output mapping table
+pdftotext (1)       :Portable Document Format (PDF) to text converter (version 3.03)
+last (1)            :show a listing of last logged in users
+pbmtogem (1)        :convert a portable bitmap into a GEM .img file
+bsd-mailx (1)       :send and receive mail
+setpci (8)          :configure PCI devices
+pbmtext (1)         :render text into a bitmap
+xfce4-settings-manager (1):Settings manager for Xfce
+ppmtogif (1)        :convert a portable pixmap into a GIF file
+xmodmap (1)         :utility for modifying keymaps and pointer button mappings in X
+svlc (1)            :the VLC media player
+gs (1)              :Ghostscript (PostScript and PDF language interpreter and previewer)
+surf (1)            :simple webkit-based browser
+xlsclients (1)      :list client applications running on a display
+lslogins (1)        :display information about known users in the system
+p11-kit (8)         :Tool for operating on configured PKCS#11 modules
+lexgrog (1)         :parse header information in man pages
+foo2oak (1)         :Convert Ghostscript pbmraw, pgmraw or bitcmyk format into an OAKT printer stream
+msggrep (1)         :pattern matching on message catalog
+xfwm4-tweaks-settings (1):Advanced settings for Xfce window manager
+pgmtexture (1)      :calculate textural features on a portable graymap
+yelp (1)            :browse system documentation
+file2brl (1)        :manual page for file2brl (liblouisutdml) 2.6.0
+routef (8)          :flush routes
+sane-find-scanner (1):find SCSI and USB scanners and their device files
+atobm (1)           :bitmap editor and converter utilities for the X Window System
+ppmmake (1)         :create a pixmap of a specified size and color
+pf2afm (1)          :Make an AFM file from Postscript (PFB/PFA/PFM) font files using ghostscript
+faillog (8)         :display faillog records or set login failure limits
+faillog (5)         :login failure logging file
+pygettext3.5 (1)    :Python equivalent of xgettext(1)
+dirmngr-client (1)  :Tool to access the Dirmngr services
+gsdj (1)            :Format and print text for DeskJet printer using ghostscript
+pic (1)             :compile pictures for troff or TeX
+xvminitoppm (1)     :convert a XV "thumbnail" picture to PPM
+fixcvsdiff (1)      :fix problematic diff files
+xfconf-query (1)    :Command line utility for xfconf system
+netstat-nat (1)     :Show the natted connections on a linux iptable firewall
+iceauth (1)         :ICE authority file utility
+gsnd (1)            :Run ghostscript (PostScript and PDF engine) without display
+x86_64-linux-gnu-gcc-ar-6 (1):a wrapper around ar adding the:plugin option
+grub-editenv (1)    :edit GRUB environment block
+apt-cdrom (8)       :APT CD-ROM management utility
+moggsplit (1)       :split Ogg logical streams
+ssh-add (1)         :adds private key identities to the authentication agent
+debconf-apt-progress (1):install packages using debconf to display a progress bar
+ssh-keygen (1)      :authentication key generation, management and conversion
+c2050 (1)           :Ghostscript bitcymk to Lexmark 2050 Series protocol translator
+gtester (1)         :test running utility
+pbmtoepson (1)      :convert a portable bitmap into Epson printer graphics
+grub-render-label (1):generate a .disk_label for Apple Macs.
+debconf (1)         :run a debconf-using program
+ppmcie (1)          :draw a CIE color chart as a PPM image
+ppmrelief (1)       :run a Laplacian relief filter on a portable pixmap
+pulseaudio (1)      :The PulseAudio Sound System
+qtchooser (1)       :a wrapper used to select between Qt development binary versions
+dh_numpy (1)        :adds Numpy depends to python:Depends substvar
+lsdev (8)           :display information about installed hardware
+patch (1)           :apply a diff file to an original
+cupstestppd (1)     :test conformance of ppd files
+xclipboard (1)      :X clipboard client
+xinit (1)           :X Window System initializer
+truncate (1)        :shrink or extend the size of a file to the specified size
+truncate (2)        :truncate a file to a specified length
+pcxtoppm (1)        :convert a PCX file into a portable pixmap
+htop (1)            :interactive process viewer
+pdf2ps (1)          :Ghostscript PDF to PostScript translator
+pbmtolj (1)         :convert a portable bitmap into HP LaserJet format
+dh_prep (1)         :perform cleanups in preparation for building a binary package
+kdeinit5 (8)        :Launcher for applications built with kdeinit support, and for KIO slaves.
+swarp (1)           :simple pointer warp
+xscreensaver-getimage-video (1):put a video frame on the root window
+sprof (1)           :read and display shared object profiling data
+faked-sysv (1)      :daemon that remembers fake ownership/permissions of files manipulated by fakeroot processes.
+helpztags (1)       :generate the help tags file for directory
+pkg-config (1)      :Return metainformation about installed libraries
+lsusb (8)           :list USB devices
+ssh-argv0 (1)       :replaces the old ssh command-name as hostname handling
+notify-send (1)     :a program to send desktop notifications
+dmenu_path (1)      :find and cache a list of executables
+wbmptopbm (1)       :convert a wireless bitmap (wbmp) file to a portable bitmap (pbm)
+genbrk (1)          :Compiles ICU break iteration rules source files into binary data files
+xfdesktop-settings (1):Desktop settings for Xfce
+xscreensaver-getimage (1):put some randomly-selected image on the root window
+fold (1)            :wrap each input line to fit in specified width
+x86_64-linux-gnu-python2.7-config (1):output build options for python C/C++ extensions or embedding
+xmlcatalog (1)      :Command line tool to parse and manipulate XML or SGML catalog files.
+pnmquant (1)        :quantize the colors in a Netpbm image to a smaller set
+libtoolize (1)      :Prepare a package to use libtool
+xfwm4 (1)           :Window manager for Xfce
+xfce4-sensors (1)   :Sensors application for xfce4
+xrdb (1)            :X server resource database utility
+xls2csv (1)         :reads MS-Excel file and puts its content as comma-separated data on standard output
+paperconf (1)       :print paper configuration information
+xkbvleds (1)        :XKB extension user utility
+linux-update-symlinks (1):maintain symlinks to default kernel and initramfs
+lastlog (8)         :reports the most recent login of all users or of a given user
+hbpldecode (1)      :Decode a HBPL stream into human readable form.
+grub-mknetdir (1)   :prepare a GRUB netboot directory.
+xfce4-popup-whiskermenu (1):shows Whisker Menu
+discover-config (1) :config script
+ppmdim (1)          :dim a portable pixmap down to total blackness
+xscreensaver-text (1):prints some text to stdout, for use by screen savers.
+fakeroot-sysv (1)   :run a command in an environment faking root privileges for file manipulation
+kded5 (8)           :KDE daemon:triggers Sycoca database updates when needed.
+lxqt-config-session (1):Application settings of LXQt: The Lightweight Qt Desktop Environment
+xfce4-mime-settings (1):MIME settings for Xfce
+cksum (1)           :checksum and count the bytes in a file
+encguess (1)        :guess character encodings of files
+wftopfa (1)         :Convert a Wadalab base font to Postscript .PFA (or .PFB) format using ghostscript
+pygettext2.7 (1)    :Python equivalent of xgettext(1)
+apt-key (8)         :APT key management utility
+m4 (1)              :macro processor
+freetype-config (1) :Get information about a libfreetype installation
+mousepad (1)        :simple text editor for Xfce
+xz (1)              :Compress or decompress .xz and .lzma files
+xcmsdb (1)          :Device Color Characterization utility for X Color Management System
+gpg-connect-agent (1):Communicate with a running agent
+watchgnupg (1)      :Read and print logs from a socket
+pnmsmooth (1)       :smooth out an image
+dh_installppp (1)   :install ppp ip-up and ip-down files
+qlipper (1)         :Lightweight and cross-platform clipboard history applet
+apt-ftparchive (1)  :Utility to generate index files
+lxqt-config (1)     :LXQt Settings Center for all related modules and applications
+dh_installlogcheck (1):install logcheck rulefiles into etc/logcheck/
+xkbprint (1)        :print an XKB keyboard description
+verve-focus (1)     :Focus the xfce4-verve-plugin input area
+pbmtoascii (1)      :convert a portable bitmap into ASCII graphics
+dpkg-split (1)      :Debian package archive split/join tool
+psidtopgm (1)       :convert PostScript "image" data into a portable graymap
+x86_64-linux-gnu-nm (1):list symbols from object files
+expiry (1)          :check and enforce password expiration policy
+gksu (1)            :GTK+ frontend for su and sudo
+find (1)            :search for files in a directory hierarchy
+sftp (1)            :secure file transfer program
+grub-mkpasswd-pbkdf2 (1):generate hashed password for GRUB
+renice (1)          :alter priority of running processes
+gtf (1)             :calculate VESA GTF mode lines
+pnmtotiff (1)       :convert a portable anymap into a TIFF file
+make-first-existing-target (1):runs make on one of several targets
+dpkg-shlibdeps (1)  :generate shared library substvar dependencies
+identify-im6.q16 (1):describes the format and characteristics of one or more image files.
+pydoc2.7 (1)        :the Python documentation tool
+rstartd (1)         :a sample implementation of a Remote Start rsh helper
+pjtoppm (1)         :convert an HP PaintJet file to a portable pixmap
+join (1)            :join lines of two files on a common field
+tee (1)             :read from standard input and write to standard output and files
+tee (2)             :duplicating pipe content
+diffstat (1)        :make histogram from diff-output
+socklist (8)        :display list of open sockets
+qpdldecode (1)      :Decode a QPDL stream into human readable form.
+pkttyagent (1)      :Textual authentication helper
+intltool-update (8) :updates PO template file and merge translations with it
+lpq (1)             :show printer queue status
+dpkg-genbuildinfo (1):generate Debian .buildinfo files
+traceroute-nanog (1):print the route packets trace to network host
+ffplay (1)          :FFplay media player
+systemd-mount (1)   :Establish a mount or auto-mount point transiently
+dh_installchangelogs (1):install changelogs into package build directories
+pldd (1)            :display dynamic shared objects linked into a process
+look (1)            :display lines beginning with a given string
+appres (1)          :list X application resource database
+dh_autoreconf_clean (1):Clean all changes made by dh_autoreconf
+setmetamode (1)     :define the keyboard meta key handling
+apt-mark (8)        :show, set and unset various settings for a package
+perlthanks (1)      :how to submit bug reports on Perl
+msexpand (1)        :decompress data compressed using mscompress(1) or COMPRESS.EXE
+ppmtopgm (1)        :convert a portable pixmap into a portable graymap
+lofromtemplate (1)  :LibreOffice office suite
+hciattach (1)       :attach serial devices via UART HCI to BlueZ stack
+sgitopnm (1)        :convert a SGI image file to a portable anymap
+glxdemo (1)         :a demonstration of the GLX functions
+x86_64-linux-gnu-ld.bfd (1):The GNU linker
+xdt-autogen (1)     :Run autotools on a Xfce source tarball
+grub-mkstandalone (1):make a memdisk-based GRUB image
+b2sum (1)           :compute and check BLAKE2 message digest
+dbus-send (1)       :Send a message to a message bus
+ptar (1)            :a tar-like program written in perl
+plasmapkg2 (1)      :Install, list, remove Plasma packages
+orage (1)           :Calendar for the Xfce Desktop Environment
+orca (1)            :a scriptable screen reader
+xmessage (1)        :display a message or query in a window (X-based /bin/echo)
+pydoc3.5 (1)        :the Python documentation tool
+xsetroot (1)        :root window parameter setting utility for X
+deb-systemd-invoke (1p):wrapper around systemctl, respecting policy-rc.d
+perl5.24-x86_64-linux-gnu (1):The Perl 5 language interpreter
+dh_install (1)      :install files into package build directories
+x86_64-linux-gnu-elfedit (1):Update the ELF header of ELF files.
+gslj (1)            :Format and print text for LaserJet printer using ghostscript
+xfce4-notifyd-config (1):configuration GUI for xfce4-notifyd
+dh_installemacsen (1):register an Emacs add on package
+w.procps (1)        :Show who is logged on and what they are doing.
+wpa_passphrase (8)  :Generate a WPA PSK from an ASCII passphrase for a SSID
+apt-config (8)      :APT Configuration Query program
+grog (1)            :guess options for a following groff command
+display-im6.q16 (1) :displays an image or image sequence on any X server.
+fonttosfnt (1)      :Wrap a bitmap font in a sfnt (TrueType) wrapper
+pg (1)              :browse pagewise through text files
+install-info (1)    :update info/dir entries
+bmptopnm (1)        :convert a BMP file into a portable anymap
+hcitool (1)         :configure Bluetooth connections
+python3.5m (1)      :an interpreted, interactive, object-oriented programming language
+grub-mklayout (1)   :generate a GRUB keyboard layout file
+grub-mkfont (1)     :make GRUB font files
+hostid (1)          :print the numeric identifier for the current host
+pbmtox10bm (1)      :convert a portable bitmap into an X10 bitmap
+systemd-cgtop (1)   :Show top control groups by their resource usage
+lft.db (1)          :print the route packets trace to network host
+sensible-browser (1):sensible editing, paging, and web browsing
+top (1)             :display Linux processes
+dh_installmodules (1):register kernel modules
+defmt-sh (1)        :a sample ispell deformatter for C, C++, and shell sources
+calibrate_ppa (8)   :pnm2ppa calibration tool
+msgfilter (1)       :edit translations of message catalog
+xwd (1)             :dump an image of an X window
+fakeroot-tcp (1)    :run a command in an environment faking root privileges for file manipulation
+aptitude-run-state-bundle (1):unpack an aptitude state bundle and invoke aptitude on it
+ispell-wrapper (1)  :smart wrapper for ispell
+apt-cache (8)       :query the APT cache
+dh_fixperms (1)     :fix permissions of files in package build directories
+c2ph (1)            :Dump C structures as generated from "cc:g:S" stabs
+pgrep (1)           :look up or signal processes based on name and other attributes
+x86_64-linux-gnu-dwp (1):The DWARF packaging utility
+systool (1)         :view system device information by bus, class, and topology
+yuvtoppm (1)        :convert Abekas YUV bytes into a portable pixmap
+column (1)          :columnate lists
+ps2pdf13 (1)        :Convert PostScript to PDF 1.3 (Acrobat 4-and-later compatible) using ghostscript
+xfce4-popup-places (22):quick access to folders, documents and removable media
+foo2slx (1)         :Convert Ghostscript pbmraw or bitcmyk format into a SLX printer stream
+zjsdecode (1)       :Decode a ZjStream into human readable form.
+openssl (1ssl)      :OpenSSL command line tool
+bdftopcf (1)        :convert X font from Bitmap Distribution Format to Portable Compiled Format
+fc-scan (1)         :scan font files or directories
+nice (1)            :run a program with modified scheduling priority
+nice (2)            :change process priority
+c99-gcc (1)         :ANSI (1999) C compiler
+dh_auto_clean (1)   :automatically cleans up after a build
+xkbevd (1)          :XKB event daemon
+sldtoppm (1)        :convert an AutoCAD slide file into a portable pixmap
+stdbuf (1)          :Run COMMAND, with modified buffering operations for its standard streams.
+lorder (1)          :list dependencies for object files
+mid3cp (1)          :copy ID3 tags
+icuinfo (1)         :Shows some basic info about the current ICU
+derb (1)            :disassemble a resource bundle
+montage-im6.q16 (1) :create a composite image by combining several separate images. The images are tiled on the composite image optionally adorned with a border, ...
+light-locker-command (1):controls light-locker
+sselp (1)           :simple X selection printer
+cpufreq-set (1)     :A small tool which allows to modify cpufreq settings.
+rctest (1)          :RFCOMM testing
+setlogcons (8)      :Send kernel messages to console N
+gdbus-codegen (1)   :D-Bus code and documentation generator
+pbmpscale (1)       :enlarge a portable bitmap with edge smoothing
+dh_installdebconf (1):install files used by debconf in package build directories
+xqxdecode (1)       :Decode a XQX stream into human readable form.
+pgmedge (1)         :edge-detect a portable graymap
+alsaloop (1)        :command-line PCM loopback
+pod2man (1)         :Convert POD data to formatted *roff input
+qt-faststart (1)    :utility for Quicktime files
+foomatic-configure (1):the main configuration program of the foomatic printing system.
+x86_64-linux-gnu-objdump (1):display information from object files.
+ppmshadow (1)       :add simulated shadows to a portable pixmap image
+hipstopgm (1)       :convert a HIPS file into a portable graymap
+c_rehash (1ssl)     :Create symbolic links to files named by the hash values
+evtest (1)          :Input device event monitor and query tool
+intltoolize (8)     :copy intltool related files to software package
+parsechangelog (1p) :parse Debian changelogs and output them in other formats
+xfwm4-workspace-settings (1):Workspace settings for Xfce window manager
+rasttopnm (1)       :convert a Sun rasterfile into a portable anymap
+lpstat (1)          :print cups status information
+dh_installdirs (1)  :create subdirectories in package build directories
+dpkg-divert (1)     :override a package's version of a file
+unsq (1)            :squeeze or unsqueeze a sorted word list
+dh_perl (1)         :calculates Perl dependencies and cleans up after MakeMaker
+pamstack (1)        :stack planes of multiple PAM images into one PAM image
+rediff (1)          :fix offsets and counts of a hand-edited diff
+ifnames (1)         :Extract CPP conditionals from a set of files
+xzgrep (1)          :search compressed files for a regular expression
+apt-get (8)         :APT package handling utility:- command-line interface
+exo-csource (1)     :C code generation utility for arbitrary data
+xdg-user-dir (1)    :Find an XDG user dir
+pnmsplit (1)        :split a multi-image portable anymap into multiple single-image files
+sdptool (1)         :control and interrogate SDP servers
+recountdiff (1)     :recompute patch counts and offsets
+thunar-volman-settings (1):controls configuration of thunar's removable media
+gpgsplit (1)        :Split an OpenPGP message into packets
+tbl (1)             :format tables for troff
+zipgrep (1)         :search files in a ZIP archive for lines matching a pattern
+enc2xs (1)          :- Perl Encode Module Generator
+pbmtozinc (1)       :convert a portable bitmap into a Zinc bitmap
+ppmtobmp (1)        :convert a portable pixmap into a BMP file
+ssid (1)            :simple setsid
+qps (1)             :Visual Process Manager
+pbmtomacp (1)       :convert a portable bitmap into a MacPaint file
+gpg-agent (1)       :Secret key management for GnuPG
+ppdc (1)            :cups ppd compiler (deprecated)
+free (1)            :Display amount of free and used memory in the system
+free (3)            :allocate and free dynamic memory
+gtk-update-icon-cache (1):Icon theme caching utility
+debconf-updatepo (1):update PO files about debconf templates
+grub-fstest (1)     :debug tool for GRUB filesystem drivers
+pgmslice (1)        :extract one line of pixel values out of a portable graymap
+rawtopgm (1)        :convert raw grayscale bytes into a portable graymap
+xfce4-about (1)     :About and Credits dialog for Xfce
+xrefresh (1)        :refresh all or part of an X screen
+xauth (1)           :X authority file utility
+ppmtoeyuv (1)       :convert a portable pixmap into a Berkeley YUV file
+pbmtobbnbg (1)      :convert a portable bitmap into BitGraph graphics
+dh_installman (1)   :install man pages into package build directories
+ppmspread (1)       :displace a portable pixmap's pixels by a random amount
+dh_perl_openssl (1) :add dependencies required for OpenSSL modules
+ppmhist (1)         :print a histogram of a portable pixmap
+podchecker (1)      :check the syntax of POD format documentation files
+ppmmix (1)          :blend together two portable pixmaps
+preconv (1)         :convert encoding of input files to something GNU troff understands
+yes (1)             :output a string repeatedly until killed
+debconf-copydb (1)  :copy a debconf database
+bluetoothctl (1)    :bluetooth control tool
+xclock (1)          :analog / digital clock for X
+xzless (1)          :view xz or lzma compressed (text) files
+test (1)            :check file types and compare values
+desktop-file-validate (1):Validate desktop entry files
+fiascotopnm (1)     :Convert compressed FIASCO image to PGM, or PPM
+dpkg (1)            :package manager for Debian
+Dpkg (3)            :module with core variables
+pgmkernel (1)       :generate a convolution kernel
+mutagen-pony (1)    :scan a collection of MP3 files
+autopoint (1)       :copies standard gettext infrastructure
+fc-match (1)        :match available fonts
+dpkg-buildpackage (1):build binary or source packages from sources
+sudo (8)            :execute a command as another user
+xargs (1)           :build and execute command lines from standard input
+operon (1)          :command line music tagger
+bluemoon (1)        :Bluemoon configuration utility
+eyuvtoppm (1)       :convert a Berkeley YUV file to a portable pixmap file
+sensors-conf-convert (8):sensors configuration conversion
+cd-fix-profile (1)  :Color Manager Testing Tool
+gsettings-data-convert (1):GConf to GSettings data migration
+splitdiff (1)       :separate out incremental patches
+install (1)         :copy files and set attributes
+dh_testdir (1)      :test directory before building Debian package
+pod2text (1)        :Convert POD data to formatted ASCII text
+make (1)            :GNU make utility to maintain groups of programs
+foomatic-printjob (1):manage printer jobs in a spooler-independent fashion
+pdfdetach (1)       :Portable Document Format (PDF) document embedded file extractor (version 3.03)
+xcursorgen (1)      :create an X cursor file from a collection of PNG images
+setsid (1)          :run a program in a new session
+setsid (2)          :creates a session and sets the process group ID
+infocmp (1)         :compare or print out terminfo descriptions
+report-hw (1)       :dump information on the system's hardware
+x86_64-linux-gnu-addr2line (1):convert addresses into file names and line numbers.
+bioradtopgm (1)     :convert a Biorad confocal file into a portable graymap
+fmt (1)             :simple optimal text formatter
+grub-mkrescue (1)   :make a GRUB rescue image
+lsof (8)            :list open files
+qrttoppm (1)        :convert output from the QRT ray tracer into a portable pixmap
+groups (1)          :print the groups a user is in
+jpegexiforient (1)  :reads or writes the Exif Orientation Tag
+instmodsh (1)       :A shell to examine installed modules
+grub-syslinux2cfg (1):transform syslinux config into grub.cfg
+intel-virtual-output (4):Utility for connecting the Integrated Intel GPU to discrete outputs
+pod2usage (1)       :print usage messages from embedded pod docs in files
+intltool-extract (8):generate header files which can be read by gettext
+g3topbm (1)         :convert a Group 3 fax file into a portable bitmap
+x86_64-linux-gnu-size (1):list section sizes and total size.
+ppmlabel (1)        :add text to a portable pixmap
+padsp (1)           :PulseAudio OSS Wrapper
+fc-pattern (1)      :parse and show pattern
+ppm3d (1)           :convert two portable pixmap into a red/blue 3d glasses pixmap
+dpkg-source (1)     :Debian source package (.dsc) manipulation tool
+dbus-uuidgen (1)    :Utility to generate UUIDs
+dh_md5sums (1)      :generate DEBIAN/md5sums file
+evince (1)          :GNOME document viewer
+t1unmac (1)         :translate a Mac PostScript Type 1 font into PFA or PFB format
+dh_installcatalogs (1):install and register SGML Catalogs
+apt-show-versions (1p):Lists available package versions with distribution
+sirtopnm (1)        :convert a Solitaire file into a portable anymap
+dpkg-checkbuilddeps (1):check build dependencies and conflicts
+funzip (1)          :filter for extracting from a ZIP archive in a pipe
+pdftocairo (1)      :Portable Document Format (PDF) to PNG/JPEG/TIFF/PDF/PS/EPS/SVG using cairo
+dh_lintian (1)      :install lintian override files into package build directories
+ppdi (1)            :import ppd files (deprecated)
+dpkg-maintscript-helper (1):works around known dpkg limitations in maintainer scripts
+dh_nativejava (1)   :compile jar files to native code and register them
+gatttool (1)        :tool for Bluetooth Low Energy device
+glib-genmarshal (1) :C code marshaller generation utility for GLib closures
+savelog (8)         :save a log file
+dh_usrlocal (1)     :migrate usr/local directories to maintainer scripts
+atktopbm (1)        :convert Andrew Toolkit raster object to portable bitmap
+uniq (1)            :report or omit repeated lines
+ppmtoacad (1)       :convert portable pixmap to AutoCAD database or slide
+tryaffix (1)        :Interactive spelling checking
+xdg-settings (1)    :get various settings from the desktop environment
+dh_installcron (1)  :install cron scripts into etc/cron.*
+dbus-monitor (1)    :debug probe to print message bus messages
+ciptool (1)         :Bluetooth Common ISDN Access Profile (CIP)
+crc32 (1)           :compute CRC-32 checksums for the given files
+splitvt (1)         :run two shells in a split window
+foo2slx-wrapper (1) :Convert Postscript into a SLX printer stream
+dig (1)             :DNS lookup utility
+dirname (1)         :strip last component from file name
+dirname (3)         :parse pathname components
+xwininfo (1)        :window information utility for X
+sotruss (1)         :trace shared library calls through PLT
+makeconv (1)        :compile a converter table
+pnmtoddif (1)       :Convert a portable anymap to DDIF format
+ptardiff (1)        :program that diffs an extracted archive against an unextracted one
+pnmhisteq (1)       :histogram equalise a portable anymap
+pgmenhance (1)      :edge-enhance a portable graymap
+dpkg-gensymbols (1) :generate symbols files (shared library dependency information)
+dh_installxfonts (1):register X fonts
+pnmpad (1)          :add borders to portable anymap
+xscreensaver-getimage-file (1):put a randomly-selected image on the root window
+qpdfview (1)        :tabbed document viewer
+eps2eps (1)         :Ghostscript PostScript "distiller"
+ico (1)             :animate an icosahedron or other polyhedron
+pnmnlfilt (1)       :non-linear filters: smooth, alpha trim mean, optimal estimation smoothing, edge enhancement.
+dh_gtkmodules (1)   :create Gtk module files for Gtk modules
+smproxy (1)         :Session Manager Proxy
+codepage (1)        :extract a codepage from an MSDOS codepage file
+aseqnet (1)         :ALSA sequencer connectors over network
+ppmtv (1)           :make a portable pixmap look like taken from an American TV
+sha256sum (1)       :compute and check SHA256 message digest
+xkbcomp (1)         :compile XKB keyboard description
+mcookie (1)         :generate magic cookies for xauth
+pkgdata (1)         :package data for use by ICU
+sessreg (1)         :manage utmpx/wtmpx entries for non-init clients
+pamdeinterlace (1)  :remove ever other row from a PAM/PNM image
+pnmcrop (1)         :crop a portable anymap
+catppt (1)          :reads MS-PowerPoint file and puts its content on standard output
+dh_installwm (1)    :register a window manager
+vlc-wrapper (1)     :a wrapper to drop privileges with VLC
+ppmforge (1)        :fractal forgeries of clouds, planets, and starry skies
+JxrEncApp (1)       :JPEG XR Encoder Utility
+glib-mkenums (1)    :C language enum description generation utility
+deb-systemd-helper (1p):subset of systemctl for machines not running systemd
+convert-im6.q16 (1) :convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.
+prezip-bin (1)      :prefix zip delta word list compressor/decompressor
+tac (1)             :concatenate and print files in reverse
+csplit (1)          :split a file into sections determined by context lines
+evemu-event (1)     :create a virtual input device and replay an event sequence
+qvlc (1)            :the VLC media player
+pbmtopgm (1)        :convert portable bitmap to portable graymap by averaging areas
+glib-gettextize (1) :gettext internationalization utility
+listres (1)         :list resources in widgets
+lwp-download (1p)   :Fetch large files from the web
+chsh (1)            :change login shell
+aspell-import (1)   :import old personal dictionaries into GNU Aspell
+gimp-console-2.8 (1):an image manipulation and paint program.
+caja-connect-server (1):Connect to Server dialog for Caja
+hexdump (1)         :ASCII, decimal, hexadecimal, octal dump
+expr (1)            :evaluate expressions
+setvtrgb (8)        :set the virtual terminal RGB colors
+setvtrgb (1)        :customize the console color map
+xmag (1)            :magnify parts of the screen
+link (1)            :call the link function to create a link to a file
+link (2)            :make a new name for a file
+foo2lava-wrapper (1):Convert Postscript into a LAVAFLOW or OPL printer stream
+tsort (1)           :perform topological sort
+run-mailcap (1)     :execute programs via entries in the mailcap file
+nl (1)              :number lines of files
+aptitude-create-state-bundle (1):bundle the current aptitude state
+sprop (1)           :simple X property utility
+manpath (1)         :determine search path for manual pages
+manpath (5)         :format of the /etc/manpath.config file
+dh_systemd_enable (1):enable/disable systemd unit files
+flock (1)           :manage locks from shell scripts
+flock (2)           :apply or remove an advisory lock on an open file
+perl (1)            :The Perl 5 language interpreter
+msgcomm (1)         :match two message catalogs
+ybmtopbm (1)        :convert a Bennet Yee "face" file into a portable bitmap
+msginit (1)         :initialize a message catalog
+col (1)             :filter reverse line feeds from input
+slock (1)           :simple X display locker
+gcc-ar-5 (1)        :a wrapper around ar adding the:plugin option
+xwud (1)            :image displayer for X
+mpris-proxy (1)     :Bluetooth mpris-proxy
+ppmtorgb3 (1)       :separate a portable pixmap into three portable graymaps
+ppmtopi1 (1)        :convert a portable pixmap into an Atari Degas .pi1 file
+ucs2any (1)         :generate BDF fonts containing subsets of ISO 10646-1 codepoints
+xfce4-settings-editor (1):Settings editor for Xfce
+ppmtoyuvsplit (1)   :convert a portable pixmap into 3 subsampled raw YUV files
+id (1)              :print real and effective user and group IDs
+uxterm (1)          :X terminal emulator for Unicode (UTF-8) environments
+xmllint (1)         :command line XML tool
+trust (1)           :Tool for operating on the trust policy store
+aptitude-curses (8) :high-level interface to the package manager
+pamoil (1)          :turn a PAM image into an oil painting
+x11perf (1)         :X11 server performance test program
+gsdj500 (1)         :Format and print text for DeskJet 500 BubbleJet using ghostscript
+aspell (1)          :interactive spell checker
+umax_pp (5)         :SANE backend for Umax Astra parallel port flatbed scanners
+nroff (1)           :emulate nroff command with groff
+xkbbell (1)         :XKB extension user utility
+XkbBell (3)         :Rings the bell on the default keyboard
+gtk-query-settings (1):Utility to print name and value of all GtkSettings properties
+evemu-device (1)    :create a virtual input device and replay an event sequence
+icontopbm (1)       :convert a Sun icon into a portable bitmap
+pnmarith (1)        :perform arithmetic on two portable anymaps
+grotty (1)          :groff driver for typewriter-like devices
+select-default-iwrap (1):Selects the user default ispell dictionary for use with ispell-wrapper
+gpgparsemail (1)    :Parse a mail message into an annotated format
+gucharmap (1)       :Unicode character picker and font browser
+uconv (1)           :convert data from one encoding to another
+pkaction (1)        :Get details about a registered action
+telnet.netkit (1)   :user interface to the TELNET protocol
+pnmshear (1)        :shear a portable anymap by some angle
+arch (1)            :print machine hardwar/usr/bin/xfce4-popup-windowmenu: nothing appropriate.
+/usr/bin/cert-sync: nothing appropriate.
+/usr/bin/player: nothing appropriate.
+/usr/bin/pilconvert: nothing appropriate.
+/usr/bin/xfce4-popup-notes: nothing appropriate.
+/usr/bin/xfce4-notes-settings: nothing appropriate.
+/usr/bin/m2400w: nothing appropriate.
+/usr/bin/kactivitymanagerd: nothing appropriate.
+/usr/bin/klipper: nothing appropriate.
+/usr/bin/install-printerdriver: nothing appropriate.
+/usr/bin/nemo-autorun-software: nothing appropriate.
+/usr/bin/gdialog: nothing appropriate.
+/usr/bin/plasmashell: nothing appropriate.
+/usr/bin/lxqt-config-locale: nothing appropriate.
+/usr/bin/pytracefile: nothing appropriate.
+/usr/bin/kstart5: nothing appropriate.
+/usr/bin/nautilus-autorun-software: nothing appropriate.
+/usr/bin/nemo-open-with: nothing appropriate.
+/usr/bin/rarian-sk-get-content-list: nothing appropriate.
+/usr/bin/os-prober: nothing appropriate.
+/usr/bin/perldoc: nothing appropriate.
+/usr/bin/ksmserver: nothing appropriate.
+/usr/bin/protocoltojson: nothing appropriate.
+/usr/bin/gcc-5: nothing appropriate.
+/usr/bin/kpackagelauncherqml: nothing appropriate.
+/usr/bin/enhancer: nothing appropriate.
+/usr/bin/ipod-time-sync: nothing appropriate.
+/usr/bin/cd-iccdump: nothing appropriate.
+/usr/bin/lxqt-powermanagement: nothing appropriate.
+/usr/bin/alsatplg: nothing appropriate.
+/usr/bin/vmwarectrl: nothing appropriate.
+/usr/bin/painter: nothing appropriate.
+/usr/bin/synaptic-pkexec: nothing appropriate.
+/usr/bin/lxqt-config-monitor: nothing appropriate.
+/usr/bin/rebuild-gcj-db: nothing appropriate.
+/usr/bin/pilprint: nothing appropriate.
+/usr/bin/alsaucm: nothing appropriate.
+/usr/bin/xfce4-notes: nothing appropriate.
+/usr/bin/gcore: nothing appropriate.
+/usr/bin/pildriver: nothing appropriate.
+/usr/bin/xkeystone: nothing appropriate.
+/usr/bin/gdb: nothing appropriate.
+/usr/bin/systemd-stdio-bridge: nothing appropriate.
+/usr/bin/lxqt-config-notificationd: nothing appropriate.
+/usr/bin/firefox: nothing appropriate.
+/usr/bin/kglobalaccel5: nothing appropriate.
+/usr/bin/ksvgtopng5: nothing appropriate.
+/usr/bin/x86_64-pc-linux-gnu-pkg-config: nothing appropriate.
+/usr/bin/isdv4-serial-inputattach: nothing appropriate.
+/usr/bin/lxqt-admin-user: nothing appropriate.
+/usr/bin/x86_64-linux-gnu-gcc-6: nothing appropriate.
+/usr/bin/pilfile: nothing appropriate.
+/usr/bin/xdt-commit: nothing appropriate.
+/usr/bin/foomatic-searchprinter: nothing appropriate.
+/usr/bin/kdebugdialog5: nothing appropriate.
+/usr/bin/wayland-scanner: nothing appropriate.
+/usr/bin/kcheckrunning: nothing appropriate.
+/usr/bin/obexctl: nothing appropriate.
+/usr/bin/tabbed.meta: nothing appropriate.
+/usr/bin/xfce4-clipman: nothing appropriate.
+/usr/bin/png-fix-itxt: nothing appropriate.
+/usr/bin/rarian-sk-migrate: nothing appropriate.
+/usr/bin/kwalletd5: nothing appropriate.
+/usr/bin/kquitapp5: nothing appropriate.
+/usr/bin/nautilus-desktop: nothing appropriate.
+/usr/bin/kreadconfig5: nothing appropriate.
+/usr/bin/ttfread: nothing appropriate.
+/usr/bin/rarian-sk-get-cl: nothing appropriate.
+/usr/bin/linux-boot-prober: nothing appropriate.
+/usr/bin/kactivities-cli: nothing appropriate.
+/usr/bin/ijs_pxljr: nothing appropriate.
+/usr/bin/xfce4-popup-directorymenu: nothing appropriate.
+/usr/bin/kwriteconfig5: nothing appropriate.
+/usr/bin/pilfont: nothing appropriate.
+/usr/bin/xembedsniproxy: nothing appropriate.
+/usr/bin/kdemv5: nothing appropriate.
+/usr/bin/xfce4-popup-applicationsmenu: nothing appropriate.
+/usr/bin/m2300w: nothing appropriate.
+/usr/bin/monitor-sensor: nothing appropriate.
+/usr/bin/lxqt-config-globalkeyshortcuts: nothing appropriate.
+/usr/bin/mono-sgen: nothing appropriate.
+/usr/bin/lxqt-notificationd: nothing appropriate.
+/usr/bin/foomatic-ppd-to-xml: nothing appropriate.
+/usr/bin/sushi: nothing appropriate.
+/usr/bin/lxqt-globalkeysd: nothing appropriate.
+/usr/bin/unmkinitramfs: nothing appropriate.
+/usr/bin/kiconfinder5: nothing appropriate.
+/usr/bin/xflock4: nothing appropriate.
+/usr/bin/gcov-tool-5: nothing appropriate.
+/usr/bin/systemmonitor: nothing appropriate.
+/usr/bin/lp_solve: nothing appropriate.
+/usr/bin/ksplashqml: nothing appropriate.
+/usr/bin/xfhelp4: nothing appropriate.
+/usr/bin/kcminit: nothing appropriate.
+/usr/bin/lxqt-config-input: nothing appropriate.
+/usr/bin/kcmshell5: nothing appropriate.
+/usr/bin/lxqt-admin-user-helper: nothing appropriate.
+/usr/bin/lxqt-about: nothing appropriate.
+/usr/bin/viewer: nothing appropriate.
+/usr/bin/smtube: nothing appropriate.
+/usr/bin/pphs: nothing appropriate.
+/usr/bin/kscreen-doctor: nothing appropriate.
+/usr/bin/xfce4-clipman-settings: nothing appropriate.
+/usr/bin/kioclient5: nothing appropriate.
+/usr/bin/easy_install: nothing appropriate.
+/usr/bin/rarian-sk-rebuild: nothing appropriate.
+/usr/bin/rarian-sk-get-scripts: nothing appropriate.
+/usr/bin/cpp-5: nothing appropriate.
+/usr/bin/kwrapper5: nothing appropriate.
+/usr/bin/gapplication: nothing appropriate.
+/usr/bin/isdv4-serial-debugger: nothing appropriate.
+/usr/bin/kdeinit5_shutdown: nothing appropriate.
+/usr/bin/rarian-sk-update: nothing appropriate.
+/usr/bin/gifmaker: nothing appropriate.
+/usr/bin/kdostartupconfig5: nothing appropriate.
+/usr/bin/kstartupconfig5: nothing appropriate.
+/usr/bin/lxqt-config-brightness: nothing appropriate.
+/usr/bin/rarian-sk-gen-uuid: nothing appropriate.
+/usr/bin/kshell5: nothing appropriate.
+/usr/bin/btmgmt: nothing appropriate.
+/usr/bin/rarian-sk-config: nothing appropriate.
+/usr/bin/aot-compile: nothing appropriate.
+/usr/bin/update-mime-database.real: nothing appropriate.
+/usr/bin/kde-open5: nothing appropriate.
+/usr/bin/kmimetypefinder5: nothing appropriate.
+/usr/bin/lxqt-config-file-associations: nothing appropriate.
+/usr/bin/gettext.sh: nothing appropriate.
+/usr/bin/gcov-5: nothing appropriate.
+/usr/bin/explode: nothing appropriate.
+/usr/bin/thresholder: nothing appropriate.
+/usr/bin/lximage-qt: nothing appropriate.
+/usr/bin/pngfix: nothing appropriate.
+/usr/bin/kcminit_startup: nothing appropriate.
+/usr/bin/usb_printerid: nothing appropriate.
+/usr/bin/scp-dbus-service: nothing appropriate.
+/usr/bin/createfontdatachunk: nothing appropriate.
+/usr/bin/mang: nothing appropriate.
+/usr/bin/xfce4-terminal.wrapper: nothing appropriate.
+/usr/bin/keditfiletype5: nothing appropriate.
+/usr/bin/ps2ps2: nothing appropriate.
+/usr/bin/ktelnetservice5: nothing appropriate.
+/usr/bin/libwacom-list-local-devices: nothing appropriate.
+/usr/bin/pavucontrol-qt: nothing appropriate.
+/usr/bin/rarian-example: nothing appropriate.
+/usr/bin/lxqt-admin-time: nothing appropriate.
+/usr/bin/startkde: nothing appropriate.
+/usr/bin/xfce4-popup-clipman: nothing appropriate.
+/usr/bin/krunner: nothing appropriate.
+/usr/bin/kuiserver5: nothing appropriate.
+/usr/bin/breeze-settings5: nothing appropriate.
+/usr/bin/kdecp5: nothing appropriate.
+/usr/bin/ktrash5: nothing appropriate.
+/usr/bin/vim.tiny: nothing appropriate.
+/usr/bin/x86_64-linux-gnu-cpp-6: nothing appropriate.
+/usr/bin/rarian-sk-preinstall: nothing appropriate.
+/usr/bin/x86_64-linux-gnu-gcov-6: nothing appropriate.
+/usr/bin/rarian-sk-get-extended-content-list: nothing appropriate.
+/usr/bin/gconf-merge-tree: nothing appropriate.
+/usr/bin/lxqt-config-powermanagement: nothing appropriate.
+/usr/bin/m2300w-wrapper: nothing appropriate.
+/usr/bin/ipod-read-sysinfo-extended: nothing appropriate.
+/usr/bin/rarian-sk-install: nothing appropriate.
+/usr/bin/gcr-viewer: nothing appropriate.
+/usr/bin/plasmawindowed: nothing appropriate.
+/usr/bin/tabbed.default: nothing appropriate.
+/usr/bin/rarian-sk-extract: nothing appropriate.
+/usr/bin/kdeinit5_wrapper: nothing appropriate.
+/usr/bin/ktraderclient5: nothing appropriate.
+/usr/bin/x86_64-linux-gnu-g++-6: nothing appropriate.
+/usr/bin/orca-dm-wrapper: nothing appropriate.
+/usr/bin/x86_64-linux-gnu-gcov-tool-6: nothing appropriate.
+e name (same as uname -m)
+foo2hbpl2-wrapper (1):Convert Postscript into a ZJS printer stream
+pbmtoybm (1)        :convert a portable bitmap into a Bennet Yee "face" file
+corelist (1)        :a commandline frontend to Module::CoreList
+lxterm (1)          :locale-sensitive wrapper for xterm
+xsm (1)             :X Session Manager
+rsync (1)           :a fast, versatile, remote (and local) file-copying tool
+pamstretch (1)      :scale up a PNM or PAM image by interpolating between pixels

@@ -537,7 +537,10 @@ exit
 # How to provide local man page of apt-get? apt-get is not a package (apt list apt-get returns nothing)
 # on the other hand, man apt brings only apt manual , not apt-get even if combined with --all switch
 # The apt.deb has inside all manuals, thus at least the "try online" option works and gives you the list of all manuals included in apt.
-#
+# 
+# Provide option to display description / message /binaries list from local installed files (available at /usr/bin, etc -see PATH) 
+# Currently can be done by terminal with :  find /usr/bin -type f -executable |xargs whatis -v 2>&1 |sed 's/ - /:/g' >whatis.log
+# mind the use of xargs. Without xargs this does not works. 
 #
 # Jump to readmanual from listdeb
 # Assign a button to see upgradeble pkgs , you can list them, display them and user to select which pkgs want to upgrade.

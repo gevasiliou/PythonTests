@@ -643,18 +643,23 @@ echo "$variable"
 }
 
 
-function testfunction { echo "You just entered $1";};
-
-SENTENCE=""
-while read word
-do
-    testfunction "$word"
-done
-echo $SENTENCE
-
-
 exit
+
 # VARIOUS HOW TO
+
+# Working with colors in terminal : https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
+# See the shellcolors.sh file
+# The main idea is to define some vars like:
+#		cN=$(echo -ne "\033[m")      # normal - also 30m works ok.
+#		cP=$(echo -ne "\033[31m") #red color
+# you can then print in color like echo "$cP This is a red text $cN"
+# or even trickier you can define your vars like $red and $normal and work it like this:
+# red=$(echo -ne "\033[31m"); normal=$(echo -ne "\033[m");echo $red hi there $normal --> works ok , prints hi there in red color and returns to normal. If you ommit the normal , terminal remains in red!
+
+# Display a small message about installed bin files in usr/bin (and other folders)
+# find /usr/bin -type f -executable |xargs whatis -v 2>&1 |sed 's/ - /:/g' >whatis.log
+# mind xargs. Without xargs is not operating.
+
 # Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
 # -F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
 # -x = line grep to ensure matching whole lines 
