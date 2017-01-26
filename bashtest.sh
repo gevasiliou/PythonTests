@@ -744,6 +744,8 @@ exit
 # Sed replace a string in a line with pattern: sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
 # above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
 #
+# Replace first occurence of a pattern (as) in every line with an increasing number 
+# while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
 #
 # More Text Replace with sed
 # Consider file containing:

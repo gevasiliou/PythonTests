@@ -15,7 +15,7 @@ function pkgselect {
 #echo "Args Received by caller = $@" |yad --text-info
 #$0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 #echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
-echo -e "PKGDIS=\"$2\"\nPKGVER=\"$4\"" > $TMPFILE
+echo -e "PKGDIS=\"$2\"\nPKGVER=\"$4\"\nPKGDEBSIZE=\"$6\"" > $TMPFILE
 #cat $TMPFILE |yad --text-info
 }
 export -f pkgselect
@@ -135,11 +135,25 @@ function listdeb {
 	source $TMPFILE
 	pkg="$PKGDIS"
 	aptpkg="$PKGDIS"
-	#echo "Package: $aptpkg"
 	debname=$(find . -name "$pkg*.deb")
-	if [[ "$debname" == "" ]];then 
-		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
-		debname=$(find . -name "$pkg*.deb")
+	if [[ "$debname" == "" ]];then
+		debsize=$(sed 's/\,//g' <<<"$PKGDEBSIZE") && sizebytes="${debsize:0:-2}" && sizebytes="${sizebytes%.*}" && sizepower="${debsize: -2}"
+		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 ))
+		[[ $sizepower == "MB" ]] && sizebytes=$(( $sizebytes * 1000 ))		
+		#echo "size power = $sizepower / bytes=$sizebytes" |yad --text-info
+		if [[ "$sizebytes" -gt 4000 ]];then 
+			yad --text-info<<<"This deb has a download size of $PKGDEBSIZE. Sure you want to get it?" --height 100 --width 600 --center
+			sure=$?
+		else
+			sure=0
+		fi
+
+		if [[ sure -eq 0 ]];then
+			apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+			debname=$(find . -name "$pkg*.deb")
+		else
+			return 1
+		fi
 	fi
 	#echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
@@ -179,9 +193,24 @@ function readmanpage {
 	fi
 	#echo "Package: $aptpkg"
 	debname=$(find . -name "$pkg*.deb")
-	if [[ "$debname" == "" ]];then 
-		apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
-		debname=$(find . -name "$pkg*.deb")
+	if [[ "$debname" == "" ]];then
+		debsize=$(sed 's/\,//g' <<<"$PKGDEBSIZE") && sizebytes="${debsize:0:-2}" && sizebytes="${sizebytes%.*}" && sizepower="${debsize: -2}"
+		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 ))
+		[[ $sizepower == "MB" ]] && sizebytes=$(( $sizebytes * 1000 ))		
+		#echo "size power = $sizepower / bytes=$sizebytes" |yad --text-info
+		if [[ "$sizebytes" -gt 4000 ]];then 
+			yad --text-info<<<"This deb has a download size of $PKGDEBSIZE. Sure you want to get it?" --height 100 --width 600 --center
+			sure=$?
+		else
+			sure=0
+		fi 
+		
+		if [[ sure -eq 0 ]];then
+			apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+			debname=$(find . -name "$pkg*.deb")
+		else
+			return 1
+		fi
 	fi
 	#echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
