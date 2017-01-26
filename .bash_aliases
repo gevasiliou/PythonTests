@@ -20,6 +20,7 @@ alias lsdir='ls -all |grep -E "^d"'
 alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
+alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 
 function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
 
