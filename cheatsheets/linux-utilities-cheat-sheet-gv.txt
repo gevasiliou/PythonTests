@@ -12,6 +12,21 @@ file1.txt = the file to be grepped
 multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
 grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
+GREP all files for two patterns (and operation)
+http://stackoverflow.com/questions/41896604/linux-listing-files-that-contain-several-words#41897079
+grep -ERl 'toto' | xargs -r grep 'tata'
+Tip : xargs -r ensures that second grep will not run in null / non matched data.
+
+GREP a file for two patterns with AGREP by Chazelas:
+http://unix.stackexchange.com/questions/55359/how-to-run-grep-with-multiple-and-patterns/55391#55391
+agrep 'pattern1;pattern2' file (can also accept pattern3;patternN)
+grep -X '.*pattern1.*&.*pattern2.*'
+grep -P '^(?=.*pattern1)(?=.*pattern2)'
+grep -e 'pattern1.*pattern2' -e 'pattern2.*pattern1'
+Alternatives:
+awk '/pattern1/ && /pattern2/'
+awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
+
 :<<CUT
 https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation
 
@@ -98,3 +113,16 @@ Print anything nicely with column program
 Example : 'mount |column -t'. # -t stands for table . This does Auto cols detection & separation according to whitespace.
 If columns are separated by delimiter, define this delimited by using '-s' option.
 For files you can directly run '$column -t file.txt'
+
+BC Calculator
+a="$(<a.txt)" #supposing file a has a number
+b="$(<b.txt)" #similary
+bc <<<"$a + $b"
+c="$( bc <<<"$a + $b" )"
+
+If the <<< syntax feels weird (it's called a "here-string" and is an extension to the POSIX shell syntax supported 
+by bash and a few other shells), you may instead use printf to send the addition to bc:
+
+printf '%s + %s\n' "$a" "$b" | bc
+c="$( printf '%s + %s\n' "$a" "$b" | bc )"
+
