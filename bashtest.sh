@@ -642,6 +642,5 @@ echo "$variable"
 # 3. This file is excluded and it should not be excluded by the rules applied: a@min@js.js
 }
 
-
 exit
 

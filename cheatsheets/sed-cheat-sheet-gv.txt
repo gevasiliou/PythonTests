@@ -108,11 +108,27 @@ started since line with { and get the next line (N) until substitution ({}) can 
 
 http://unix.stackexchange.com/questions/71670/add-in-begining-to-selected-lines-in-file?rq=1
 	
- SED: Insert dash in string
- String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
- $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
- Output : 2016-05-31-10-03
- alternatives:
- $ cut --output-delimiter='-' -c7-19,20-21 file.txt
- $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
- $ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+SED: Insert dash in string
+String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
+$ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+Output : 2016-05-31-10-03
+alternatives:
+$ cut --output-delimiter='-' -c7-19,20-21 file.txt
+$ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
+$ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+
+SED : REPLACE STRING AFTER PATTERN MATCH
+You can combine sed words search (/word1/,/word2/) and then you can continue on the same line to perform replace with usual s/old/new/
+Input Example:
+priority = 0
+host = True
+
+[shovel]
+group = 
+enabled = 0
+
+Target : Change value of shovel enabled (from 0 to 1)
+
+Command: sed '/\[shovel\]/,/^$/ s/enabled = 0/enabled = 1/' file
+First part=/\[shovel\]/,/^$/ : from word [shovel] up to the next empty line (empty lines contain just start(^) and end ($) chars)
+Second part=s/enabled = 0/enabled = 1/ : usual sed replace in form s/old/new

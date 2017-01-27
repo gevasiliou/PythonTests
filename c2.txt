@@ -1,5 +1,3 @@
-# geany_encoding=ISO-8859-7 #
-Local Change
 chr start end score length
 chr1 237592 237601 176 320
 chr1 237601 237912 176 320

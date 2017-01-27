@@ -32,7 +32,6 @@ Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
 
 CUT
 
-
 DIFF
 #Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
 normal usage of diff is diff -y file1 file2.
@@ -93,3 +92,9 @@ $ paste num2 let3 num2
 1       a      1
 2       b      2
         c
+
+COLUMN
+Print anything nicely with column program
+Example : 'mount |column -t'. # -t stands for table . This does Auto cols detection & separation according to whitespace.
+If columns are separated by delimiter, define this delimited by using '-s' option.
+For files you can directly run '$column -t file.txt'
