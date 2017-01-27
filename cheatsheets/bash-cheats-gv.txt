@@ -1,0 +1,567 @@
+BASH CHEATS BY GV
+
+VARIOUS HOW TO
+
+Working with colors in terminal : https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
+See the shellcolors.sh file
+The main idea is to define some vars like:
+#		cN=$(echo -ne "\033[m")      # normal - also 30m works ok.
+#		cP=$(echo -ne "\033[31m") #red color
+you can then print in color like echo "$cP This is a red text $cN"
+or even trickier you can define your vars like $red and $normal and work it like this:
+red=$(echo -ne "\033[31m"); normal=$(echo -ne "\033[m");echo $red hi there $normal --> works ok , prints hi there in red color and returns to normal. If you ommit the normal , terminal remains in red!
+Or even better do them functions ! function red { echo -ne "\033[32m";echo $@;echo -ne "\033[m";};red hi there
+
+READ FILES  (mapfile, readarray, read -r , etc)
+http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
+http://wiki.bash-hackers.org/commands/builtin/read
+http://wiki.bash-hackers.org/commands/builtin/mapfile
+http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
+
+mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
+
+The classic while read -r var1 var2 ;do ....;done<file.txt which will assign var1 to first field of line 1 and var2 to second field.
+Withoud defining IFS, the default IFS is used. You can define IFS=' ' for space delimiter, or ':' for semicol delimiter, etc
+To read whole lines use IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
+
+you can combine also multi read (line read / field read) like this:
+while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
+It will assign filelines to line and then with different IFS will split line to fields.
+Bug : var1 gets only the last line
+  
+Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
+for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yt --title="$f");done #where yt is an alias yt='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
+
+Store the first two lines of a file without loop:
+{ IFS= read -r line1 && IFS= read -r line2; } < input.txt
+{ line1=$(line) && line2=$(line); } < input.txt
+
+Run a command as a different user : 
+gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
+Run Google Chrome as Root : http://unix.stackexchange.com/questions/175967/how-to-run-google-chrome-as-root-in-linux/332128#332128
+Easy trick : gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
+
+CONDITION CHECKS 
+One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
+For else conditions or for performing actions under false conditions you can use ! operator (not) in front of expression which will reverse exit code.
+[ "$USER" = "root" ] && echo "hello root" -> hello root # displays nothing if user is not root
+[ "$USER" = "root" ]  || [ "$LOGNAME" = "root" ] && echo "hello root" --> hello root #
+[ "$USER" = "root" ]  || [ "$LOGNAME" = "root" ];echo $? -> 0 #zero = all ok = true
+[ "$USER" = "root" ]  || [ "$LOGNAME" = "rot" ];echo $? -> 0 #zero = all ok = true due to the OR operator || (for and you should use &&)
+[ "$USER" = "rot" ]  || [ "$LOGNAME" = "rot" ];echo $? --> 1 #one = not ok = false since i'm logged in as root and not rot
+! [ "$USER" = "rot" ]  || ! [ "$LOGNAME" = "rot" ];echo $? --> 0  #expression ok = true means that it is true that i'm not user rot or logname rot (true since i'm logged in as root)
+Tip: When you gksu terminal from normal user account then $USER and $LOGNAME are set to root.
+
+Check out the split prog which can split a file to more files based on certain criteria (i.e from line N to line M)
+Check if a slash '/' exist in the end of variable and add it if it is missing
+root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
+/home/gv/Desktop/
+The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. Then is simple: if last char is not / then a=a+/
+
+FIND - LS ALTERNATIVE
+find /home/gv -maxdepth 1 -type d -> list only directories
+find /home/gv -maxdepth 1 -type f -> lists only files
+find /home/gv -maxdepth 1 -> lists both
+output of find can be piped to wc -l as well.
+#
+Search for a process using top . Top seems to catch all processes:
+top -p $(echo $(pgrep time) |sed 's/ /,/g')
+pgrep search for processes matching pattern even partially. pidof could be used if exact process name is known.
+Defaut output of pgrep is to seperate processes found with new lines. By echo \n is removed and a space is used.
+If you replaace that space with a comma, then can be fed to top -p which accepts multiple pids (comma seperated)
+
+Processes List and Kill
+ps all and ps aux
+list all of tty1 : ps -t tty1
+Isolate pids: ps -t tty1 |cut -d" " -f1
+Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
+Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
+Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
+
+
+List and Manipulating files with strange names.
+Consider files with spaces in their name (i.e a a (01).txx)
+
+In order you want to get the basename of this file the following command fails:
+for file in "$(find . -name "*.txx")";do basename "$file";done
+But if you just type find . -name "*.txx" files will be listed correctly.
+Also this command works ok: for file in "$(find . -name "*.txx")";do echo "$file";done
+Mind the double quotes outside $(find...)
+
+To correctly handle file names with spaces you need to combine find with  while read.
+This works ok: find . -name "*.txx" |while read -r line;do basename "$line";done
+
+Also this works ok , and it is more simple to use: for file in *.txx;do basename "$file";done
+The problem here is that this method doesnt go inside subdirs, while the find method does.
+http://stackoverflow.com/questions/4638874/how-to-loop-through-a-directory-recursively-to-find-files-with-certain-extension
+http://www.commandlinefu.com/commands/view/14209/repeat-any-string-or-char-n-times-without-spaces-between
+http://wiki.bash-hackers.org/syntax/expansion/brace
+http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
+linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
+
+BASH MANUAL
+http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
+BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
+ADVANCED BASH SCRIPTING : ftp://ftp.monash.edu.au/pub/linux/docs/LDP/abs/html/abs-guide.html#PIPEREF
+IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
+https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+http://ss64.com/bash/expr.html
+https://debian-administration.org/article/150/Easily_renaming_multiple_files
+
+a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
+a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
+a="this is some TEXT"; echo ${a: 5:7} 	-> is some
+a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char - OR - get from char 1 up to lst char-1
+
+a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
+a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
+a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
+basename c.jpg .jpg -> c
+basename c.jpg pg -> c.j #basename can be used as a tricky tool to remove chars from the end of ANY string but requires exact match
+a="logfiletxt";basename $a txt -> logfile
+a="logfile.txt";echo ${a/.txt} -> logfile #similar to basename but match starts from 1st char to the last. 1st occurence to be removed.
+a="logfile.txt";echo ${a/fil} -> loge.txt #remove fil - exact match
+a="logfilefilo.txt";echo ${a/lo} -> gfilefilo.txt #only first occurence of exact pattern removed
+a="logfilelofi.txt";echo ${a/lo} -> gfilelofi.txt #only first occurence of exact pattern removed
+a="logfilelofi.txt";echo ${a//lo} -> gfilefi.txt #all occurences of exact pattern removed.
+a="logfilelofi.txt";echo ${a/lf/_} -> logfilelofi.txt #no replacement made since lf is not present in $a (exact match)
+a="logfilelofi.txt";echo ${a//[lf]/_} -> _og_i_e_o_i.txt #all occurences of l and f - not exact match due to [] regex synthax
+a="logfilelofi.txt";echo ${a/*l/_} -> _ofi.txt #from start up and including last l
+a="logfilelofi.txt";echo ${a/*g/_} -> _filelofi.txt #from start up & including last g
+a="logfilelofi.txt";echo ${a/*l/} -> ofi.txt #from start up to last l (if no replace string is specified then delete)
+a="logfilelofi.txt";echo ${a/#/_} -> _logfilelofi.txt #replace first char with underscore
+a="logfilelofi.txt";echo ${a/%/_} -> logfilelofi.txt_ #replace last char with underscore
+a="logfilelofi.txt";echo ${a/.txt/_} -> logfilelofi_ #replace .txt with underscore
+a="logfilelofi.txt";echo ${a/.txt} -> logfilelofi #delete .txt
+MYSTRING=xxxxxxxxxx;echo ${MYSTRING/#x/y}  # RESULT: yxxxxxxxxx # Here the sign # is like an anchor to beginning
+MYSTRING=xxxxxxxxxx;echo ${MYSTRING/%x/y}  # RESULT: xxxxxxxxxy # Here symbol % is an anchor to the end of string
+a="logfilelofi.mp3";echo ${a/.[a-z0-9A-Z]*/} -> logfilelofi #delete any extension with a dot and any of a-z,0-9 and A-Z range
+CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip ->http://abc.xy.com #mind the special var declaration of CLIP.
+for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
+a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
+bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
+
+a="somefile.txt";echo ${a%%.txt} -> somefile #delete from end exact match
+a="somefile.txt";echo ${a%.txt} -->somefile
+a="sometxtfile.txt";echo ${a%txt} -->sometxtfile. #delete from end only exact match. midle txt is not deleted.
+a="sometxtfile.txt";echo ${a##txt} --> sometxtfile.txt #no valid -no effect 
+a="sometxtfile.txt";echo ${a##some} --> txtfile.txt #delete pattern (xact match) from the beginning
+a="sometxtfile.txt";echo ${a#some} --> txtfile.txt
+a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
+a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes the first word from beginning)
+a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
+a="this.is.a.file.gz";echo ${a##*.} -->gz #all text deleted except last part (DOT separated) or delete from begining until the last dot found
+a="apt";echo ${a:0:1} --> a #prints the first character of a variable (from zero give me 1)
+a="Be conservative in what you send";echo ${a% *} --> Be conservative in what you #first word from end deleted. 
+a="Be conservative in what you.send";echo ${a% *} --> Be conservative in what #works only for space separated words (IFS makes some effect in the resulted text)
+a="Be conservative in what you send";echo ${a%% *} --> Be #all words from the end deleted (space separated)
+
+a="some text here";echo ${a@Q} ->'some text here' #printing with single quotes
+a="some text here";echo ${a@A} -> a='some text here' #operators available Q-E-P-A-a
+a[0]="some text";a[1]="more text";echo ${a[@]} -> some text more text
+a[0]="some text";a[1]="more text";echo ${a[@]@A} ->declare -a a=([0]="some text" [1]="more text")
+a[0]="some text";a[1]="more text";echo ${a[@]@Q} ->'some text' 'more text'
+a[0]="some text";a[1]="more text";a[2]="much more text";echo ${!a[@]} -> 0 1 2 #index of elements . This can be used in for i in ${a![@]} - i will be 0 , 1, 2 
+a[0]="some text";a[1]="more text";a[2]="much more text";echo ${#a[@]} -> 3 #Total number of elements
+a[0]="some text";a[1]="more text";a[2]="much more text";echo ${a[-1]} -> much more text. Use of -1 in index prints the last array element.
+a="This is some Text";echo "${a^^}" --> THIS IS SOME TEXT #All chars converted to uppercase
+array=(This is some Text);echo "${array[@]^^}" --> THIS IS SOME TEXT #All chars converted to uppercase
+array=(This is some Text);echo "${array[@],}" --> this is some text
+array=(This is some Text);echo "${array[@],,}" --> this is some text #all chars in lower case
+array=(This is some Text);echo "${array[@]^}" --> This Is Some Text
+array=(This is a text);echo "${array[@]%is}" --> Th a text ("is" is deleted from all elements of array : array=([0]="This" [1]="is" [2]="a" [3]="text"))
+http://wiki.bash-hackers.org/syntax/pe : "As for most parameter expansion features, working on arrays will handle each expanded element, for individual expansion and also for mass expansion."
+array=(This is a text);echo "${array[@]/t/d}" ⇒ This is a dext #first found t replaced with d. Capital T is intact.
+array=(This is a text);echo "${array[@]//t/d}" ⇒ This is a dexd #all t replaced with d
+array=(This is a text);echo "${array[@]/[tT]/d}" -> dhis is a dext #First found small and first found capital T replaced using regex
+
+a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
+echo ${!BASH*} -> BASH BASH_ARGC BASH_ARGV BASH_COMMAND BASH_LINENO BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION
+#mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname #!$ returns the argument of last command /history
+#Similarry to !$ there is alsos !! which prints last commad (full) and last result
+path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
+
+expr 40 - 3 ->37 #expr is available in GNU Bash. 
+expr substr "the is a kind of test" 5 10 -> is a kind  
+a="the is a kind of test";echo ${a: 5:10} -> s a kind o
+export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
+IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
+
+Print / Refer to array elements in a different way using parameters expansion / string manipulation
+#array=(0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h)
+#echo ${array[@]:7} -> 7 8 9 0 a b c d e f g h
+#echo ${array[@]:7:2} -> 7 8
+#echo ${array[@]: -7:2} -> b c
+#echo ${array[@]: -7:-2} ->bash: -2: substring expression < 0
+#echo ${array[@]:0} -> 0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h  #equivalent to echo ${array[@]}
+#echo ${array[@]:0:2} -> 0 1 #extract part of array / sub-array
+#echo ${array[@]:2:1} -> 2   #Start from position 0 and print 1 . eqivalent to echo ${array[2]} 
+MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
+MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
+MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
+#Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
+
+Arguments - Positional Parameters: 
+http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
+START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
+
+function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
+Output --> declare -a args=([1]="c" [2]="b" [3]="a")
+
+
+<<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+Scroll to the end of page for more one-liners.
+http://wiki.bash-hackers.org/syntax/pe
+Command substitution : Use contents of file as parameter: $(<file)
+Command $(cat file) can be replaced by the equivalent but faster $(< file).
+example: echo "$(<file.txt) -- similar to cat file.txt
+if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
+if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
+#Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
+#Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
+#Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
+#Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
+#Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
+Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
+--> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
+
+Using subshells: $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
+
+#Reverse any word : echo "nixcraft" | rev
+
+Rename using for and bash parameter expansion
+for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
+
+Tricky sed usage if strings replace strange chars like slashes:
+a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
+Trick is that you can seperate actions with any char and not only /. If sed separators are left / (default) and patterns also include / then you need to escape pattern / (using \/) and the sed command becomes a mesh.
+
+#Remove new line char from strings and replace it with space using trim (tr)
+echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
+With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
+
+Print anything nicely with column program
+Example : mount |column -t (-t stands for table . Auto cols detection & separation according to whitespace. )
+if columns are separated by delimiter, define it using -s
+For files you can directly run $column -t file.txt
+
+#Use dnstools to read a wikipedia page in terminal:
+dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
+I have an alias for that
+Alternative : host -t txt hacker.wp.dg.cx
+
+Quick backup : cp filename{,.bak}
+
+Quick move: $ mv /path/to/file{,_old}
+
+Trace root with ping together: $ mtr google.com
+
+Find the last command that begins with "whatever," but avoid running it : $ !whatever:p
+
+Change to the previous working directory : $ cd - (insted of cd $OLDPWD)
+
+Serve the current directory at http://localhost:8000/ : $ python -m SimpleHTTPServer 8000
+
+Run the last command as root : $ sudo !! (also simple !! just repeats last command)
+
+Capture video of a linux desktop : $ ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg
+
+Read the first line from a file and put it in a variable : $ read -r line < file OR IFS= read -r line < file
+
+Read a random line from a file and put it in a variable : $ read -r random_line < <(shuf file)
+When bash sees <(shuf file) it opens a special file /dev/fd/n, where n is a free file descriptor, 
+
+Extract the filename from the path : filename=${path##*/} 
+Extract dirname : dirname=${path%/*}
+
+declare a value to hold upper case letter : declare -u foo . Even if you assign small letters , echo $foo will print capital letters
+declare -l is used for lowercase vars.
+
+assign same value to multiple commands using bash parameter expansion: eval {a,b,c}="some text" # Without eval is not operating.
+
+Trick to create a couple of lowercase and uppercase letters:
+declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due to declare -u in the beginning.
+PS: Alternative for lower/upper case is ${a^^} and ${a,,}
+
+
+Resources: 
+http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
+http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
+
+PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
+
+Identify any command type /location : $type command (try i.e type grep and type eval)
+
+List all kernel modules that are loaded (i.e lsmod)
+cat /lib/modules/$(uname -r)/modules.dep
+find /lib/modules/$(uname -r) -type f -name \*.ko
+
+
+Understanding EVAL:
+1) foo=10 x=foo
+2) y='$'$x
+3) echo $y --> $foo
+5) eval y='$'$x
+6) echo $y --> 10
+Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
+
+FILE DESCRIPITORS
+Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
+http://www.tldp.org/LDP/abs/html/io-redirection.html
+http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
+http://unix.stackexchange.com/questions/13724/file-descriptors-shell-scripting
+http://www.tldp.org/LDP/abs/html/ioredirintro.html
+basic fd : 0=stdin , 1=stdout , 2=stderr
+IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
+But if you try test=$(java -version 2>&1);echo $test works ok.
+Obviously this happens because java app prints its version to stderr and not to stdout.
+By default you can not assign in vars output of commands that send their output to &2 (=stderr) and not to &1 (stdout).
+With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
+Redirect stderr to file and stdout + stderr to screen :
+exec 3>&1 
+foo 2>&1 >&3 | tee stderr.txt
+#
+Tricky redirection from bins missing man pages:
+man -w binaryfile 2>&1 >/dev/null (-w prints man page location)
+In case of a normal bin file (i.e grep) then nothing is printed. In case of a bin that do not have a man page (i.e getweb) then
+the error message is printed.
+mind also that a=$(man -w getweb >/dev/null) will also print the error message, even if $a is NOT echoed and also $a will be blank.
+the redirection >/dev/null is in reality equal to 1>/dev/null, meaning redirecting stdout (&1) to dev/null
+mind also that examples:
+man -w grepp 2>/dev/null -> although the package / bin is wrong = no man page , nothing is printed on screen since stderr is forwarded to /dev/null
+man -w grep 1>/dev/null -> equivalent to man -w grep >/dev/null
+man -w grep 2>/dev/null -> since there is a man page for grep, the location is printed on screen since this redirection affects only &2 = stderr
+man -w grepp &>/dev/null -> this syntax forwards both stdout and stderr and as result nothing is printed either for grepp (no man page) or grep (valid man page)
+#
+With annotate-output shell script of devscripts you can run any command and it's output will be marked by O or E depending on where it's printed (0 for stdout, E for stderr). It is also provide Info (I) about exit code
+Main usage of file descriptors is when you need to split your code like this;
+exec >data-file #equivalent to 1>data-file = redirect stdout to a data-file
+exec 3>log-file
+echo "first line of data"  #though you don't specify fd , it is redirected to data_file due to the very first exec
+echo "this is a log line" >&3 #this goes to fd3 = log file
+if something_bad_happens; then echo error message >&2; fi #this goes to fd2 (not specially defined in this example)
+exec &>-  # close the data output file
+echo "output file closed" >&3
+But again you dont gain anything with fds. You can send output directly to >anyfile in case of echo
+On the other hand , by assigning stdout to ata-file (just >data-file) you can capture messages from scripts/programms etc that would
+normally go to stdout.
+correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
+
+:<<FIFO_NAMEDPIPES
+FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
+Maybe some commands do not accept input by refular files but from fifos and/or file descriptors. 
+
+To create a FIFO pipe use "mkfifo mypipe1"
+This actually creates a kind of FIFO file with name mypipe1 (can be seen with ls). 
+Command "file mypipe1" will advise that this is a fifo.
+Delete a fifo by rm mypipe1, as with any regular file.
+You can echo something to this FIFO using echo "something" >mypipe1 . Mind that terminal prompt is trapped.
+And you can then retrieve the buffer data (i.e from another shell) using cat mypipe1 or cat <mypipe1 and terminal1 and terminal2 prompt are released
+After cat , the fifo is empty - can be verified by trying to cat again.
+Once you cat fifo in terminal2 and info has no data , terminal 2 remains trapped awaiting for data to come.
+But once data comes in , will be printed and prompt will be freed.
+Yad designed uses fifos in this example: https://sourceforge.net/p/yad-dialog/wiki/Frontend%20for%20find+grep%20commands/
+Another example is the wikipedia netcat small proxy
+mkfifo backpipe; nc -l 12345  0<backpipe | nc www.google.com 80 1>backpipe
+This makes the fifo, and redirects local connections to port 12345 to google (default netcat operation)
+but also redirects response back to browser!! (this is not netcat default operation)
+You can verify if a fifo is present with if [[ ! -p "$pipe" ]];then mkfifo XXX;fi
+
+There are various techniques to cheat the fifo "one-shot" behavior.
+In terminal 1 if you run cat >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
+terminal 2 will print immediately whatever comes in fifo.
+see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+FIFO_NAMEDPIPES
+
+ASSOCIATIVE ARRAYS (declare -A array)
+http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
+http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
+Works like dictionaries of advanced programming languages.
+You can assign whatever index you want (i.e array[file])
+declare -A MYMAP=( [foo]=bar [baz]=quux [corge]=grault ); echo ${MYMAP[foo]};echo ${MYMAP[baz]} -> bar \n quux
+K=baz; MYMAP[$K]=quux;echo ${MYMAP[$K]} -->quux   #also echo ${MYMAP[baz]} works 
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo "${!MYMAP[@]}" --> foo a baz b #prints only the keys
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $K; done  #loop on keys only - mind double quotes.
+--> foo a 
+--> baz b
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );for V in "${MYMAP[@]}"; do echo $V; done #loop on values only
+--> bar
+--> quux
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $K --- ${MYMAP[$K]}; done #loop on keys and values
+--> foo a --- bar
+--> baz b --- quux
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo ${#MYMAP[@]}  --> 2 # Number of keys in an associative array
+
+Number Indexing of Associative Array :
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS[0]} --- ${MYMAP[${KEYS[0]}]}" -> foo a --- bar   # KEYS=(${!MYMAP[@]}) = a normal array containing all the keys of the associative array. You can then refer to associative array with numerical index (0,1,2,etc)
+declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
+--> foo a --- bar
+--> baz b --- quux
+
+WHEREIS & WHATIS
+whereis finds where is the executable of a programm (whereis sed). 
+whatis shows one-line info of the program.
+
+Trick : whatis /bin/* 2>&1 |grep -v "nothing appropriate" |grep "file" -> Scans the whole bin directory for all executables/commands 
+excluding "nothing appropriate" that appears in execs without a single line description and matching file in description
+
+Display a small message about installed bin files in usr/bin (and other folders)
+find /usr/bin -type f -executable |xargs whatis -v 2>&1 |sed 's/ - /:/g' >whatis.log
+mind xargs. Without xargs is not operating.
+
+
+:<<HERE-DOCS
+Best explained : http://tldp.org/LDP/abs/html/here-docs.html
+Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
+
+when using here-doc format within a script, the input to cat comes from the script.
+Example:
+#! /bin/bash
+l="line 3"
+cat <<End-of-message
+-------------------------------------
+	This is line 1 of the message.
+This is line 2 of the message.
+This is $l of the message.
+This is line 4 of the message.
+This is the last line of the message.
+-------------------------------------
+End-of-message
+
+when the script finishes above lines are printed in stdout.
+If you apply cat <<-ENDOFMESSAGE (mind the dash) then white space is trimmed (except space)
+Tricky script usage:
+You can use the here-doc format to comment big blocks of text or code for debugging.
+format is :<<whatever ...... whatever
+if instead of :<< you use cat << , everything bellow tags will be printed on screen or to >file if defined.
+
+Another trick usage inside script:
+
+GetPersonalData ()
+{
+  read firstname
+  read lastname
+} # This certainly appears to be an interactive function, but . . .
+
+
+Supply input to the VARIABLES of above function.
+GetPersonalData <<RECORD001
+Bozo
+Bozeman
+RECORD001
+exit 0
+
+Use a cat here-doc to insert a new line to the end of an existed file
+cat <<EOF >>file.txt
+This line will be appended to the end of file
+EOF
+
+Use cat to insert a line in the BEGINNING of the file:
+cat <<EOF >file.txt
+This line will go at the beginning
+$(cat file.txt)
+EOF
+
+You can offcourse use tac instead of cat. But in tac lines of here-doc will be inserted from the last to the first.
+This is what tac does = reverse of cat.
+
+Create Script from Script
+Also see http://linuxcommand.org/wss0030.php
+
+#!/bin/bash 
+This is master script
+Various code of master script
+cat > /home/$USER/bin/SECOND_SCRIPT <<- EOT
+#!/bin/bash
+This is a secondary script generated by master script.
+    # - This shall be the second script which automaticall gets placed elsewhere
+    # - This shall not be executed when executing the main script
+    # - Code within this script shall not appear within the terminal of the main script
+	# Comment are also send to secondary script.	
+    # Settings
+
+    LOCALMUSIC="$HOME/Music"
+    ALERT="/usr/share/sounds/pop.wav"
+    PLAYER="mpv --vo null"
+(more lines of code here)
+EOT # Secondary script finished
+Rest Code of Master Script Continues
+
+source external code inside your script (instead of sourcing the whole script)
+http://unix.stackexchange.com/questions/160256/can-you-source-a-here-document
+
+source <(sed -n '/function justatest/,/\}/p' .bash_aliases) && justatest
+The function justatest is sourced correctly.
+
+More examples:
+source <(cat << EOF
+A=42
+EOF
+)
+echo $A --> prints 42
+
+Alternative : Directly eval the code 
+eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
+
+
+HERE-DOCS
+
+IFS Tricks
+#### Special IFS settings used for string parsing. ####
+Whitespace == :Space:Tab:Line Feed:Carriage Return:
+WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
+No Whitespace == Line Feed:Carriage Return
+NO_WSP=$'\x0A'$'\x0D'
+
+later, you can just set IFS=${WSP_IFS}
+Bash_Tricks
+
+:<<Bash_Options 
+Globbing ,bash filename expansion, bash options ans shopt options
+Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
+The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+The Shopt Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html#The-Shopt-Builtin
+Shell Expansion: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_03_04.html
+Globbing: http://www.tldp.org/LDP/abs/html/globbingref.html
+
+Bash has by default enabled filename expansion.
+This means that a simple echo a* will print all the files starting with a (if any).
+
+This is why sometimes the command apt list a* prints results and sometimes not. 
+If there is a file starting with a in the directory you run apt list a*, then a* is expanded due to bash filename expansion.
+This was revealed using set -x on bash before command execution.
+With -x bash informs you - prints out - the command that is going to be executed.
+
+And this filename expansion confuses people since apt list a* is actually interpreted as apt list allfilesbeginningwitha, but apt list xfce* works without quotes if there are not files beginning with xfce.
+
+You can disable this behavior using "set -f" , but this command will also disable the globbing in general, meaning that ls a* will result to literal a* and not global *
+
+Or you can just run apt list "a*" and this will work fine.
+
+Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
+
+To print all bash set parameters run #echo $SHELLOPTS && echo $-
+Typical Output: 
+braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
+himBHs
+
+By command 'set' you get a variables list (including predefined startup functions of .bash_aliases file)
+
+Print environmental variables : export -p , printenv or just env, ( set -o posix ; set ) , declare -p (or -xp)
+
+To print all bash shopt parameters run #shopt. Combine with -s to see options set to ON or -u to see options set to OFF
+Typical Output:
+extquote       	on
+force_fignore  	on
+hostcomplete   	on
+...................
+dirspell       	off
+dotglob        	off
+execfail       	off
+extdebug       	off
+extglob        	off
+failglob       	off
+
+Bash_Options End

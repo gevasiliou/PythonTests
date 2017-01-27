@@ -1,0 +1,118 @@
+SED CHEAT SHEET by gv
+
+SED Cheat Sheet and OneLiners: http://sed.sourceforge.net/sed1line.txt
+Read Cheat Sheet in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
+http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
+
+SED FROM LINE X to LINE Y 
+sed -n '8,12p'
+sed -n '16224,16482p;16483q' filename
+mind the 16483q command. q instructs sed to quit. Without q sed will keep scanning up to EOF.
+To do that with variables: $ sed -n "$FL,$LL p" file.txt
+
+SED separators : 
+All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
+
+SED FROM WORD1 TO WORD2
+sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2 (1st match - next matches of word2 ignored)
+awk alternative: awk '/Tatty Error/,/suck/' a.txt
+you can get easy line numbering if you pipe to "cat -n" or to "nl" in the penalty of usings an extra pipe = more resources for that.
+
+Find a word in file/stdin and get from this word up to the last \n = new line = eof.
+Remember that $ represents "last"-end of line in regex
+apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
+
+You can do the same starting from a line up to eof. 
+Also this works sed -n '/matched/,$p' file , wherw matched can be a line number or a string
+
+SED PRINT FROM REGEX UPTO EOF
+sed -n '/regexp/,$p'
+
+SED Print lines match regex 
+sed -n '/regexp/p' #grep emulation
+sed -n '/regexp/!p' #grep -v
+
+SED print lines before /after a regexp, but not the line containing the regexp
+sed -n '/regexp/{g;1!p;};h' #the line before match
+sed -n '/regexp/{n;p;}' 	#the line after match
+
+SED REPLACE (s/original/replaced/)
+sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
+echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
+More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
+#
+Replace foo with bar only if there is a baz later on the same line:
+sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
+#
+Multiple replace operations: replace with different strings
+You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
+#
+Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
+
+Sed replace a string in a line with pattern: sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
+above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
+#
+Replace first occurence of a pattern (as) in every line with an increasing number 
+while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
+#
+More Text Replace with sed
+Consider file containing:
+ltm node /test/10.90.0.1 {
+   address 10.90.0.1
+}
+
+1. Lets suppose you want to add at the end of address %200
+sed '/address/ s/$/%200/' a.txt
+s = replace, $= end of line
+
+Alternatives
+str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3"."$4"%200"}'<<<$str);echo $newstr 
+awk '/address/ && sub("$","%200") || 1' file.txt
+#
+
+2. Lets suppose you want to replace the last digit with .20
+sed '/address/ s/.[0-9]*$/.20/' a.txt
+.[0-9]*$ = regex = starts with dot, contains numbers in range 0-9, multiple numbers (*) and then EOL ($)
+alternatives
+str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
+
+Use a variable in sed
+You just need to double qute the sed actions instead of single quotes.
+
+SED: Remove text inside curly
+This is {
+the multiline
+text file }
+that wants
+{ to be
+changed
+} anyway.
+
+Output:
+This is 
+that wants
+ anyway
+ 
+Command:
+$ sed ':again;$!N;$!b again; s/{[^}]*}//g' file
+:again;$!N;$!b again; #This reads the whole file into the pattern space.
+:again #is a label.  N reads in the next line.  
+$!b again #branches back to the again label on the condition that this is not the last line.
+
+s/{[^}]*}//g #This removes all expressions in braces.
+
+Alternative:
+sed '/{/{:1;N;s/{.*}//;T1}' multiline.file
+started since line with { and get the next line (N) until substitution ({}) can be made 
+( T means return to mark made by : if substitution isnt made)
+
+http://unix.stackexchange.com/questions/71670/add-in-begining-to-selected-lines-in-file?rq=1
+	
+ SED: Insert dash in string
+ String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
+ $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+ Output : 2016-05-31-10-03
+ alternatives:
+ $ cut --output-delimiter='-' -c7-19,20-21 file.txt
+ $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
+ $ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt

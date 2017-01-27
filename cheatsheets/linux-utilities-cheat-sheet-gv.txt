@@ -1,0 +1,95 @@
+LINUX-UTILS CHEAT SHEET by GV
+https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
+
+GREP
+Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
+-F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
+-x = line grep to ensure matching whole lines 
+-v = reverse the grep = display not matching lines
+-f = load words/lines from file file2.txt
+file1.txt = the file to be grepped 
+
+multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
+grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
+
+:<<CUT
+https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation
+
+Important: CUT can act directly on each line of file. You dno't need while & read line loop.
+
+use cut to isolate part of text: cut -c9-10 file ==> gets characters from 9 to 10. similary you can get c1-5 to get only the 5 first chars of EACH file line.
+Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
+
+ Insert dash in string
+ String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
+ $ cut --output-delimiter='-' -c7-19,20-21 file.txt
+ Output : 2016-05-31-10-03
+ alternatives:
+ $ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+ $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
+ $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+
+
+CUT
+
+
+DIFF
+#Using diff with two pipes : diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
+normal usage of diff is diff -y file1 file2.
+Tricks:
+If you are in doubt about the results of a command like an extra grep you can compare results of previous command with new command like this:
+diff -w -y <(apt search manpages |grep "/" |cut -d"/" -f1 |grep -E '^[a-zA-Z0-9]') <(apt search manpages |grep "/" |cut -d"/" -f1)
+Differences will be noted with > symbol and then you can manually verify that the results of the new command (extra grep) is as expected.
+Usefull when you want to verify the performance in commands that produce large output.
+#
+Quick Tricky way to display arrays data:
+declare -p array |sed 's/declare -a array=(//g' |tr ' ' '\n' |sed 's/)$//g'
+if you just declare -p array then output is like this:
+a=( 1 2 3);declare -p a --> declare -a a=([0]="1" [1]="2" [2]="3")
+So the first sed gets rid of the 'declare -a a=(' part.
+tr replaces spaces (between array elements) with new line
+last sed deletes the last ) in the array
+result : 
+root@debi64:/home/gv/Desktop/PythonTests# a=( 1 2 3);declare -p a |sed 's/declare -a a=(//g' |tr ' ' '\n' |sed 's/)$//g'
+[0]="1"
+[1]="2"
+[2]="3"
+You can then further select id of an array directly (see manon script)
+You can also have a function for this : function pa { declare -p $1 |sed s/"declare -a $1=("//g |tr ' ' '\n' |sed 's/)$//g';};pa a
+or even assign it to an alias:
+alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
+for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
+#
+Use of find with custom output (printf):
+find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
+
+#
+Comparing files and variables:
+diff can compare two files line by line.
+You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
+
+
+HEAD AND TAIL
+Trick to get only one line from file using head and tail
+Usage: bash viewline myfile 4
+head -n $2 "$1" | tail -n 1
+
+JOIN
+join -a1 -o 1.2     - /dev/null # print the second field
+join -a1 -o 1.2,1.1 - /dev/null # reorder the first two fields
+
+PASTE : Merge lines of files
+https://www.gnu.org/software/coreutils/manual/html_node/paste-invocation.html#paste-invocation
+num2 file = 1,2 
+let3 file = a,b,c
+$ paste num2 let3
+1       a
+2       b
+        c
+$ paste -s num2 let3
+1       2
+a       b       c
+$ paste num2 let3 num2
+1       a      1
+2       b      2
+        c

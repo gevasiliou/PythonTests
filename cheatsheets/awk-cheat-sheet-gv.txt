@@ -1,0 +1,89 @@
+
+ AWK
+ Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
+ Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
+ If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
+ Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
+ For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
+ Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
+ Another great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc).
+ Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
+ echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
+
+ echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
+ echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
+ -->value1,string1
+ -->value1,string2
+ -->value1,string3
+ -->value1,string4
+ In case of file , separated with new lines you need to apply this a bit different version: 
+ awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+
+ See this article for AWK reserved variables :
+ http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+
+
+ awk -F ':' '$3==$4' file.txt -->  
+ echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
+ echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
+
+ Export AWK variables
+ $ mkfifo fifo
+ $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
+ $ IFS== read var value < fifo
+ $ eval export $var=$value
+
+ Switch position of comma separated fields:
+ echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
+ textA,textC,textB,dateD
+ OFS affects only the display separator. If omited space (default OFS) will be used.
+
+ print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
+
+ Print up to EOF after a matched string: awk '/matched string/,0' a.txt
+
+ AWK - Use multiple delimiters:
+ $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
+ Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
+ Output: 
+ UAT/ECC/Global/MES/1206/MRP-S23   
+ UAT/ECC/Glal/ME/120/MRP-  S23.xml
+ Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
+ Mind that separate {} create a newline to out file.
+
+ Search for a pattern with not known occurencies:
+ awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
+ This is usefull if we dont know how many "name:" entries exist per line
+ If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
+ If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
+ If line has more than 3 the -F solution will miss the rest entries.
+
+ Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
+
+ AWK: Produce a sed script to replace values to a file with entries from another file
+ http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
+
+ Consider a user map containing multiple lines with "userid username" (seperated by space)
+ Consider a text file (letter.txt) contaiining paragraphs with reference to the users as userid.
+ We want to replace all userids in letter file with their realnames present in name mapping file.
+ Tricky solution: Transform map file (each line) to the format 's/userid/username/g' and then call sed -f <transformed mapfile> <text file that needs replacements>
+ The awk part: $ awk '{ printf("s/<@%s>/%s/g\n", $1, $2) }' user_map.txt >script.sed
+ The sed part: $ sed -f script.sed letter.txt 
+ 
+ *BASH Way: var="$(cat file.txt)";while read -r id name;do var="${var//@$id/$name}";done<mapfile.txt;echo "$var"
+ 
+ *SED Way : while read -r id name;do sed -i "s/\@$id/$name/g" textfile.txt;done<mapfile.txt
+ 
+ *SED Bug : File is opened and "seded" multiple times (but either the Kusulananda solution does sed multiple times, correct? - No. Does one sed with multiple replace patterns)
+ On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
+ Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
+ 
+ AWK: Insert dash in string
+ String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
+ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+ Output : 2016-05-31-10-03
+ alternatives:
+ $ cut --output-delimiter='-' -c7-19,20-21 file.txt
+ $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
+ $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+
