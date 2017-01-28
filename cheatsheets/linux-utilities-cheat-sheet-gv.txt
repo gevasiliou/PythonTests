@@ -94,8 +94,8 @@ join -a1 -o 1.2,1.1 - /dev/null # reorder the first two fields
 
 PASTE : Merge lines of files
 https://www.gnu.org/software/coreutils/manual/html_node/paste-invocation.html#paste-invocation
-num2 file = 1,2 
-let3 file = a,b,c
+num2=file including 1,2 
+let3=file including a,b,c
 $ paste num2 let3
 1       a
 2       b
@@ -107,6 +107,10 @@ $ paste num2 let3 num2
 1       a      1
 2       b      2
         c
+
+Also see this example: http://unix.stackexchange.com/questions/340691/stacked-records-to-columns/340692?noredirect=1#comment602328_340692
+$ paste -d"," <(grep -E '[0-9]' c2.txt) <(grep -E '[a-z]' c2.txt)
+Mind the process substitution of the same file. Remember that <(...) creates a temp fd descriptor which acts as a file argument in apps requesting files, like paste.
 
 COLUMN
 Print anything nicely with column program
@@ -125,4 +129,22 @@ by bash and a few other shells), you may instead use printf to send the addition
 
 printf '%s + %s\n' "$a" "$b" | bc
 c="$( printf '%s + %s\n' "$a" "$b" | bc )"
+
+CAT AND TAC
+Source Code of CAT:
+http://git.savannah.gnu.org/gitweb/?p=coreutils.git;a=blob;f=src/cat.c;h=001408576c4c17a156c1e8761ed2d9c96aa3d0cf;hb=refs/heads/master
+CAT help is quite good. So it is also man page.
+TAC is the opposite of CAT; Prints lines of file upside down (start from last).
+
+LN - Create links.
+Combine -s to create symbolic links; otherwise will create hardlinks.
+Hardlinks remain when the original file is removed. Symlinks fail.
+
+NL - Line numbering
+Can be used / pipe / file to add numbers in file lines (similar to cat -n but MUCH more advanced).
+Has a lot of options like starting number, number step, number acc to regex, etc
+Simpliest usage : cat file |nl - default usage is equivalent to cat -b = number non empty lines only.
+nl -bp"^$" c.txt --> apply numbering only on empty lines (start and end together)
+
+
 

@@ -1,10 +1,10 @@
-# geany_encoding=ISO-8859-7 #
-Local Change
-chr start end score length
-chr1 237592 237601 176 320
-chr1 237601 237912 176 320
-chr1 521409 521601 150 320
-chr1 521601 521729 150 320
-chr1 714026 714346 83 320
-chr1 805100 805201 323 340
-chr1 805201 805440 323 340 
+AUTHOR
+       Written by Torbjorn Granlund and Richard M. Stallman.
+
+REPORTING BUGS
+       GNU coreutils online help: <http://www.gnu.org/software/coreutils/>
+       Report cat translation bugs to <http://translationproject.org/team/>
+
+COPYRIGHT
+       Copyright © 2016 Free Software Foundation, Inc.  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+       This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
