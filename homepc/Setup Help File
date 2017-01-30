@@ -1,3 +1,10 @@
+1. xdg-open hack:
+Open xdg-open file, go to open_xfce function and replace  exo-open "$1" command with
+	[ $USER = "root" ] && gksu -u gv exo-open "$1" || exo-open "$1"
+
+This will allow programms that call xdg-open for opening i.e web links (like yad --show-uri) to open the link using the user account.
+Particularly Chrome breaks if run as root. Testit by terminal xdg-open www.google.com
+
 xorg-server (2:1.18.3-2) unstable; urgency=medium
 
   X now defaults to using built-in modesetting video driver on Intel
@@ -14,11 +21,11 @@ xorg-server (2:1.18.3-2) unstable; urgency=medium
 
 (q to quit)
 
-Desktop / folder right click menu:
+2. Desktop / folder right click menu:
 Select folder/file , open with, custom command , give optional friendly name and will automatically added to right click -context- menu.
 add shortcut / launcher : lxshortcut -o /path/filename
 
-11. Desktop and Panel Links, Bash Script Launchers 
+3. Desktop and Panel Links, Bash Script Launchers 
 http://lxlinux.com/#11
 
 /usr/share/applications
@@ -27,23 +34,11 @@ change entry OnlyShowIn=MATE; to MATE;XFCE;LXDE;
 Now the mate-search-tool appears on the Application Menu of LXDE (Accessories)
 
 
-Install alacarte from gnome.perfect menu editor.
-generated .desktop files found here: 
-/home/gv/.local/share/applications
+Alternative/tip: Install alacarte from gnome.perfect menu editor.
+generated .desktop files found here:  /home/gv/.local/share/applications
 
-remove all wicd entris (apt-get purge wicd*),
-you can install network-manager and network-manager-gnome to use the default gnome/mate connection manager.
-Or you can install connman (by intel). If you just install package connman you will get the core command line package.
-For Debian the right package is cmst , a connman gtk user interface. I also tried connman-ui but not found a way to run it
-Finally i used cmst, configure the preferences for auto start minimized in system tray.
-I also got to install connman-vpn, since cmst was complaining about vpn errors.
-Maybe if you just install cmst will automatically install connman (core) and connman-vpn as dependencies.
-
-Remark about System Tray: System tray is an "object" capable to be added in any panel.
-If an application is configured to run in system tray, you must have added system tray in teh panel.
-System tray is NOT the whole panel. Is an object of the panel.
-In my case system tray object includes (finally) cmst and clipboard manager.
-
+4. Fix RTL WIFI problems (rtl8192se, rtl8723be,etc)
+The main target is to disable all power saving options (fwlps,swlps,ips)
 modinfo rtl8192se
 systool -a -v -m rtl8192se
 Gives you details about parameters of module 
@@ -98,7 +93,27 @@ sleep 3s
 modprobe rtl8192se fwlps=0 ips=0 swlps=0
 This also worked for me (using connman as network manager)
 
-Bug: xfce4-power-manager : install with sudo. run as user, edjust options, check "tray icon", tray icon displayed, but on the next reboot user settings are lost - tray icon is also lost. 
+5. Disable all Network Managers and use hard coded configuration to connect to your WiFi
+remove all wicd entries (apt-get purge wicd*),
+you can install network-manager and network-manager-gnome to use the default gnome/mate connection manager.
+Or you can install connman (by intel). If you just install package connman you will get the core command line package.
+For Debian the right package is cmst , a connman gtk user interface. I also tried connman-ui but not found a way to run it
+Finally i used cmst, configure the preferences for auto start minimized in system tray.
+I also got to install connman-vpn, since cmst was complaining about vpn errors.
+Maybe if you just install cmst will automatically install connman (core) and connman-vpn as dependencies.
+
+Remark about System Tray: System tray is an "object" capable to be added in any panel.
+If an application is configured to run in system tray, you must have added system tray in teh panel.
+System tray is NOT the whole panel. Is an object of the panel.
+In my case system tray object includes (finally) cmst and clipboard manager.
+
+connman happened to fail after sid upgrade:
+Unable to create an interface to connman on the system bus.
+CMST will not be able to communicate with connman.
+According to lxqt team is the iptables pkg who did the story.
+
+
+6. Bug in xfce4-power-manager : install with sudo. run as user, edjust options, check "tray icon", tray icon displayed, but on the next reboot user settings are lost - tray icon is also lost. 
 work arounds:
 http://askubuntu.com/questions/407287/change-xfce4-power-manager-option-from-terminal
 xfconf-query -> displays all chanels of xfce4
@@ -112,11 +127,8 @@ Initial settings loaded at start up: /etc/xdg/xfce4/xfconf/xfce-perchannel-xml
 
 https://www.kernel.org/doc/Documentation/sysctl/vm.txt
 
-Unable to create an interface to connman on the system bus.
-CMST will not be able to communicate with connman.
 
-According to lxqt team is the iptables pkg who did the story.
-
+7. Customizing LXDE Panels
 /home/gv/.config/lxpanel/LXDE
 /home/gv/.config/lxpanel/LXDE/panels
 The trick is that you can create a panel that will be assigned to monitor 2 = VGA-1
@@ -143,10 +155,27 @@ restart			restart lxpanel
 exit			exit lxpanel
 command <plugin> <cmd>	send a command to a plugin
 
-Onboard  Configuartion:
+8. Onboard  Configuartion on LXDE
 
 You need to go at Start menu - Preferences - openbox configuration manager or just run obconf & from CLI.
 Goto Windows menu and check "Place new windows under the mouse". Also in "Prefer to place new windows on:" select the monitor with the mouse. 
 
 Moreover on default lxde panel (top or bottom, it depends on your set up) you need to go panel settings, panel applets, TaskBar (Window List) , Preferences, and check "Only show Windows on the same monitor as the task bar".
 This helps task bar / window list to display minimized apps of it's own monitor. Window List of LVDS-1 has minimized windows of LVDS-1. You need to apply a second win list on monitor 2 panel to hold minimized windows of monitor 2. If this option is disabled, all window list applets will display minimized icons from all monitors.
+
+
+9. Enable tap to click in touchpad if it is not operating (LXDE - was working out of the box in XFCE)
+synclient TapButton1=1 (or just run synclient to see all available / configurable options)
+Or follow the instructions here for a permanent solution
+http://unix.stackexchange.com/questions/337008/activate-tap-to-click-on-touchpad/337009#337009
+/etc/X11/xorg.conf.d/50-synaptics.conf :
+Section "InputClass"
+        Identifier "touchpad catchall"
+        Driver "synaptics"
+        MatchIsTouchpad "on"
+        Option "TapButton1" "1"
+
+The file 50-synaptics.conf should exist at /usr/share/X11/xorg.conf.d/50-synaptics.conf (even starting with different number , not 50).
+Find it and copy it to /etc/X11/xorg.conf.d folder. 
+In this folder user specific customizations are applied over general config files.
+cp /usr/share/X11/xorg.conf.d/50-synaptics.conf /etc/X11/xorg.conf.d/50-synaptics.conf
