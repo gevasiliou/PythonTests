@@ -1,4 +1,3 @@
-BrandNewFunction (xxx as integer
-yyy as boolean
-ddd as integer
-eee as whatever)
+This guys over there have the required surveillance technology to do the job.
+
+The other guys not only have efficient surveillance technology, but they also gather surveillance data by one cctv camera.

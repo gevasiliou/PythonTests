@@ -1,9 +1,0 @@
-myOtherFunction (x as boolean
-y as integer
-d as string
-e as whatever)
-
-myFunction (xx as boolean
-yy as integer
-dd as string
-ee as whatever)
