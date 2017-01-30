@@ -1,0 +1,4 @@
+BrandNewFunction (xxx as integer
+yyy as boolean
+ddd as integer
+eee as whatever)

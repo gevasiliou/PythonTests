@@ -306,19 +306,27 @@ export -f readmanpage
 function search_manipulate {
 echo "You are in function search manipulate"
 echo "Selections = $selections"
-echo "Pattern1 for apt search = $pattern1"
-echo "Pattern2 for apt search = $pattern2"
 
+[[ "${pattern1:0:1}" == "*" ]] && pattern1="${pattern1:1}" #if first char is * exclude this char
+[[ "${pattern1: -1}" == "$" || "${pattern1: -1}" == "*" ]] && pattern1="${pattern1:0:-1}" #if last char is * exclude him
+#In apt search we don't want wildmark (*) in pkg name.
 search1=$(apt search $pattern1 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
+
 if [[ $pattern2 != "" ]];then
+	[[ "${pattern2:0:1}" == "*" ]] && pattern2="${pattern2:1}" #if first char is * exclude this char
+	[[ "${pattern2: -1}" == "$" || "${pattern2: -1}" == "*" ]] && pattern2="${pattern2:0:-1}"
 	search2=$(apt search $pattern2 |grep "/" |cut -f1 -d "/" |grep -vE '^  ')
 	pattern="$search1 $search2"
-	pattern=$(tr '\n' ' ' <<<"$pattern")
 else
 	pattern="$search1"
-	pattern=$(tr '\n' ' ' <<<"$pattern")
 fi
+pattern=$(tr '\n' ' ' <<<"$pattern")
+
+echo "Pattern1 for apt search = $pattern1"
+echo "Pattern2 for apt search = $pattern2"
+read -p "any key" key
 echo "Pattern for apt list that comes after = $pattern"
+
 }
 
 function aptlist_manipulate {
@@ -332,8 +340,11 @@ elif [[ "${pattern1: -1}" == "$" ]]; then
 	pattern1="${pattern1:0:-1}"
 fi
 
-if [[ $pattern2 != "" ]];then
-	if [[ "${pattern2: -1}" != "*" ]]; then
+[[ "$pattern2" == "*" ]] && pattern2=""
+if [[ $pattern2 != "" ]];then	
+	if [[ "${pattern2: -1}" == "$" ]];then 
+		pattern2="${pattern2:0:-1}"
+	elif [[ "${pattern2: -1}" != "*" && "${pattern2: -1}" != "$" ]]; then
 		pattern2=$(echo "$pattern2""*")
 	fi
 	pattern="$pattern1 $pattern2"
@@ -397,21 +408,18 @@ esac
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 [[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
-[[ $c -gt 1000 ]] && echo "More than 1000 pkgs found. Will list only first 1000 pkgs" && c=1000
+[[ $c -gt 1000 ]] && echo "More than 1000 pkgs found (actually found $c pkgs). Will list only first 1000 pkgs" |yad --text-info && c=1000
 for (( item=0; item<=$c; item++ )); do
-if [[ -z "${fti[$item]}" ]];then 
-continue
-else
+[[ -z "${fti[$item]}" ]] && continue
 echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
-fi
 done
 
 aptshow=$(apt show ${pd[@]})
 #declare -p aptshow
 #echo "$aptshow" |grep "virtual"
 #exit
-pddescription=$(grep -e "Description:" <<< $aptshow)
+pddescription=$(grep -e "Description:" <<< $aptshow |tr -d '"') #some packages like xtail have "" in their description which breaks the rest code (yad --select function in particular)
 #pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
 #declare -p pddescription && set +f && exit
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
@@ -449,7 +457,7 @@ pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
 pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " ")) #pdpi=pdpolicy installed
 pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " ")) #pdpc=pdpolicy candidate
 fi
-
+#exit
 
 #echo "${pdss[@]}"
 #exit

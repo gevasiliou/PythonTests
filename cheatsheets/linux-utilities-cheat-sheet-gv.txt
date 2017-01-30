@@ -1,5 +1,6 @@
 LINUX-UTILS CHEAT SHEET by GV
 https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
+https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
 
 GREP
 Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
@@ -26,6 +27,10 @@ grep -e 'pattern1.*pattern2' -e 'pattern2.*pattern1'
 Alternatives:
 awk '/pattern1/ && /pattern2/'
 awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
+
+COLORIZE GREP
+grep --color 'pattern' or grep --color -E 'pattern|$'
+Or in a function/alias : function highlight () { grep --color -E "$1|$" "${@:1}" }
 
 :<<CUT
 https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation

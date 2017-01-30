@@ -1,8 +1,15 @@
 SED CHEAT SHEET by gv
-
+http://sed.sourceforge.net/grabbag/tutorials/
 SED Cheat Sheet and OneLiners: http://sed.sourceforge.net/sed1line.txt
-Read Cheat Sheet in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
+
+-n: not printing/quiet
+-e: edit
+-i: infile edit
+'s/..' : replace
+'.../p' : print (force print when -n is used). some times requires space ('/.../ p')
+
+Read Cheat Sheet in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 
 SED FROM LINE X to LINE Y 
 sed -n '8,12p'
@@ -14,7 +21,8 @@ SED separators :
 All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
 
 SED FROM WORD1 TO WORD2
-sed -n '/WORD1/,/WORD2/p' /path/to/file # this prints all the lines between word1 and word2 (1st match - next matches of word2 ignored)
+sed -n '/word1/,/word2/p' 
+sed -n '/WORD1/,/WORD2/ p' /path/to/file # this prints all the lines between word1 and word2 (1st match - next matches of word2 ignored)
 awk alternative: awk '/Tatty Error/,/suck/' a.txt
 you can get easy line numbering if you pipe to "cat -n" or to "nl" in the penalty of usings an extra pipe = more resources for that.
 
@@ -132,3 +140,8 @@ Target : Change value of shovel enabled (from 0 to 1)
 Command: sed '/\[shovel\]/,/^$/ s/enabled = 0/enabled = 1/' file
 First part=/\[shovel\]/,/^$/ : from word [shovel] up to the next empty line (empty lines contain just start(^) and end ($) chars)
 Second part=s/enabled = 0/enabled = 1/ : usual sed replace in form s/old/new
+
+Another example of replace after match:
+sed '/(/,/)/s/line/newline/g' #replaces line0-1-2-etc with newline0-1-2-etc in a file where first line and last line are in format (line0 ... up to lineX)
+split to understand: the fine part is /(/,/)/ = /(/ , /)/
+insteaf of 'p' at the end we use s/old/new/ for replace.

@@ -87,3 +87,32 @@
  $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
  $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 
+ Replace values upon criteria matching:
+ Input:
+   a b c
+A 5 2 0
+B 0 5 4
+C 4 3 4
+D 2 0 2
+
+ Output expected (replace all fields with a value to 1)
+   a b c
+A 1 1 0
+B 0 1 1
+C 1 1 1
+D 1 0 1
+
+ AWK script : 
+BEGIN { OFS = FS = "\t" }
+
+NR != 1 {
+    for (i = 2; i <= NF; ++i) {
+        if ($i != "0") {
+            $i = "1";
+        }
+    }
+}
+
+{ print }
+
+Runit : awk -f script.awk datafile

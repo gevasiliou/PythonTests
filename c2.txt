@@ -1,13 +1,6 @@
-1
-2
-3
-
-a
-b
-c
-
-9
-10
-
-y
-z
+mohamed	400	298334432	Marrakech	ingénieur
+omar	13	0466342233	Agadir	pâtissier
+wafa	30	0144234452	Rabat	facteur
+youness	20	0133444335	Casablanca	vendeur
+rachid	30	0381698759	Rabat	facteur
+youness	20	0685987456	Casablanca	vendeur
