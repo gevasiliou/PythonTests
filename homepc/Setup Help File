@@ -1,5 +1,5 @@
 1. xdg-open hack:
-Open xdg-open file, go to open_xfce function and replace  exo-open "$1" command with
+Open xdg-open file, go to open_xfce function and replace  'exo-open "$1"' command with
 	[ $USER = "root" ] && gksu -u gv exo-open "$1" || exo-open "$1"
 
 This will allow programms that call xdg-open for opening i.e web links (like yad --show-uri) to open the link using the user account.
