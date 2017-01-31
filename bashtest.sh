@@ -642,5 +642,46 @@ echo "$variable"
 # 3. This file is excluded and it should not be excluded by the rules applied: a@min@js.js
 }
 
+
+function adding_agrs {
+if [[ $# -lt 1 ]]
+then
+        echo "Please input a valid amount of numbers. Need at least one."
+        exit 1
+else
+        n=$#
+        sum=0
+        for arg in "$@"
+        do
+          echo "arg=$arg"
+          sum=$(($sum+$arg))
+        done
+fi
+
+echo "sum=$sum"
+echo "number of parameters=$n"
+}
+
+
+function adding_args_with_shift {
+if [[ $# -lt 1 ]]
+then
+        echo "Please input a valid amount of numbers. Need at least one."
+        exit 1
+else
+        n=$#
+        sum=0
+        while [[ $# -ne 0 ]];
+        do
+          echo "arg=$1"
+          sum=$(($sum+$1))
+          shift
+        done
+fi
+
+echo "sum=$sum"
+echo "number of parameters=$n"
+}
+
 exit
 
