@@ -1,4 +1,3 @@
-
  AWK
  Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
  Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
@@ -22,17 +21,20 @@
  See this article for AWK reserved variables :
  http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 
-
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Print lines if specific columns have same value
  awk -F ':' '$3==$4' file.txt -->  
  echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
  echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  Export AWK variables
  $ mkfifo fifo
  $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
  $ IFS== read var value < fifo
  $ eval export $var=$value
 
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  Switch position of comma separated fields:
  echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
  textA,textC,textB,dateD
@@ -42,6 +44,7 @@
 
  Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  AWK - Use multiple delimiters:
  $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
  Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
@@ -51,6 +54,7 @@
  Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
  Mind that separate {} create a newline to out file.
 
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  Search for a pattern with not known occurencies:
  awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
  This is usefull if we dont know how many "name:" entries exist per line
@@ -60,6 +64,7 @@
 
  Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
 
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  AWK: Produce a sed script to replace values to a file with entries from another file
  http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
 
@@ -77,7 +82,8 @@
  *SED Bug : File is opened and "seded" multiple times (but either the Kusulananda solution does sed multiple times, correct? - No. Does one sed with multiple replace patterns)
  On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
  Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
- 
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
  AWK: Insert dash in string
  String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
  awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
@@ -87,7 +93,8 @@
  $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
  $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 
- Replace values upon criteria matching:
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+ AWK Replace values upon criteria matching:
  Input:
    a b c
 A 5 2 0
@@ -116,3 +123,20 @@ NR != 1 {
 { print }
 
 Runit : awk -f script.awk datafile
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK - Column Checker:
+Input:
+A B B A
+A A A
+B A B A
+B B
+A A
+A B
+
+Output : 
+If all columns are the same then print just once the common characted (i.e if AAA then print A)
+If columns are different then print "multi"
+
+Code:
+awk '{ for (i = 2; i <= NF; i++) { if ($i != $1) { print "multi"; next } }; print $1 }'
