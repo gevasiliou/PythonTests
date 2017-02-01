@@ -17,6 +17,7 @@ GREP all files for two patterns (and operation)
 http://stackoverflow.com/questions/41896604/linux-listing-files-that-contain-several-words#41897079
 grep -ERl 'toto' | xargs -r grep 'tata'
 Tip : xargs -r ensures that second grep will not run in null / non matched data.
+Alternative : awk '/pattern1/&&/pattern2/'
 
 GREP a file for two patterns with AGREP by Chazelas:
 http://unix.stackexchange.com/questions/55359/how-to-run-grep-with-multiple-and-patterns/55391#55391
@@ -31,6 +32,11 @@ awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
 COLORIZE GREP
 grep --color 'pattern' or grep --color -E 'pattern|$'
 Or in a function/alias : function highlight () { grep --color -E "$1|$" "${@:1}" }
+
+Combine grep with cut and multipatterns: 
+instead of grep |cut combination you can use awk
+grep -E 'Label 3 \|Label 5' |cut -d' ' -f3
+awk '/Label 3/ { print $3 >>"F3.csv" } /Label 5/ { print $3>>"F5.csv" }'
 
 :<<CUT
 https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation
@@ -78,15 +84,15 @@ You can also have a function for this : function pa { declare -p $1 |sed s/"decl
 or even assign it to an alias:
 alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
 for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
-#
-Use of find with custom output (printf):
+# Use of find with custom output (printf):
 find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
 
-#
-Comparing files and variables:
+# Comparing files and variables:
 diff can compare two files line by line.
 You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
 
+# Compare grep result in a nice visual way:
+diff -u  <(cat a.txt) <(grep "tar*" a.txt) #or -y
 
 HEAD AND TAIL
 Trick to get only one line from file using head and tail
@@ -138,7 +144,7 @@ c="$( printf '%s + %s\n' "$a" "$b" | bc )"
 CAT AND TAC
 Source Code of CAT:
 http://git.savannah.gnu.org/gitweb/?p=coreutils.git;a=blob;f=src/cat.c;h=001408576c4c17a156c1e8761ed2d9c96aa3d0cf;hb=refs/heads/master
-CAT help is quite good. So it is also man page.
+CAT help and man page are quite good. 
 TAC is the opposite of CAT; Prints lines of file upside down (start from last).
 
 LN - Create links.
@@ -152,4 +158,8 @@ Simpliest usage : cat file |nl - default usage is equivalent to cat -b = number 
 nl -bp"^$" c.txt --> apply numbering only on empty lines (start and end together)
 
 
+LINE : Read and print lines from file  . Default line returns the first line
+line <file 
+{ line1=$(line) && line2=$(line); } < input.txt #this gets the first two lines
 
+To get all lines from a file you can use the classic while IFS= read -r line or readarray -t line < input.txt

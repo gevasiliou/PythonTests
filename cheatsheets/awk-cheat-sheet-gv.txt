@@ -147,7 +147,7 @@ awk '/Label 3/ { print $3 >>"F3.csv" } /Label 5/ { print $3>>"F5.csv" }'
 OR
 awk '/Label 3|Label 5/ { print $3 >> "F"$2".csv"}'
 
-Consider file with lines 
+Consider a file with lines 
 Label 3 70
 Label 4 95
 Label 5 100
@@ -155,3 +155,43 @@ Label 5 100
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK Use as grep AND
 awk '/pattern1/&&/pattern2/'
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Print a line if columns are equal to 5 (ps: columns separated by "|")
+awk -F \| 'NF==5' data3
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Count lines
+awk '{ $0 = NR "\t" $0 } 1' file.txt | tail
+
+Counting Alternatives:
+grep -n ^ file.txt | sed 's/:/\t/' | tail
+sed = file.txt | sed 'N;s/\n/\t/' | tail
+pr -n -t -l 1 file.txt | tail
+nl /boot/config-4.9.0-1-amd64 |tail
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK : Simulate agrep (grep with AND) for patterns read from a file:
+http://unix.stackexchange.com/questions/341076/how-to-find-all-files-containing-various-strings-from-a-long-list-of-string-comb
+Basic: awk '/pattern1/ && /pattern2/'
+while IFS= read -r line;do awk "$line" *.txt;done<./tmp/d1.txt
+
+Above will print in screen the matched lines of all txt files.
+If we need to print only the filename and not the matched contents then awk must be used like this:
+awk "$line""{print FILENAME}" *.txt
+
+In order this to work , search terms in file should be in format /term1/ && /term2/ && /term3/ etc.
+I the example given in link , pattern file contains lines like this:
+"surveillance data" "surveillance technology" "cctv camera"
+
+Which are converted to awk format like this:
+$ sed 's/" "/\/ \&\& \//g; s/^"\|"$/\//g' ./tmp/d1.txt
+> /surveillance data/ && /surveillance technology/ && /cctv camera/
+
+Alternativelly we could use :
+(a) agrep by formatting the data in pattern1;pattern2;pattern3 and then using: while IFS= read -r line;do agrep "$line" *.txt;done<./tmp/d1.txt
+(b) classic grep with xargs -r : grep -l pattern1 * |xargs -r grep -l pattern2 |xargs -r grep -l pattern3
+The -l instructs grep to print filename . Usefull info for the next grep.
+If we just want to multi grep with and on the data then even this should work:
+grep pattern1 file |grep pattern2 |grep pattern3
+The final output would include all three patterns. 
