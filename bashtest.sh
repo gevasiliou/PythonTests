@@ -683,5 +683,16 @@ echo "sum=$sum"
 echo "number of parameters=$n"
 }
 
+function extension_checker {
+	for file in "$1"/*;do
+		if [[ "$file" =~ \.(c|cpp|h|cc)$ ]]; then
+			#...
+		fi
+	done
+
+# =~ is considered a REGEX operator. Above if code checks for file with extension c or cpp or h or cc.
+#
+}
+
 exit
 
