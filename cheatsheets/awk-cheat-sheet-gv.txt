@@ -140,3 +140,18 @@ If columns are different then print "multi"
 
 Code:
 awk '{ for (i = 2; i <= NF; i++) { if ($i != $1) { print "multi"; next } }; print $1 }'
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+Combine multi grep pattern and cut -d' ' -f3 for multiple lines
+awk '/Label 3/ { print $3 >>"F3.csv" } /Label 5/ { print $3>>"F5.csv" }'
+OR
+awk '/Label 3|Label 5/ { print $3 >> "F"$2".csv"}'
+
+Consider file with lines 
+Label 3 70
+Label 4 95
+Label 5 100
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Use as grep AND
+awk '/pattern1/&&/pattern2/'
