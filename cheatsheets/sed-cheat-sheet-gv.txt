@@ -2,72 +2,78 @@ SED CHEAT SHEET by gv
 http://sed.sourceforge.net/grabbag/tutorials/
 SED Cheat Sheet and OneLiners: http://sed.sourceforge.net/sed1line.txt
 http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
+http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
+http://www.theunixschool.com/2012/06/sed-25-examples-to-delete-line-or.html
 
--n: not printing/quiet
--e: edit
+-n: not printing/quiet. If missing the input is printed.
+-e: sed expression is following
 -i: infile edit
 's/..' : replace
-'.../p' : print (force print when -n is used). some times requires space ('/.../ p')
+'.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to print specific lines/patterns
+'..../d' : delete . Also !d for not delete. Combine /d with missing -n to see the input with the deletions.
+'N': N command ReadS next line into the pattern space.
 
-Read Cheat Sheet in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
-
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-SED FROM LINE X to LINE Y 
-sed -n '8,12p'
-sed -n '16224,16482p;16483q' filename
-mind the 16483q command. q instructs sed to quit. Without q sed will keep scanning up to EOF.
-To do that with variables: $ sed -n "$FL,$LL p" file.txt
+Read Sed Online Cheat Sheets in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 
 SED separators : 
 All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
 
+SED Use external variable (i.e $line,$text,etc - defined before sed)
+You just need to double quote the whole sed expression instead of single quotes.
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-SED FROM WORD1 TO WORD2
+SED PRINT FROM LINE X to LINE Y 
+sed -n '8,12p'
+sed -n '16224,16482p;16483q' filename
+mind the 16483q command. q instructs sed to quit. Without q sed will keep scanning up to EOF.
+To do that with variables: $ sed -n "$FL,$LL p" file.txt
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+SED PRINT FROM WORD1 TO WORD2
 sed -n '/word1/,/word2/p' 
 sed -n '/WORD1/,/WORD2/ p' /path/to/file # this prints all the lines between word1 and word2 (1st match - next matches of word2 ignored)
 awk alternative: awk '/Tatty Error/,/suck/' a.txt
 you can get easy line numbering if you pipe to "cat -n" or to "nl" in the penalty of usings an extra pipe = more resources for that.
-
-Find a word in file/stdin and get from this word up to the last \n = new line = eof.
+#-----------------------------------------------------------------------------------------------------------------------
+PRINT FROM WORD/LINE UP TO EOF (last \n new line ).
 Remember that $ represents "last"-end of line in regex
 apt show xfce4-wmdock* |sed -n '/Description/,/$\/n/p'
 
 You can do the same starting from a line up to eof. 
 Also this works sed -n '/matched/,$p' file , wherw matched can be a line number or a string
-
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+#-----------------------------------------------------------------------------------------------------------------------
 SED PRINT FROM REGEX UPTO EOF
 sed -n '/regexp/,$p'
-
+#-----------------------------------------------------------------------------------------------------------------------
+PRINT FROM 1ST LINE UP TO PATTERN/WORD:
+$ sed -n '1,/WORD/p' file
+#-----------------------------------------------------------------------------------------------------------------------
 SED Print lines match regex 
 sed -n '/regexp/p' #grep emulation
 sed -n '/regexp/!p' #grep -v
-
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+#-----------------------------------------------------------------------------------------------------------------------
 SED print lines before /after a regexp, but not the line containing the regexp
 sed -n '/regexp/{g;1!p;};h' #the line before match
 sed -n '/regexp/{n;p;}' 	#the line after match
-
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 SED REPLACE (s/original/replaced/)
+
 sed  -n 's/Tatty Error/suck/p' a.txt # This one replaces Tatty Error with word suck and prints the whole changed line
 echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
 More Sed replace acc to http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
-#
+#-----------------------------------------------------------------------------------------------------------------------
 Replace foo with bar only if there is a baz later on the same line:
 sed -i 's/foo\(.*baz\)/bar\1/' file #mind the -i switch which writes the replacement in file (-i = inplace).
-#
+#-----------------------------------------------------------------------------------------------------------------------
 Multiple replace operations: replace with different strings
 You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file #/g means global = all matches in file
-#
+#-----------------------------------------------------------------------------------------------------------------------
 Replace any of foo, bar or baz with foobar : sed -Ei 's/foo|bar|baz/foobar/g' file
-
 Sed replace a string in a line with pattern: sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
 above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
-#
+#-----------------------------------------------------------------------------------------------------------------------
 Replace first occurence of a pattern (as) in every line with an increasing number 
 while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
-#
+
+#-----------------------------------------------------------------------------------------------------------------------
 More Text Replace with sed
 Consider file containing:
 ltm node /test/10.90.0.1 {
@@ -89,10 +95,7 @@ sed '/address/ s/.[0-9]*$/.20/' a.txt
 alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
-Use a variable in sed
-You just need to double qute the sed actions instead of single quotes.
-
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+#-----------------------------------------------------------------------------------------------------------------------
 SED: Remove text inside curly
 This is {
 the multiline
@@ -154,3 +157,174 @@ Another example of replace after match:
 sed '/(/,/)/s/line/newline/g' #replaces line0-1-2-etc with newline0-1-2-etc in a file where first line and last line are in format (line0 ... up to lineX)
 split to understand: the fine part is /(/,/)/ = /(/ , /)/
 insteaf of 'p' at the end we use s/old/new/ for replace.
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+SED EXAMPLES BY http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+
+To remove 1st character in every line:
+$ sed 's/^.//' file or sed  's/.//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove last character of every line : 
+$ sed 's/.$//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove the 1st and last character of every line in the same command: 
+$ sed 's/.//;s/.$//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove first character only if it is a specific character: 
+$ sed 's/^F//' file #Removes Lines starting with F
+#-----------------------------------------------------------------------------------------------------------------------
+To remove last character only if it is a specific character: 
+$ sed 's/x$//' file #removes last character if is x
+#-----------------------------------------------------------------------------------------------------------------------
+To remove 1st 3 characters of every line: 
+$ sed 's/...//' file #OR# $ sed -r 's/.{3}//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove last n characters of every line: 
+$ sed -r 's/.{3}$//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove everything except the 1st n characters in every line: 
+$ sed -r 's/(.{3}).*/\1/' file
+#  .* -> matches any number of characters.
+# first 3 characters matched are grouped using parantheses. 
+# In the replacement, by having \1 only the group is retained, leaving out the remaining part.
+#-----------------------------------------------------------------------------------------------------------------------
+Similarly , to remove everything except the last n characters in a file: 
+$ sed -r 's/.*(.{3})/\1/' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove multiple characters present in a file: 
+$ sed 's/[aoe]//g' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove a pattern  : 
+$ sed 's/lari//g' file
+#-----------------------------------------------------------------------------------------------------------------------
+To delete only nth occurrence of a character in every line: 
+$ sed 's/u//2' file #replaces two u and stops. /g replaces all . Leave it blank replace only the first found.
+#-----------------------------------------------------------------------------------------------------------------------
+To delete everything in a line followed by a character: 
+$ sed 's/a.*//' file #In Word RedHat this Returns RedH
+#-----------------------------------------------------------------------------------------------------------------------
+To remove all digits present in every line of a file: 
+$ sed 's/[0-9]//g' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove all lower case alphabets present in every line: 
+$ sed 's/[a-z]//g' file #in word Linux this returns L
+#-----------------------------------------------------------------------------------------------------------------------
+To remove all alpha-numeric characters present in every line: 
+$ sed 's/[a-zA-Z0-9]//g' file
+#-----------------------------------------------------------------------------------------------------------------------
+To remove a character irrespective of the case: 
+$ sed 's/[uU]//g' file
+#-----------------------------------------------------------------------------------------------------------------------
+Print first / last line of the file: 
+$ sed -n '1p' file  / sed -n '$p' file 
+#-----------------------------------------------------------------------------------------------------------------------
+Print lines which does not X / do contain 'ux':
+$ sed -n '/X/!p' file / $ sed -n '/[ux]/p' file
+#-----------------------------------------------------------------------------------------------------------------------
+Print lines which end with 'x' or 'X' / Beginning with 'A' or 'L'
+$ sed -n '/[xX]$/p' file   /   sed -n '/^A\|^L/p' file
+Some sed version does not accept | (or). Use two patterns instead.
+#-----------------------------------------------------------------------------------------------------------------------
+Print every alternate line (skip one line):
+$ sed  'n;d' file
+n command prints the current line, and immediately reads the next line into pattern space. d command deletes the line present in pattern space. In this way, alternate lines get printed.
+
+Similarly sed  'n;n;N;d' file print every two lines
+#-----------------------------------------------------------------------------------------------------------------------
+Print lines ending with 'X' within a range of lines:
+$ sed -n '/Unix/,${/X$/p;}' file
+
+The range of lines being chosen are starting from the line containing the pattern 'Unix' till the end of the file($). The commands present within the braces are applied only for this range of lines. 
+Within this group, only the lines ending with 'x' are printed. 
+Refer this to know how to print a range of lines using sed from example 5 onwards.
+#-----------------------------------------------------------------------------------------------------------------------
+Print range of lines excluding the starting and ending line of the range:
+$ sed -n '/Solaris/,/HPUX/{//!p;}' file
+The range of lines chosen is from 'Solaris' to 'HPUX'. 
+The action within the braces is applied only for this range of lines. 
+If no pattern is provided in pattern matching (//), the last matched pattern is considered. 
+For eg, when the line containing the pattern 'Solaris' matches the range of lines and gets inside the curly braches, since no pattern is present, the last pattern (solaris) is matched. 
+Since this matching is true, it is not printed(!p), and the same becomes true for the last line in the group as well.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete a particular line : 
+$ sed '1d' file OR  $ sed '3d' file OR $ sed '$d' file (last line) OR sed '2,4d' file (range) OR sed '1d;$d' file (first and last line)
+Tip: replace d with !d to invert the action = delete lines other than those with !d.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete all lines beginning with 'L'  /OR/ ending with 'x' character: 
+$ sed '/^L/d' file /OR/ sed '/x$/d' file /OR/ sed '/[xX]$/d' file (both x and X) 
+#-----------------------------------------------------------------------------------------------------------------------
+Delete all blank lines in the file
+$ sed '/^$/d' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete all lines which are empty or which contains just some blank spaces:
+$ sed '/^ *$/d' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the lines containing the pattern 'Unix'.
+$ sed '/Unix/d' file #Use !d to delete line NOT containing the pattern Unix.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the lines containing the pattern 'Unix' OR 'Linux':
+$ sed '/Unix\|Linux/d' file #In some sed OR | is not working - use two expressions (not a pipe)
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the lines starting from the 1st line till encountering the pattern 'Linux':
+$ sed '1,/Linux/d' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the lines starting from the pattern 'Linux' till the last line:
+$ sed '/Linux/,$d' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the last line ONLY if it contains the pattern 'AIX':
+$ sed '${/AIX/d;}' file /OR/ sed '${/AIX\|HPUX/d;}' file (two patterns with or)
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the lines containing the pattern 'Solaris' only if it is present in the lines from 1 to 4.
+$ sed '1,4{/Solaris/d;}' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the line containing the pattern 'Unix' and also the next line:
+$ sed '/Unix/{N;d;}' file
+N command reads the next line in the pattern space. d deletes the entire pattern space which contains the current and the next line.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete only the next line containing the pattern 'Unix', not the very line:
+$ sed '/Unix/{N;s/\n.*//;}' file
+with s/ we delete from the newline character till the end, which effective deletes the next line after the line containing the pattern Unix.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the line containing the pattern 'Linux', also the line before the pattern:
+$ sed -n '/Linux/{s/.*//;x;d;};x;p;${x;p;}' file | sed '/^$/d'
+
+In order to delete the line prior to the pattern,we store every line in a buffer called as hold space. 
+Whenever the pattern matches, we delete the content present in both, the pattern space which contains the current line, the hold space which contains the previous line.
+'x;p;' ; This gets executed for every line. x exchanges the content of pattern space with hold space. p prints the pattern space. 
+As a result, every time, the current line goes to hold space, and the previous line comes to pattern space and gets printed. 
+When the pattern /Linux/ matches, we empty(s/.*//) the pattern space, and exchange(x) with the hold space(as a result of which the hold space becomes empty) and delete(d) the pattern space which contains the previous line. 
+
+And hence, the current and the previous line gets deleted on encountering the pattern Linux. The ${x;p;} is to print the last line which will remain in the hold space if left.
+The second part of sed is to remove the empty lines created by the first sed command
+#-----------------------------------------------------------------------------------------------------------------------
+Delete only the line prior to the line containing the pattern  'Linux', not the very line:
+$  sed -n '/Linux/{x;d;};1h;1!{x;p;};${x;p;}' file
+
+This is almost same as the last one with few changes. On encountering the pattern /Linux/, we exchange(x) and delete(d). As a result of exchange, the current line remains in hold space, and the previous line which came into pattern space got deleted.
+1h;1!{x;p;} -  1h is to move the current line to hold space only if it first line. Exchange and print for all the other lines. This could easily have been simply: x;p . The drawback is it gives an empty line at the beginning because during the first exchange between the pattern space and hold space, a new line comes to pattern space since hold space is empty.
+#-----------------------------------------------------------------------------------------------------------------------
+Delete only the line prior to the line containing the pattern  'Linux', not the very line:
+$  sed -n '/Linux/{x;d;};1h;1!{x;p;};${x;p;}' file
+#-----------------------------------------------------------------------------------------------------------------------
+Delete the line containing the pattern 'Linux', the line before, the line after:
+$ sed -n '/Linux/{N;s/.*//;x;d;};x;p;${x;p;}' file | sed '/^$/d'
+#-----------------------------------------------------------------------------------------------------------------------
+To remove the 1st field or column (comma separated text):
+$ sed 's/[^,]*,//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To print only the last field, OR remove all fields except the last field:
+$ sed 's/.*,//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To print only the 1st field:
+$ sed 's/,.*//' file
+#-----------------------------------------------------------------------------------------------------------------------
+To delete the 2nd field /OR/ To print only the second field
+$ sed 's/,[^,]*,/,/' file  /OR/  sed 's/[^,]*,\([^,]*\).*/\1/' file
+#-----------------------------------------------------------------------------------------------------------------------
+To insert a new column at the end(last column) :
+$ sed 's/.*/&,A/' file
+The regex (.*) matches the entire line and replacing it with the line itself (&) and the new field = letter A
+#-----------------------------------------------------------------------------------------------------------------------
+To insert a new column in the beginning(1st column):
+$ sed 's/.*/A,&/' file
