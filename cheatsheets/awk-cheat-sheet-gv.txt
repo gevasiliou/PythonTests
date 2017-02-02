@@ -153,9 +153,13 @@ Label 4 95
 Label 5 100
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Use as grep AND
+AWK Print line with matched pattern (simulates grep):
+awk '/word/' file.txt
+GNU awk also accepts variables in the form of awk "/$variable/" file.txt
+Using '!/pattern/' you invert the match (similar to grep -v)
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Use as grep with AND Operation
 awk '/pattern1/&&/pattern2/'
-
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK Print a line if columns are equal to 5 (ps: columns separated by "|")
 awk -F \| 'NF==5' data3
@@ -189,7 +193,11 @@ $ sed 's/" "/\/ \&\& \//g; s/^"\|"$/\//g' ./tmp/d1.txt
 > /surveillance data/ && /surveillance technology/ && /cctv camera/
 
 Alternativelly we could use :
-(a) agrep by formatting the data in pattern1;pattern2;pattern3 and then using: while IFS= read -r line;do agrep "$line" *.txt;done<./tmp/d1.txt
+
+(a) agrep by formatting the data in the form of 
+pattern1;pattern2;pattern3 
+and then using: while IFS= read -r line;do agrep "$line" *.txt;done<./tmp/d1.txt
+
 (b) classic grep with xargs -r : grep -l pattern1 * |xargs -r grep -l pattern2 |xargs -r grep -l pattern3
 The -l instructs grep to print filename . Usefull info for the next grep.
 If we just want to multi grep with and on the data then even this should work:
