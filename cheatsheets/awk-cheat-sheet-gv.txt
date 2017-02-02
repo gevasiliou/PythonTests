@@ -1,4 +1,6 @@
  AWK
+ http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
+ 
  Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
  Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
  If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
@@ -203,3 +205,18 @@ The -l instructs grep to print filename . Usefull info for the next grep.
 If we just want to multi grep with and on the data then even this should work:
 grep pattern1 file |grep pattern2 |grep pattern3
 The final output would include all three patterns. 
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK print a line before the pattern match and also the line containing the pattern 'Solaris': 
+$ awk '/Solaris/{print x;print;next}{x=$0;}' file
+
+Every line read is stored in the variable x. Hence, when the pattern matches, x contains the previous line. 
+And hence, by printing the $0 and x, the current line and the previous line gets printed. 
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK print the previous, the pattern matching line and next line
+$ awk '/Solaris/{print x;print;getline;print;next}{x=$0;}' file
+x: gets the previous line
+print: just prints the current line (stored at $0)
+getline : stores next line to $0.
+The last print prints again $0 which now is the next line due to previous getline  
