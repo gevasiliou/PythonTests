@@ -328,3 +328,19 @@ The regex (.*) matches the entire line and replacing it with the line itself (&)
 #-----------------------------------------------------------------------------------------------------------------------
 To insert a new column in the beginning(1st column):
 $ sed 's/.*/A,&/' file
+#-----------------------------------------------------------------------------------------------------------------------
+To print the entire file contents:
+$ sed '' file
+#-----------------------------------------------------------------------------------------------------------------------
+print /delete only the line containing 'Gmail'. In other words, to simulate the grep or grep -v command:
+$ sed '/Gmail/p' file - For delete use /d instead of /p
+#-----------------------------------------------------------------------------------------------------------------------
+delete the first line of the file:
+$ sed '1d' file
+#-----------------------------------------------------------------------------------------------------------------------
+Print lines till you encounter a specific pattern, say till 'Yahoo' is encountered.
+$ sed  '/Yahoo/q' file  #q = quit if pattern / expression matched. Without -n option in sed, lines up to Yahoo are printed (default action of sed is to print).
+#-----------------------------------------------------------------------------------------------------------------------
+To print the first 3 lines, or from lines 1 through 3:
+$ sed -n '1,3p' file #Alternative : sed '3q' file
+#-----------------------------------------------------------------------------------------------------------------------
