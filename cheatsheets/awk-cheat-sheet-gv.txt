@@ -1,5 +1,7 @@
  AWK
  http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
+ https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
+ https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
  
  Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
  Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
@@ -211,7 +213,7 @@ AWK print a line before the pattern match and also the line containing the patte
 $ awk '/Solaris/{print x;print;next}{x=$0;}' file
 
 Every line read is stored in the variable x. Hence, when the pattern matches, x contains the previous line. 
-And hence, by printing the $0 and x, the current line and the previous line gets printed. 
+And hence, by printing the $0 and x, the current line $0 and the previous line x is printed. 
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK print the previous, the pattern matching line and next line
@@ -220,3 +222,42 @@ x: gets the previous line
 print: just prints the current line (stored at $0)
 getline : stores next line to $0.
 The last print prints again $0 which now is the next line due to previous getline  
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK Replace /Delete String
+awk '{ gsub(",","",$3); print $3 }' /tmp/data.txt
+Replaces , with null in field $3 and then prints $3
+If $3 is not provided , then gsub operation is performed in $0=Whole Record = Whole line
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK If then 
+https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
+awk -F'"' '{if ($0!="") print $1"\""$2" || "$2"\""$3;}' e.txt
+awk '{if ($3 =="" || $4 == "" || $5 == "")print "Some score for the student",$1,"is missing";'}' student-marks
+awk '$4<900 || $5<=5' file.txt #Prints the records in which $4 is less than 900 and $5 is -le 5
+#Can combined with {print $2} to print a particular field instead of the whole line.
+awk '$3==$4' file #prints records/lines only if $3 field = $5 field
+awk '$2=="Tennis" #prints lines where #2 is tennis
+awk '$2 ~ "Tennis" #prints lines where #2 contains tennis
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK If then else
+http://www.thegeekstuff.com/2010/02/awk-conditional-statements
+1. awk '{if ($3 >=35 && $4 >= 35 && $5 >= 35) print $0,"=>","Pass";else print $0,"=>","Fail";}'
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK If then else and Replace
+
+awk -F'"' '{if ($0=="") print $0;else {a=$2;gsub("lbk_addcolumn","ColumnAdd",$2);gsub("lbk_dropcolumn","ColumnDrop",$2);print $1"\""$2" || "a"\""$3;}}' e.txt
+
+This prints blank lines straight away and performs all operation if lines are not blank.
+You need apply {} to then or else command to be executed as a group. If you dont enclose commands in{} only the first command is 
+considered as part of the if and the rest commands will be executed as a continuation of the code after if-then-else
+For Input like this : 	x;x;x;x;x;x;cmd="lbk_addcolumn TABLE_NAME_1 COLUMN_X";x;x;x;x
+
+						x;x;x;x;x;x;cmd="lbk_dropcolumn TABLE_NAME_2 COLUMN_Y";x;x;x;x
+
+Gives Output like this:	x;x;x;x;x;x;cmd="ColumnAdd TABLE_NAME_1 COLUMN_X || lbk_addcolumn TABLE_NAME_1 COLUMN_X";x;x;x;x
+
+						x;x;x;x;x;x;cmd="ColumnDrop TABLE_NAME_2 COLUMN_Y || lbk_dropcolumn TABLE_NAME_2 COLUMN_Y";x;x;x;x
+
+
