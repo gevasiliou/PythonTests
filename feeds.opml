@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+    <head>
+        <title>QuiteRSS</title>
+        <dateModified>Mon Feb 6 03:48:20 2017</dateModified>
+    </head>
+    <body>
+        <outline text="QuiteRSS" type="rss" htmlUrl="http://quiterss.org/en/frontpage" xmlUrl="http://quiterss.org/en/rss.xml"/>
+        <outline text="Example Feeds">
+            <outline text="News">
+                <outline text="Ars Technica" type="rss" htmlUrl="https://arstechnica.com" xmlUrl="http://feeds.arstechnica.com/arstechnica/index"/>
+                <outline text="Slashdot" type="rss" htmlUrl="https://slashdot.org/" xmlUrl="http://slashdot.org/slashdot.rss"/>
+                <outline text="BBC" type="rss" htmlUrl="http://www.bbc.co.uk/news/" xmlUrl="http://newsrss.bbc.co.uk/rss/newsonline_world_edition/front_page/rss.xml"/>
+                <outline text="Science" type="rss" htmlUrl="https://www.sciencenews.org/" xmlUrl="https://www.sciencenews.org/feeds/headlines.rss"/>
+            </outline>
+            <outline text="Podcasts">
+                <outline text="EscapePod" type="rss" htmlUrl="http://escapepod.org" xmlUrl="http://escapepod.org/podcast.xml"/>
+            </outline>
+            <outline text="Music Blogs">
+                <outline text="Free Music Archive" type="rss" htmlUrl="http://freemusicarchive.org/music/Relle/Selbst/04_-_Relle_-_Selbst" xmlUrl="http://freemusicarchive.org/recent.atom"/>
+                <outline text="Gorilla vs. Bear" type="rss" htmlUrl="http://www.gorillavsbear.net" xmlUrl="http://www.gorillavsbear.net/category/mp3/feed/"/>
+                <outline text="KEXP" type="rss" htmlUrl="http://media.kexp.org/podcasts/songoftheday/" xmlUrl="http://feeds.kexp.org/kexp/songoftheday"/>
+                <outline text="Fluxblog" type="rss" htmlUrl="http://www.fluxblog.org" xmlUrl="http://www.fluxblog.org/feed"/>
+            </outline>
+            <outline text="Comics">
+                <outline text="xkcd" type="rss" htmlUrl="https://xkcd.com/" xmlUrl="http://xkcd.com/atom.xml"/>
+            </outline>
+        </outline>
+        <outline text="StackExchange">
+            <outline text="Recent Questions - Unix &amp; Linux Stack Exchange" type="rss" htmlUrl="http://unix.stackexchange.com/questions" xmlUrl="http://unix.stackexchange.com/feeds"/>
+            <outline text="Stack Overflow #1" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bawk%2bor%2bsed%2bor%2bsh%2bor%2bunix%2bor%2bgrep&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/bash+or+shell+or+awk+or+sed+or+sh+or+unix+or+grep"/>
+            <outline text="Stack Overflow #2" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=yad%2bor%2bzenity%2bor%2bgrep&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/yad+or+zenity+or+grep"/>
+        </outline>
+        <outline text="Magazines">
+            <outline text="Linux Magazine Full Feed" type="rss" htmlUrl="http://www.linux-magazine.com/" xmlUrl="http://www.linux-magazine.com/rss/feed/lmi_full"/>
+            <outline text="Linux Magazine News (path: lmi_news)" type="rss" htmlUrl="http://www.linux-magazine.com/" xmlUrl="http://www.linux-magazine.com/rss/feed/lmi_news"/>
+            <outline text="Linux Journal - The Original Magazine of the Linux Community" type="rss" htmlUrl="http://www.linuxjournal.com/" xmlUrl="http://www.linuxjournal.com/node/feed"/>
+            <outline text="News" type="rss" htmlUrl="http://www.linuxjournal.com/news" xmlUrl="http://www.linuxjournal.com/breaking_news/feed"/>
+            <outline text="Community" type="rss" htmlUrl="http://www.linuxjournal.com/taxonomy/term/18/0" xmlUrl="http://www.linuxjournal.com/taxonomy/term/18/0/feed"/>
+            <outline text="Hardware" type="rss" htmlUrl="http://www.linuxjournal.com/taxonomy/term/23/0" xmlUrl="http://www.linuxjournal.com/taxonomy/term/23/0/feed"/>
+            <outline text="HOW-TOs" type="rss" htmlUrl="http://www.linuxjournal.com/taxonomy/term/19/0" xmlUrl="http://www.linuxjournal.com/taxonomy/term/19/0/feed"/>
+            <outline text="Cerebrux" type="rss" htmlUrl="https://cerebrux.net" xmlUrl="https://cerebrux.net/feed/"/>
+            <outline text="Hacking – Cerebrux" type="rss" htmlUrl="https://cerebrux.net" xmlUrl="https://cerebrux.net/category/hacking/feed/"/>
+            <outline text="LinuxInsider" type="rss" htmlUrl="http://www.ectnews.com/" xmlUrl="http://www.ectnews.com/data/podcast.xml"/>
+        </outline>
+        <outline text="Open Source">
+            <outline text="Planet Debian" type="rss" htmlUrl="http://planet.debian.org/" xmlUrl="http://planet.debian.org/rss20.xml"/>
+            <outline text="Debian Administration" type="rss" htmlUrl="https://debian-administration.org/" xmlUrl="http://www.debian-administration.org/atom.xml"/>
+            <outline text="debian-community.org English language planet" type="rss" htmlUrl="" xmlUrl="http://debian-community.org/planets/en/index.rss"/>
+            <outline text="Liferea Blog" type="rss" htmlUrl="http://lzone.de/liferea/blog/" xmlUrl="http://feeds.feedburner.com/LifereaBlog"/>
+            <outline text="Planet GNOME" type="rss" htmlUrl="http://planet.gnome.org/" xmlUrl="http://planet.gnome.org/atom.xml"/>
+        </outline>
+    </body>
+</opml>

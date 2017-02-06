@@ -1,8 +1,18 @@
 BASH CHEATS BY GV
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:BASICS
+http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
+BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
+BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
+ADVANCED BASH SCRIPTING : ftp://ftp.monash.edu.au/pub/linux/docs/LDP/abs/html/abs-guide.html#PIPEREF
+IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
+https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+http://ss64.com/bash/expr.html
+https://debian-administration.org/article/150/Easily_renaming_multiple_files
+Also very good info available at local 'man bash'
 
-VARIOUS HOW TO
-
-TERMINAL COLORS
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
 Also See the shellcolors.sh file
 The main idea is to define some vars like:
@@ -13,16 +23,24 @@ or even trickier you can define your vars like $red and $normal and work it like
 red=$(echo -ne "\033[31m"); normal=$(echo -ne "\033[m");echo $red hi there $normal --> works ok , prints hi there in red color and returns to normal. If you ommit the normal , terminal remains in red!
 Or even better do them functions ! function red { echo -ne "\033[32m";echo $@;echo -ne "\033[m";};red hi there
 
-READING FILES  (mapfile, readarray, read -r , etc)
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:READ Reading Files (mapfile, readarray, read -r , etc)
 http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
 http://wiki.bash-hackers.org/commands/builtin/read
 http://wiki.bash-hackers.org/commands/builtin/mapfile
 http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
 
+BASH:READ file to array
 mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
+You can also use mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
+PS: mapfile has also an alias called readarray
 
-The classic while read -r var1 var2 ;do ....;done<file.txt which will assign var1 to first field of line 1 and var2 to second field.
-Withoud defining IFS, the default IFS is used. You can define IFS=' ' for space delimiter, or ':' for semicol delimiter, etc
+BASH:READ while read method:
+while read -r var1 var2 ;do ....;done<file.txt which will assign var1 to first field of line 1 and var2 to second field.
+If the file has more than two fields, then var1 will get the first and var2 will get all the rest.
+
+Withoud defining IFS, the default IFS is used. 
+You can define IFS=' ' for space delimiter, or ':' for semicol delimiter, etc
 To read whole lines use IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
 
 you can combine also multi read (line read / field read) like this:
@@ -33,12 +51,23 @@ Bug : var1 gets only the last line
 Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
 for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yadit --title="$f");done #where yadit is an alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 
-Store the first two lines of a file without loop:
+BASH:READ read file in pair of two lines at same time
+while read -r prereq && read -r target; do
+   printf '%s: %s\n' "$target" "$prereq"
+done < file.txt
+PS: Mind that two lines are read as a pair. Line 1 and Line 2 , and then Line 3-Line4.
+You miss the Line 2- Line3 combination
+
+BASH:READ Only the first two lines.
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
 
+BASH:READ Using line builtin
+line <file will print the first line of file
+can also be assigned to a var: a=$(line <file)
 
-SUBPROCESS AND PIPES
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
 Thus multiple pipes create multiple subshells = performance penalty.
@@ -56,13 +85,14 @@ final s=1000
 Workaround to avoid pipe / subshell:
 s=1000; while read a b c d rest;do s=$(($s+c));echo "c=$c - S=$s";done < <(ps -ly);echo "final s=$s"
 In this case (process substitution) the final s will have the correct/final value.
-
-RUN COMMAND AS DIFFERENT USER : 
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:RUN COMMAND AS DIFFERENT USER : 
 gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
 Run Google Chrome as Root : http://unix.stackexchange.com/questions/175967/how-to-run-google-chrome-as-root-in-linux/332128#332128
 Easy trick : gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
-
-CONDITION CHECKS 
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:CONDITION CHECKS 
+See also man bash and man test
 One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
 For else conditions or for performing actions under false conditions you can use ! operator (not) in front of expression which will reverse exit code.
 [ "$USER" = "root" ] && echo "hello root" -> hello root # displays nothing if user is not root
@@ -77,15 +107,17 @@ Check if a slash '/' exist in the end of variable and add it if it is missing
 root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 /home/gv/Desktop/
 The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. Then is simple: if last char is not / then a=a+/
-
-FIND - LS ALTERNATIVE
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FIND LS ALTERNATIVE
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
 find /home/gv -maxdepth 1 -> lists both
-output of find can be piped to wc -l as well.
-Some progs (like whatis)can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
+output of find can be piped to wc -l , xargs, and other commands.
 
-FIND UNUSUAL FILE NAMES 
+Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
+PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FIND UNUSUAL FILE NAMES 
 Consider files with spaces in their name (i.e a a (01).txx)
 
 In order you want to get the basename of this file the following command fails:
@@ -98,6 +130,7 @@ To correctly handle file names with spaces you need to combine find with  while 
 This works ok: find . -name "*.txx" |while read -r line;do basename "$line";done
 
 Also this works ok , and it is more simple to use: for file in *.txx;do basename "$file";done
+
 The problem here is that this method doesnt go inside subdirs, while the find method does.
 http://stackoverflow.com/questions/4638874/how-to-loop-through-a-directory-recursively-to-find-files-with-certain-extension
 http://www.commandlinefu.com/commands/view/14209/repeat-any-string-or-char-n-times-without-spaces-between
@@ -105,7 +138,26 @@ http://wiki.bash-hackers.org/syntax/expansion/brace
 http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
-PROCESSES ()TOP - HTOP - PS)
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FIND OPERATORS (AND , OR,NOT)
+exclude files (i.e manifest.txt
+find /path/to/ -name '*.txt' -and -not -name 'manifest.txt'
+
+Multiple file types:
+find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator. 
+
+BASH:FIND CUSTOM PRINTING
+find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
+
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FIND EXEC
+Rename extensionless files
+find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
+OR
+find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
+
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:PROCESSES ()TOP - HTOP - PS - KILL)
 Search for a process using top . Top seems to catch all processes:
 top -p $(echo $(pgrep time) |sed 's/ /,/g')
 pgrep search for processes matching pattern even partially. pidof could be used if exact process name is known.
@@ -119,22 +171,8 @@ Isolate pids: ps -t tty1 |cut -d" " -f1
 Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
 Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
-
-
-
-BASH MANUAL
-http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
-BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
-BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
-ADVANCED BASH SCRIPTING : ftp://ftp.monash.edu.au/pub/linux/docs/LDP/abs/html/abs-guide.html#PIPEREF
-IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
-https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-http://ss64.com/bash/expr.html
-https://debian-administration.org/article/150/Easily_renaming_multiple_files
-Also very good info at man bash.
-
-
-PARAMETERS EXPANSION
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:PARAMETERS EXPANSION
 a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 a="this is some TEXT"; echo ${a: 5:7} 	-> is some
@@ -227,16 +265,15 @@ MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-
 MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
 MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
-
-ARGUMENTS - POSITIONAL PARAMETERS 
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
-
-
-<<PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION>>
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 Scroll to the end of page for more one-liners.
 http://wiki.bash-hackers.org/syntax/pe
@@ -252,17 +289,14 @@ if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
-
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:TIPS
 Using subshells: $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
 
-#Reverse any word : echo "nixcraft" | rev
+Reverse any word : echo "nixcraft" | rev
 
 Rename using for and bash parameter expansion
 for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
-
-Tricky sed usage if strings replace strange chars like slashes:
-a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
-Trick is that you can seperate actions with any char and not only /. If sed separators are left / (default) and patterns also include / then you need to escape pattern / (using \/) and the sed command becomes a mesh.
 
 #Remove new line char from strings and replace it with space using trim (tr)
 echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
@@ -310,24 +344,21 @@ Resources:
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 
-PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
-
 Identify any command type /location : $type command (try i.e type grep and type eval)
 
 List all kernel modules that are loaded (i.e lsmod)
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
-
-
-Understanding EVAL:
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:EVAL Understanding EVAL:
 1) foo=10 x=foo
 2) y='$'$x
 3) echo $y --> $foo
 5) eval y='$'$x
 6) echo $y --> 10
 Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
-
-FILE DESCRIPITORS
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FILE DESCRIPITORS
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
 http://www.tldp.org/LDP/abs/html/io-redirection.html
 http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
@@ -368,8 +399,8 @@ But again you dont gain anything with fds. You can send output directly to >anyf
 On the other hand , by assigning stdout to ata-file (just >data-file) you can capture messages from scripts/programms etc that would
 normally go to stdout.
 correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
-
-:<<FIFO_NAMEDPIPES
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
 Maybe some commands do not accept input by refular files but from fifos and/or file descriptors. 
 
@@ -393,9 +424,8 @@ There are various techniques to cheat the fifo "one-shot" behavior.
 In terminal 1 if you run cat >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
 terminal 2 will print immediately whatever comes in fifo.
 see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
-FIFO_NAMEDPIPES
-
-ASSOCIATIVE ARRAYS (declare -A array)
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:ASSOCIATIVE ARRAYS (declare -A array)
 http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
 Works like dictionaries of advanced programming languages.
@@ -419,8 +449,8 @@ declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
 --> foo a --- bar
 --> baz b --- quux
-
-WHEREIS & WHATIS
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:TIPS WHEREIS & WHATIS
 whereis finds where is the executable of a programm (whereis sed). 
 whatis shows one-line info of the program.
 
@@ -431,8 +461,8 @@ Display a small message about installed bin files in usr/bin (and other folders)
 find /usr/bin -type f -executable |xargs whatis -v 2>&1 |sed 's/ - /:/g' >whatis.log
 mind xargs. Without xargs is not operating.
 
-
-:<<HERE-DOCS
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:HEREDOCS
 Best explained : http://tldp.org/LDP/abs/html/here-docs.html
 Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
 
@@ -524,11 +554,8 @@ echo $A --> prints 42
 
 Alternative : Directly eval the code 
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
-
-
-HERE-DOCS
-
-IFS Tricks
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:IFS Tricks
 #### Special IFS settings used for string parsing. ####
 Whitespace == :Space:Tab:Line Feed:Carriage Return:
 WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
@@ -537,7 +564,13 @@ NO_WSP=$'\x0A'$'\x0D'
 
 later, you can just set IFS=${WSP_IFS}
 
-<<Bash_Options 
+You can temporary set IFS inside a command like while IFS=: read -r lines
+Set IFS= to read whole lines , separated by \n
+Or set IFS=$'\n'
+Set IFS to any char to perform special field split
+For file with lines in format field1:field2:field3 using IFS= you will get the whole line, using IFS=: you can split each field.
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:OPTIONS  
 Globbing ,bash filename expansion, bash options ans shopt options
 Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
 The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
@@ -582,5 +615,4 @@ execfail       	off
 extdebug       	off
 extglob        	off
 failglob       	off
-
-Bash_Options End
+#-----------------------------------------------------------------------------------------------------------------------

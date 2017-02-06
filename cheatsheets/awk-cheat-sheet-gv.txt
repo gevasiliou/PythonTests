@@ -271,4 +271,6 @@ x;x;x;x;x;x;cmd="ColumnAdd TABLE_NAME_1 COLUMN_X || lbk_addcolumn TABLE_NAME_1 C
 x;x;x;x;x;x;cmd="ColumnDrop TABLE_NAME_2 COLUMN_Y || lbk_dropcolumn TABLE_NAME_2 COLUMN_Y";x;x;x;x
 (Ps: mind that blanc line is preserved - not processed. )
 
-
+AWK:PRINT last and first line
+awk 'NR==1 {first = $0} END {print; print first}' file
+Just save the first line to a variable (first in this example)

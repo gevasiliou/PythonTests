@@ -686,13 +686,73 @@ echo "number of parameters=$n"
 function extension_checker {
 	for file in "$1"/*;do
 		if [[ "$file" =~ \.(c|cpp|h|cc)$ ]]; then
-			#...
+			echo "hello"
 		fi
 	done
 
 # =~ is considered a REGEX operator. Above if code checks for file with extension c or cpp or h or cc.
 #
 }
+
+if [[ ! -d $1 ]]
+then
+    echo usage: ./activity.sh directory
+elif [[ $# -gt 1 ]]
+then
+    echo usage: ./activity.sh directory
+else
+# find the active files (last 24 hrs)
+a=($(find $1 -mtime -1))
+# find recent files (between 24 hrs-3 days)
+b=($(find $1 -mtime 1 -o -mtime +1 -a -mtime -3))
+# find idel files (before 3 days)
+c=($(find $1 -mtime 3 -o -mtime +3))
+
+# hold numbers of files
+x=0
+y=0
+z=0
+# byte count, active, recent, and idle files
+count1=0
+count2=0
+count3=0
+
+# number of active files and adds bytes
+for i in ${a[@]}
+do
+    if [[ -f $i ]]
+    then
+        ((count1+=$(wc -c $i | cut -f1 -d' ')))
+        let x++
+    fi
+done
+
+# number of recent files and adds bytes
+for i in ${b[@]}
+do
+    if [[ -f $i ]]
+    then
+        ((count2+=$(wc -c $i | cut -f1 -d' ')))
+        let y++
+    fi
+done
+
+# number of idle files and adds bytes
+for i in ${c[@]}
+do
+    if [[ -f $i ]]
+    then
+        ((count3+=$(wc -c $i | cut -f1 -d' ')))
+        let z++
+    fi
+done
+
+# output
+echo $1 
+echo active: $x "("$count1 "bytes)"
+echo recent: $y "("$count2 "bytes)"
+echo idle: $z "("$count3 "bytes)"
+fi
 
 exit
 
