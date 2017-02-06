@@ -1,10 +1,4 @@
-AUTHOR
-       Written by Torbjorn Granlund and Richard M. Stallman.
-
-REPORTING BUGS
-       GNU coreutils online help: <http://www.gnu.org/software/coreutils/>
-       Report cat translation bugs to <http://translationproject.org/team/>
-
-COPYRIGHT
-       Copyright © 2016 Free Software Foundation, Inc.  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
-       This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+64.234	20.342	786
+63.231	20.124	765
+63.652	20.857	387
+63.659	20.999	999

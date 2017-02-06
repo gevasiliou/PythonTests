@@ -1,4 +1,4 @@
- AWK
+ AWK:BASICS
  http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
  https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
  https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
@@ -26,30 +26,30 @@
  http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Print lines if specific columns have same value
+AWK:PRINT IF Print lines if specific columns have same value
  awk -F ':' '$3==$4' file.txt -->  
  echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
  echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- Export AWK variables
+AWK:VARIABLES - Export AWK variables
  $ mkfifo fifo
  $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
  $ IFS== read var value < fifo
  $ eval export $var=$value
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- Switch position of comma separated fields:
+AWK:REPLACE Switch position of comma separated fields:
  echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
  textA,textC,textB,dateD
- OFS affects only the display separator. If omited space (default OFS) will be used.
+ OFS affects only the output display separator. If omited space (default OFS) will be used.
 
  print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
 
  Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- AWK - Use multiple delimiters:
+AWK:PRINT WITH MULTIPLE DELIMITERS
  $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
  Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
  Output: 
@@ -59,17 +59,19 @@ AWK Print lines if specific columns have same value
  Mind that separate {} create a newline to out file.
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- Search for a pattern with not known occurencies:
- awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
- This is usefull if we dont know how many "name:" entries exist per line
- If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
- If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
- If line has more than 3 the -F solution will miss the rest entries.
+AWK:SEARCH / GREP Search for a pattern with not known occurencies:
+awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
 
- Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
+This is usefull if we dont know how many "name:" entries exist per line
+If we know that each line has i.e 3 entries then this also works: awk -F"name:" '{print $2 $3 $4}'
+If a line has less than 3 no problem. Var $3 and/or $4 will be empty. 
+If line has more than 3 the -F solution will miss the rest entries.
+
+Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
+awk '{for(i=5;i<=NF;i++) {printf $i " "} ; printf "\n"}' awkTest2.txt
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- AWK: Produce a sed script to replace values to a file with entries from another file
+AWK:PRINT Produce a sed script to replace values to a file with entries from another file
  http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
 
  Consider a user map containing multiple lines with "userid username" (seperated by space)
@@ -88,17 +90,20 @@ AWK Print lines if specific columns have same value
  Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- AWK: Insert dash in string
+AWK:REPLACE Insert dash in string
  String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
  awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+ 
  Output : 2016-05-31-10-03
- alternatives:
+ 
+ Alternatives:
  $ cut --output-delimiter='-' -c7-19,20-21 file.txt
  $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
  $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+ Mind the \0 usage of sed (refers to data on hold , kind of history/previous value)
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
- AWK Replace values upon criteria matching:
+AWK:REPLACE  Replace values upon criteria matching:
  Input:
    a b c
 A 5 2 0
@@ -129,7 +134,7 @@ NR != 1 {
 Runit : awk -f script.awk datafile
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK - Column Checker:
+AWK:PRINT IF CONDITION - Column Checker
 Input:
 A B B A
 A A A
@@ -146,30 +151,16 @@ Code:
 awk '{ for (i = 2; i <= NF; i++) { if ($i != $1) { print "multi"; next } }; print $1 }'
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-Combine multi grep pattern and cut -d' ' -f3 for multiple lines
-awk '/Label 3/ { print $3 >>"F3.csv" } /Label 5/ { print $3>>"F5.csv" }'
-OR
-awk '/Label 3|Label 5/ { print $3 >> "F"$2".csv"}'
-
-Consider a file with lines 
-Label 3 70
-Label 4 95
-Label 5 100
-
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Print line with matched pattern (simulates grep):
+AWK:PRINT Print line with matched pattern (simulates grep):
 awk '/word/' file.txt
 GNU awk also accepts variables in the form of awk "/$variable/" file.txt
 Using '!/pattern/' you invert the match (similar to grep -v)
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Use as grep with AND Operation
-awk '/pattern1/&&/pattern2/'
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Print a line if columns are equal to 5 (ps: columns separated by "|")
+AWK:PRINT Print a line if columns are equal to 5 (ps: columns separated by "|")
 awk -F \| 'NF==5' data3
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Count lines
+AWK:COUNT LINES
 awk '{ $0 = NR "\t" $0 } 1' file.txt | tail
 
 Counting Alternatives:
@@ -179,7 +170,7 @@ pr -n -t -l 1 file.txt | tail
 nl /boot/config-4.9.0-1-amd64 |tail
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK : Simulate agrep (grep with AND) for patterns read from a file:
+AWK:PRINT / GREP WITH MULTIPLE PATTERNS - Simulate agrep (grep with AND) for patterns read from a file:
 http://unix.stackexchange.com/questions/341076/how-to-find-all-files-containing-various-strings-from-a-long-list-of-string-comb
 Basic: awk '/pattern1/ && /pattern2/'
 while IFS= read -r line;do awk "$line" *.txt;done<./tmp/d1.txt
@@ -188,13 +179,15 @@ Above will print in screen the matched lines of all txt files.
 If we need to print only the filename and not the matched contents then awk must be used like this:
 awk "$line""{print FILENAME}" *.txt
 
-In order this to work , search terms in file should be in format /term1/ && /term2/ && /term3/ etc.
-I the example given in link , pattern file contains lines like this:
+In order this to work , search terms in file d1.txt should be in format /term1/ && /term2/ && /term3/ etc.
+PS: Single quotes found not necessary in GNU AWK
+
+In the example given in link , pattern file contains lines like this:
 "surveillance data" "surveillance technology" "cctv camera"
 
 Which are converted to awk format like this:
 $ sed 's/" "/\/ \&\& \//g; s/^"\|"$/\//g' ./tmp/d1.txt
-> /surveillance data/ && /surveillance technology/ && /cctv camera/
+> /surveillance data/ && /surveillance technology/ && /cctv camera/ #mind the absence of single quotes
 
 Alternativelly we could use :
 
@@ -209,28 +202,44 @@ grep pattern1 file |grep pattern2 |grep pattern3
 The final output would include all three patterns. 
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK print a line before the pattern match and also the line containing the pattern 'Solaris': 
+AWK:SEARCH/GREP MULTIPLE PATTERNS AND PRINT THEM  
+awk '/Label 3/ { print $3 } /Label 5/ { print $3 }'  <==>  grep -E 'Label 3 \|Label 5' |cut -d' ' -f3
+Mind the print function between patterns.
+AWK can directly print to a file using { print $3 >>"F3.csv" }
+
+Combine multi grep pattern and cut -d' ' -f3 for multiple lines
+awk '/Label 3/ { print $3 >>"F3.csv" } /Label 5/ { print $3>>"F5.csv" }'
+OR
+awk '/Label 3|Label 5/ { print $3 >> "F"$2".csv"}' #Field 2 is used as name for the output file.
+
+Consider a file with lines 
+Label 3 70
+Label 4 95
+Label 5 100
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK:PRINT print a line before the pattern match and also the line containing the pattern 'Solaris': 
 $ awk '/Solaris/{print x;print;next}{x=$0;}' file
 
 Every line read is stored in the variable x. Hence, when the pattern matches, x contains the previous line. 
 And hence, by printing the $0 and x, the current line $0 and the previous line x is printed. 
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK print the previous, the pattern matching line and next line
+AWK:PRINT previous line, the pattern matching line and next line
 $ awk '/Solaris/{print x;print;getline;print;next}{x=$0;}' file
-x: gets the previous line
+x: is a var, containing the previous line , becasure of the assignment in the end x=$0
 print: just prints the current line (stored at $0)
 getline : stores next line to $0.
 The last print prints again $0 which now is the next line due to previous getline  
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK Replace /Delete String
+AWK:REPLACE - DELETE STRING
 awk '{ gsub(",","",$3); print $3 }' /tmp/data.txt
 Replaces , with null in field $3 and then prints $3
 If $3 is not provided , then gsub operation is performed in $0=Whole Record = Whole line
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK If then 
+AWK:PRINT IF-THEN
 https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
 awk -F'"' '{if ($0!="") print $1"\""$2" || "$2"\""$3;}' e.txt
 awk '{if ($3 =="" || $4 == "" || $5 == "")print "Some score for the student",$1,"is missing";'}' student-marks
@@ -240,12 +249,12 @@ awk '$3==$4' file #prints records/lines only if $3 field = $5 field
 awk '$2=="Tennis" #prints lines where #2 is tennis
 awk '$2 ~ "Tennis" #prints lines where #2 contains tennis
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK If then else
+AWK:IF-THEN-ELSE
 http://www.thegeekstuff.com/2010/02/awk-conditional-statements
 1. awk '{if ($3 >=35 && $4 >= 35 && $5 >= 35) print $0,"=>","Pass";else print $0,"=>","Fail";}'
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK If then else and Replace
+AWK:IF-THEN-ELSE AND REPLACE
 
 awk -F'"' '{if ($0=="") print $0;else {a=$2;gsub("lbk_addcolumn","ColumnAdd",$2);gsub("lbk_dropcolumn","ColumnDrop",$2);print $1"\""$2" || "a"\""$3;}}' e.txt
 
@@ -271,6 +280,17 @@ x;x;x;x;x;x;cmd="ColumnAdd TABLE_NAME_1 COLUMN_X || lbk_addcolumn TABLE_NAME_1 C
 x;x;x;x;x;x;cmd="ColumnDrop TABLE_NAME_2 COLUMN_Y || lbk_dropcolumn TABLE_NAME_2 COLUMN_Y";x;x;x;x
 (Ps: mind that blanc line is preserved - not processed. )
 
+#-----------------------------------------------------------------------------------------------------------------------
 AWK:PRINT last and first line
 awk 'NR==1 {first = $0} END {print; print first}' file
 Just save the first line to a variable (first in this example)
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:SEARCH LIKE GREP WITH GAWK AND VARIABLE
+$ i="Mytestserver02"
+$ awk /"$i"/'{print $2}' d3.txt # returns the second field , space separated
+19
+Or even awk /"$i"/ file will bring the matched line (all fields)
+Although, experts claim that allowing expansion of a bash var in awk is a bad technique.
+
+This source gives some alternatives:
+http://cfajohnson.com/shell/cus-faq-2.html#Q24

@@ -694,6 +694,8 @@ function extension_checker {
 #
 }
 
+function dir_byte_checks {
+
 if [[ ! -d $1 ]]
 then
     echo usage: ./activity.sh directory
@@ -756,3 +758,15 @@ fi
 
 exit
 
+}
+
+regex_multiline="(?s)(flag)[[:blank:]](.*?)(?=(?:\r\n|[\r\n])(flag)|\z)"
+logfile="./d2.txt"
+
+    #this works only with grep 2.25 or higher, 
+    #which returns a NULL-byte delimiter after each capture
+    echo start
+    while IFS= read -r -d '' line ; do
+        printf '<test>%s</test>\n' "$line"
+    done < <(grep -Pzo $regex_multiline $logfile)
+    echo end

@@ -272,6 +272,22 @@ START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char 
 
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
+
+GV Tip: Automatically separate args depending on their first char (i.e dash -)
+Tip: ${1:0:1} will return the first char. Then you can compare (if) with == "-"
+You can assign all args in an array using "-" as delimiter
+Function test { local args=$@;declare -a params;readarray -d"-" -t -O1 params <<< "$args";declare -p params;}
+
+Thus you can send an argument like "one two", which will be normally considered as two args ($1=one , $2=two)
+But in case of readarray will be considered as $1 since there is not dash - to separate the args.
+
+Another Option is to use case with loop:
+for arg in $@;do
+case arg in
+-*) arg starts with dash , then do this;;
+*) not dash , so do the other thing;;
+esac
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
@@ -350,13 +366,47 @@ List all kernel modules that are loaded (i.e lsmod)
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
 #-----------------------------------------------------------------------------------------------------------------------
-BASH:EVAL Understanding EVAL:
+BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
 2) y='$'$x
 3) echo $y --> $foo
 5) eval y='$'$x
-6) echo $y --> 10
+6) echo $y --> 10 # or even eval echo '$'$x will work
 Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
+
+Simpler with indirect expansion:
+$ foo=10;x=foo;echo ${!x} 	--> 10
+$ foo=10;x=foo;echo ${x} 	--> foo
+
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:INDIRECT EXPANSION - Similar to eval
+http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
+
+$ for i in {1..4};do eval my${i}var="./path${i}_tofile";eval echo "$""my${i}var";done
+./path1_tofile
+./path2_tofile
+./path3_tofile
+./path4_tofile
+Tip: the first eval (eval my${i}var) can be avoided using declare my${i}var
+Remark: OP tried to print the values using echo "$my${i}var" , which never worked (variable within a variable - bash panic!)
+
+For echo part, instead of using eval , the same can be achieved with Indirect Expansion
+(see also http://wiki.bash-hackers.org/syntax/pe#indirection)
+# for i in {1..4};do declare my${i}var="./path${i}_tofile";tmpvar=my${i}var;echo ${!tmpvar};done
+
+Mind the difference If you don't use the indirect expansion :
+# for i in {1..4};do declare my${i}var="./path${i}_tofile";tmpvar=my${i}var;echo ${tmpvar};done
+my1var
+my2var
+my3var
+my4var
+
+Difference compared to eval:
+No. eval will execute potential command substitutions. Indirect expansion will not. 
+Test with this: 
+tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
+the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/

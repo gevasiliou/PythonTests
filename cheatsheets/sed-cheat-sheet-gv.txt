@@ -5,13 +5,11 @@ http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from
 http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
 http://www.theunixschool.com/2012/06/sed-25-examples-to-delete-line-or.html
 
-sed -n '/SED:PRINT.*line.*/,/#-----/p' ./cheatsheets/sed*gv*.txt
-
 -n: not printing/quiet. If missing the input is printed.
--e: sed expression is following
+-e: sed expression follows
 -i: infile edit
 's/..' : replace
-'.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to print specific lines/patterns
+'.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to disable global printing and print specific lines/patterns that /p applies.
 '..../d' : delete . Also !d for not delete. Combine /d with missing -n to see the input with the deletions.
 'N': N command ReadS next line into the pattern space.
 
@@ -26,6 +24,10 @@ Trick is that you can seperate actions with any char and not only /. If sed sepa
 
 SED Use external variable (i.e $line,$text,etc - defined before sed)
 You just need to double quote the whole sed expression instead of single quotes.
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+SED:PRINT FIND AND PRINT ENTRIES FROM CHEATSHEETS
+sed -n '/SED:PRINT.*line.*/,/#-----/p' ./cheatsheets/sed*gv*.txt
+sed -n '/JOIN/,/#----/p' ./cheatsheets/*
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 SED:PRINT FROM LINE X to LINE Y 
 sed -n '8,12p'
