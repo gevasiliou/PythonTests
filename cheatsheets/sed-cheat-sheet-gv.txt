@@ -352,3 +352,14 @@ $ sed  '/Yahoo/q' file  #q = quit if pattern / expression matched. Without -n op
 SED:PRINT To print the first 3 lines, or from lines 1 through 3:
 $ sed -n '1,3p' file #Alternative : sed '3q' file
 #-----------------------------------------------------------------------------------------------------------------------
+SED:INSERT TEXT TO THE END OF FILE
+sed -i -e "\$aTEXTTOEND" <filename>
+OR
+sed '$s/$/texttoend/'
+Tip: if instead $a you use i.e 4a text will append to 4th line
+#-----------------------------------------------------------------------------------------------------------------------
+SED:INSERT TEXT TO THE START OF FILE
+The command inserts a tag to the beginning of a file:
+
+sed -i "1s/^/<?php /" file
+#-----------------------------------------------------------------------------------------------------------------------

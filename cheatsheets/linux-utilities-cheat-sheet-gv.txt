@@ -192,3 +192,7 @@ Can be used / pipe / file to add numbers in file lines (similar to cat -n but MU
 Has a lot of options like starting number, number step, number acc to regex, etc
 Simpliest usage : cat file |nl - default usage is equivalent to cat -b = number non empty lines only.
 nl -bp"^$" c.txt --> apply numbering only on empty lines (start and end together)
+
+#-----------------------------------------------------------------------------------------------------------------------
+UTILS:TR
+Replace new lines with null: tr '\n' '\0' <in >out

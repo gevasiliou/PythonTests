@@ -1,62 +1,88 @@
- AWK:BASICS
- http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
- https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
- https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
- 
- Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
- Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
- If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
- Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
- For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
- Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
- Another great advantage is that you can use as field seperator (F) anything (a char, a word, two delimiters, etc).
- Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
- echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
+AWK:BASICS
+http://www.pement.org/awk/awk1line.txt
+http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
+https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
+https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
+AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+https://www.shortcutfoo.com/app/dojos/awk/cheatsheet
 
- echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
- echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
- -->value1,string1
- -->value1,string2
- -->value1,string3
- -->value1,string4
- In case of file , separated with new lines you need to apply this a bit different version: 
- awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
+Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
+Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
+If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
+Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
+For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
+Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
 
- See this article for AWK reserved variables :
- http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+awk '/pattern/ {action}' file↵ Execute action for matched pattern 'pattern' on file 'file'
+$0 Reference current record line
+FS Field separator of input file (default whitespace)
+NF Number of fields in current record
+NR Line number of the current record
+FILENAME Reference current input file
+FNR Reference number of the current record relative to current input file
+OFS Field separator of the outputted data (default whitespace)
+ORS Record separator of the outputted data (default newline)
+RS Record separator of input file (default newline)
+^ Match beginning of field
+~ Match opterator
+!~ Do not match operator
+-F Command line option to specify input field delimiter
+BEGIN Denotes block executed once at start
+END Denotes block executed once at end
+str1 str2 Concat str1 and str2
 
+sub(r,t,s) Substitute t for first occurrence of regex r in string s (or $0 if s not given)
+gsub(r,t,s) Substitute t for all occurrences of regex r in string s
+system(cmd) Execute cmd and return exit status
+tolower(s) String s to lowercase
+toupper(s) String s to uppercase
+getline Set $0 to next input record from current input file.
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT IF Print lines if specific columns have same value
- awk -F ':' '$3==$4' file.txt -->  
- echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
- echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
+awk -F ':' '$3==$4' file.txt -->  
+echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
+echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:VARIABLES - Export AWK variables
- $ mkfifo fifo
- $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
- $ IFS== read var value < fifo
- $ eval export $var=$value
+$ mkfifo fifo
+$ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
+$ IFS== read var value < fifo
+$ eval export $var=$value
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:REPLACE Switch position of comma separated fields:
- echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
- textA,textC,textB,dateD
- OFS affects only the output display separator. If omited space (default OFS) will be used.
+echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
+textA,textC,textB,dateD
+OFS affects only the output display separator. If omited space (default OFS) will be used.
 
- print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
+print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
 
- Print up to EOF after a matched string: awk '/matched string/,0' a.txt
+Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT WITH MULTIPLE DELIMITERS
- $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
- Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
- Output: 
- UAT/ECC/Global/MES/1206/MRP-S23   
- UAT/ECC/Glal/ME/120/MRP-  S23.xml
- Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
- Mind that separate {} create a newline to out file.
+$ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
+Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
+Output: 
+UAT/ECC/Global/MES/1206/MRP-S23   
+UAT/ECC/Glal/ME/120/MRP-  S23.xml
+Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
+Mind that separate {} create a newline to out file.
+
+Another example of using as field seperator (F) anything (a char, a word, two delimiters, etc).
+Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
+echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
+
+echo "value1,string1;string2;string3;string4" |awk -F"[;,]" '{print $2}' -->string1
+echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF;i++)print $1","$i}'
+-->value1,string1
+-->value1,string2
+-->value1,string3
+-->value1,string4
+
+In case of file , separated with new lines you need to apply this a bit different version: 
+awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:SEARCH / GREP Search for a pattern with not known occurencies:
@@ -72,61 +98,61 @@ awk '{for(i=5;i<=NF;i++) {printf $i " "} ; printf "\n"}' awkTest2.txt
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT Produce a sed script to replace values to a file with entries from another file
- http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
+http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
 
- Consider a user map containing multiple lines with "userid username" (seperated by space)
- Consider a text file (letter.txt) contaiining paragraphs with reference to the users as userid.
- We want to replace all userids in letter file with their realnames present in name mapping file.
- Tricky solution: Transform map file (each line) to the format 's/userid/username/g' and then call sed -f <transformed mapfile> <text file that needs replacements>
- The awk part: $ awk '{ printf("s/<@%s>/%s/g\n", $1, $2) }' user_map.txt >script.sed
- The sed part: $ sed -f script.sed letter.txt 
- 
- *BASH Way: var="$(cat file.txt)";while read -r id name;do var="${var//@$id/$name}";done<mapfile.txt;echo "$var"
- 
- *SED Way : while read -r id name;do sed -i "s/\@$id/$name/g" textfile.txt;done<mapfile.txt
- 
- *SED Bug : File is opened and "seded" multiple times (but either the Kusulananda solution does sed multiple times, correct? - No. Does one sed with multiple replace patterns)
- On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
- Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
+Consider a user map containing multiple lines with "userid username" (seperated by space)
+Consider a text file (letter.txt) contaiining paragraphs with reference to the users as userid.
+We want to replace all userids in letter file with their realnames present in name mapping file.
+Tricky solution: Transform map file (each line) to the format 's/userid/username/g' and then call sed -f <transformed mapfile> <text file that needs replacements>
+The awk part: $ awk '{ printf("s/<@%s>/%s/g\n", $1, $2) }' user_map.txt >script.sed
+The sed part: $ sed -f script.sed letter.txt 
+
+*BASH Way: var="$(cat file.txt)";while read -r id name;do var="${var//@$id/$name}";done<mapfile.txt;echo "$var"
+
+*SED Way : while read -r id name;do sed -i "s/\@$id/$name/g" textfile.txt;done<mapfile.txt
+
+*SED Bug : File is opened and "seded" multiple times (but either the Kusulananda solution does sed multiple times, correct? - No. Does one sed with multiple replace patterns)
+On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
+Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:REPLACE Insert dash in string
- String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
- awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
- 
- Output : 2016-05-31-10-03
- 
- Alternatives:
- $ cut --output-delimiter='-' -c7-19,20-21 file.txt
- $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
- $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
- Mind the \0 usage of sed (refers to data on hold , kind of history/previous value)
+String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
+awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
+
+Output : 2016-05-31-10-03
+
+Alternatives:
+$ cut --output-delimiter='-' -c7-19,20-21 file.txt
+$ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
+$ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
+Mind the \0 usage of sed (refers to data on hold , kind of history/previous value)
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:REPLACE  Replace values upon criteria matching:
- Input:
-   a b c
+Input:
+  a b c
 A 5 2 0
 B 0 5 4
 C 4 3 4
 D 2 0 2
 
- Output expected (replace all fields with a value to 1)
-   a b c
+Output expected (replace all fields with a value to 1)
+  a b c
 A 1 1 0
 B 0 1 1
 C 1 1 1
 D 1 0 1
 
- AWK script : 
+AWK script : 
 BEGIN { OFS = FS = "\t" }
 
 NR != 1 {
-    for (i = 2; i <= NF; ++i) {
-        if ($i != "0") {
-            $i = "1";
-        }
-    }
+   for (i = 2; i <= NF; ++i) {
+       if ($i != "0") {
+           $i = "1";
+       }
+   }
 }
 
 { print }
@@ -294,3 +320,97 @@ Although, experts claim that allowing expansion of a bash var in awk is a bad te
 
 This source gives some alternatives:
 http://cfajohnson.com/shell/cus-faq-2.html#Q24
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:ARRAY CREATION:
+
+# These next 2 entries are not one-line scripts, but the technique
+# is so handy that it merits inclusion here.
+
+# create an array named "month", indexed by numbers, so that month[1]
+# is 'Jan', month[2] is 'Feb', month[3] is 'Mar' and so on.
+split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", month, " ")
+
+# create an array named "mdigit", indexed by strings, so that
+# mdigit["Jan"] is 1, mdigit["Feb"] is 2, etc. Requires "month" array
+for (i=1; i<=12; i++) mdigit[month[i]] = i
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:ONELINERS
+awk '{print $1}' file 				:Print first field for each record in file
+awk '/regex/' 						:print only lines which match regular expression (emulates "grep")
+awk '!/regex/' 						:print only lines which do NOT match regex (emulates "grep -v")
+awk '$2 == "foo"' file				:Print any line where field 2 is equal to "foo" in file
+awk '$2 != "foo"' file				:Print lines where field 2 is NOT equal to "foo" in file
+awk '$1 ~ /regex/' file				:Print line if field 1 matches regex in file
+awk '$1 !~ /regex/' file			:Print line if field 1 does NOT match regex in file
+awk '$7  ~ /^[a-f]/'    			:print line if field #7 matches regex
+awk '$7 !~ /^[a-f]/'    			:print line if field #7 does NOT match regex
+awk 'NR!=1{print $1}' file			:Print first field for each record in file excluding the first record
+awk 'END{print NR}' 				:count lines (emulates "wc -l")
+
+awk '/foo/{n++}; END {print n+0}' file			:Print total number of lines that contain foo
+awk '{total=total+NF};END{print total}' file	:Print total number of fields in all lines
+awk '/regex/{getline;print}' file				:Print line immediately after regex, but not line containing regex in file
+awk 'length > 32' file							:Print lines with more than 32 characters in file
+awk 'NR==12' file								:Print line number 12 of file
+awk '{s=0; for (i=1; i<=NF; i++) s=s+$i; print s}' 	:print the sums of the fields of every line
+awk '{for (i=1; i<=NF; i++) s=s+$i}; END{print s}' 		:print the sums of the fields of ALL lines
+awk '{ total = total + NF }; END {print total}' file 	:print the total number of fields ("words") in all lines
+awk 'BEGIN{ORS="\n\n"};1' 						:double space a file - also awk '1;{print ""}'
+awk '1;{print "\n"}' 							:triple space a file
+awk '{print FNR "\t" $0}' files* 				:precede each line by its line number FOR THAT FILE (left alignment).
+awk '{print NR "\t" $0}' files* 				:precede each line by its line number FOR ALL FILES TOGETHER, with tab.
+awk '{printf("%5d : %s\n", NR,$0)}' 			:number each line of a file (number on left, right-aligned)
+awk 'NF{$0=++a " :" $0};1' 						:number each line of file, but only print numbers if line is not blank
+awk '/Beth/{n++}; END {print n+0}' file 		:print the total number of lines that contain "Beth"
+awk '$1 > max {max=$1; maxline=$0}; END{ print max, maxline}' :print the largest first field and the line that contains it
+awk '{ print NF ":" $0 } ' 						:print the number of fields in each line, followed by the line
+awk '{ print $NF }' 							:print the last field of each line
+awk '{ field = $NF }; END{ print field }'		: print the last field of the last line
+awk 'NF > 4' 									:print every line with more than 4 fields
+awk '$NF > 4' 									:print every line where the value of the last field is > 4
+awk 'BEGIN{while (a++<513) s=s " "; print s}' 	:create a string of a specific length (e.g., generate 513 spaces)
+gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' :insert 49 spaces after column #6 of each input line.
+
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:ONELINERS PRINTING OF CERTAIN LINES
+awk 'NR < 11' 							:print first 10 lines of file (emulates behavior of "head")
+awk 'NR>1{exit};1' 						:print first line of file (emulates "head -1")
+awk '{y=x "\n" $0; x=$0};END{print y}' 	:print the last 2 lines of a file (emulates "tail -2")
+awk 'END{print}' 						:print the last line of a file (emulates "tail -1")
+awk '$5 == "abc123"' 					:print any line where field #5 is equal to "abc123"
+awk '$5 != "abc123"' 					:print only those lines where field #5 is NOT equal to "abc123"-alternative awk '!($5 == "abc123")'
+awk '/regex/{print x};{x=$0}' 			:print the line immediately before a regex, but not the line containing the regex
+awk '/regex/{getline;print}' 			:print the line immediately after a regex, but not the line containing the regex
+awk '/AAA/ && /BBB/ && /CCC/' 			:grep for AAA and BBB and CCC (in any order on the same line)
+awk '/AAA.*BBB.*CCC/' 					:grep for AAA and BBB and CCC (in that order)
+awk '/regex/,0' 						:print section of file from regular expression to end of file - alternative awk '/regex/,EOF'
+awk 'NR==8,NR==12' 						:print section of file based on line numbers (lines 8-12, inclusive)
+awk 'NR==52 {print;exit}'          		:print line number 52 - efficient on large files. Alternative awk 'NR==52'
+awk '/Iowa/,/Montana/' 					:print section of file between two regular expressions (inclusive-case sensitive)
+awk NF 									:delete ALL blank lines from a file (same as "grep '.' ") - alternative awk '/./'
+awk 'a !~ $0; {a=$0}' 					:remove duplicate, consecutive lines (emulates "uniq")
+awk '!a[$0]++'                     		:remove duplicate, nonconsecutive lines, also awk '!($0 in a){a[$0];print}' 
+
+gawk -v BINMODE="w" '1' infile >outfile 		:IN DOS ENVIRONMENT: convert DOS newlines (CR/LF) to Unix format
+awk '{sub(/^[ \t]+/, "")};1' 					:delete leading whitespace (spaces, tabs) from front of each line aligns all text flush left
+awk '{sub(/[ \t]+$/, "")};1' 					:delete trailing whitespace (spaces, tabs) from end of each line
+awk '{gsub(/^[ \t]+|[ \t]+$/,"")};1' 			:delete BOTH leading and trailing whitespace from each line
+awk '{$1=$1};1'           						:removes extra space between fields
+awk '{sub(/^/, "     ")};1' 					:insert 5 blank spaces at beginning of each line (make page offset)
+awk '{printf "%79s\n", $0}' file* 				:align all text flush right on a 79-column width
+awk '{l=length();s=int((79-l)/2); printf "%"(s+l)"s\n",$0}' file* :center all text on a 79-character width
+awk '{sub(/foo/,"bar")}; 1'           			:replace "foo" with "bar" only 1st instance
+gawk '{$0=gensub(/foo/,"bar",4)}; 1'  			:replace "foo" with "bar" only 4th instance
+awk '{gsub(/foo/,"bar")}; 1'          			:replace "foo" with "bar" ALL instances in a line
+awk '/baz/{gsub(/foo/, "bar")}; 1' 				:substitute "foo" with "bar" ONLY for lines which contain "baz"
+awk '!/baz/{gsub(/foo/, "bar")}; 1' 			:substitute "foo" with "bar" EXCEPT for lines which contain "baz"
+awk '{gsub(/scarlet|ruby|puce/, "red")}; 1' 	:change "scarlet" or "ruby" or "puce" to "red"
+awk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--] }' file* :reverse order of lines (emulates "tac")
+awk '/\\$/ {sub(/\\$/,""); getline t; print $0 t; next}; 1' file* :if a line ends with a backslash, append the next line to it (fails if there are multiple lines ending with backslash...)
+awk -F ":" '{print $1 | "sort" }' /etc/passwd  	:print and sort the login names of all users
+awk '{print $2, $1}' file 						:print the first 2 fields, in opposite order, of every line
+awk '{temp = $1; $1 = $2; $2 = temp}' file 		:switch the first 2 fields of every line
+awk '{ $2 = ""; print }' 						:print every line, deleting the second field of that line
+awk '{for (i=NF; i>0; i--) printf("%s ",$i);print ""}' file :print in reverse order the fields of every line
+awk 'ORS=NR%5?",":"\n"' file 					:concatenate every 5 lines of input, using a comma separator between fields
+
