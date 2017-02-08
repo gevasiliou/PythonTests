@@ -1,3 +1,2 @@
-x;x;x;x;x;x;cmd="lbk_addcolumn TABLE_NAME_1 COLUMN_X";x;x;x;x
-
-x;x;x;x;x;x;cmd="lbk_dropcolumn TABLE_NAME_2 COLUMN_Y";x;x;x;x
+"aaa bbb" "xxx yyy"
+"some more" "data here"

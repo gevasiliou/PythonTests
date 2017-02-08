@@ -9,7 +9,11 @@ IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
 https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 http://ss64.com/bash/expr.html
 https://debian-administration.org/article/150/Easily_renaming_multiple_files
-Also very good info available at local 'man bash'
+Also very good info available at local 'man bash' and particularly the section SHELL BUILTIN COMMANDS (find it with / in man page view)
+
+Check man bash for :
+mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
+read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
@@ -30,42 +34,94 @@ http://wiki.bash-hackers.org/commands/builtin/read
 http://wiki.bash-hackers.org/commands/builtin/mapfile
 http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
 
+Check man bash for :
+mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
+read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
+
+
 BASH:READ file to array
 mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
-You can also use mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
-PS: mapfile has also an alias called readarray
-
+You can also use 
+mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
+PS1: mapfile has also an alias called readarray
+PS2: readarray can also be used like <<<"$var"
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:READ while read method:
-while read -r var1 var2 ;do ....;done<file.txt which will assign var1 to first field of line 1 and var2 to second field.
-If the file has more than two fields, then var1 will get the first and var2 will get all the rest.
+while read -r var1 var2 ;do ....;done<file.txt :will assign var1 to first field of line 1 and var2 to second field.
+If the file has more than two fields, then var1 will get the first text and var2 will get all the rest text (all of them)
 
 Withoud defining IFS, the default IFS is used. 
-You can define IFS=' ' for space delimiter, or ':' for semicol delimiter, etc
-To read whole lines use IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
-
+You can define IFS=' ' for space delimiter, or ':' for semicol delimiter or IFS=$'\n' for new line, etc
+To read whole lines use just IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:READ Read lines and split to fields (space separation)
 you can combine also multi read (line read / field read) like this:
 while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
-It will assign filelines to line and then with different IFS will split line to fields.
+It will assign filelines to line and then with different IFS will split line to space separated fields.
 Bug : var1 gets only the last line
-  
-Cool way to cat/view files using GTK3 libs and not get lost in terminal lines:
-for f in /etc/apt/apt.conf.d/*;do echo $f;a=$(cat $f |yadit --title="$f");done #where yadit is an alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:READ Read lines from file and split to fields separated by double quotes 
+Line Example : "aaa bbb" "xxx yyy"  # Next line can be of the same pattern plus a new line separator at end of prev line
+Target : separate fields of line like $1="aaa bbb" $2="xxx yyy" in order to be sent to a function or command
 
+This is tricky because delimiter is not new line but neither space.
+Using newline as delim will get the whole line : $1="\"aaa bbb\" \"xxx yyy\""
+Using space as delim will get $1="\"aaa" $2="bbb\"" etc
+
+This guy here builds an array to take advantage of the existed double quotes:
+http://stackoverflow.com/questions/42111441/how-to-pass-command-line-arguments-with-spaces-through-a-variable-in-bash#42111441
+while IFS= read -r line;do
+  eval args=\("$line"\) 			#or eval args+=\("$line"\)  or declare -a args+=\(....\)
+  command_or_function "${args[@]}" 	#or outside the loop if args+=
+done<file.txt
+
+By calling function inside while loop it results that function will be called as many times as file lines
+Every time function is called will have args starting from [0] up to number of fields i.e [1]
+In reality the command eval args=\("$line"\) (or declare -a args=), expands to (as seen using set -x)
+++ args=("aaa bbb" "xxx yyy")
+Which is two different array entries! Genious. PS: Brackets are quoted to avoid being handled as sub shell by bash
+On the next loop the array is redifined (due to absence of +=) and array elements get the fields of the next line.
+Using += fields of next line will be added to the existed array
+
+Examples:
+$ cat e.txt
+"aaa bbb" "xxx yyy"
+"some more" "data here"
+
+$ unset args;while IFS= read -r line;do declare -a args=\("$line"\);declare -p args;done<e.txt
+declare -a args=([0]="aaa bbb" [1]="xxx yyy")
+declare -a args=([0]="some more" [1]="data here")
+
+$ unset args;while IFS= read -r line;do declare -a args+=\("$line"\);done<e.txt;declare -p args
+declare -a args=([0]="aaa bbb" [1]="xxx yyy" [2]="some more" [3]="data here")
+
+$ function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
+#or function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
+
+aaa bbb
+xxx yyy
+some more
+data here
+
+More Tips:
+To call an external command (not a function) it seems that `xargs command <file` is enough (??strange!!)
+
+In case you want to parse whole lines from file as an argument to a function you can simply use : /some/command "$(<file.txt)"
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:READ read file in pair of two lines at same time
 while read -r prereq && read -r target; do
    printf '%s: %s\n' "$target" "$prereq"
 done < file.txt
 PS: Mind that two lines are read as a pair. Line 1 and Line 2 , and then Line 3-Line4.
 You miss the Line 2- Line3 combination
-
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:READ Only the first two lines.
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
-
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:READ Using line builtin
 line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
-
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
@@ -102,11 +158,18 @@ For else conditions or for performing actions under false conditions you can use
 [ "$USER" = "rot" ]  || [ "$LOGNAME" = "rot" ];echo $? --> 1 #one = not ok = false since i'm logged in as root and not rot
 ! [ "$USER" = "rot" ]  || ! [ "$LOGNAME" = "rot" ];echo $? --> 0  #expression ok = true means that it is true that i'm not user rot or logname rot (true since i'm logged in as root)
 Tip: When you gksu terminal from normal user account then $USER and $LOGNAME are set to root.
+[[ -z $1 ]] && echo "Pass me a directory to cat files" && return #if is not set , if it is blank, empty
+[[ ! -z $1 ]]  equals to [[ -n $1 ]] # -n operator makes the opposite job of -z. Returns true / success / exit code 0 if it is set 
+[[ ! -d $1 ]] && echo "Argument passed is not a directory - please send a dir" && return
 
 Check if a slash '/' exist in the end of variable and add it if it is missing
-root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
+$ echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
 /home/gv/Desktop/
-The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. Then is simple: if last char is not / then a=a+/
+The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. 
+Then is simple: if last char is not / then add a slash
+
+[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:CONDITION CHECKS CASE WITH NUMBERS RANGE
 Using case with numbers:
@@ -295,25 +358,35 @@ MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
+
+Iterate through args
+function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
+function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
+
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
+ARGS to Array
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
-GV Tip: Automatically separate args depending on their first char (i.e dash -)
-Tip: ${1:0:1} will return the first char. Then you can compare (if) with == "-"
+
+ARGS Seperatation depending on first char (i.e dash -)
+${1:0:1} will return the first char. Then you can compare (if) with == "-"
+
 You can assign all args in an array using "-" as delimiter
 Function test { local args=$@;declare -a params;readarray -d"-" -t -O1 params <<< "$args";declare -p params;}
 
 Thus you can send an argument like "one two", which will be normally considered as two args ($1=one , $2=two)
 But in case of readarray will be considered as $1 since there is not dash - to separate the args.
 
-Another Option is to use case with loop:
+Another Option is to use case with loop to iterate through args separated by dash -:
 for arg in $@;do
 case arg in
 -*) arg starts with dash , then do this;;
 *) not dash , so do the other thing;;
 esac
+
+Also see the BASH:READ Section for sending args through a file in various cases.
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION

@@ -337,7 +337,7 @@ if [[ $pattern1 = "*" ]]; then
 elif [[ "${pattern1: -1}" != "*" && "${pattern1: -1}" != "$" ]]; then
 	pattern1=$(echo "$pattern1""*")
 elif [[ "${pattern1: -1}" == "$" ]]; then
-	pattern1="${pattern1:0:-1}"
+	pattern1="${pattern1:0:-1}" #If you enter a dollar sign in the end this means do not treat the name as pattern with wildmark but literally.
 fi
 
 [[ "$pattern2" == "*" ]] && pattern2=""

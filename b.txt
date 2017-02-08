@@ -1,4 +1,10 @@
-#  1  2016-05-31-1003-57S._BKSR_003_CM6
-#  2  2016-06-01-2255-54S._BKSR_003_CM6
-#  3  2016-06-05-1624-57S._BKSR_003_CM6
-#  4  2016-06-07-1914-55S._BKSR_003_CM6
+dn: cn=proxyagent,ou=profile,o=ferry.com
+dn: cn=default,ou=profile,o=ferry.com
+preferredServerList: 192.68.8.15 192.68.8.16
+defaultServerList: 192.68.8.15 192.68.8.16 192.68.88.27
+dn: cn=austin, ou=profile, o=ferry.com
+defaultServerList: 192.68.63.10 10.209.208.23
+preferredServerList: 192.68.88.14 10.28.15.10
+dn: cn=sanjose, ou=profile, o=ferry.com
+preferredServerList: 192.68.8.15 192.68.8.16
+defaultServerList: 192.68.8.15 192.68.8.16 192.68.88.38

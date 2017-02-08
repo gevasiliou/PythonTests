@@ -1,4 +1,0 @@
-Hostname	App_ID       
-SercverTest345	12               
-Mytestserver01	17               
-Mytestserver02	19  

@@ -21,55 +21,82 @@ alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
+alias printfunctions='set |grep -A2 -e "()"'
 
 function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
 
 function printarray () { 
+echo "printarray: Prints indexed array $1 as stored in bash environment "
 # ab=( "one" "two" "fi ve" );printarray --> please provide a var
 # printarray ab
 # [0]="one
 # [1]="two
 # [2]="fi ve" #works even with space in array values
-if [ -z $1 ];then 
-	echo "please provide a var"
-else 
-	declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g"
-fi
+[[ -z $1 ]] && echo "Provide an array variable to display" && return
+declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g"
+
 }
 
 function mandiff { 
+echo "mandiff: Compare installed man pages $1 vs the online man page at maniker.com"
+[[ -z $1 ]] && echo "manpage missing " && return
+[[ $(man -w "$1" 2>/dev/null) == "" ]] && echo "no valid manpage found for $1" && return
 #mandiff = compare with diff an installed man page with online one by mankier.com
 diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70)
 }
 
 function lsdeb () { 
+echo "lsdeb: Displays contents of the .deb file corresponding to an apt-get install package $1"
+[[ -z $1 ]] && echo "apt pkg file missing " && return
 local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 tmpdeb=$(echo "${tmpdeb: 1:-1}")
 dpkg -c <(curl -sL -o- $tmpdeb)
 }
 
 function aptshowlight() { 
+echo "aptshowlight: It is apt show $1 but in light version , giving only Package name and short description"
+[[ -z $1 ]] && echo "Package missing " && return
 #aptshowlight : runs apt show on given arg $1 , and prints only package name, section and Description. Combine with yadit.
 #notice that if you specify to -A (after context) more lines than really available the results are not correct.
 apt show $1 2>/dev/null |grep -A2 -e "Package:" -e "Description:" |grep -v -e "Version\|Priority\|Maintainer\|Installed-"
 }
 
 function aptshowsmart() { 
+echo "aptshowsmart: apt show $1 in a smart way , using less pager"
+[[ -z $1 ]] && echo "Package missing " && return
 local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1)
 apt show $ass |less
 }
 
 function debman { 
+echo "debman: debian man pages online of package $1"
+[[ -z $1 ]] && echo "Pass me a package to query debian manpages" && return
 #debman uses the 2017 new web page with jump option
 links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
 }
 
 
 function wiki() { 
-# wiki returns wikipedia entrys in terminal. 
+echo "wiki: Returns wikipedia $@ entries in terminal"
+[[ -z $1 ]] && echo "Pass me a page to search WikiPedia " && return
 #dig +short txt $1.wp.dg.cx #This uses dig (apt install dnsutils) and does not work.
-links -dump "https://en.wikipedia.org/w/index.php?search=$@" |less
-# better to use $@ that parses all args , otherwise the arg red hat is parsed as red (or must be double quoted)
+local q="$@"
+links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
+# better to use $@ that parses all args together ; Otherwise the arg red hat is passed as $1=red and $2=hat (or it has to be quoted)
+}
+
+function dcat() { 
+echo "dcat: directory cat - cat files within directory $1, including subdirs"
+[[ -z $1 ]] && echo "Pass me a directory to cat files" && return
+local d="$1"
+if [[ ! -d $d ]]; then 
+	echo "This is not a directory" && return
+else
+	[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
+	echo "directory to scan= $d"
+	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
+	find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \;
+fi
 }
 
 # Tips about functions usage as an alias and sourcing them to other scripts
