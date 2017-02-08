@@ -760,13 +760,26 @@ exit
 
 }
 
-regex_multiline="(?s)(flag)[[:blank:]](.*?)(?=(?:\r\n|[\r\n])(flag)|\z)"
-logfile="./d2.txt"
+set -vx
+function onac {
+	onpower=$(upower -i /org/freedesktop/UPower/devices/line_power_AC |grep online |awk -F " " '{print $NF}')
+[[ "$onpower" == "yes" ]] && ret=0 || ret=1
+}
 
-    #this works only with grep 2.25 or higher, 
-    #which returns a NULL-byte delimiter after each capture
-    echo start
-    while IFS= read -r -d '' line ; do
-        printf '<test>%s</test>\n' "$line"
-    done < <(grep -Pzo $regex_multiline $logfile)
-    echo end
+http://askubuntu.com/questions/69556/how-to-check-battery-status-using-terminal
+while inotifywait -e modify /sys/class/power_supply/BAT0/status; do
+#your code here
+done
+inotifywait -e create /path/to/watch
+echo "ding!" #will ding when a file or directory gets created in that path.
+
+
+while : ;do
+onac &
+sleep 10
+done
+
+while [[ $ret -eq 1 ]]; do
+echo "keep going"
+sleep 5
+done

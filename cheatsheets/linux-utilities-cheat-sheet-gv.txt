@@ -196,3 +196,65 @@ nl -bp"^$" c.txt --> apply numbering only on empty lines (start and end together
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:TR
 Replace new lines with null: tr '\n' '\0' <in >out
+
+#-----------------------------------------------------------------------------------------------------------------------
+UTILS:SORT 
+http://www.skorks.com/2010/05/sort-files-like-a-master-with-the-linux-sort-command-bash/
+Mind the options -u and -k.
+
+-k lets you defind the sort key. You can have many -k entries.
+Moreover with -k you can define except from the column (-k1) also the letters range to make the sort (i.e -k1,5 = 1st Col, chars 1 to 5)
+
+Example:
+root@debi64:/home/gv/Desktop# sort -k1,5 a.txt b.txt
+crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz/rhr/rthrh
+-rw-rwxr--+  3 user1 hive       1462 2017-01-31 16:55 /user/anc/xyz/rhrhheh
+
+root@debi64:/home/gv/Desktop# sort -k1,5 -k8r a.txt b.txt
+crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz/rhr/rthrh
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+-rw-rwxr--+  3 user1 hive       1462 2017-01-31 16:55 /user/anc/xyz/rhrhheh
+
+
+In the second example both files are sorted with key 1 to 5 and then are sorted with key 8 reversed.
+Offcourse the results of second key are not capable to change the results of first key.
+Is a nested /sub sort procedure to be used instead of pipe (sort -k1,5 |sort -k8)
+
+root@debi64:/home/gv/Desktop# sort -k8 a.txt b.txt
+drwxrwxr-x+  - user1 aive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+root@debi64:/home/gv/Desktop# sort -k8 -k1r a.txt b.txt
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 aive          0 2017-01-31 16:55 /user/abc
+
+If you need to extract duplicates based on specific columns ignoring data in the middle , uniq -d will not work.
+# sort -k8 -k1r a.txt b.txt |uniq -d
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
+
+You can then call awk to print the columns you need ($1 and $8) and then cut -d will work on output of awk.
+
+UTILS:SORT -u option (unique)
+sort -u a.txt b.txt == cat a.txt b.txt |sort |uniq
+sort -u will exclude the duplicate lines, operation similar to classic uniq but with more criteria when used with -k
+
+root@debi64:/home/gv/Desktop# sort -u a.txt b.txt #default sorting = based on k1 - c letter on first field goes on top
+crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+drwxrwxr-x+  - user1 aive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+
+root@debi64:/home/gv/Desktop# sort -u -k8 -k1 a.txt b.txt
+drwxrwxr-x+  - user1 aive          0 2017-01-31 16:55 /user/abc
+drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
+crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
+First sorted with k8 then with k1. abc folders go on top

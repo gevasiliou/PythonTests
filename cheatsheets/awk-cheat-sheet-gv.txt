@@ -321,6 +321,27 @@ Although, experts claim that allowing expansion of a bash var in awk is a bad te
 This source gives some alternatives:
 http://cfajohnson.com/shell/cus-faq-2.html#Q24
 #-----------------------------------------------------------------------------------------------------------------------
+AWK:PRINT lines with unique fields (uniq emulation)
+awk -vFS=";" '!unique[$2]++' c.txt
+Will print all lines that have a unique field $2 (; separated)
+
+AWK:REPLACEMENT Replace fields in a file using replacement keys in a separate file
+http://stackoverflow.com/questions/42084340/compare-a-txt-and-csv-file-and-need-to-replace-with-matching-name-in-csv-file/42087905?noredirect=1#comment71347363_42087905
+File 1(txt): [fields:WinSpc:defect]
+File 2 (csv - holding keys): WinSpc,projects.winspc  # Field , replacement data
+Target : [fields:winspc:defect] (replace uses only part of the new value)
+awk solution:
+awk 'FNR==NR{split($2,list,"."); replacement[$1]=list[2]; next} \
+   {for (i in replacement){ if (match($0,i)) {gsub(i,replacement[i],$0); break} }}1 ' \
+      FS="," file2.csv file1.txt
+      
+My Solution with bash:
+$ readarray -t a < <(grep -e "\[fields:" a.txt |cut -d: -f2)
+$ for ((i=0;i<${#a[@]};i++));do a[i]=s/${a[i]}/$(grep -e "${a[i]}" b.txt |cut -d, -f2 |cut -d. -f2)/g\;;done
+$ sed -f <(echo "${a[@]}") a.txt
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 AWK:ARRAY CREATION:
 
 # These next 2 entries are not one-line scripts, but the technique
@@ -413,4 +434,4 @@ awk '{temp = $1; $1 = $2; $2 = temp}' file 		:switch the first 2 fields of every
 awk '{ $2 = ""; print }' 						:print every line, deleting the second field of that line
 awk '{for (i=NF; i>0; i--) printf("%s ",$i);print ""}' file :print in reverse order the fields of every line
 awk 'ORS=NR%5?",":"\n"' file 					:concatenate every 5 lines of input, using a comma separator between fields
-
+awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the same pattern

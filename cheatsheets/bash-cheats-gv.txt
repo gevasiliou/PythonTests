@@ -108,6 +108,33 @@ root@debi64:/home/gv/Desktop/PythonTests# echo "/home/gv/Desktop" |sed 's![^/]$!
 /home/gv/Desktop/
 The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. Then is simple: if last char is not / then a=a+/
 #-----------------------------------------------------------------------------------------------------------------------
+BASH:CONDITION CHECKS CASE WITH NUMBERS RANGE
+Using case with numbers:
+
+This case makes human logic but not computer logic, since case compares $num to regex pattern
+case $num in
+  [0-6] )               echo "You're close...but too low" ;;
+  [8-14] )              echo "You're close...but too high" ;;
+  [15-100] )            echo "You're nowhere near my favorite number...sorry, try again" ;;
+  7 )                   echo "YOU GUESSED MY FAVORITE NUMBER!" ;;
+  * )                   echo "You didn't pick a number between 1 and 100!" ;;
+esac
+
+Can be done with classic if-elif-else combined with -gt , -lt, -eq, etc oprators.
+Alternativelly we can use bash with regex that will match the desired combinations like this:
+
+case $num in
+  ([0-6])                 echo "You're close...but too low" ;;
+  ([8-9]|1[0-4])          echo "You're close...but too high" ;;
+  (1[5-9]|[2-9][0-9]|100) echo "You're nowhere near my favorite number...sorry, try again" ;;
+  7 )                     echo "YOU GUESSED MY FAVORITE NUMBER!" ;;
+  * )                     echo "You didn't pick a number between 1 and 100!" ;;
+esac
+
+Pattern []0-6] is a valid regex pattern representing chars from 0 up to 6.
+Pattern [8-9]|1[0-4] will epxand to chars 8-9 OR 10-11-12-13-14 (as chars)
+Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-100
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:FIND LS ALTERNATIVE
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
