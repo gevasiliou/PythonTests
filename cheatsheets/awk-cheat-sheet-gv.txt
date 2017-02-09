@@ -435,3 +435,31 @@ awk '{ $2 = ""; print }' 						:print every line, deleting the second field of t
 awk '{for (i=NF; i>0; i--) printf("%s ",$i);print ""}' file :print in reverse order the fields of every line
 awk 'ORS=NR%5?",":"\n"' file 					:concatenate every 5 lines of input, using a comma separator between fields
 awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the same pattern
+
+
+ 99 test1
+88 test2
+10 test3
+11 test1
+12 test1
+13 test2
+14 test3
+17 test1
+18 test4
+ 
+ awk 'NR==1
+ {if (($0~"test1")) 
+   {a=$0;getline;
+   {if (($0~"test2")) 
+     {b=$0;getline;
+     {
+       if (($0~"test3")) 
+         {
+          c=$0;{print a,b,c}
+         }
+      }
+     }
+    }
+   }
+  }' 
+  c.txt

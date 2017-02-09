@@ -1,6 +1,7 @@
 BASH CHEATS BY GV
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:BASICS
+http://mywiki.wooledge.org/BashFAQ
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
 BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
 BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
@@ -706,6 +707,14 @@ Alternative : Directly eval the code
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:IFS Tricks
+bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
+The IFS variable holds the characters that Bash sees as word boundaries in this step. The default contains the characters
+<space>
+<tab>
+<newline>
+These characters are also assumed when IFS is unset. 
+When IFS is empty (nullstring), no word splitting is performed at all.
+
 #### Special IFS settings used for string parsing. ####
 Whitespace == :Space:Tab:Line Feed:Carriage Return:
 WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
@@ -766,3 +775,8 @@ extdebug       	off
 extglob        	off
 failglob       	off
 #-----------------------------------------------------------------------------------------------------------------------
+BASH:FIND Iterate through various folders without find:
+for i in a b c d e
+do
+    (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
+done
