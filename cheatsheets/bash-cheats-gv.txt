@@ -725,6 +725,18 @@ Meaning: detach fd2 from tty0(default) and send it to wherever fd1 goes (=pipe) 
 But this is not portable and this is why is not used at all. 
 You create a tmp fd3 to go at fd1 in the very beginning , saving the pipe internal location/name , then you ask fd1 to go to wherever fd2 goes (screen , maybe tty0, maybe tty1, maybe something else) and finally you detach fd2 from screen and send it to fd1 previous location = fd3 current location , since you can not redirect fd to a place that no longer exists (like fd1 old place) 
 
+ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
+This also achieves the swap in a different way:
+exec 3>&1			# Save the place that stdout (1) points to . This is the screen because we are in CLI mode.
+output=$(command 2>&1 1>&3)	# Run command.  stderr is captured, and 
+exec 3>&- 			#close fd3	
+
+This does the swap job (stderr is captured at output variable pipe and script's output is send to screen) because:
+exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tty0)
+2>&1 inside script goes detach fd2 from tty0 and send it to wherever fd1 goes INSIDE script = pipe  
+1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
+Brilliant! 
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
