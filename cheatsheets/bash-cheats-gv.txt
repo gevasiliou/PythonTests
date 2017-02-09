@@ -714,6 +714,8 @@ In both cases nothing printed on screen directly.
 Mind the exit code of cat. Can be used to built if statements like if error without printing anything.
 remember that the usage if $(command);then EQUALS TO if $? of last command = 0 then
 
+AS IT IS OBVIOUS, REDIRECTION SEQUENCE IS IMPORTANT TO ACHIEVE YOUR RESULT. REDIRECTIONS ARE READ FROM LEFT TO RIGHT.
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
