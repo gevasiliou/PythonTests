@@ -716,6 +716,15 @@ remember that the usage if $(command);then EQUALS TO if $? of last command = 0 t
 
 AS IT IS OBVIOUS, REDIRECTION SEQUENCE IS IMPORTANT TO ACHIEVE YOUR RESULT. REDIRECTIONS ARE READ FROM LEFT TO RIGHT.
 
+In all above redirections, the existance of fd3 is like a temp save of the location that fd1 goes.
+This could be avoided if we were sure where exactly to redirect final destination.
+If for example in all systems world wide the screen was tty0, then we could avoid the use of temp fd3 like this:
+$(cat 'any file' 2>&1 1>/dev/tty0)
+Meaning: detach fd2 from tty0(default) and send it to wherever fd1 goes (=pipe) and then detach fd1 from pipe and send it to /dev/tty0.
+
+But this is not portable and this is why is not used at all. 
+You create a tmp fd3 to go at fd1 in the very beginning , saving the pipe internal location/name , then you ask fd1 to go to wherever fd2 goes (screen , maybe tty0, maybe tty1, maybe something else) and finally you detach fd2 from screen and send it to fd1 previous location = fd3 current location , since you can not redirect fd to a place that no longer exists (like fd1 old place) 
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
