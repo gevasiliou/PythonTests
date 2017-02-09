@@ -99,6 +99,19 @@ else
 fi
 }
 
+function findexec {
+echo "findexec: find executable files under directories of /. Double quotes on file name is MANDATORY"
+[[ -z $1 ]] && echo "Pass me a file name to look for executable files under / dir" && return
+local fname=("$1")
+echo "arg=$fname"
+#for $1=*grep* search for all combinations: *grep* , grep*,*grep,grep
+#[[ "${fname:0:1}" == "*" ]] && fname+=("${fname:1}") #if starts with * remove it and add it as a saparate search term
+#[[ "${fname: -1}" == "*" ]] && fname+=("${fname:0:-1}") #if ends with * remove it and add it to array
+#[[ "${fname:0:1}" == "*" ]] && [[ "${fname: -1}" == "*" ]] && fname+=("${fname:1:-1}") #if first and last char is * remove them
+#for f in "${fname[@]}";do find / -type f -executable -name "$f";done 
+find / -type f -executable -name "$fname"
+}
+
 # Tips about functions usage as an alias and sourcing them to other scripts
 # See all declared functions with 'set' - it will not be available in 'alias' command any more.
 # Bash manual claims that is better to use direct functions instead of alias.

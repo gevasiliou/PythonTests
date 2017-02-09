@@ -15,6 +15,9 @@ Also very good info available at local 'man bash' and particularly the section S
 Check man bash for :
 mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
+printf
+
+printf '%s: %s\n' "$user" "$shell"
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
@@ -54,12 +57,21 @@ If the file has more than two fields, then var1 will get the first text and var2
 Withoud defining IFS, the default IFS is used. 
 You can define IFS=' ' for space delimiter, or ':' for semicol delimiter or IFS=$'\n' for new line, etc
 To read whole lines use just IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
+
+Skip Lines Trick inside loop : [[ $line = \#* ]] && continue #skips lines starting with # = comments
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:READ Read lines and split to fields (space separation)
 you can combine also multi read (line read / field read) like this:
 while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
 It will assign filelines to line and then with different IFS will split line to space separated fields.
 Bug : var1 gets only the last line
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:READ a single text/var with read -r:
+http://mywiki.wooledge.org/BashFAQ/001
+read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
+read -r first last junk <<< "$a" 
+# first will contain "Bob", last will contain "Smith", junk holds everything else that follows
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:READ Read lines from file and split to fields separated by double quotes 
 Line Example : "aaa bbb" "xxx yyy"  # Next line can be of the same pattern plus a new line separator at end of prev line
@@ -124,11 +136,20 @@ BASH:READ Using line builtin
 line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
 #-----------------------------------------------------------------------------------------------------------------------
+BASH:READ loop with file descriptor
+exec 9< "$file"
+while IFS= read -r line <&9; do
+  cat > ignoredfile
+  printf '%s\n' "$line"
+done
+exec 9<&-
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
 Thus multiple pipes create multiple subshells = performance penalty.
 More over variables of parent can not be modified by childs (=subshells)
+
 Example:
 s=1000; ps -ly |while read a b c d rest;do s=$(($s+c));echo "c=$c - S=$s";done;echo "final s=$s"
 s values will be sent to pipe (child), and value of c will be added. Outside the pipe, final s will be reported 1000, because child can not change parents.
@@ -142,6 +163,18 @@ final s=1000
 Workaround to avoid pipe / subshell:
 s=1000; while read a b c d rest;do s=$(($s+c));echo "c=$c - S=$s";done < <(ps -ly);echo "final s=$s"
 In this case (process substitution) the final s will have the correct/final value.
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:PIPES Exit Code Checking (http://mywiki.wooledge.org/BashFAQ/002)
+Check Exit code of commands inside pipe: ${PIPESTATUS[@]}
+"${PIPESTATUS[0]}" refers to first (read from left) command
+"${PIPESTATUS[1]}" refers to second (read from left) command, etc
+"${PIPESTATUS[@]}" prints them all 
+
+Bash 3.0 added a pipefail option as well, which can be used if you simply want to take action upon failure of the grep: 
+set -o pipefail
+if ! grep foo somelogfile | head -5; then
+    printf "uh oh\n"
+fi
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:RUN COMMAND AS DIFFERENT USER : 
 gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
@@ -170,7 +203,13 @@ The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char.
 Then is simple: if last char is not / then add a slash
 
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:IF CONDITION do some actions based on the return code of a command without storing the code
+if command; then
+    printf "it succeeded\n" #executed when command returns 0
+else
+    printf "it failed\n" #executed when command returns <>0 (i.e 1 or other code - carefull with diff)
+fi
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:CONDITION CHECKS CASE WITH NUMBERS RANGE
 Using case with numbers:
@@ -510,20 +549,32 @@ the indirect expansion is essentially "variable not found, substitute the empty 
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS
+Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
 http://www.tldp.org/LDP/abs/html/io-redirection.html
 http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
 http://unix.stackexchange.com/questions/13724/file-descriptors-shell-scripting
 http://www.tldp.org/LDP/abs/html/ioredirintro.html
-basic fd : 0=stdin , 1=stdout , 2=stderr
+
+BASICS: 
+fd0=stdin , fd1=stdout , fd2=stderr - Equals to 0>/dev/tty, 1>/dev/tty , 2>/dev/tty
+This redirection format >/dev/null ()or >wherever) EQUALS TO 1>/dev/null (or 1>wherever) == redirection of stdout
+
 IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 But if you try test=$(java -version 2>&1);echo $test works ok.
-Obviously this happens because java app prints its version to stderr and not to stdout.
-By default you can not assign in vars output of commands that send their output to &2 (=stderr) and not to &1 (stdout).
+java app prints its version to stderr and not to stdout.
+By default you can not assign in vars output of commands that send their output other than stdout &1 (i.e &2 =stderr) 
 With the 2>&1 you redirect stderr to stdout and thus you can store that output in a variable.
+
+<GV Remark>
+Although we said that at initial stage all fds point to screen this means all fds go to /dev/tty and not to >1
+seems that 1&,2& are a kind of "internal variable"
+In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead of 1>/dev/tty)
+</GV Remark>
+
 Redirect stderr to file and stdout + stderr to screen :
-exec 3>&1 
-foo 2>&1 >&3 | tee stderr.txt
+exec 3>&1 && foo 2>&1 >&3 | tee stderr.txt (equals to 2>&1 1>&3)
+
 #
 Tricky redirection from bins missing man pages:
 man -w binaryfile 2>&1 >/dev/null (-w prints man page location)
@@ -550,6 +601,31 @@ But again you dont gain anything with fds. You can send output directly to >anyf
 On the other hand , by assigning stdout to ata-file (just >data-file) you can capture messages from scripts/programms etc that would
 normally go to stdout.
 correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
+
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FILE DESCRIPTORS tricky usage from http://mywiki.wooledge.org/BashFAQ/002
+Let's say you want only the stderr, but not stdout. 
+Well, then first you have to decide where you do want stdout to go: 
+(a)output=$(command 2>&1 >/dev/null)  # Save stderr, discard stdout.
+(b)output=$(command 2>&1 >/dev/tty)   # Save stderr, send stdout to the terminal.
+(c)output=$(command 3>&2 2>&1 1>&3-)  # Save stderr, send stdout to script's stderr.
+
+Analyzing the last (c) case:
+Initial :If this run in a terminal without any redirections stdin, stdout and stderr are all initially connected to the terminal (tty).
+state	: equals to 0>/dev/tty , 1>/dev/tty, 2>/dev/tty and 3 does not exist by default.
+
+3>&2 	: 	FD 3 should point to what FD 2 points to at this very moment, meaning FD 3 will point to the script's stderr 
+			(also called "save stderr in FD 3").
+
+2>&1 	:	Next, FD 2 should point to what FD 1 currently points to, meaning FD 2 will point to stdout. 
+			Right now, both FD 2 and FD 1 would be captured.
+
+1>&3 	:	Next, FD 1 should point to what FD 3 currently points to, meaning FD 1 will point to the script's stderr. 
+			FD 1 is no longer captured. We have "swapped" FD 1 and FD 2.
+
+3>&- 	:	Finally, we close FD 3 as it is no longer necessary.
+
+gv: obviously this is usefull if a script sends data to >&2, right?
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
