@@ -569,7 +569,7 @@ With the 2>&1 you redirect stderr to stdout and thus you can store that output i
 <GV Remark>
 Although we said that at initial stage all fds point to screen this means all fds go to /dev/tty and not to >1
 seems that 1&,2& are a kind of "internal variable"
-In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead of 1>/dev/tty)
+In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead of 1>/dev/tty=screen)
 </GV Remark>
 
 Redirect stderr to file and stdout + stderr to screen :
@@ -625,7 +625,95 @@ state	: equals to 0>/dev/tty , 1>/dev/tty, 2>/dev/tty and 3 does not exist by de
 
 3>&- 	:	Finally, we close FD 3 as it is no longer necessary.
 
-gv: obviously this is usefull if a script sends data to >&2, right?
+gv: This swaps stdout and stderr. In real life the succesfull results of the command go to &1 which is printed in screen instead of the command buffed (pipe). The error of the command goes to &2 which has been redirected to buffer/pipe.
+Verificable example:
+sh-4.2$ echo "echo printing: $(cat test 3>&2 2>&1 1>&3)"                                                                                 this is a test #this is printed directly on screen (tty0) by cat
+echo printing: #this is the output of the command $(..) which is nothing since with above redirections the pipe will hold only stderr.
+
+sh-4.2$ echo "echo printing: $(cat notexistingfile 3>&2 2>&1 1>&3)"                                                                     echo printing: cat: notexistingfile: No such file or directory 
+Nothing is printed on the screen. Error message is stored in the pipe / command buffer $(...)
+
+Another redirection example . It is useless but can give some tips on how redirection works:
+sh-4.2$ echo "echo printing: $(cat notexistingfile 1>&2 2>&1)"                                                                           cat: notexistingfile: No such file or directory #printed directly on the screen/tty0
+echo printing: #command buffer holds nothing
+sh-4.2$ echo "echo printing: $(cat test 1>&2 2>&1)"                                                                                     this is a test #printed directly on tty0 / screen
+echo printing: #command buffer / pipe holds nothing again
+
+Explanation:
+First Redirection :1>&2 detach fd 1 from pipe/buffer (normal operation for a command $()) and send it to fd2 = tty0 (default for fd2)
+Second Redirection: 2>&1 detach fd2 from tty0 (default) and send it to wherever fd1 is attached = tty0 (from previous redir)
+Result : both fd1 and fd2 are sent to tty0
+
+Another useless example:
+sh-4.2$ echo "echo printing: $(cat notexistingfile 2>&1 1>&2)"
+echo printing: cat: notexistingfile: No such file or directory
+sh-4.2$ echo "echo printing: $(cat test 2>&1 1>&2)"
+echo printing: this is a test
+
+Explanation:
+First redirection 2>&1 : detach fd2 from default (tty0) and send it to wherever fd1 goes (command buffer/pipe when used with $())
+Second redirection 1>&2 :detach fd1 from pipe/buffer (default in case of $()) and send it to wherever fd2 goes = command buffer = useless
+Result: Nothing is printed on tty0 but both normaloutput (stdout) and error output (stderr) go to pipe/command buffer.
+
+Another example of swapping stderr with stdout
+sh-4.2$ echo "echo printing: $(cat notexistingfile 3>&1 1>&2 2>&3)"
+echo printing: cat: notexistingfile: No such file or directory #stderr goes to command pipe/buffer
+
+sh-4.2$ echo "echo printing: $(cat test 3>&1 1>&2 2>&3)"
+this is a test #normal out (stdout) goes directly to screen 
+echo printing: #command pipe/buffer is empty since no error raised - no data send to stderr.
+
+The key point to understand redirections is that:
+commands behavior is always the same : normal output goes to stdout , errors go to stderr.
+Works like :
+command output -> stdout ->fd1 -> tty0 (in CLI)
+command output -> stdout ->fd1 -> buffer/pipe (in script format $())
+command errors -> stderr ->fd2 -> tty0 (in both CLI and script format $())
+With redirections you only alter the last part of the chain.
+
+So in case of  $(cat 'any file' 3>&1 1>&2 2>&3) we have 
+Initial state in script usage:
+cat command succesfull -> normal output --> stdout -->fd1 --> command pipe
+cat command error (file not found) -------> stderr -->fd2 -->tty0
+
+Redirections:
+---------------------------STEP 1 (3>&1)----------------------------------------------------------------------------------
+fd3-----|    	#fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
+	|
+fd1---> pipe 
+fd2---> tty0
+---------------------------STEP 2 (1>&2)----------------------------------------------------------------------------------
+fd3 ------------|
+		|
+fd1 ----|      pipe
+	|		#stdout --> fd1 detached from pipe and goes to wherever fd2 (stderr) goes = tty0 
+fd2--->tty0
+
+---------------------------STEP 3 (2>&3)----------------------------------------------------------------------------------
+
+fd3 ------------|
+		|
+fd1 ----|      pipe
+	|	|
+       tty0	|
+		|
+fd2-------------|	#stderr-fd2 detached from tty0 and goes to wherever fd3 goes = pipe
+
+
+Redirection Result Chain (swap fd1 with fd2 for scrip usage):
+cat command normal output --> stdout -->fd1 --> tty0 	#step 2 above
+cat command error --> stderr -->fd2 -->pipe		#step 3 (2>&3) and 1 (3>&1) above
+
+And a final redirection that disregards normal output and get's only error to do something with them:
+sh-4.2$ echo "echo printing: $(cat test 2>&1 1>/dev/null;echo $?)"
+echo printing: 0 #normal output --> stdout-->fd1-->/dev/null
+sh-4.2$ echo "echo printing: $(cat tesat 2>&1 1>/dev/null;echo $?)"
+echo printing: cat: tesat: No such file or directory 1 #error output ->stderr ->fd2 -> pipe/buffer
+In both cases nothing printed on screen directly.
+
+Mind the exit code of cat. Can be used to built if statements like if error without printing anything.
+remember that the usage if $(command);then EQUALS TO if $? of last command = 0 then
+
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
