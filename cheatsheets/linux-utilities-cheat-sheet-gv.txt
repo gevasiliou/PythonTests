@@ -102,13 +102,24 @@ alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var"
 for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
 # Use of find with custom output (printf):
 find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
-
+#-----------------------------------------------------------------------------------------------------------------------
 UTILS:DIFF Comparing files and variables:
 diff can compare two files line by line.
 You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
 
 # Compare grep result in a nice visual way:
 diff -u  <(cat a.txt) <(grep "tar*" a.txt) #or -y
+
+#-----------------------------------------------------------------------------------------------------------------------
+UTILS:DIFF Remove the < char from output and keep only the differet items:
+diff --changed-group-format='%<' --unchanged-group-format='' c.txt cc.txt
+i.e c.txt 
+1
+2
+3
+cc.txt
+1
+2
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:HEAD-TAIL
