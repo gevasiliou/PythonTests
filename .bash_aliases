@@ -112,6 +112,12 @@ echo "arg=$fname"
 find / -type f -executable -name "$fname"
 }
 
+function mancheat { 
+echo "mancheat: explore the cheat sheets using man page viewer"
+[[ -z $1 ]] && echo "Pass me a cheat file in CAPITAL letter to display from ./cheatsheets/ directory" && return
+	man --nj --nh <(sed "s/^$1:/.SH $1:/g; s/^$/\.LP/g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g');
+}
+
 # Tips about functions usage as an alias and sourcing them to other scripts
 # See all declared functions with 'set' - it will not be available in 'alias' command any more.
 # Bash manual claims that is better to use direct functions instead of alias.
