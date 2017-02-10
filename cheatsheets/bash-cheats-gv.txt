@@ -1,5 +1,12 @@
+.\" Manpage for bash cheats.
+.\" Contact vivek@nixcraft.net.in to correct errors or typos.
+.TH man 8 "06 May 2010" "1.0" "nuseradd man page"
 BASH CHEATS BY GV
-#-----------------------------------------------------------------------------------------------------------------------
+Read this cheat sheet as a man page by invoking man command like this:
+man <(sed 's/BASH:/.SH BASH:/g; s/$/\n/g' cheatsheets/bash*gv.txt)
+man <(sed 's/BASH:/.SH BASH:/g; G' cheatsheets/bash*gv.txt) #G=double spacing sed command
+
+#----------------------------------------------------------------------------------------------------------------------- .br
 BASH:BASICS
 http://mywiki.wooledge.org/BashFAQ
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
@@ -16,13 +23,13 @@ Check man bash for :
 mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
 printf
-
 printf '%s: %s\n' "$user" "$shell"
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
 Also See the shellcolors.sh file
+
 The main idea is to define some vars like:
 #		cN=$(echo -ne "\033[m")      # normal - also 30m works ok.
 #		cP=$(echo -ne "\033[31m") #red color
@@ -42,7 +49,7 @@ Check man bash for :
 mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
 
-
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:READ file to array
 mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
 You can also use 
@@ -678,26 +685,26 @@ cat command error (file not found) -------> stderr -->fd2 -->tty0
 
 Redirections:
 ---------------------------STEP 1 (3>&1)----------------------------------------------------------------------------------
-fd3-----|    	#fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
-	|
+fd3-----|   		 	#fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
+		|
 fd1---> pipe 
 fd2---> tty0
 ---------------------------STEP 2 (1>&2)----------------------------------------------------------------------------------
 fd3 ------------|
-		|
+				|
 fd1 ----|      pipe
-	|		#stdout --> fd1 detached from pipe and goes to wherever fd2 (stderr) goes = tty0 
+		|				#stdout --> fd1 detached from pipe and goes to wherever fd2 (stderr) goes = tty0 
 fd2--->tty0
 
 ---------------------------STEP 3 (2>&3)----------------------------------------------------------------------------------
 
 fd3 ------------|
-		|
+				|
 fd1 ----|      pipe
-	|	|
-       tty0	|
-		|
-fd2-------------|	#stderr-fd2 detached from tty0 and goes to wherever fd3 goes = pipe
+		|		|
+       tty0		|
+				|
+fd2-------------|		#stderr-fd2 detached from tty0 and goes to wherever fd3 goes = pipe
 
 
 Redirection Result Chain (swap fd1 with fd2 for scrip usage):
@@ -736,6 +743,16 @@ exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tt
 2>&1 inside script goes detach fd2 from tty0 and send it to wherever fd1 goes INSIDE script = pipe  
 1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
 Brilliant! 
+
+#-----------------------------------------------------------------------------------------------------------------------
+BASH:FILE DESCRIPTORS - SCRIPT GLOBAL DECLARATION
+http://mywiki.wooledge.org/BashFAQ/106
+#!/usr/bin/env bash
+# or whichever shebang you prefer
+exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
+
+Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
+See FileDescriptor and Redirection for more details.
 
 #-----------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES

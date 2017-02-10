@@ -226,7 +226,7 @@ function buildlist12 {
 	sortmname=($(sort <<<"${mname[*]}"))
 	sorticon=($(sort <<<"${icon[*]}"))
 
-	trimexecutable=($(grep  -Po '(?<=Exec=)[ --0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
+	trimexecutable=($(grep  -Po '(?<=Exec=)[ --_0-9A-Za-z/]*' <<<"${sortexecutable[*]}"))
 	trimcomment=($(grep -Po '(?<=Comment=)[ --0-9A-Za-z/]*' <<<"${sortcomment[*]}"))
 #a	trimcomment2=($(grep -Po '(?<=GenericName=)[ --0-9A-Za-z/]*' <<<"${sortcomment2[*]}"))
 	trimmname=($(grep -Po '(?<=Name=)[ --0-9A-Za-z/]*' <<<"${sortmname[*]}"))
