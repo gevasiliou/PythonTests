@@ -4,23 +4,25 @@
 
 #deb cdrom:[Debian GNU/Linux 8.6.0 _Jessie_ - Official amd64 NETINST Binary-1 20160917-14:20]/ jessie main
 
-deb http://httpredir.debian.org/debian/ jessie main non-free contrib
-deb http://httpredir.debian.org/debian/ testing main non-free contrib
-deb http://httpredir.debian.org/debian/ sid main non-free contrib
-deb http://httpredir.debian.org/debian/ experimental main non-free contrib
+#deb http://ftp.gr.debian.org/debian/ jessie main non-free contrib
 
-deb http://httpredir.debian.org/debian/ jessie-updates main contrib non-free
-deb http://httpredir.debian.org/debian/ testing-updates main contrib non-free
+deb http://ftp.gr.debian.org/debian/ jessie main non-free contrib
+deb http://ftp.gr.debian.org/debian/ testing main non-free contrib
+deb http://ftp.gr.debian.org/debian/ sid main non-free contrib
+deb http://ftp.gr.debian.org/debian/ experimental main non-free contrib
+
+deb http://ftp.gr.debian.org/debian/ jessie-updates main contrib non-free
+deb http://ftp.gr.debian.org/debian/ testing-updates main contrib non-free
 deb http://security.debian.org/ jessie/updates main contrib non-free
 deb http://security.debian.org/ testing/updates main contrib non-free
 
-deb-src http://httpredir.debian.org/debian/ jessie main non-free contrib
-deb-src http://httpredir.debian.org/debian/ testing main non-free contrib
-deb-src http://httpredir.debian.org/debian/ sid main non-free contrib
-deb-src http://httpredir.debian.org/debian/ experimental main non-free contrib
+deb-src http://ftp.gr.debian.org/debian/ jessie main non-free contrib
+deb-src http://ftp.gr.debian.org/debian/ testing main non-free contrib
+deb-src http://ftp.gr.debian.org/debian/ sid main non-free contrib
+deb-src http://ftp.gr.debian.org/debian/ experimental main non-free contrib
 
-deb-src http://httpredir.debian.org/debian/ jessie-updates main contrib non-free
-deb-src http://httpredir.debian.org/debian/ testing-updates main contrib non-free
+deb-src http://ftp.gr.debian.org/debian/ jessie-updates main contrib non-free
+deb-src http://ftp.gr.debian.org/debian/ testing-updates main contrib non-free
 deb-src http://security.debian.org/ jessie/updates main contrib non-free
 deb-src http://security.debian.org/ testing/updates main contrib non-free
 
@@ -29,3 +31,5 @@ deb-src http://download.videolan.org/pub/debian/stable/ /
 # wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add -
 # Comment out google entry if already present in /etc/apt/sources.list.d directory
 # deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+
+# In case of generic key/sign error : apt-get install debian-ports-archive-keyring

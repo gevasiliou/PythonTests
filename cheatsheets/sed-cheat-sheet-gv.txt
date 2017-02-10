@@ -1,3 +1,7 @@
+.\" Manpage for bash cheats.
+.\" Contact vivek@nixcraft.net.in to correct errors or typos.
+.TH man 8 "06 May 2010" "1.0" "nuseradd man page"
+
 SED:BASICS: CHEAT SHEET by gv
 http://sed.sourceforge.net/grabbag/tutorials/
 http://sed.sourceforge.net/sed1line.txt
@@ -15,7 +19,60 @@ http://www.theunixschool.com/2012/06/sed-25-examples-to-delete-line-or.html
 
 Read Sed Online Cheat Sheets in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 
-SED separators : 
+#------------------------------------------------------------------------------------------------------------------
+SED: CHEAT SHEET TXT 2 MANPAGE FORMATTING
+http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
+
+Read this cheat file with man pages:
+man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/---/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
+man --nh --nj <(sed 's/^SED:/.SH SED:/g; s/^$/---/g;G' cheatsheets/sed*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
+
+man ignores normal line feeds at end of lines ($), but empty lines in form ^$ are recognized and displayed
+Line feeds in man pages can be done by inserting .br between two lines.
+Man sections start with .SH. 
+
+First sed  finds capitalized SED headers in file and insert .SH in front (i.e SED:BASICS becomes .SH SED:BASICS)
+Then we get the existing empty lines (^$) of original file and replace them with a temp pattern ---
+Then using sed G option we double all lines = double file spacing => a new line is inserted after every line in file
+
+This sed creates a new stream which is then piped to a new sed.
+New sed adds .br in every empty line (created by G action before) except the old new lines who contain --- and do not match ^$ pattern
+New sed removes then the temp pattern --- from the old empty lines and old empty lines are restored.
+
+So at the end of the day we have a man page compatible file like
+#.SH SED:BASICS
+#Line1
+#.br
+#Line2
+#.br
+#<empty line>
+#.br
+#Line3
+#.br
+#Line4
+
+Man displays the file as it would display in any editor , in the old file classic txt format:
+#SED:BASHICS (in bold!)
+#Line1
+#Line2
+
+#Line3
+#Line4
+
+PS: More consequitve .br in a series of lines are ignored and got intepreted by man as a single line feed.
+
+PS: man options --nj = not auto justified , --nh = not auto break at hyphen
+
+Alternativelly, if you don't mind to read the file with one empty line after each line , this also works fine:
+man --nh --nj <(sed 's/^SED:/.SH SED:/g; G' cheatsheets/sed*gv.txt)
+This works because empty lines are recognized and displayed by man.
+
+Another alternative is to insert a new paragraph symbol = .LP in old empty lines - has the same effect:
+man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/\.LP/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g')
+existing empty lines get .LP , created empty lines get .br 
+
+#------------------------------------------------------------------------------------------------------------------
+SED:SEPARATORS 
 All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
 
 Tricky sed usage if strings replace strange chars like slashes:

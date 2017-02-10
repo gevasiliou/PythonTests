@@ -1,12 +1,19 @@
 .\" Manpage for bash cheats.
 .\" Contact vivek@nixcraft.net.in to correct errors or typos.
-.TH man 8 "06 May 2010" "1.0" "nuseradd man page"
-BASH CHEATS BY GV
+.TH man 1 "2017" "1.0" "bash cheats page"
+
+BASH:CHEATS BY GV
 Read this cheat sheet as a man page by invoking man command like this:
-man <(sed 's/BASH:/.SH BASH:/g; s/$/\n/g' cheatsheets/bash*gv.txt)
+man <(sed 's/BASH:/.SH BASH:/g; s/$/\n/g' cheatsheets/bash*gv.txt) #double spacing forces man to understand line breaks
 man <(sed 's/BASH:/.SH BASH:/g; G' cheatsheets/bash*gv.txt) #G=double spacing sed command
 
-#----------------------------------------------------------------------------------------------------------------------- .br
+The correct command: 
+man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/---/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
+--nj : no automatic justification of the output.
+--nh : no automatic break at hyphen
+For sed explanation see the sed cheatsheet.
+
+#-----------------------------------------------------------------------------------------------------------------------
 BASH:BASICS
 http://mywiki.wooledge.org/BashFAQ
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"

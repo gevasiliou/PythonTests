@@ -1,4 +1,20 @@
-63.231	20.124	234
-63.652	20.857	383
-64.234	20.342	876
-64.888	20.888	888
+.\" Manpage for bash cheats.
+.\" Contact vivek@nixcraft.net.in to correct errors or typos.
+.TH man 8 "06 May 2010" "1.0" "nuseradd man page"
+
+.SH BASH:CHEATS BY GV
+
+.RS 3
+This line is indented by 3 characters.
+The word .I italic will be underlined.
+
+Mind that the new line character after '3 characters.' is completely ignored by man pages.
+.br
+this is another line separated by .br which exists (in vi mode) between this and the previous line.
+.br
+.br
+.br .br
+three br's together before this line - ignored and operate as one line break.
+.br inline line break . The br is present in the beginning of the same line. As turned out , whatever follows .br is not printed by man.
+
+
