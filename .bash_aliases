@@ -23,6 +23,8 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 alias printfunctions='set |grep -A2 -e "()"'
 alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα" |sed "6d"'
+#alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
+#alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
 
 function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
 
