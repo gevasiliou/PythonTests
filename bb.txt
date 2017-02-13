@@ -1,3 +1,4 @@
 parameterA=0
-parameterB=1
+parameterB=0
 parameterC=0
+parameterD=0
