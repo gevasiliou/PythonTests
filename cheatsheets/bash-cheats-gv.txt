@@ -1,19 +1,5 @@
-.\" Manpage for bash cheats.
-.\" Contact vivek@nixcraft.net.in to correct errors or typos.
-.TH man 1 "2017" "1.0" "bash cheats page"
-
 BASH:CHEATS BY GV
-Read this cheat sheet as a man page by invoking man command like this:
-man <(sed 's/BASH:/.SH BASH:/g; s/$/\n/g' cheatsheets/bash*gv.txt) #double spacing forces man to understand line breaks
-man <(sed 's/BASH:/.SH BASH:/g; G' cheatsheets/bash*gv.txt) #G=double spacing sed command
 
-The correct command: 
-man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/---/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
---nj : no automatic justification of the output.
---nh : no automatic break at hyphen
-For sed explanation see the sed cheatsheet.
-
-#-----------------------------------------------------------------------------------------------------------------------
 BASH:BASICS
 http://mywiki.wooledge.org/BashFAQ
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
@@ -31,8 +17,33 @@ mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] 
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
 printf
 printf '%s: %s\n' "$user" "$shell"
+------------------------------------------------------------------------------------------------------------------------
+BASH:CHEAT SHEET TXT 2 MANPAGE FORMATTING
+##Read this cheat file with man pages:
+http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
+groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
+man pages making: https://liw.fi/manpages/
+https://linux.die.net/man/1/help2man
+man formatting: man 7 man & man 7 man-pages
 
-#-----------------------------------------------------------------------------------------------------------------------
+##Working Command:
+man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
+You can also combine with --nh 
+PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
+
+##man and groff/troff require special handling.
+man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
+Line feeds in man pages can be done by inserting .br between two lines.
+More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
+Man pages should start with a .TH line
+Man sections / header start with .SH. 
+Subsection start with .SS. Alternativelly you can use .B to make this line bold. .B follows text identation - .SS has it's own idents.
+The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
+The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
+
+For sed explanation see the sed cheatsheet.
+
+------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
 Also See the shellcolors.sh file
@@ -45,49 +56,67 @@ or even trickier you can define your vars like $red and $normal and work it like
 red=$(echo -ne "\033[31m"); normal=$(echo -ne "\033[m");echo $red hi there $normal --> works ok , prints hi there in red color and returns to normal. If you ommit the normal , terminal remains in red!
 Or even better do them functions ! function red { echo -ne "\033[32m";echo $@;echo -ne "\033[m";};red hi there
 
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ Reading Files (mapfile, readarray, read -r , etc)
+------------------------------------------------------------------------------------------------------------------------
+BASH:READ - BASICS
+##Reading Files (mapfile, readarray, read -r , etc)
 http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
 http://wiki.bash-hackers.org/commands/builtin/read
 http://wiki.bash-hackers.org/commands/builtin/mapfile
 http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
 
 Check man bash for :
-mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array]
-read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
+readarray /  mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array] #man bash line 2981
+read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] #man bash line 3056
 
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ file to array
-mapfile -t -O 1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
+------------------------------------------------------------------------------------------------------------------------
+##Read file to array
+mapfile -t -O1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
+
 You can also use 
 mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
 PS1: mapfile has also an alias called readarray
 PS2: readarray can also be used like <<<"$var"
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ while read method:
+------------------------------------------------------------------------------------------------------------------------
+## Read while read method:
 while read -r var1 var2 ;do ....;done<file.txt :will assign var1 to first field of line 1 and var2 to second field.
 If the file has more than two fields, then var1 will get the first text and var2 will get all the rest text (all of them)
 
-Withoud defining IFS, the default IFS is used. 
+Withoud defining IFS, the default IFS is used. Even unsetting the IFS default values will be used.
+This is why sometimes is preferable to write IFS= (equals to IFS=null) instead of unset IFS
+ 
 You can define IFS=' ' for space delimiter, or ':' for semicol delimiter or IFS=$'\n' for new line, etc
 To read whole lines use just IFS= (empty = whole line is returned) - But in this case the mapfile tool is better.
 
 Skip Lines Trick inside loop : [[ $line = \#* ]] && continue #skips lines starting with # = comments
 
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ Read lines and split to fields (space separation)
+------------------------------------------------------------------------------------------------------------------------
+## Read lines and split to space separated fields
 you can combine also multi read (line read / field read) like this:
 while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
+OR 
+while IFS= read -r line;do readarray -d' ' -t v1 <<<"$line";done<c.txt
+
 It will assign filelines to line and then with different IFS will split line to space separated fields.
-Bug : var1 gets only the last line
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ a single text/var with read -r:
+
+Can be also done with ONE loop like this:
+while read -r -a vars;do #whatever;done<file #you might also use IFS=' ' , but even with default IFS works fine.
+For a line of "arg1_1 arg2_1 arg3_1" , vars array will look like this:
+declare -a vars=([0]="arg1_1" [1]="arg2_1" [2]="arg3_1")
+
+Mind that vars array will be redifined/overwritten in the next line of the file. 
+
+To have an array that fiels from all the lines will be appending serially to this array instead of overwritting at every new line:
+while IFS= read -r lines;do readarray -t -d' ' -O"${#vars[@]}" vars <<<"$lines";done<c.txt;declare -p vars
+Or you can use the read -r -a method and transfer fields to another array that will not be overwritten by the next line.
+
+------------------------------------------------------------------------------------------------------------------------
+## Read a single text/var with read -r:
 http://mywiki.wooledge.org/BashFAQ/001
 read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
 read -r first last junk <<< "$a" 
 # first will contain "Bob", last will contain "Smith", junk holds everything else that follows
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ Read lines from file and split to fields separated by double quotes 
+------------------------------------------------------------------------------------------------------------------------
+## Read lines from file and split to fields separated by double quotes 
 Line Example : "aaa bbb" "xxx yyy"  # Next line can be of the same pattern plus a new line separator at end of prev line
 Target : separate fields of line like $1="aaa bbb" $2="xxx yyy" in order to be sent to a function or command
 
@@ -134,30 +163,30 @@ More Tips:
 To call an external command (not a function) it seems that `xargs command <file` is enough (??strange!!)
 
 In case you want to parse whole lines from file as an argument to a function you can simply use : /some/command "$(<file.txt)"
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ read file in pair of two lines at same time
+------------------------------------------------------------------------------------------------------------------------
+##Read file in pair of two lines at same time
 while read -r prereq && read -r target; do
    printf '%s: %s\n' "$target" "$prereq"
 done < file.txt
 PS: Mind that two lines are read as a pair. Line 1 and Line 2 , and then Line 3-Line4.
 You miss the Line 2- Line3 combination
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ Only the first two lines.
+------------------------------------------------------------------------------------------------------------------------
+##Read Only the first two lines.
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ Using line builtin
+------------------------------------------------------------------------------------------------------------------------
+Read Using line builtin
 line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
-#-----------------------------------------------------------------------------------------------------------------------
-BASH:READ loop with file descriptor
+------------------------------------------------------------------------------------------------------------------------
+##Read loop with file descriptor
 exec 9< "$file"
 while IFS= read -r line <&9; do
   cat > ignoredfile
   printf '%s\n' "$line"
 done
 exec 9<&-
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
@@ -177,7 +206,7 @@ final s=1000
 Workaround to avoid pipe / subshell:
 s=1000; while read a b c d rest;do s=$(($s+c));echo "c=$c - S=$s";done < <(ps -ly);echo "final s=$s"
 In this case (process substitution) the final s will have the correct/final value.
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:PIPES Exit Code Checking (http://mywiki.wooledge.org/BashFAQ/002)
 Check Exit code of commands inside pipe: ${PIPESTATUS[@]}
 "${PIPESTATUS[0]}" refers to first (read from left) command
@@ -189,12 +218,12 @@ set -o pipefail
 if ! grep foo somelogfile | head -5; then
     printf "uh oh\n"
 fi
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:RUN COMMAND AS DIFFERENT USER : 
 gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
 Run Google Chrome as Root : http://unix.stackexchange.com/questions/175967/how-to-run-google-chrome-as-root-in-linux/332128#332128
 Easy trick : gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:CONDITION CHECKS 
 See also man bash and man test
 One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
@@ -217,14 +246,14 @@ The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char.
 Then is simple: if last char is not / then add a slash
 
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:IF CONDITION do some actions based on the return code of a command without storing the code
 if command; then
     printf "it succeeded\n" #executed when command returns 0
 else
     printf "it failed\n" #executed when command returns <>0 (i.e 1 or other code - carefull with diff)
 fi
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:CONDITION CHECKS CASE WITH NUMBERS RANGE
 Using case with numbers:
 
@@ -251,7 +280,7 @@ esac
 Pattern []0-6] is a valid regex pattern representing chars from 0 up to 6.
 Pattern [8-9]|1[0-4] will epxand to chars 8-9 OR 10-11-12-13-14 (as chars)
 Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-100
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIND LS ALTERNATIVE
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
@@ -260,7 +289,7 @@ output of find can be piped to wc -l , xargs, and other commands.
 
 Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
 PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIND UNUSUAL FILE NAMES 
 Consider files with spaces in their name (i.e a a (01).txx)
 
@@ -282,7 +311,7 @@ http://wiki.bash-hackers.org/syntax/expansion/brace
 http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIND OPERATORS (AND , OR,NOT)
 exclude files (i.e manifest.txt
 find /path/to/ -name '*.txt' -and -not -name 'manifest.txt'
@@ -293,14 +322,14 @@ find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator.
 BASH:FIND CUSTOM PRINTING
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIND EXEC
 Rename extensionless files
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 OR
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
 Search for a process using top . Top seems to catch all processes:
 top -p $(echo $(pgrep time) |sed 's/ /,/g')
@@ -315,7 +344,7 @@ Isolate pids: ps -t tty1 |cut -d" " -f1
 Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
 Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS EXPANSION
 a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
@@ -409,7 +438,7 @@ MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-
 MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
 MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 
@@ -442,7 +471,7 @@ esac
 
 Also see the BASH:READ Section for sending args through a file in various cases.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 Scroll to the end of page for more one-liners.
@@ -459,7 +488,7 @@ if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS
 Using subshells: $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
 
@@ -519,7 +548,7 @@ Identify any command type /location : $type command (try i.e type grep and type 
 List all kernel modules that are loaded (i.e lsmod)
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
 2) y='$'$x
@@ -532,7 +561,7 @@ Simpler with indirect expansion:
 $ foo=10;x=foo;echo ${!x} 	--> 10
 $ foo=10;x=foo;echo ${x} 	--> foo
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:INDIRECT EXPANSION - Similar to eval
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
 
@@ -561,7 +590,7 @@ Test with this:
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
 the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
@@ -616,7 +645,7 @@ On the other hand , by assigning stdout to ata-file (just >data-file) you can ca
 normally go to stdout.
 correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS tricky usage from http://mywiki.wooledge.org/BashFAQ/002
 Let's say you want only the stderr, but not stdout. 
 Well, then first you have to decide where you do want stdout to go: 
@@ -739,7 +768,7 @@ Meaning: detach fd2 from tty0(default) and send it to wherever fd1 goes (=pipe) 
 But this is not portable and this is why is not used at all. 
 You create a tmp fd3 to go at fd1 in the very beginning , saving the pipe internal location/name , then you ask fd1 to go to wherever fd2 goes (screen , maybe tty0, maybe tty1, maybe something else) and finally you detach fd2 from screen and send it to fd1 previous location = fd3 current location , since you can not redirect fd to a place that no longer exists (like fd1 old place) 
 
-ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
+.B ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
 This also achieves the swap in a different way:
 exec 3>&1			# Save the place that stdout (1) points to . This is the screen because we are in CLI mode.
 output=$(command 2>&1 1>&3)	# Run command.  stderr is captured, and 
@@ -751,7 +780,7 @@ exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tt
 1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
 Brilliant! 
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS - SCRIPT GLOBAL DECLARATION
 http://mywiki.wooledge.org/BashFAQ/106
 #!/usr/bin/env bash
@@ -761,7 +790,7 @@ exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
 See FileDescriptor and Redirection for more details.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
 Maybe some commands do not accept input by refular files but from fifos and/or file descriptors. 
@@ -786,7 +815,7 @@ There are various techniques to cheat the fifo "one-shot" behavior.
 In terminal 1 if you run cat >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
 terminal 2 will print immediately whatever comes in fifo.
 see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:ASSOCIATIVE ARRAYS (declare -A array)
 http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
@@ -811,7 +840,7 @@ declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
 --> foo a --- bar
 --> baz b --- quux
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS WHEREIS & WHATIS
 whereis finds where is the executable of a programm (whereis sed). 
 whatis shows one-line info of the program.
@@ -823,7 +852,7 @@ Display a small message about installed bin files in usr/bin (and other folders)
 find /usr/bin -type f -executable |xargs whatis -v 2>&1 |sed 's/ - /:/g' >whatis.log
 mind xargs. Without xargs is not operating.
 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:HEREDOCS
 Best explained : http://tldp.org/LDP/abs/html/here-docs.html
 Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
@@ -916,7 +945,7 @@ echo $A --> prints 42
 
 Alternative : Directly eval the code 
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:IFS Tricks
 bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
 The IFS variable holds the characters that Bash sees as word boundaries in this step. The default contains the characters
@@ -939,7 +968,7 @@ Set IFS= to read whole lines , separated by \n
 Or set IFS=$'\n'
 Set IFS to any char to perform special field split
 For file with lines in format field1:field2:field3 using IFS= you will get the whole line, using IFS=: you can split each field.
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:OPTIONS  
 Globbing ,bash filename expansion, bash options ans shopt options
 Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
@@ -985,7 +1014,7 @@ execfail       	off
 extdebug       	off
 extglob        	off
 failglob       	off
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 BASH:FIND Iterate through various folders without find:
 for i in a b c d e
 do

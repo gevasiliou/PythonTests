@@ -1,3 +1,34 @@
+AWK:CHEATS BY GV
+Read this cheat sheet as a man page by invoking man command like this:
+man <(sed 's/AWK:/.SH AWK:/g; s/$/\n/g' cheatsheets/awk*gv.txt) #double spacing forces man to understand line breaks
+man <(sed 's/AWK:/.SH AWK:/g; G' cheatsheets/awk*gv.txt) #G=double spacing sed command
+
+AWK:CHEAT SHEET TXT 2 MANPAGE FORMATTING
+##Read this cheat file with man pages:
+http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
+man formatting: man 7 man & man 7 man-pages
+groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
+man pages making: https://liw.fi/manpages/
+https://linux.die.net/man/1/help2man
+
+##Working Command:
+man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
+You can also combine with --nh 
+PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
+
+##man and groff/troff require special handling.
+man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
+Line feeds in man pages can be done by inserting .br between two lines.
+More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
+Man pages should start with a .TH line
+Man sections / header start with .SH. 
+Subsection start with .SS. Alternativelly you can use .B to make this line bold. .B follows text identation - .SS has it's own idents.
+The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
+The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
+
+For sed explanation see the sed cheatsheet.
+
+
 AWK:BASICS
 http://www.pement.org/awk/awk1line.txt
 http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
@@ -397,7 +428,8 @@ AWK:ONELINERS PRINTING OF CERTAIN LINES
 awk 'NR < 11' 							:print first 10 lines of file (emulates behavior of "head")
 awk 'NR>1{exit};1' 						:print first line of file (emulates "head -1")
 awk '{y=x "\n" $0; x=$0};END{print y}' 	:print the last 2 lines of a file (emulates "tail -2")
-awk 'END{print}' 						:print the last line of a file (emulates "tail -1")
+awk 'END {print}' 						:print the last line of a file (emulates "tail -1")
+awk 'END {print NR}' 					:print the number of lines of a file (emulates wc -l <file)
 awk '$5 == "abc123"' 					:print any line where field #5 is equal to "abc123"
 awk '$5 != "abc123"' 					:print only those lines where field #5 is NOT equal to "abc123"-alternative awk '!($5 == "abc123")'
 awk '/regex/{print x};{x=$0}' 			:print the line immediately before a regex, but not the line containing the regex
