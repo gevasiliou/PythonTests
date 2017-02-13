@@ -176,6 +176,22 @@ parameterB=1
 parameterC=0
 parameterD=0
 
+##More Joins
+File1
+Category ID
+C1  A1
+
+File2
+Purchase ID
+O1  A1
+
+Resulting File3
+O1 A1 C1
+
+join -j 2 -o 2.1 2.2 1.1 File1 File2
+Join on field 2 of both files (alternatively you can use -1.2 -2.2)
+-o controls the output 
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:PASTE : Merge lines of files
 https://www.gnu.org/software/coreutils/manual/html_node/paste-invocation.html#paste-invocation
