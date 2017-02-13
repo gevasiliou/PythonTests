@@ -24,12 +24,18 @@ http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
 groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
+http://man7.org/linux/man-pages/man7/man-pages.7.html
 man formatting: man 7 man & man 7 man-pages
 
 ##Working Command:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
+
+Or in a function (i.e sticked at bash_aliases)
+.B function mancheat { 
+.B man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+.B }
 
 ##man and groff/troff require special handling.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
@@ -246,15 +252,26 @@ The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char.
 Then is simple: if last char is not / then add a slash
 
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-------------------------------------------------------------------------------------------------------------------------
-BASH:IF CONDITION do some actions based on the return code of a command without storing the code
+
+##CONDITION CHECK on command output , based on the return code of command without the need to compare $?.
 if command; then
     printf "it succeeded\n" #executed when command returns 0
 else
     printf "it failed\n" #executed when command returns <>0 (i.e 1 or other code - carefull with diff)
 fi
+
+.I Real Example:
+if grep -F "A=" b.txt ;then echo "found";else echo "Not Found";fi
+parameterA=0 #Output of grep
+found #Output of if
+
+To suppress the grep output use grep -q or use >/dev/null
+
+Mind that IS NOT necessary to enclose the grep in $(...) - it works directly.
+Although this will also work if [[  $(grep "pattern" file) ]];then dothis;else dotheother;fi
+
 ------------------------------------------------------------------------------------------------------------------------
-BASH:CONDITION CHECKS CASE WITH NUMBERS RANGE
+##CONDITION CHECK -  CASE WITH NUMBERS RANGE
 Using case with numbers:
 
 This case makes human logic but not computer logic, since case compares $num to regex pattern
@@ -281,7 +298,8 @@ Pattern []0-6] is a valid regex pattern representing chars from 0 up to 6.
 Pattern [8-9]|1[0-4] will epxand to chars 8-9 OR 10-11-12-13-14 (as chars)
 Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-100
 ------------------------------------------------------------------------------------------------------------------------
-BASH:FIND LS ALTERNATIVE
+BASH:FIND 
+##Use find as ls alternative
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
 find /home/gv -maxdepth 1 -> lists both
@@ -290,7 +308,7 @@ output of find can be piped to wc -l , xargs, and other commands.
 Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
 PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
 ------------------------------------------------------------------------------------------------------------------------
-BASH:FIND UNUSUAL FILE NAMES 
+##UNUSUAL FILE NAMES 
 Consider files with spaces in their name (i.e a a (01).txx)
 
 In order you want to get the basename of this file the following command fails:
@@ -312,15 +330,16 @@ http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
 ------------------------------------------------------------------------------------------------------------------------
-BASH:FIND OPERATORS (AND , OR,NOT)
+##FIND OPERATORS (AND , OR,NOT)
 exclude files (i.e manifest.txt
 find /path/to/ -name '*.txt' -and -not -name 'manifest.txt'
 
-Multiple file types:
+Usage: Multiple file names / types:
 find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator. 
 
-BASH:FIND CUSTOM PRINTING
+##FIND CUSTOM PRINTING
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
+find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIND EXEC
@@ -436,24 +455,44 @@ echo ${array[@]:0:2} -> 0 1 #extract part of array / sub-array
 echo ${array[@]:2:1} -> 2   #Start from position 0 and print 1 . eqivalent to echo ${array[2]} 
 MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
 MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
+
+##Printing arrays with declare -p
 MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
+
+declare -p array |sed 's/declare -a array=(//g' |tr ' ' '\n' |sed 's/)$//g'
+if you just declare -p array then output is like this:
+a=( 1 2 3);declare -p a --> declare -a a=([0]="1" [1]="2" [2]="3")
+So the first sed gets rid of the 'declare -a a=(' part.
+tr replaces spaces (between array elements) with new line
+last sed deletes the last ) in the array
+result : 
+root@debi64:/home/gv/Desktop/PythonTests# a=( 1 2 3);declare -p a |sed 's/declare -a a=(//g' |tr ' ' '\n' |sed 's/)$//g'
+[0]="1"
+[1]="2"
+[2]="3"
+You can then further select id of an array directly (see manon script)
+You can also have a function for this : function pa { declare -p $1 |sed s/"declare -a $1=("//g |tr ' ' '\n' |sed 's/)$//g';};pa a
+or even assign it to an alias:
+alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
+for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 
-Iterate through args
+##Iterate through args
 function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
 function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
 
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
-ARGS to Array
+##ARGS to Array
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
 
-ARGS Seperatation depending on first char (i.e dash -)
+##ARGS Seperatation depending on first char (i.e dash -)
 ${1:0:1} will return the first char. Then you can compare (if) with == "-"
 
 You can assign all args in an array using "-" as delimiter
@@ -471,6 +510,38 @@ esac
 
 Also see the BASH:READ Section for sending args through a file in various cases.
 
+##Build a custom command with args by set - make use of positional parameters
+http://unix.stackexchange.com/questions/338852/array-as-value-for-tar-exclude/338854#comment599032_338854
+
+You can use the $@ as a kind of variable to make commands.
+By applying set ls , command ls is stored in $@.
+Using echo "$@" will see ls.
+Using just $@ will EXECUTE ls.
+
+You can also append more commands, switches, etc in $@ using set "$@" -d
+Now the command hold in $@ is ls -d. Can be seen with echo, can be executed just like $@
+You can add as many parameters as you wish.
+
+Also , you can refer to this $@ var with "${@:2:1}" -> will print the second argument of $@
+
+Example by StackExchange:
+set tar -zcvf "$FILE" 
+set "$@" --exclude='/home/user/test1'
+set "$@" --exclude='/home/user/test2'
+set "$@" --exclude='/home/user/test3'
+"$@" "$SOURCE"
+
+More Checks:
+    $ set ls && echo "${@}" --> ls
+    $ set "$@" "*.sh" && echo "${@}" --> ls *.sh
+    $ $@ --> prints (ls) all .sh files
+    $ set "$@" "*.txt" && echo "${@}" --> ls *.sh *.txt
+    $ $@ --> Outputs all .sh and .txt files
+    $ echo "${@:2:1}" --> *.sh
+    $ echo "${@:2}" --> *.sh *.txt
+    $ echo "${@}" --> ls *.sh *.txt
+    $ shift && echo "${@}" --> *.sh *.txt
+    $ shift && echo "${@}" --> *.txt
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/

@@ -241,11 +241,14 @@ fi
 # As of January 2017 you can use the global page https://manpages.debian.org/jump?q=$1 which will jump you directly to corect section
 # combine with awk to remove the first lines : 
 # links -dump https://manpages.debian.org/jump?q=ngrep |awk "/Scroll to navigation/,0"
+# See alias functions.
 
 if [[ $2 == "--debian" && $3 == "--browser" ]]; then
-gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &
+(gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &)
 else
-awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
+#awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
+awk "/Scroll to navigation/,0" <<<"$manpage"|less
+
 fi
 # Also check http://manpages.ubuntu.com/manpages/xenial/en/man1/dman.1.html
 # Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
