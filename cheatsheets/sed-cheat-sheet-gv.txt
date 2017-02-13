@@ -149,7 +149,7 @@ above sed removes 10chars from end in line starting with 400, removes 5 chars at
 ##Replace first occurence of a pattern (as) in every line with an increasing number 
 while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
 
-#Replace chars with regex
+##Replace chars with regex
 See info sed - Regular Expressions
 echo "abc %-= def." | sed 's/\b/X/g' ---> XabcX %-= XdefX. #\b = word bountary - \B all but not word boundary
 echo "abc %-= def." | sed 's/\b/"/g' ---> "abc" %-= "def". #Insert double quotes with \b word bountary
@@ -272,9 +272,9 @@ $ sed -r 's/.{3}$//' file
 
 ## To remove everything except the 1st n characters in every line: 
 $ sed -r 's/(.{3}).*/\1/' file
-##  .* -> matches any number of characters.
-## first 3 characters matched are grouped using parantheses. 
-## In the replacement, by having \1 only the group is retained, leaving out the remaining part.
+.* -> matches any number of characters.
+first 3 characters matched are grouped using parantheses. 
+In the replacement, by having \1 only the group is retained, leaving out the remaining part.
 
 ##  Similarly , to remove everything except the last n characters in a file: 
 $ sed -r 's/.*(.{3})/\1/' file

@@ -1,7 +1,9 @@
 tar
 tar*tar
 tar*
+-----
 tar* something here
 tartar
 guitar
 p a t a r
+some tartar

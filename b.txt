@@ -1,10 +1,9 @@
-dn: cn=proxyagent,ou=profile,o=ferry.com
-dn: cn=default,ou=profile,o=ferry.com
-preferredServerList: 192.68.8.15 192.68.8.16
-defaultServerList: 192.68.8.15 192.68.8.16 192.68.88.27
-dn: cn=austin, ou=profile, o=ferry.com
-defaultServerList: 192.68.63.10 10.209.208.23
-preferredServerList: 192.68.88.14 10.28.15.10
-dn: cn=sanjose, ou=profile, o=ferry.com
-preferredServerList: 192.68.8.15 192.68.8.16
-defaultServerList: 192.68.8.15 192.68.8.16 192.68.88.38
+[ {
+    a: 1,
+    b: 3
+  },
+  {
+    a: 4,  
+    b: 5
+  }
+]

@@ -1,3 +1,1 @@
-You run this script as USER=root
-Your HOME dir is /root
-Your PATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+some

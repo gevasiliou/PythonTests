@@ -16,7 +16,7 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
-alias lsdir='ls -all |grep -E "^d"'
+alias lsdir='ls -l -d */'
 alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
@@ -114,8 +114,10 @@ find / -type f -executable -name "$fname"
 
 function mancheat { 
 echo "mancheat: explore the cheat sheets using man page viewer"
-[[ -z $1 ]] && echo "Pass me a cheat file in CAPITAL letter to display from ./cheatsheets/ directory" && return
-	man --nj --nh <(sed "s/^$1:/.SH $1:/g; s/^$/\.LP/g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g');
+[[ -z $1 ]] && echo "Pass me a cheat file name to display from ./cheatsheets/ directory" && return
+	man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+#This works directly in cli:
+#man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 }
 
 # Tips about functions usage as an alias and sourcing them to other scripts
