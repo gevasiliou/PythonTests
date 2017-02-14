@@ -1101,17 +1101,22 @@ To see current alias use "alias". To unset an alias use unalias <name>
 
 ##Functions
 Can be declared either with function myf { } or directly as myf () {...}
+Function can get arguments ($@, $*, $#,$1,etc) that can be used by function in the same way that a script receives arguments.
 
+##functions in shell - like aliase
 In the same file (.bashrc or .bash_aliases) you can have functions.
 Those functions work directly from command line - can be exposed using set
 Tip: You can not use the bash functions in a script, but you can source them by sourcing the .bash_aliases.
 
-Functions you can have also in your scripts.
+##Functions in scripts
 See [: http://mywiki.wooledge.org/BashFAQ/084 :]
+Functions you can have also in your scripts.
 Functions can return as exit status an integer directly from number 1..255 . 
 PS: Function return code an be captured by $? i suppose.
-Indirectly , functions can return also strings with simple echo if they are called in script mode : $(myfunction) . 
-The reason is that echo in function will send the data to stdout but in script mode $( ) echos will be in the script buffer/pipe.
+Indirectly , functions can return strings with simple echo if they are called in script mode : 
+$(myfunction)  
+
+The reason is that echoing within a function will send the data to stdout but in script mode $( ) echos will be caught by script buffer/pipe.
 foo() {
    echo "running foo()..."  >&2        # send user prompts and error messages to stderr
    echo "this is my data"              # variable will be assigned this value below
@@ -1119,9 +1124,19 @@ foo() {
 x=$(foo)                               # prints:  running foo()...
 echo "foo returned '$x'"               # prints:  foo returned 'this is my data'
 
-Functions when called like $(foo) runs in subshell,  which means that any variable assignments, etc. performed in the function will not take effect in the caller's environment. Redirecting unwanted messages to >&2 will cause them to print on screen but will not captured by $( )
+Functions when called like $(foo) runs in subshell,  which means that any variable assignments, etc. performed in the function will not take effect in the caller's environment. 
+Redirecting unwanted messages to >&2 will cause them to print on screen or wherever &2 might have been redirected, but will not captured by $( ) buffer/pipe.
 
-Instead of capturing the function in a script format, you can assign data to global variables, and then refer to those variables in the caller:
-foo() { return="this is my data";}
-foo
-echo "foo returned '$return'" # It will print this is my data because function is not executed in a subshell but var $return is just read.
+Instead of capturing the function in a script format, you can use function to assign data to a global variable, and then in the main script you can just read the value of this variable.
+foo() { return="this is my data";}; foo && echo "foo returned '$return'" 
+This will print this is my data because function is not executed in a subshell but var $return is just read.
+
+Tip:
+It is not true that functions can not change global variables. Mind this test:
+$ function foo { echo "i am inside function. a recevied = $a";a=$(($a*3));};a=1000;foo;echo "function changed a to :$a"
+Will change the value of a from 1000 to 3000.
+The "childs can not change parrents" rule applies only to subshells (i.e pipes)
+
+##Function Local Variables. 
+You can have local variables inside a function by assigning local var=value
+If you don't specify local , then the var is considered as global, even if it is not previously defined in the main script.
