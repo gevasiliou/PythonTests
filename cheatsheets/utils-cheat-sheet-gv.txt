@@ -334,6 +334,26 @@ crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
 First sorted with k8 then with k1. abc folders go on top
 
 UTILS:DATE
-Convert Date to Epoch. Date must be in format 14/Feb/2017:11:31:20
+##Convert Date to Epoch. Date must be in format 14/Feb/2017:11:31:20
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 I have a smart function in bash profile for this that can work also as a pipe.
+
+
+UTILS:GIT
+##Basic commands
+git add .
+git commit -m "message"
+git push
+
+git pull to retrieve new files from git
+
+##git history
+git log
+all the commits will be shown. Most recent goes on top.
+Copy the commit id (i.e b1b06adebef6056fb9a28ebae9708819348c72ab)
+
+##git show files in commit
+git show : see the last commit in details
+git show --name-only : lists only file names changed
+git show commitid :  Details about a particular commit id. Can be combined with --name-only
+
