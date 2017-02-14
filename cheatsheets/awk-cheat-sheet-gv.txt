@@ -75,7 +75,12 @@ echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines
 echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK:VARIABLES - Export AWK variables
+AWK:VARIABLES
+##Import variables
+You can import a shell variable by awk -v awkvar=$shellvar (i.e awk -v dt=$date).
+Inside awk you need to refer to awkvraible without $.
+
+##Export AWK variables
 $ mkfifo fifo
 $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
 $ IFS== read var value < fifo
@@ -371,7 +376,6 @@ $ readarray -t a < <(grep -e "\[fields:" a.txt |cut -d: -f2)
 $ for ((i=0;i<${#a[@]};i++));do a[i]=s/${a[i]}/$(grep -e "${a[i]}" b.txt |cut -d, -f2 |cut -d. -f2)/g\;;done
 $ sed -f <(echo "${a[@]}") a.txt
 
-
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ARRAY CREATION:
 
@@ -386,18 +390,41 @@ split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", month, " ")
 # mdigit["Jan"] is 1, mdigit["Feb"] is 2, etc. Requires "month" array
 for (i=1; i<=12; i++) mdigit[month[i]] = i
 #-----------------------------------------------------------------------------------------------------------------------
+AWK:ARRAYS EXAMPLE
+[: http://unix.stackexchange.com/questions/344856/take-two-columns-in-a-tab-delimited-file-and-merge-into-one/344880?noredirect=1#comment610394_344880 :]
+awk 'BEGIN{FS=OFS=" "}{z[NR]=$1FS$3; print $1,$2}END{for (i=1; i<=NR; i++){print z[i]}}' a.txt
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+AWK:PRINT/SPLIT A FILE BASED ON PATTERN
+[: http://unix.stackexchange.com/questions/344890/to-split-files-under-linux-shell/344898?noredirect=1#344898 :]
+[: http://www.tutorialspoint.com/execute_bash_online.php?PID=0Bw_CjBb95KQMVXZWWUtrMUx1Ums :]
+Consider file with multiple sections like 
+Start of test case:test1
+a
+b
+c
+Date is feb 12
+
+Target : To print/split each section in it's own file.
+awk '/Start of test case/{i++}{print >"a"i}' a.txt
+Counter will be increased in the next found pattern "Start of test case". Each section will be sent to file a1, a2,a3,etc
+With awk you don't need >>. It seems that the file remains open - or awk buffers the data and send them at one push to file.
+For testing : awk '/Start of test case/{i++}{print i,$0}' a.txt
+
+#-----------------------------------------------------------------------------------------------------------------------
 AWK:ONELINERS
 awk '{print $1}' file 				:Print first field for each record in file
-awk '/regex/' 						:print only lines which match regular expression (emulates "grep")
-awk '!/regex/' 						:print only lines which do NOT match regex (emulates "grep -v")
+awk '/regex/' 						    :print only lines which match regular expression (emulates "grep")
+awk '!/regex/' 						    :print only lines which do NOT match regex (emulates "grep -v")
 awk '$2 == "foo"' file				:Print any line where field 2 is equal to "foo" in file
 awk '$2 != "foo"' file				:Print lines where field 2 is NOT equal to "foo" in file
 awk '$1 ~ /regex/' file				:Print line if field 1 matches regex in file
 awk '$1 !~ /regex/' file			:Print line if field 1 does NOT match regex in file
 awk '$7  ~ /^[a-f]/'    			:print line if field #7 matches regex
 awk '$7 !~ /^[a-f]/'    			:print line if field #7 does NOT match regex
-awk 'NR!=1{print $1}' file			:Print first field for each record in file excluding the first record
-awk 'END{print NR}' 				:count lines (emulates "wc -l")
+awk 'NR!=1{print $1}' file		:Print first field for each record in file excluding the first record
+awk 'END{print NR}' 				  :count lines (emulates "wc -l")
 
 awk '/foo/{n++}; END {print n+0}' file			:Print total number of lines that contain foo
 awk '{total=total+NF};END{print total}' file	:Print total number of fields in all lines
