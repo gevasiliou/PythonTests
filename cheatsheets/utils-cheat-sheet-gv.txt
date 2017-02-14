@@ -358,3 +358,8 @@ git show : see the last commit in details
 git show --name-only : lists only file names changed
 git show commitid :  Details about a particular commit id. Can be combined with --name-only. Commit id can be retrieved by git log
 
+##git store password
+https://git-scm.com/docs/git-credential-store
+git config credential.helper store
+On the next push , your given user name and password will be stored.
+Can be combined with options for expire, etc
