@@ -37,23 +37,23 @@ The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become 
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:GREP
-Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
+##Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
 -F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
 -x = line grep to ensure matching whole lines 
 -v = reverse the grep = display not matching lines
 -f = load words/lines from file file2.txt
 file1.txt = the file to be grepped 
 
-multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
+##multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
 grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
-UTILS:GREP all files for two patterns (and operation)
+##GREP all files for two patterns (and operation)
 http://stackoverflow.com/questions/41896604/linux-listing-files-that-contain-several-words#41897079
 grep -ERl 'toto' | xargs -r grep 'tata'
 Tip : xargs -r ensures that second grep will not run in null / non matched data.
 Alternative : awk '/pattern1/&&/pattern2/'
 
-UTILS:GREP a file for two patterns with AGREP by Chazelas:
+##GREP a file for two patterns with AGREP by Chazelas:
 http://unix.stackexchange.com/questions/55359/how-to-run-grep-with-multiple-and-patterns/55391#55391
 agrep 'pattern1;pattern2' file (can also accept pattern3;patternN)
 grep -X '.*pattern1.*&.*pattern2.*'
@@ -63,16 +63,22 @@ Alternatives:
 awk '/pattern1/ && /pattern2/'
 awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
 
-UTILS:GREP COLORIZE 
+##GREP COLORIZE 
 grep --color 'pattern' or grep --color -E 'pattern|$'
 Or in a function/alias : function highlight () { grep --color -E "$1|$" "${@:1}" }
 
-UTILS:GREP MULTIPLE PATTERNS AND PRINT
+##GREP MULTIPLE PATTERNS AND PRINT
 Combine grep with cut and multipatterns: 
 instead of grep |cut combination you can use awk
 grep -E 'Label 3 \|Label 5' |cut -d' ' -f3 <==> awk '/Label 3/ { print $3 } /Label 5/ { print $3 }'
 PS: AWK can directly print to a file using { print $3 >>"F3.csv" } 
 
+##Grep an html link from a stream
+stream=...\f4 HYPERLINK "httjps://archive.org/randomURL1?fref=grp_mmbr_list"}...
+grep -Eo '\"https?:\/\/[^"]+\"' testsample.txt 
+
+##mGrep all character before the first whitespace using grep?
+grep -oP "^\S+" filename.txt
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:CUT
 https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation

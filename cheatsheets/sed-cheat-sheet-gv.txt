@@ -159,7 +159,18 @@ echo "abc %-= def." | sed 's/\</X/g' ---> Xabc %-= Xdef. #match beginning of wor
 sed -E -n '/^(.)o\1$/p' ---> matches words starting with any letter , followed by letter o - followed by a letter same as first (\1)
 sed -E -n '/^(.)(.)(.)\3\2\1$/p' --> searches for 6-letter palindromes: first 3 letters are 3 subexpressions, followed by 3 back-references in reverse order
 
+##Replace special chars like backslash and single quotes
+Backslash has a special meaning = escape.
+If your file/stream contains backslashes is a kind of pain to correctly match them and replace them.
+More pain if the old text/new text also contain backslashes.
+Similar story for single quotes.
+In  such cases is quite usefull to refer to the special chars with their hex ascii value.
+Back slash is \x5c and single quote is \x27
 
+See for example this alias that makes single quotes escaping with backslashes:
+alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"'
+echo "this is 'something'" ---> this is 'something' #text is containing single quotes.
+echo "this is 'something'" |esc_single_quotes ---> this is \'something\' #replaced text should contain backslash + single quote in order to be sent to other apps with single quotes escaped.
 
 ##Text Replace more examples 
 Consider file containing:
