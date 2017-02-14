@@ -270,7 +270,6 @@ To suppress the grep output use grep -q or use >/dev/null
 Mind that IS NOT necessary to enclose the grep in $(...) - it works directly.
 Although this will also work if [[  $(grep "pattern" file) ]];then dothis;else dotheother;fi
 
-------------------------------------------------------------------------------------------------------------------------
 ##CONDITION CHECK -  CASE WITH NUMBERS RANGE
 Using case with numbers:
 
@@ -307,7 +306,7 @@ output of find can be piped to wc -l , xargs, and other commands.
 
 Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
 PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
-------------------------------------------------------------------------------------------------------------------------
+
 ##UNUSUAL FILE NAMES 
 Consider files with spaces in their name (i.e a a (01).txx)
 
@@ -329,7 +328,6 @@ http://wiki.bash-hackers.org/syntax/expansion/brace
 http://stackoverflow.com/questions/2372719/using-sed-to-mass-rename-files
 linux   /boot/vmlinuz-4.0.0-1-amd64 root=UUID=5e285652 ro  quiet text
 
-------------------------------------------------------------------------------------------------------------------------
 ##FIND OPERATORS (AND , OR,NOT)
 exclude files (i.e manifest.txt
 find /path/to/ -name '*.txt' -and -not -name 'manifest.txt'
@@ -341,8 +339,7 @@ find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator.
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
 find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
 
-------------------------------------------------------------------------------------------------------------------------
-BASH:FIND EXEC
+##BASH:FIND EXEC
 Rename extensionless files
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 OR
@@ -456,7 +453,7 @@ echo ${array[@]:2:1} -> 2   #Start from position 0 and print 1 . eqivalent to ec
 MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
 MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
 
-##Printing arrays with declare -p
+##Printing arrays with BASH (declare -p)
 MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
 
@@ -547,6 +544,7 @@ BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 Scroll to the end of page for more one-liners.
 http://wiki.bash-hackers.org/syntax/pe
+
 Command substitution : Use contents of file as parameter: $(<file)
 Command $(cat file) can be replaced by the equivalent but faster $(< file).
 example: echo "$(<file.txt) -- similar to cat file.txt
@@ -576,9 +574,9 @@ With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps pr
 dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
 I have an alias for that. Alternative : host -t txt hacker.wp.dg.cx
 
-Quick backup : cp filename{,.bak}
+Quick backup : cp filename{,.bak} #using brace expansion
 
-Quick move: $ mv /path/to/file{,_old}
+Quick move: $ mv /path/to/file{,_old} #brace expansion
 
 Trace root with ping together: $ mtr google.com
 
@@ -663,6 +661,7 @@ the indirect expansion is essentially "variable not found, substitute the empty 
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS
+##Sources
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
 http://www.tldp.org/LDP/abs/html/io-redirection.html
@@ -670,7 +669,7 @@ http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor
 http://unix.stackexchange.com/questions/13724/file-descriptors-shell-scripting
 http://www.tldp.org/LDP/abs/html/ioredirintro.html
 
-BASICS: 
+##BASICS: 
 fd0=stdin , fd1=stdout , fd2=stderr - Equals to 0>/dev/tty, 1>/dev/tty , 2>/dev/tty
 This redirection format >/dev/null ()or >wherever) EQUALS TO 1>/dev/null (or 1>wherever) == redirection of stdout
 
@@ -689,8 +688,7 @@ In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead
 Redirect stderr to file and stdout + stderr to screen :
 exec 3>&1 && foo 2>&1 >&3 | tee stderr.txt (equals to 2>&1 1>&3)
 
-#
-Tricky redirection from bins missing man pages:
+##Tricky redirection from bins missing man pages:
 man -w binaryfile 2>&1 >/dev/null (-w prints man page location)
 In case of a normal bin file (i.e grep) then nothing is printed. In case of a bin that do not have a man page (i.e getweb) then
 the error message is printed.
@@ -792,26 +790,26 @@ cat command error (file not found) -------> stderr -->fd2 -->tty0
 
 Redirections:
 ---------------------------STEP 1 (3>&1)----------------------------------------------------------------------------------
-fd3-----|   		 	#fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
-		|
+fd3-----|          #fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
+        |
 fd1---> pipe 
 fd2---> tty0
 ---------------------------STEP 2 (1>&2)----------------------------------------------------------------------------------
 fd3 ------------|
-				|
+                |
 fd1 ----|      pipe
-		|				#stdout --> fd1 detached from pipe and goes to wherever fd2 (stderr) goes = tty0 
+        |          #stdout --> fd1 detached from pipe and goes to wherever fd2 (stderr) goes = tty0 
 fd2--->tty0
 
 ---------------------------STEP 3 (2>&3)----------------------------------------------------------------------------------
 
 fd3 ------------|
-				|
+                |
 fd1 ----|      pipe
-		|		|
-       tty0		|
-				|
-fd2-------------|		#stderr-fd2 detached from tty0 and goes to wherever fd3 goes = pipe
+        |       |
+       tty0     |
+                |
+fd2-------------|  #stderr-fd2 detached from tty0 and goes to wherever fd3 goes = pipe
 
 
 Redirection Result Chain (swap fd1 with fd2 for scrip usage):
@@ -928,6 +926,7 @@ BASH:HEREDOCS
 Best explained : http://tldp.org/LDP/abs/html/here-docs.html
 Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
 
+##Inside a script: 
 when using here-doc format within a script, the input to cat comes from the script.
 Example:
 #! /bin/bash
@@ -944,13 +943,13 @@ End-of-message
 
 when the script finishes above lines are printed in stdout.
 If you apply cat <<-ENDOFMESSAGE (mind the dash) then white space is trimmed (except space)
-Tricky script usage:
+
+##Tricky script usage:
 You can use the here-doc format to comment big blocks of text or code for debugging.
 format is :<<whatever ...... whatever
 if instead of :<< you use cat << , everything bellow tags will be printed on screen or to >file if defined.
 
-Another trick usage inside script:
-
+##Another trick usage inside script:
 GetPersonalData ()
 {
   read firstname
@@ -979,7 +978,7 @@ EOF
 You can offcourse use tac instead of cat. But in tac lines of here-doc will be inserted from the last to the first.
 This is what tac does = reverse of cat.
 
-Create Script from Script
+##Create Script from Script
 Also see http://linuxcommand.org/wss0030.php
 
 #!/bin/bash 
@@ -1001,20 +1000,20 @@ This is a secondary script generated by master script.
 EOT # Secondary script finished
 Rest Code of Master Script Continues
 
-source external code inside your script (instead of sourcing the whole script)
+##Source external code inside your script (instead of sourcing the whole script)
 http://unix.stackexchange.com/questions/160256/can-you-source-a-here-document
 
 source <(sed -n '/function justatest/,/\}/p' .bash_aliases) && justatest
 The function justatest is sourced correctly.
 
-More examples:
+More source examples:
 source <(cat << EOF
 A=42
 EOF
 )
 echo $A --> prints 42
 
-Alternative : Directly eval the code 
+Alternative - Directly eval the code 
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
 ------------------------------------------------------------------------------------------------------------------------
 BASH:IFS Tricks
@@ -1091,3 +1090,38 @@ for i in a b c d e
 do
     (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
 done
+
+BASH:FUNCTIONS AND ALIASES
+##Alias
+You can use alias some='your alias or your function here'
+You can store all your custom alias in .bashrc file or even better in the .bash_aliases file.
+Usually .bashrc file has a check for existance of .bash_aliases file, and if found , then it sources this file.
+Check the .bash_aliases file for cool aliases.
+To see current alias use "alias". To unset an alias use unalias <name>
+
+##Functions
+Can be declared either with function myf { } or directly as myf () {...}
+
+In the same file (.bashrc or .bash_aliases) you can have functions.
+Those functions work directly from command line - can be exposed using set
+Tip: You can not use the bash functions in a script, but you can source them by sourcing the .bash_aliases.
+
+Functions you can have also in your scripts.
+See [: http://mywiki.wooledge.org/BashFAQ/084 :]
+Functions can return as exit status an integer directly from number 1..255 . 
+PS: Function return code an be captured by $? i suppose.
+Indirectly , functions can return also strings with simple echo if they are called in script mode : $(myfunction) . 
+The reason is that echo in function will send the data to stdout but in script mode $( ) echos will be in the script buffer/pipe.
+foo() {
+   echo "running foo()..."  >&2        # send user prompts and error messages to stderr
+   echo "this is my data"              # variable will be assigned this value below
+}
+x=$(foo)                               # prints:  running foo()...
+echo "foo returned '$x'"               # prints:  foo returned 'this is my data'
+
+Functions when called like $(foo) runs in subshell,  which means that any variable assignments, etc. performed in the function will not take effect in the caller's environment. Redirecting unwanted messages to >&2 will cause them to print on screen but will not captured by $( )
+
+Instead of capturing the function in a script format, you can assign data to global variables, and then refer to those variables in the caller:
+foo() { return="this is my data";}
+foo
+echo "foo returned '$return'" # It will print this is my data because function is not executed in a subshell but var $return is just read.
