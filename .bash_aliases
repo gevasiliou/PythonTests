@@ -123,6 +123,16 @@ echo "mancheat: explore the cheat sheets using man page viewer"
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 }
 
+function dtoe {
+echo "dtoe: convert date to epoch. Send a date or pipe me a date in format 14/Feb/2017:11:31:20" >&2
+# The help message is printed on stderr (&2). In command line run will be printed on screen. 
+# On script run $(..) mode only the returned converted date result is stored in $(..), not the help message, since scripts hold only stdout , unless they include 2>&1
+[[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
+echo "Date to be converted = $dt" >&2
+date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+}
+
+
 # Tips about functions usage as an alias and sourcing them to other scripts
 # See all declared functions with 'set' - it will not be available in 'alias' command any more.
 # Bash manual claims that is better to use direct functions instead of alias.

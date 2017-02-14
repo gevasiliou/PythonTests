@@ -79,7 +79,18 @@ grep -Eo '\"https?:\/\/[^"]+\"' testsample.txt
 
 ##mGrep all character before the first whitespace using grep?
 grep -oP "^\S+" filename.txt
+
+##Grep using a file with patterns.
+Generally you can import patterns by a file using the -f switch.
+Also you can feed the -f with process substitution to feed grep with manipulated patters grep -f <(cut -f2 patterns.txt) a.txt
+In more tricky usage you can use the same file as file pattern in order to achieve complex grep results.
+For example: 
+grep -v -f <(grep "ok" a.txt |cut -d' ' -f1) a.txt
+This will search the file a.txt for a second column having a text ok and will get the names marked as ok.
+Then these names will be the main pattern to grep and exclude them from the whole,same file
+Obviously this is usefull if on the master file a.txt not all the names have ok , but indirectly even if one ok is present for a user, you want to exclude this user from all the results.
 #-----------------------------------------------------------------------------------------------------------------------
+
 UTILS:CUT
 https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html#cut-invocation
 
@@ -321,3 +332,8 @@ drwxrwxr-x+  - user1 aive          0 2017-01-31 16:55 /user/abc
 drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
 crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
 First sorted with k8 then with k1. abc folders go on top
+
+UTILS:DATE
+Convert Date to Epoch. Date must be in format 14/Feb/2017:11:31:20
+date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+I have a smart function in bash profile for this that can work also as a pipe.

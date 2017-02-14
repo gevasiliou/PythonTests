@@ -2,7 +2,7 @@
 <opml version="2.0">
     <head>
         <title>QuiteRSS</title>
-        <dateModified>Mon Feb 6 03:48:20 2017</dateModified>
+        <dateModified>Tue Feb 14 10:22:32 2017</dateModified>
     </head>
     <body>
         <outline text="QuiteRSS" type="rss" htmlUrl="http://quiterss.org/en/frontpage" xmlUrl="http://quiterss.org/en/rss.xml"/>
@@ -26,11 +26,6 @@
                 <outline text="xkcd" type="rss" htmlUrl="https://xkcd.com/" xmlUrl="http://xkcd.com/atom.xml"/>
             </outline>
         </outline>
-        <outline text="StackExchange">
-            <outline text="Recent Questions - Unix &amp; Linux Stack Exchange" type="rss" htmlUrl="http://unix.stackexchange.com/questions" xmlUrl="http://unix.stackexchange.com/feeds"/>
-            <outline text="Stack Overflow #1" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bawk%2bor%2bsed%2bor%2bsh%2bor%2bunix%2bor%2bgrep&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/bash+or+shell+or+awk+or+sed+or+sh+or+unix+or+grep"/>
-            <outline text="Stack Overflow #2" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=yad%2bor%2bzenity%2bor%2bgrep&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/yad+or+zenity+or+grep"/>
-        </outline>
         <outline text="Magazines">
             <outline text="Linux Magazine Full Feed" type="rss" htmlUrl="http://www.linux-magazine.com/" xmlUrl="http://www.linux-magazine.com/rss/feed/lmi_full"/>
             <outline text="Linux Magazine News (path: lmi_news)" type="rss" htmlUrl="http://www.linux-magazine.com/" xmlUrl="http://www.linux-magazine.com/rss/feed/lmi_news"/>
@@ -47,8 +42,26 @@
             <outline text="Planet Debian" type="rss" htmlUrl="http://planet.debian.org/" xmlUrl="http://planet.debian.org/rss20.xml"/>
             <outline text="Debian Administration" type="rss" htmlUrl="https://debian-administration.org/" xmlUrl="http://www.debian-administration.org/atom.xml"/>
             <outline text="debian-community.org English language planet" type="rss" htmlUrl="" xmlUrl="http://debian-community.org/planets/en/index.rss"/>
-            <outline text="Liferea Blog" type="rss" htmlUrl="http://lzone.de/liferea/blog/" xmlUrl="http://feeds.feedburner.com/LifereaBlog"/>
             <outline text="Planet GNOME" type="rss" htmlUrl="http://planet.gnome.org/" xmlUrl="http://planet.gnome.org/atom.xml"/>
+        </outline>
+        <outline text="Stack Overflow">
+            <outline text="Stack Overflow BASH&amp;SHELL&amp;SH" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bsh&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/bash+or+shell+or+sh"/>
+            <outline text="Stack Overflow UNIX &amp; GREP" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=unix%2bor%2bgrep&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/unix+or+grep"/>
+            <outline text="Stack Overflow AWK &amp; SED" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=awk%2bor%2bsed&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/awk+or+sed"/>
+            <outline text="Stack Overflow YAD &amp; ZENITY" type="rss" htmlUrl="http://stackoverflow.com/questions/tagged/?tagnames=yad%2bor%2bzenity&amp;sort=active" xmlUrl="http://stackoverflow.com/feeds/tag/yad+or+zenity"/>
+        </outline>
+        <outline text="Unix and Linux">
+            <outline text="Unix &amp; Linux Recent" type="rss" htmlUrl="http://unix.stackexchange.com/questions" xmlUrl="http://unix.stackexchange.com/feeds"/>
+            <outline text="Unix &amp; Linux - AWK-SED-GREP" type="rss" htmlUrl="http://unix.stackexchange.com/questions/tagged/?tagnames=awk%2bor%2bsed%2bor%2bgrep&amp;sort=active" xmlUrl="http://unix.stackexchange.com/feeds/tag/awk+or+sed+or+grep"/>
+            <outline text="Unix &amp; Linux BASH-SHELL-SH" type="rss" htmlUrl="http://unix.stackexchange.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bsh&amp;sort=active" xmlUrl="http://unix.stackexchange.com/feeds/tag/bash+or+shell+or+sh"/>
+            <outline text="Unix &amp; Linux YAD&amp;ZENITY" type="rss" htmlUrl="http://unix.stackexchange.com/questions/tagged/?tagnames=yad%2bor%2bzenity&amp;sort=active" xmlUrl="http://unix.stackexchange.com/feeds/tag/yad+or+zenity"/>
+        </outline>
+        <outline text="Other Stack Exchange">
+            <outline text="AskUbuntu touchscreen,xrandr,ubuntu-touch" type="rss" htmlUrl="http://askubuntu.com/questions/tagged/?tagnames=touchscreen%2bor%2bxrandr%2bor%2bubuntu-touch&amp;sort=active" xmlUrl="http://askubuntu.com/feeds/tag/touchscreen+or+xrandr+or+ubuntu-touch"/>
+            <outline text="AskUbuntu apt,scripts,xubuntu,xfce" type="rss" htmlUrl="http://askubuntu.com/questions/tagged/?tagnames=apt%2bor%2bscripts%2bor%2bxubuntu%2bor%2bxfce&amp;sort=active" xmlUrl="http://askubuntu.com/feeds/tag/apt+or+scripts+or+xubuntu+or+xfce"/>
+            <outline text="AskUbuntu bash,shell,awk,sed,grep" type="rss" htmlUrl="http://askubuntu.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bawk%2bor%2bsed%2bor%2bgrep&amp;sort=active" xmlUrl="http://askubuntu.com/feeds/tag/bash+or+shell+or+awk+or+sed+or+grep"/>
+            <outline text="Server Fault bash,shell,awk,sed,grep" type="rss" htmlUrl="http://serverfault.com/questions/tagged/?tagnames=bash%2bor%2bshell%2bor%2bawk%2bor%2bsed%2bor%2bgrep&amp;sort=active" xmlUrl="http://serverfault.com/feeds/tag/bash+or+shell+or+awk+or+sed+or+grep"/>
+            <outline text="Server Fault-linux,unix,ubuntu,debian" type="rss" htmlUrl="http://serverfault.com/questions/tagged/?tagnames=linux%2bor%2bunix%2bor%2bubuntu%2bor%2bdebian&amp;sort=active" xmlUrl="http://serverfault.com/feeds/tag/linux+or+unix+or+ubuntu+or+debian"/>
         </outline>
     </body>
 </opml>
