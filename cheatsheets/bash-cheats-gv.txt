@@ -1140,3 +1140,13 @@ The "childs can not change parrents" rule applies only to subshells (i.e pipes)
 ##Function Local Variables. 
 You can have local variables inside a function by assigning local var=value
 If you don't specify local , then the var is considered as global, even if it is not previously defined in the main script.
+
+##Use a function as a pipe
+To do this all you have to do is to read the /dev/stdin , like for example var=$(</dev/stdin)
+Then var can be used inside the function.
+See this date to epoch function converter that works as a pipe:
+function dtoe {
+[[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" 
+#if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1 as value for $dt
+date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+}
