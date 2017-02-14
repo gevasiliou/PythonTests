@@ -1,0 +1,6 @@
+A red
+B yellow
+C blue
+A green
+B orange
+C purple
