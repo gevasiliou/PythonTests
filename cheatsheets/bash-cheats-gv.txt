@@ -1150,3 +1150,12 @@ function dtoe {
 #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1 as value for $dt
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 }
+
+##How to ignore alias : http://mywiki.wooledge.org/BashFAQ/086
+You might need to run a command and not it's alias that you might have set.
+You can do that by unalias, or by $ command ls, or by \ls , etc
+
+##Different behavior of functions/aliases if called by command line or script
+With function you can have something like:
+ls() { if test -t 1; then command ls -FC "$@"; else command ls "$@";fi;}
+In this way you use the -FC args only if ls runs from a terminal and not from a script ; More generally when the &1 is not redirected to /dev/stdout
