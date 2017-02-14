@@ -340,6 +340,7 @@ I have a smart function in bash profile for this that can work also as a pipe.
 
 
 UTILS:GIT
+https://git-scm.com/book/tr/v2/Git-Basics-Viewing-the-Commit-History
 ##Basic commands
 git add .
 git commit -m "message"
@@ -348,12 +349,12 @@ git push
 git pull to retrieve new files from git
 
 ##git history
-git log
-all the commits will be shown. Most recent goes on top.
-Copy the commit id (i.e b1b06adebef6056fb9a28ebae9708819348c72ab)
+git log : all the commits will be shown. Most recent goes on top.
+git log -p -2 : gets only the last 2 commits
+git log --stat : statistics about commits, like file changed . Also can be combined with --name-only.
 
 ##git show files in commit
 git show : see the last commit in details
 git show --name-only : lists only file names changed
-git show commitid :  Details about a particular commit id. Can be combined with --name-only
+git show commitid :  Details about a particular commit id. Can be combined with --name-only. Commit id can be retrieved by git log
 
