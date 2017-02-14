@@ -1,7 +1,4 @@
 AWK:CHEATS BY GV
-Read this cheat sheet as a man page by invoking man command like this:
-man <(sed 's/AWK:/.SH AWK:/g; s/$/\n/g' cheatsheets/awk*gv.txt) #double spacing forces man to understand line breaks
-man <(sed 's/AWK:/.SH AWK:/g; G' cheatsheets/awk*gv.txt) #G=double spacing sed command
 
 AWK:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##Read this cheat file with man pages:
@@ -27,7 +24,6 @@ The backslash \ works as escape in groff, so you need to escape the backslash wi
 The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
 
 For sed explanation see the sed cheatsheet.
-
 
 AWK:BASICS
 http://www.pement.org/awk/awk1line.txt
@@ -61,6 +57,9 @@ RS Record separator of input file (default newline)
 BEGIN Denotes block executed once at start
 END Denotes block executed once at end
 str1 str2 Concat str1 and str2
+{print $1} : Prints the first field of input (as read using FS separator)
+{print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints cause a new line.
+'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab.
 
 sub(r,t,s) Substitute t for first occurrence of regex r in string s (or $0 if s not given)
 gsub(r,t,s) Substitute t for all occurrences of regex r in string s
