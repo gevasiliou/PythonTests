@@ -1,0 +1,34 @@
+[Desktop Entry]
+Type=Application
+Name=Power Management
+GenericName=Power Management Settings
+Comment=Various settings regarding Power Management like battery or idleness watcher
+Exec=lxqt-config-powermanagement
+Icon=preferences-system-power-management
+Categories=Settings;DesktopSettings;Qt;LXQt;
+OnlyShowIn=LXQt;
+
+Name[ar]=إدارة الطّاقة
+GenericName[ar]=إعدادات إدارة الطّاقة
+Comment[ar]=عدّة إعدادات لإدارة الطّاقة مثل مراقبات البطّاريّة أو الخمول
+Name[ca]=Gestió de l'energia
+GenericName[ca]=Ajusts de la gestió de l'energia
+Comment[ca]=Diversos ajusts pel que fa a la gestió de l'energia com la bateria o l'observador de l'ociositat
+Name[de]=Energieverwaltung
+GenericName[de]=Einstellungen der Energieverwaltung
+Comment[de]=Verschiedene Einstellungen zur Energieverwaltung wie Batterie- oder Leerlaufüberwachung
+Name[el]=Διαχείριση ενέργειας
+GenericName[el]=Ρυθμίσεις της διαχείρισης ενέργειας
+Comment[el]=Διάφορες ρυθμίσεις σχετικά με την διαχείριση ενέργειας όπως ο επόπτης μπαταρίας ή αδράνειας
+GenericName[hu]=LXQt energiakezelés beállítása
+Name[hu]=Energiakezelés
+Name[it]=Gestore energia
+GenericName[it]=Impostazioni del risparmio energetico
+GenericName[ja]=電源管理の設定
+Name[ja]=電源管理
+Name[pl_PL]=Zarządzanie energią
+GenericName[pl_PL]=Konfiguracja zarządzania energią
+Name[pt]=Gestão de energia
+GenericName[pt]=Definições do gestor de energia
+GenericName[ru]=Настройки управления энергопотреблением
+Name[ru]=Управление энергопотреблением

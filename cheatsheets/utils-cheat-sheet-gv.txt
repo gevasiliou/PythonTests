@@ -99,6 +99,9 @@ LC_ALL=C grep -r pattern .
 http://unix.stackexchange.com/questions/197352/how-to-start-multi-threaded-grep-in-terminal
 find . -type f -print0  | xargs -0 -P number_of_processes grep mypattern > output #Use find to get the files, invocating xargs in parallel mode.
 find . -type f | parallel -j+1 grep mypattern #use the parallel utility
+find ./appsfiles/ -type f | parallel -k -j200% -n 2000 -m grep -H -n -e "Exec=" -e "Comment" -e "Generic" -e "Name" {}
+PS1: by timing above find |parallel vs a single grep yeld same results on 5000 desktop files.
+PS2: This gives 50% MORE time than single grep : time find ./appsfiles/* -type f -print0 | xargs -r0 -P2 grep -H -n -e "Exec=" -e "Comment" -e "Generic" -e "Name" {}
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -400,5 +403,5 @@ Can be combined with options for expire, etc
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:TIME & STRACE
 You can monitor performance in bash using the time or the strace utils.
-.B time grep pattern file will report you details about the time required to execute command (grep)
-.B strace -cf grep pattern file will also report performance in a much more analytical way, displaying also all the processes to complete the command.
+time grep pattern file will  #report you details about the time required to execute command (grep)
+strace -cf grep pattern file #will also report performance in a much more analytical way, displaying also all the processes to complete the command.

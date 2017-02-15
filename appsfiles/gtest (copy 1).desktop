@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=GVTest
+#Exec=mono
+Terminal=true
+Type=Application
+Icon=mono-runtime-common
+MimeType=application/x-ms-dos-executable;
+NoDisplay=true
+#Comment=GVTest Comment
+GenericName=GVTest Generic Name
