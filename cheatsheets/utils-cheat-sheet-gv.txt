@@ -94,6 +94,12 @@ find . -type f -exec grep pattern {} +
 grep -r pattern /the/dir
 find . -type f -print0 | xargs -r0 grep pattern
 LC_ALL=C grep -r pattern .
+
+##Grep multiple files in parallel:
+http://unix.stackexchange.com/questions/197352/how-to-start-multi-threaded-grep-in-terminal
+find . -type f -print0  | xargs -0 -P number_of_processes grep mypattern > output #Use find to get the files, invocating xargs in parallel mode.
+find . -type f | parallel -j+1 grep mypattern #use the parallel utility
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 UTILS:CUT
@@ -365,7 +371,7 @@ UTILS:DATE
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 I have a smart function in bash profile for this that can work also as a pipe.
 
-
+------------------------------------------------------------------------------------------------------------------------
 UTILS:GIT
 https://git-scm.com/book/tr/v2/Git-Basics-Viewing-the-Commit-History
 ##Basic commands
@@ -390,3 +396,9 @@ https://git-scm.com/docs/git-credential-store
 git config credential.helper store
 On the next push , your given user name and password will be stored.
 Can be combined with options for expire, etc
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:TIME & STRACE
+You can monitor performance in bash using the time or the strace utils.
+.B time grep pattern file will report you details about the time required to execute command (grep)
+.B strace -cf grep pattern file will also report performance in a much more analytical way, displaying also all the processes to complete the command.
