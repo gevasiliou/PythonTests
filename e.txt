@@ -1,2 +1,6 @@
-"aaa bbb" "xxx yyy"
-"some more" "data here"
+date1|bar1|number1
+date2|bar2|number2
+date3|bar3|number3
+date1|foo1|number1
+date2|foo2|number2
+date3|foo3|number3

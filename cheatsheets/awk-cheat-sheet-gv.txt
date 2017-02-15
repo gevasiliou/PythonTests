@@ -60,6 +60,7 @@ str1 str2 Concat str1 and str2
 {print $1} : Prints the first field of input (as read using FS separator)
 {print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints cause a new line.
 'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab.
+next :goes to next line
 
 sub(r,t,s) Substitute t for first occurrence of regex r in string s (or $0 if s not given)
 gsub(r,t,s) Substitute t for all occurrences of regex r in string s
@@ -388,6 +389,9 @@ split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", month, " ")
 # create an array named "mdigit", indexed by strings, so that
 # mdigit["Jan"] is 1, mdigit["Feb"] is 2, etc. Requires "month" array
 for (i=1; i<=12; i++) mdigit[month[i]] = i
+
+##Check if a var belongs in array with IN operator
+$ awk -F'|' 'NR==FNR{check[$0];next} $2 in check' file2 file1
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ARRAYS EXAMPLE
 [: http://unix.stackexchange.com/questions/344856/take-two-columns-in-a-tab-delimited-file-and-merge-into-one/344880?noredirect=1#comment610394_344880 :]
@@ -410,6 +414,18 @@ awk '/Start of test case/{i++}{print >"a"i}' a.txt
 Counter will be increased in the next found pattern "Start of test case". Each section will be sent to file a1, a2,a3,etc
 With awk you don't need >>. It seems that the file remains open - or awk buffers the data and send them at one push to file.
 For testing : awk '/Start of test case/{i++}{print i,$0}' a.txt
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:COMBINE CSV FILES - TAB SEPARATED (emulates JOIN)
+http://unix.stackexchange.com/questions/345051/concatenate-csv-with-some-shared-columns
+$ awk -F"\t" '{a[1]="";{for (i=1;i<=NF;i++) if (i==6 ||i==7) continue;else \
+if ($i!="") a[1]=a[1]FS$i;else a[1]=a[1]FS"NaN";print a[1]}}' <(paste b.txt c.txt)
+==EQUALS TO ==
+$ join --nocheck-order -eNaN -13 -22 -t$'\t' -o 1.1 1.2 1.3 1.4 1.5 2.3 2.4 b.txt c.txt
+
+Output:						
+A   B   C   D   E   F   G	
+1   2   3   4   5   6   7	
+NaN 1   2   NaN 1   2   1	
 
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ONELINERS

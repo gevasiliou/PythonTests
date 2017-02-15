@@ -209,6 +209,15 @@ join -j 2 -o 2.1 2.2 1.1 File1 File2
 Join on field 2 of both files (alternatively you can use -1.2 -2.2)
 -o controls the output 
 
+##Join CSV files (combine)
+http://unix.stackexchange.com/questions/345051/concatenate-csv-with-some-shared-columns
+$ join --nocheck-order -eNaN -13 -22 -t$'\t' -o 1.1 1.2 1.3 1.4 1.5 2.3 2.4 b.txt c.txt
+
+Output:						
+A   B   C   D   E   F   G	
+1   2   3   4   5   6   7	
+NaN 1   2   NaN 1   2   1
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:PASTE : Merge lines of files
 https://www.gnu.org/software/coreutils/manual/html_node/paste-invocation.html#paste-invocation
