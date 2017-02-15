@@ -27,8 +27,16 @@ alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθ�
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
 
 function lsnum { 
+echo "lsnum: Counts the files in the location provided ($1)" >&2
 [[ -z $1 ]] && local d=$PWD || local d=$1
-ls $d |wc -l
+local filesfound=$(find $d -maxdepth 1 -type f |wc -l)
+local dirsfound=$(find $d -maxdepth 1 -type d |wc -l)
+echo "Folder: $(readlink -f $d)" #resolves the literal sent ./directory or just directory to full dir path
+echo "Files: $filesfound" 
+echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory send to be searched 
+#find is preferred over ls for various reasons:
+# in dirs, ls fails to catch the hidden ones.
+# in files, ls might fail to catch filenames with strange chars in name (spaces,tabs,newlines,etc)
 }
 
 
