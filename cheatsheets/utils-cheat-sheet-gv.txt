@@ -2,8 +2,7 @@ UTILS:CHEAT SHEET by GV
 https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
 https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
 #-----------------------------------------------------------------------------------------------------------------------
-UTILS:BASICS
-FILE MANIPULATIONS
+UTILS:BASICS - FILE MANIPULATIONS
 Depending on the job you can use different commands:
 
 cut file: slices a line of file (or multi lines) based on a delimiter.
@@ -89,6 +88,12 @@ grep -v -f <(grep "ok" a.txt |cut -d' ' -f1) a.txt
 This will search the file a.txt for a second column having a text ok and will get the names marked as ok.
 Then these names will be the main pattern to grep and exclude them from the whole,same file
 Obviously this is usefull if on the master file a.txt not all the names have ok , but indirectly even if one ok is present for a user, you want to exclude this user from all the results.
+
+##Grep Combined with find
+find . -type f -exec grep pattern {} +
+grep -r pattern /the/dir
+find . -type f -print0 | xargs -r0 grep pattern
+LC_ALL=C grep -r pattern .
 #-----------------------------------------------------------------------------------------------------------------------
 
 UTILS:CUT
@@ -121,7 +126,6 @@ You can also trick use diff like this to compare two variables line by line : di
 ##Compare grep result in a nice visual way:
 diff -u  <(cat a.txt) <(grep "tar*" a.txt) #or -y
 
-------------------------------------------------------------------------------------------------------------------------
 ##Remove the < char from output and keep only the differet items:
 diff --changed-group-format='%<' --unchanged-group-format='' c.txt cc.txt
 i.e c.txt 
@@ -131,7 +135,7 @@ i.e c.txt
 cc.txt
 1
 2
-------------------------------------------------------------------------------------------------------------------------
+
 ##Using diff with process substitution 
 diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
 PS: normal usage of diff is diff -y file1 file2.
@@ -144,6 +148,8 @@ Usefull when you want to verify the performance in commands that produce large o
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:HEAD-TAIL
+head -n1 : Gets the header - 1st line
+tail -n+2 : Gets the second line up to EOF of a file - excludes header
 Trick to get only one line from file using head and tail
 Usage: bash viewline myfile 4
 head -n $2 "$1" | tail -n 1
@@ -280,7 +286,7 @@ Replace new lines with null:
  tr '\n' '\0' <in >out 
 tr '\\n' '\\0' <in >out 
 .ft B tr '\n' '\0' <in >out 
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 UTILS:SORT 
 http://www.skorks.com/2010/05/sort-files-like-a-master-with-the-linux-sort-command-bash/
 Mind the options -u and -k.
@@ -327,7 +333,7 @@ drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyzhrt/rth
 
 You can then call awk to print the columns you need ($1 and $8) and then cut -d will work on output of awk.
 
-UTILS:SORT -u option (unique)
+##SORT -u option (unique)
 sort -u a.txt b.txt == cat a.txt b.txt |sort |uniq
 sort -u will exclude the duplicate lines, operation similar to classic uniq but with more criteria when used with -k
 
@@ -342,6 +348,18 @@ drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
 crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
 First sorted with k8 then with k1. abc folders go on top
 
+##Sort Excluding Header Row
+This is a common problem, since sort does not have a built switch to exlude header row.
+Workarounds:
+head -n1 file && sort <(tail -n+2 file) or head -n1 && tail -n+2 file |sort
+{IFS= read -r header;echo "$header";sort} < file.csv
+command | (read -r; printf "%s\n" "$REPLY"; sort)
+awk 'NR == 1; NR > 1 {print $0 | "sort -n"}'
+command | head -n 2; command | tail -n +3 | sort #command refers to your command (i.e cat , etc) not to the command utility
+ps -ef | { head -1 ; sort ; }
+function body { IFS= read -r header;printf '%s\n' "$header";"$@";};ps -o pid,comm | body sort -k2 #or |body grep pattern or |body whatever command you need to apply in the body 
+
+------------------------------------------------------------------------------------------------------------------------
 UTILS:DATE
 ##Convert Date to Epoch. Date must be in format 14/Feb/2017:11:31:20
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
