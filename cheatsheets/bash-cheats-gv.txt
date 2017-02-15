@@ -339,10 +339,21 @@ find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator.
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
 find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
 
-##BASH:FIND EXEC
-Rename extensionless files
+##BASH:FIND -EXEC
+find can accept an -exec option in two formats:
+-exec command {} \; #In this method command is invocated in each result of find
+-exec command {} +  #In this method command is invocated after buffering an amount of find results.
+
+.B Example with grep
+[: http://unix.stackexchange.com/questions/85789/grep-in-couple-thousands-files :]
+find . -type f -exec grep PATTERN {} +   # packs as many files as it can per command invocation, 
+find . -type f -exec grep PATTERN {} \;  #rungs grep in every find result = much slower
+
+find / -type f -print0 | xargs -r0 -P2 grep -Hi 'the brown dog'
+
+.B Example: Rename extensionless files
+Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
-OR
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
 ------------------------------------------------------------------------------------------------------------------------
