@@ -1,4 +1,4 @@
-bar1
-bar2
-foo1
-foo2
+test@test.com
+bob@test.com
+sally@test.com
+eve@test.com
