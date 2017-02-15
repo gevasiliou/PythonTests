@@ -30,9 +30,11 @@ function lsnum {
 echo "lsnum: Counts the files in the location provided ($1)" >&2
 [[ -z $1 ]] && local d=$PWD || local d=$1
 local filesfound=$(find $d -maxdepth 1 -type f |wc -l)
+local linksfound=$(find $d -maxdepth 1 -type l |wc -l)
 local dirsfound=$(find $d -maxdepth 1 -type d |wc -l)
 echo "Folder: $(readlink -f $d)" #resolves the literal sent ./directory or just directory to full dir path
 echo "Files: $filesfound" 
+echo "SymLinks: $linksfound"
 echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory send to be searched 
 #find is preferred over ls for various reasons:
 # in dirs, ls fails to catch the hidden ones.
