@@ -40,34 +40,44 @@ Instead you can just once AWK the file and do whatever nanipulation you need ins
 For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
 Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
 
+##AWK Reserved Words
 awk '/pattern/ {action}' file↵ Execute action for matched pattern 'pattern' on file 'file'
 $0 Reference current record line
 FS Field separator of input file (default whitespace)
-NF Number of fields in current record
-NR Line number of the current record
-FILENAME Reference current input file
-FNR Reference number of the current record relative to current input file
 OFS Field separator of the outputted data (default whitespace)
+NF Number of fields in current record/line (i.e {print $NF})
+NR Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
+FNR Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
+FILENAME Reference current input file
 ORS Record separator of the outputted data (default newline)
 RS Record separator of input file (default newline)
 ^ Match beginning of field
 ~ Match opterator
 !~ Do not match operator
--F Command line option to specify input field delimiter
-BEGIN Denotes block executed once at start
-END Denotes block executed once at end
+-F Command line option to specify input field delimiter before starting awk script.
+BEGIN Denotes block executed once at start of the script
+END Denotes block executed once at end of the script
 str1 str2 Concat str1 and str2
 {print $1} : Prints the first field of input (as read using FS separator)
-{print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints cause a new line.
+{print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints by ; forces new line.
 'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab.
-next :goes to next line
+next :goes to next record
 
+##AWK Builtin Functions
 sub(r,t,s) Substitute t for first occurrence of regex r in string s (or $0 if s not given)
 gsub(r,t,s) Substitute t for all occurrences of regex r in string s
 system(cmd) Execute cmd and return exit status
 tolower(s) String s to lowercase
 toupper(s) String s to uppercase
-getline Set $0 to next input record from current input file.
+getline Set $0 to next input record from current input file. 
+getline <file2 : Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
+
+##Basic Examples:
+
+awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2 #Both files will be printed in series
+awk '{getline <"file2";print $1}{print $1}' file1 #Reading is done by file2 , all fields correspond to file2
+awk '{getline var2 <"file2";print var2}{print $1}' file1 #each line of file2 goes to var2 unsplit; Field Records refer to file1.
+
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT IF Print lines if specific columns have same value
 awk -F ':' '$3==$4' file.txt -->  
@@ -195,7 +205,7 @@ NR != 1 {
 
 Runit : awk -f script.awk datafile
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT IF CONDITION - Column Checker
 Input:
 A B B A
@@ -212,18 +222,19 @@ If columns are different then print "multi"
 Code:
 awk '{ for (i = 2; i <= NF; i++) { if ($i != $1) { print "multi"; next } }; print $1 }'
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT Print line with matched pattern (simulates grep):
 awk '/word/' file.txt
 GNU awk also accepts variables in the form of awk "/$variable/" file.txt
 Using '!/pattern/' you invert the match (similar to grep -v)
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT Print a line if columns are equal to 5 (ps: columns separated by "|")
 awk -F \| 'NF==5' data3
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:COUNT LINES
-awk '{ $0 = NR "\t" $0 } 1' file.txt | tail
+awk '{ $0 = NR "\t" $0 } 1' file.txt | tail #Here obviously we assign to $0 the value NR=Number of Record + tab + $0. The 1 at end prints
+GV: awk '{ print NR "\t" $0 }' file1 #This also applies numbering 
 
 Counting Alternatives:
 grep -n ^ file.txt | sed 's/:/\t/' | tail
@@ -429,6 +440,8 @@ NaN 1   2   NaN 1   2   1
 
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ONELINERS
+Tip: print is the default action of awk, so even if ommited print will be performed.
+
 awk '{print $1}' file 				:Print first field for each record in file
 awk '/regex/' 						    :print only lines which match regular expression (emulates "grep")
 awk '!/regex/' 						    :print only lines which do NOT match regex (emulates "grep -v")
@@ -439,29 +452,30 @@ awk '$1 !~ /regex/' file			:Print line if field 1 does NOT match regex in file
 awk '$7  ~ /^[a-f]/'    			:print line if field #7 matches regex
 awk '$7 !~ /^[a-f]/'    			:print line if field #7 does NOT match regex
 awk 'NR!=1{print $1}' file		:Print first field for each record in file excluding the first record
-awk 'END{print NR}' 				  :count lines (emulates "wc -l")
+awk 'END{print NR}' 				  :count lines (emulates "wc -l").Actually prints NR after end of file. NR is always counted by awk.
 
 awk '/foo/{n++}; END {print n+0}' file			:Print total number of lines that contain foo
 awk '{total=total+NF};END{print total}' file	:Print total number of fields in all lines
-awk '/regex/{getline;print}' file				:Print line immediately after regex, but not line containing regex in file
-awk 'length > 32' file							:Print lines with more than 32 characters in file
-awk 'NR==12' file								:Print line number 12 of file
-awk '{s=0; for (i=1; i<=NF; i++) s=s+$i; print s}' 	:print the sums of the fields of every line
+awk '/regex/{getline;print}' file				      :Print line immediately after regex, but not line containing regex in file
+awk 'length > 32' file							          :Print lines with more than 32 characters in file
+awk 'NR==12' file								              :Print line number 12 of file
+awk '{s=0; for (i=1; i<=NF; i++) s=s+$i; print s}'  	:print the sums of the fields of every line
 awk '{for (i=1; i<=NF; i++) s=s+$i}; END{print s}' 		:print the sums of the fields of ALL lines
-awk '{ total = total + NF }; END {print total}' file 	:print the total number of fields ("words") in all lines
-awk 'BEGIN{ORS="\n\n"};1' 						:double space a file - also awk '1;{print ""}'
-awk '1;{print "\n"}' 							:triple space a file
+awk 'BEGIN{ORS="\n\n"};1' 						  :double space a file - also awk '1;{print ""}'
+awk '1;{print "\n"}'                    :triple space a file
 awk '{print FNR "\t" $0}' files* 				:precede each line by its line number FOR THAT FILE (left alignment).
 awk '{print NR "\t" $0}' files* 				:precede each line by its line number FOR ALL FILES TOGETHER, with tab.
-awk '{printf("%5d : %s\n", NR,$0)}' 			:number each line of a file (number on left, right-aligned)
-awk 'NF{$0=++a " :" $0};1' 						:number each line of file, but only print numbers if line is not blank
-awk '/Beth/{n++}; END {print n+0}' file 		:print the total number of lines that contain "Beth"
+awk '{printf("%5d : %s\n", NR,$0)}' 		:number each line of a file (number on left, right-aligned)
+awk 'NF{$0=++a " :" $0};1' 						  :number each line of file, but only print numbers if line is not blank
+awk '/Beth/{n++}; END {print n+0}' file :print the total number of lines that contain "Beth"
 awk '$1 > max {max=$1; maxline=$0}; END{ print max, maxline}' :print the largest first field and the line that contains it
-awk '{ print NF ":" $0 } ' 						:print the number of fields in each line, followed by the line
-awk '{ print $NF }' 							:print the last field of each line
-awk '{ field = $NF }; END{ print field }'		: print the last field of the last line
-awk 'NF > 4' 									:print every line with more than 4 fields
-awk '$NF > 4' 									:print every line where the value of the last field is > 4
+awk '{ print NF ":" $0 } ' 						      :print the number of fields in each line, followed by the line
+awk '{ print $NF }' 							          :print the last field of each line
+awk '{ field = $NF }; END{ print field }'		:print the last field of the last line
+awk ’length($0) > 80’ data                  :print lines with length more than 80
+awk ’NF > 0’ data                           :print any line with at least one record=no blank line
+awk 'NF > 4' 									              :print every line with more than 4 fields
+awk '$NF > 4' 									            :print every line where the value of the last field is > 4
 awk 'BEGIN{while (a++<513) s=s " "; print s}' 	:create a string of a specific length (e.g., generate 513 spaces)
 gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' :insert 49 spaces after column #6 of each input line.
 
@@ -511,29 +525,7 @@ awk 'ORS=NR%5?",":"\n"' file 					:concatenate every 5 lines of input, using a c
 awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the same pattern
 
 
- 99 test1
-88 test2
-10 test3
-11 test1
-12 test1
-13 test2
-14 test3
-17 test1
-18 test4
- 
- awk 'NR==1
- {if (($0~"test1")) 
-   {a=$0;getline;
-   {if (($0~"test2")) 
-     {b=$0;getline;
-     {
-       if (($0~"test3")) 
-         {
-          c=$0;{print a,b,c}
-         }
-      }
-     }
-    }
-   }
-  }' 
-  c.txt
+##AWK Exercises:
+I can not make this code to work: http://stackoverflow.com/questions/5467690/how-to-merge-two-files-using-awk
+Simulation: https://goo.gl/g7mMK0
+As a general idea it seems that he NR==FNR method is not working in the online emulator.
