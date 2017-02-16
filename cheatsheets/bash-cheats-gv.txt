@@ -197,6 +197,20 @@ while IFS= read -r line <&9; do
 done
 exec 9<&-
 ------------------------------------------------------------------------------------------------------------------------
+##Read and separate a file based on NULL character only and not on new lines
+http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
+
+NULL Separated file : /proc/1/environ to variables script
+You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
+
+To split the files based on null you need something like this:
+$ while IFS= read -r -d '' line ; do vars+=("$line");done <file;declare -p vars
+Mnd the gap in -d option of read.
+
+Also , with readarray - without loop : 
+IFS= readarray -t -d '' vars2 <file3;declare -p vars2
+PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d ''
+------------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
