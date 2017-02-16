@@ -528,4 +528,32 @@ awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the sam
 ##AWK Exercises:
 I can not make this code to work: http://stackoverflow.com/questions/5467690/how-to-merge-two-files-using-awk
 Simulation: https://goo.gl/g7mMK0
-As a general idea it seems that he NR==FNR method is not working in the online emulator.
+As a general idea it seems that the a[$1]=whatever does not work. 
+
+
+##AWK Read from 2 files
+The main idea is that the files are read in series by awk.
+So the common workaround is to make a check if NR == FNR.
+NR is the line counter continiously increasing along all files.
+FNR is the specific file counter - reset on every file.
+The condition NR==FNR is true only for the first file, because on second file the NR keeps increasing:
+awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field1:",$1}' file1 file2
+NR: 1 FNR: 1 fname: file1 Field1: f1d1
+NR: 2 FNR: 2 fname: file1 Field1: f1d5
+NR: 3 FNR: 3 fname: file1 Field1: f1d9
+NR: 4 FNR: 1 fname: file2 Field1: f2d1
+NR: 5 FNR: 2 fname: file2 Field1: f2d5
+NR: 6 FNR: 3 fname: file2 Field1: f2d9
+
+This is why this usage is frequent: awk 'NR==FNR {file1[$1]=$0; next} {$1=file[$1]; print}' file1 file2
+In my tests the syntax var[$1] does not work , but this alternative works:
+awk 'NR==FNR {c++;a[c]=$1;next}{d++;print $1,a[d]}' file2 file1
+f1d1 f2d1 #Combined first fields of line 1 of both files
+f1d5 f2d5
+f1d9 f2d9
+
+You can assign to array a whatever field you need from first file (file 2 in example above)
+This is different from the getline var <file method which allways will send in var the whole line = $0
+The next forces awk to go on the next record. 
+When all the records of the first file are finished by the next, then we enter at the next group of commands{d++;print...} for the second file.
+Obviously the next command is valid for the file in process.When it finishes, the script goes on to second group of commands.
