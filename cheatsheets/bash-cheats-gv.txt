@@ -47,7 +47,11 @@ Subsection start with .SS. Alternativelly you can use .B to make this line bold.
 The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
 The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
 
+To play with man formatting and see immediate results on screen try:
+man <(echo -e ".TH man 1 2017 1.0 testing \n\n.SH Test\n\n\n\n.BR\n\.LP\n\.ce\nbefore end\n.BR \n\The end")
+
 For sed explanation see the sed cheatsheet.
+
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS

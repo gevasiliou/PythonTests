@@ -105,7 +105,7 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 }
 
 function dcat() { 
-echo "dcat: directory cat - cat files within directory $1, including subdirs"
+echo "dcat: directory cat - cat files within directory $1, excluding subdirs"
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return
 local d="$1"
 if [[ ! -d $d ]]; then 
@@ -115,10 +115,17 @@ else
 	echo "directory to scan and print= $d"
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
 	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
-	find . -maxdepth 1 -type f -exec bash -c '[[ $(file $0) == *"ASCII"* ]] && echo -e "#####File: $0\n$(cat "$0")" >>.__tmpcont ' {} \;
+	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
+	find "$d" -maxdepth 1 -type f -exec bash -c '[[ $(file $0) == *"ASCII"* ]] && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
 	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics 
-	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#####/\.SH /g;G" .__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
-	rm -f .__tmpcont
+	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#-!#/\.SH /g;G" /tmp/.__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
+	rm -f /tmp/.__tmpcont
+	#Call the man as pager to display files contents. Man formatting is necessary: 
+	#File must be double spaced and empty lines to be replaced with .BR. 
+	#Existed line breaks will be substitued by .LP = new paragraph 
+	#Lines starting with ##### will be Headers (.SH)
+	#man header to be inserted in the beginning of the file = before first line
+	#backslashes must be man escaped : \ becomes \e (also \\ works for man)
 fi
 }
 
@@ -152,6 +159,14 @@ echo "Date to be converted = $dt" >&2
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 }
 
+#TODO
+# make a function manit to work as pipe : contents=$(</dev/stdin) && man <(contents after man formatting) or man /dev/stdin
+# You need to apply some defaults though. 
+# For example Section Headers by default to be three ### or can be user defined by --sh=# for one #
+# insert the header (also can be a switch --header="..")
+# double space, line breaks, escape backslashes, preserve existing line breaks of input stream (treat as .LP)
+# Potential bugs: If input stream has not ### sections?
+# 
 
 # Tips about functions usage as an alias and sourcing them to other scripts
 # See all declared functions with 'set' - it will not be available in 'alias' command any more.
