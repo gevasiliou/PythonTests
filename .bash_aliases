@@ -112,9 +112,13 @@ if [[ ! -d $d ]]; then
 	echo "This is not a directory" && return
 else
 	[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-	echo "directory to scan= $d"
+	echo "directory to scan and print= $d"
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
-	find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \;
+	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
+	find . -maxdepth 1 -type f -exec bash -c '[[ $(file $0) == *"ASCII"* ]] && echo -e "#####File: $0\n$(cat "$0")" >>.__tmpcont ' {} \;
+	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics 
+	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#####/\.SH /g;G" .__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
+	rm -f .__tmpcont
 fi
 }
 
