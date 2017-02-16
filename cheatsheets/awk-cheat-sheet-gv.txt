@@ -532,11 +532,22 @@ As a general idea it seems that the a[$1]=whatever does not work.
 
 
 ##AWK Read from 2 files
-The main idea is that the files are read in series by awk.
-So the common workaround is to make a check if NR == FNR.
-NR is the line counter continiously increasing along all files.
-FNR is the specific file counter - reset on every file.
+Consider the following two files:
+
+# cat file1
+f1d1 f1d2 f1d3 f1d4
+f1d5 f1d6 f1d7 f1d8
+f1d9 f1d10 f1d11 f1d12
+
+# cat file2
+f2d1 f2d2 f2d3 f2d4
+f2d5 f2d6 f2d7 f2d8
+f2d9 f2d10 f2d11 f2d12
+
+The main idea is that the files are read in series by awk. So the common workaround is to make a check if NR == FNR.
+NR is the line counter continiously increasing along all files. FNR is the specific file counter - reset on every file.
 The condition NR==FNR is true only for the first file, because on second file the NR keeps increasing:
+
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field1:",$1}' file1 file2
 NR: 1 FNR: 1 fname: file1 Field1: f1d1
 NR: 2 FNR: 2 fname: file1 Field1: f1d5
@@ -557,3 +568,19 @@ This is different from the getline var <file method which allways will send in v
 The next forces awk to go on the next record. 
 When all the records of the first file are finished by the next, then we enter at the next group of commands{d++;print...} for the second file.
 Obviously the next command is valid for the file in process.When it finishes, the script goes on to second group of commands.
+
+
+Accordingly, my bug extends also to this solution:
+http://stackoverflow.com/questions/5467690/how-to-merge-two-files-using-awk
+
+# awk 'FNR==NR{a[$1]=$2 FS $3;next}{ print $0, a[$1]}' file2 file1
+# Only the last file1 fields are printed
+f1d1 f1d2 f1d3 f1d4 
+f1d5 f1d6 f1d7 f1d8 
+f1d9 f1d10 f1d11 f1d12 
+
+# awk 'FNR==NR{c++;a[c]=$2 FS $3;next}{d++;print $0, a[d]}' file2 file1
+# here we have combined fields from both files
+f1d1 f1d2 f1d3 f1d4 f2d2 f2d3 
+f1d5 f1d6 f1d7 f1d8 f2d6 f2d7
+f1d9 f1d10 f1d11 f1d12 f2d10 f2d11
