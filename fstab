@@ -1,0 +1,19 @@
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/sda1 during installation
+UUID=fe8617ca-ea5f-4ee5-becf-343b4b9c8eea /               ext4    errors=remount-ro 0       1
+# swap was on /dev/sda5 during installation
+UUID=7f0c47a1-38a5-41cb-8b82-9fa578dfbbdd none            swap    sw              0       0
+/dev/sr0        /media/cdrom0   udf,iso9660 user,exec,nofail     0       0
+#/dev/sr0        /media/cdrom0   udf,iso9660 user,noauto     0       0
+
+#/dev/sr0 Fix for Virtual Box
+#The original file has options udf,iso9660 user,noauto
+#For VirtualBox guest additions cd to work has to replace noauto to exec
+#After some reboots i got a welcome to emergency console prompt and i was getting to terminal
+#this was solved by adding the nofail option
