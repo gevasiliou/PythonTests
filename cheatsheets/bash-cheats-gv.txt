@@ -52,7 +52,6 @@ man <(echo -e ".TH man 1 2017 1.0 testing \n\n.SH Test\n\n\n\n.BR\n\.LP\n\.ce\nb
 
 For sed explanation see the sed cheatsheet.
 
-
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
@@ -316,6 +315,7 @@ Pattern [8-9]|1[0-4] will epxand to chars 8-9 OR 10-11-12-13-14 (as chars)
 Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-100
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIND 
+POSIX Find Manual :http://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
 ##Use find as ls alternative
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
@@ -361,6 +361,7 @@ find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g
 find can accept an -exec option in two formats:
 -exec command {} \; #In this method command is invocated in each result of find
 -exec command {} +  #In this method command is invocated after buffering an amount of find results.
+find dirname ... -exec somecommand {} \; -exec someothercommand {} \; #by wildcard
 
 .B Example with grep
 [: http://unix.stackexchange.com/questions/85789/grep-in-couple-thousands-files :]
@@ -374,6 +375,23 @@ Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
+##Find Loop: Loop in files with find
+By Stephane Chazelas : http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
+
+As a general idea, to loop on files the glob method is better.
+for f in dir/* ; do something with $f;done
+
+If you need to do it with find, the only accurate approach is to use -print0 with find.
+This will separate results by null character '' and ensures that results will be correct even if filenames contain spaces, strange chars , newlines, whatever
+
+Method 1 - To perform actions on each file
+while IFS= read -r -d '' fn;do var+=("$fn");done < <(find . -name '*.sh' -print0)
+
+Method 2 - Quick store of filenames in array
+readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
+
+Other Methods:
+find . -print0 | xargs -r0 something with
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
 Search for a process using top . Top seems to catch all processes:
@@ -587,65 +605,83 @@ if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
 ------------------------------------------------------------------------------------------------------------------------
-BASH:TIPS
-Using subshells: $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
-
-Reverse any word : echo "nixcraft" | rev
-
-Rename using for and bash parameter expansion
-for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
-
-#Remove new line char from strings and replace it with space using trim (tr)
-echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
-With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
-
-#Use dnstools to read a wikipedia page in terminal:
-dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
-I have an alias for that. Alternative : host -t txt hacker.wp.dg.cx
-
-Quick backup : cp filename{,.bak} #using brace expansion
-
-Quick move: $ mv /path/to/file{,_old} #brace expansion
-
-Trace root with ping together: $ mtr google.com
-
-Find the last command that begins with "whatever," but avoid running it : $ !whatever:p
-
-Change to the previous working directory : $ cd - (insted of cd $OLDPWD)
-
-Serve the current directory at http://localhost:8000/ : $ python -m SimpleHTTPServer 8000
-
-Run the last command as root : $ sudo !! (also simple !! just repeats last command)
-
-Capture video of a linux desktop : $ ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg
-
-Read the first line from a file and put it in a variable : $ read -r line < file OR IFS= read -r line < file
-
-Read a random line from a file and put it in a variable : $ read -r random_line < <(shuf file)
-When bash sees <(shuf file) it opens a special file /dev/fd/n, where n is a free file descriptor, 
-
-Extract the filename from the path : filename=${path##*/} 
-Extract dirname : dirname=${path%/*}
-
-declare a value to hold upper case letter : declare -u foo . Even if you assign small letters , echo $foo will print capital letters
-declare -l is used for lowercase vars.
-
-assign same value to multiple commands using bash parameter expansion: eval {a,b,c}="some text" # Without eval is not operating.
-
-Trick to create a couple of lowercase and uppercase letters:
-declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due to declare -u in the beginning.
-PS: Alternative for lower/upper case is ${a^^} and ${a,,}
-
-
-Resources: 
+BASH:TIPS AND TRICKS
+##Resources: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 
-Identify any command type /location : $type command (try i.e type grep and type eval)
+##Using subshells: 
+$ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
 
-List all kernel modules that are loaded (i.e lsmod)
+##Reverse any word
+echo "nixcraft" | rev
+
+##Rename using for and bash parameter expansion
+for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
+
+##Remove new line char from strings and replace it with space using trim (tr)
+echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
+With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
+
+##Use dnstools to read a wikipedia page in terminal:
+dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
+I have an alias for that. Alternative : host -t txt hacker.wp.dg.cx
+
+##Quick move and copy 
+cp filename{,.bak} #using brace expansion
+mv /path/to/file{,_old} #brace expansion
+
+##Trace root with ping together: 
+$ mtr google.com
+
+##Find the last command that begins with "whatever," but avoid running it : 
+$ !whatever:p
+
+##Change to the previous working directory
+$ cd - (insted of cd $OLDPWD)
+
+##Serve the current directory at http://localhost:8000/
+$ python -m SimpleHTTPServer 8000
+
+##Run the last command as root : 
+$ sudo !! (also simple !! just repeats last command)
+
+##Capture video of a linux desktop : 
+$ ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg
+
+##Read the first line from a file and put it in a variable : 
+$ read -r line < file OR IFS= read -r line < file
+
+##Read a random line from a file and put it in a variable : 
+$ read -r random_line < <(shuf file)
+
+##Extract filename /dirname from the path : 
+filename=${path##*/} 
+dirname : dirname=${path%/*}
+
+##declare upper/lower case variables 
+uppercase: declare -u foo 
+lowercase: declare -l
+declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due to declare -u in the beginning.
+
+PS: Alternative for lower/upper case is ${a^^} and ${a,,}
+
+##Assign same value to multiple commands using bash parameter expansion: 
+eval {a,b,c}="some text" # Without eval is not operating.
+
+##Identify files/ commands : 
+type command (try i.e type grep and type eval)
+file <file> #will print info about the file , like if it is ASCII
+
+##List all kernel modules that are loaded (i.e lsmod)
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
+
+##Print the progress of a recursive command in one / the same line (by Duffy):
+touch ff1 ff2 ff3
+rm -fv ff1 ff2 ff3 |while read -r line;do 
+ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
@@ -1184,7 +1220,7 @@ date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 You might need to run a command and not it's alias that you might have set.
 You can do that by unalias, or by $ command ls, or by \ls , etc
 
-##Different behavior of functions/aliases if called by command line or script
+##Force Different behavior of functions/aliases if called by command line or script
 With function you can have something like:
 ls() { if test -t 1; then command ls -FC "$@"; else command ls "$@";fi;}
 In this way you use the -FC args only if ls runs from a terminal and not from a script ; More generally when the &1 is not redirected to /dev/stdout
