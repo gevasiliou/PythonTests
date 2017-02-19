@@ -52,7 +52,8 @@ FILENAME Reference current input file
 ORS Record separator of the outputted data (default newline)
 RS Record separator of input file (default newline)
 ^ Match beginning of field
-~ Match opterator
+== Equal operator for if
+~ Match regex opterator for if (i.e if ($2 ~ "something") print $0)
 !~ Do not match operator
 -F Command line option to specify input field delimiter before starting awk script.
 BEGIN Denotes block executed once at start of the script
@@ -64,16 +65,19 @@ str1 str2 Concat str1 and str2
 next :goes to next record
 
 ##AWK Builtin Functions
+https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
+
 sub(r,t,s) Substitute t for first occurrence of regex r in string s (or $0 if s not given)
 gsub(r,t,s) Substitute t for all occurrences of regex r in string s
+gensub(regexp, replacement, how [, target])  : Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions.
 system(cmd) Execute cmd and return exit status
 tolower(s) String s to lowercase
 toupper(s) String s to uppercase
 getline Set $0 to next input record from current input file. 
 getline <file2 : Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
+getline var <file2 : Read file2 and assign to var the whole record/line of file2 ($0)
 
 ##Basic Examples:
-
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2 #Both files will be printed in series
 awk '{getline <"file2";print $1}{print $1}' file1 #Reading is done by file2 , all fields correspond to file2
 awk '{getline var2 <"file2";print var2}{print $1}' file1 #each line of file2 goes to var2 unsplit; Field Records refer to file1.
@@ -479,8 +483,6 @@ awk '$NF > 4' 									            :print every line where the value of the last
 awk 'BEGIN{while (a++<513) s=s " "; print s}' 	:create a string of a specific length (e.g., generate 513 spaces)
 gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' :insert 49 spaces after column #6 of each input line.
 
-#-----------------------------------------------------------------------------------------------------------------------
-AWK:ONELINERS PRINTING OF CERTAIN LINES
 awk 'NR < 11' 							:print first 10 lines of file (emulates behavior of "head")
 awk 'NR>1{exit};1' 						:print first line of file (emulates "head -1")
 awk '{y=x "\n" $0; x=$0};END{print y}' 	:print the last 2 lines of a file (emulates "tail -2")
@@ -524,12 +526,8 @@ awk '{for (i=NF; i>0; i--) printf("%s ",$i);print ""}' file :print in reverse or
 awk 'ORS=NR%5?",":"\n"' file 					:concatenate every 5 lines of input, using a comma separator between fields
 awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the same pattern
 
-
-##AWK Exercises:
-I can not make this code to work: http://stackoverflow.com/questions/5467690/how-to-merge-two-files-using-awk
-Simulation: https://goo.gl/g7mMK0
-As a general idea it seems that the a[$1]=whatever does not work. 
-
+echo This++++this+++is+not++done | awk '{gsub(/\++/," ");}1' ==> Removes all +. Actually replaces two ++ with a space
+echo This++++this+++is+not++done | awk -F'++' '{$1=$1}1' ==> Same as above (http://stackoverflow.com/questions/14432209/substitute-a-regex-pattern-using-awk)
 
 AWK:READ FROM 2 FILES
 ##Basics
@@ -609,3 +607,29 @@ f1d9 f1d10 f1d11 f1d12 f2d9 f2d10 f2d11
 
 Now the calls to array are valid, since the elements are stored in a[$1] of file2 = a[f2d1] (for first line)
 So when the second file1 is read, the call to a[$5] = a[f2d1] = the stored values of first file2 are printed.
+
+
+AWK:REGEX MATCH
+http://stackoverflow.com/questions/42307534/get-attributes-of-a-parent-tag-in-xml/42322481#42322481
+Consider a file with various xml entries like:
+<tile x="765" y="491" z="7">
+    <item id="2114"/>
+</tile>
+
+Below Code gets item id and brings the x-y-z values for all fields. tile x-y-z are not always the previous row.
+
+term="2114";awk -v term=$term '{a[NR]=$0; if ($0 ~ term) {i=NR;while (a[i] !~ "<tile x=.+ y=.+ z=.+") i--; print gensub(/(<tile) (.+)(>)/,"\\2","g",a[i]),":",gensub(/([ ]*)(<item )(.+)(\/>)/,"\\3","g",$0)}} ' file5
+>x="765" y="491" z="7" : id="2114"
+The logic : If you find the search term we look for, then go back to the stored data and when you find a line with x-y-z data print it together with the item id
+
+Mind the regex here:
+gensub(/([ ]*)(<item )(.+)(\/>)/,"\\3","g",$0)
+First part=/([ ]*)(<item )(.+)(\/>)/
+This is divided in four groups:
+([ ]*) #white space before item
+(<item ) #literal string match
+(.+) #any char following previous <item
+(\/>) #closing of the line />
+
+By using parenthesis you can group your regex; You can later select which part of regex you need to call (we call 3rd group = id="2114")
+

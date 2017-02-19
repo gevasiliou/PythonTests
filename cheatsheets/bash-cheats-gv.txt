@@ -79,12 +79,35 @@ read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] 
 
 ------------------------------------------------------------------------------------------------------------------------
 ##Read file to array
+http://stackoverflow.com/questions/11393817/bash-read-lines-in-file-into-an-array/11395181#11395181
 mapfile -t -O1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
-
-You can also use 
 mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
 PS1: mapfile has also an alias called readarray
 PS2: readarray can also be used like <<<"$var"
+
+This also works: IFS=$'\n' read -d '' -r -a lines < file
+
+------------------------------------------------------------------------------------------------------------------------
+##Read and separate a file based on NULL character only and not on new lines
+http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
+
+NULL Separated file : /proc/1/environ to variables script
+You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
+
+You can convert any file to null separated (for testing) by cat file |tr '\n' '\0'
+
+To split the files based on null you need something like this:
+$ while IFS= read -r -d '' line ; do vars+=("$line");done <file;declare -p vars
+Mnd the gap in -d option of read.
+
+Also , with readarray - without loop : 
+IFS= readarray -t -d '' vars2 <file3;declare -p vars2
+PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d ''
+
+This also works: readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
+This should work but in reallity it gets only the first element: IFS= read -d '' -r -a lines < <(find . -name '*.sh' -print0)
+Also i tried with IFS=$'\0', IFS='', IFS=$'' , no IFS , but no luck
+
 ------------------------------------------------------------------------------------------------------------------------
 ## Read while read method:
 while read -r var1 var2 ;do ....;done<file.txt :will assign var1 to first field of line 1 and var2 to second field.
@@ -195,20 +218,6 @@ while IFS= read -r line <&9; do
   printf '%s\n' "$line"
 done
 exec 9<&-
-------------------------------------------------------------------------------------------------------------------------
-##Read and separate a file based on NULL character only and not on new lines
-http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
-
-NULL Separated file : /proc/1/environ to variables script
-You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
-
-To split the files based on null you need something like this:
-$ while IFS= read -r -d '' line ; do vars+=("$line");done <file;declare -p vars
-Mnd the gap in -d option of read.
-
-Also , with readarray - without loop : 
-IFS= readarray -t -d '' vars2 <file3;declare -p vars2
-PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d ''
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
@@ -409,6 +418,8 @@ Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) #
 Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS EXPANSION
+http://wiki.bash-hackers.org/syntax/pe#use_a_default_value
+
 a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
 a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
 a="this is some TEXT"; echo ${a: 5:7} 	-> is some

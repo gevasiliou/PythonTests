@@ -129,25 +129,10 @@ sed -n '/regexp/{n;p;}' 	#the line after match
 SED:REPLACE (s/original/replaced/)
 Also see: http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 
-## This one replaces Tatty Error with word suck and prints the whole changed line
-sed  -n 's/Tatty Error/suck/p' a.txt 
+sed  -n 's/Tatty Error/suck/p' a.txt ## This one replaces Tatty Error with word suck and prints the whole changed line
 echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
-
-##Replace foo with bar only if there is a baz later on the same line:
-sed -i 's/foo\(.*baz\)/bar\1/' file ##mind the -i switch which writes the replacement in file (-i = inplace).
-
-##Replace Multiple replace operations: replace with different strings
-You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file ##/g means global = all matches in file
-
-##Replace any of foo, bar or baz with foobar
-sed -Ei 's/foo|bar|baz/foobar/g' file
-
-##Sed replace a string in a line with pattern: 
-sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
-above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
-
-##Replace first occurence of a pattern (as) in every line with an increasing number 
-while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
+sed -i 's/foo\(.*baz\)/bar\1/' file  ##Replace foo with bar only if there is a baz later on the same line:
+sed -Ei 's/foo|bar|baz/foobar/g' file ##Replace any of foo, bar or baz with foobar
 
 ##Replace chars with regex
 See info sed - Regular Expressions
@@ -158,6 +143,20 @@ echo "abc %-= def." | sed 's/\s/X/g' ---> abcX%-=Xdef.   #\s = all whitespace - 
 echo "abc %-= def." | sed 's/\</X/g' ---> Xabc %-= Xdef. #match beginning of word. Use \> to match end of word
 sed -E -n '/^(.)o\1$/p' ---> matches words starting with any letter , followed by letter o - followed by a letter same as first (\1)
 sed -E -n '/^(.)(.)(.)\3\2\1$/p' --> searches for 6-letter palindromes: first 3 letters are 3 subexpressions, followed by 3 back-references in reverse order
+
+##Replace Multiple replace operations: replace with different strings
+You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file ##/g means global = all matches in file
+
+##Use Extender Regex Groups to sed replace
+$ a="define('DB_NAME', 'wordpress');";b="george"; echo "$a" |sed -E "s/(define.*)(\x27DB_NAME\x27, )(.*)(\)\;)/\1\2\'$b\'\4/g"  ##define('DB_NAME', 'george');
+sed -i "s/define('DB_NAME', '.*');/define('DB_NAME', 'foobar');/" file
+
+##Sed replace a string in a line with pattern: 
+sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
+above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
+
+##Replace first occurence of a pattern (as) in every line with an increasing number 
+while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
 
 ##Replace special chars like backslash and single quotes
 Backslash has a special meaning = escape.
@@ -193,7 +192,7 @@ alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
 
-3. Delete text inside curly
+3. Delete text inside multi line file - enclosed by curly brackets
 This is {
 the multiline
 text file }
@@ -254,9 +253,18 @@ sed '/(/,/)/s/line/newline/g' #replaces line0-1-2-etc with newline0-1-2-etc in a
 split to understand: the fine part is /(/,/)/ = /(/ , /)/
 insteaf of 'p' at the end we use s/old/new/ for replace.
 
+
+5. Replace text on the next line of pattern match
+Input:
+client_encryption_options:
+    enabled: false
+    
+sed '/^client_encryption_options:/,+1s/enabled:.*/enabled: true/' file #Mind the +1s trick to catch next line from patter
+
+---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
 .B See: http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
-
+---------------------------------------------------------------------------------------------------------------------------
 SED:DELETE 
 ##To remove 1st character in every line:
 sed 's/^.//' file 
@@ -506,8 +514,8 @@ i : line before pattern
 a : line after pattern
 
 ------------------------------------------------------------------------------------------------------------------------------
-
 SED:ONELINER:SCRIPTS FOR SED (Unix stream editor)        Dec. 29, 2005
+------------------------------------------------------------------------------------------------------------------------------
 Compiled by Eric Pement - pemente[at]northpark[dot]edu        version 5.5
 
 Latest version of this file (in English) is usually at:
@@ -550,7 +558,7 @@ sed '/./=' filename | sed '/./N; s/\n/ /'
 ## count lines (emulates "wc -l")
 sed -n '$='
 
-SED:ONELINERS:TEXT CONVERSION AND SUBSTITUTION:
+SED:ONELINERS:TEXT CONVERSION AND SUBSTITUTION 
 
 ## IN UNIX ENVIRONMENT: convert DOS newlines (CR/LF) to Unix format.
 sed 's/.$//'               # assumes that all lines end with CR/LF
