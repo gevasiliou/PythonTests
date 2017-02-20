@@ -53,6 +53,26 @@ man <(echo -e ".TH man 1 2017 1.0 testing \n\n.SH Test\n\n\n\n.BR\n\.LP\n\.ce\nb
 For sed explanation see the sed cheatsheet.
 
 ------------------------------------------------------------------------------------------------------------------------
+BASH:LOCALE
+http://unix.stackexchange.com/questions/87745/what-does-lc-all-c-do/87763#87763
+For various operations you can temporary apply a C locale which speeds things up in case of grep, etc.
+To see the results of various locales use this test:
+$ LC_ALL=C sort <<< $'a\nb\nA\nB'
+You can try with en_US, with UTF, with POSIX , etc
+See the difference:
+$ LC_ALL=C man
+What manual page do you want?
+$ LC_ALL=en_US sort <<< $'a\nb\nA\nB'
+a
+A
+b
+B
+$ LC_ALL=C sort <<< $'a\nb\nA\nB'
+A
+B
+a
+b
+------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
 Also See the shellcolors.sh file
