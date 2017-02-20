@@ -401,23 +401,28 @@ Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
-##Find Loop: Loop in files with find
+##Find Loop: Loop in files with find - the correct way
 By Stephane Chazelas : http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
 
 As a general idea, to loop on files the glob method is better.
 for f in dir/* ; do something with $f;done
 
-If you need to do it with find, the only accurate approach is to use -print0 with find.
-This will separate results by null character '' and ensures that results will be correct even if filenames contain spaces, strange chars , newlines, whatever
+If you need to do it with find, the only accurate approach is to use find -print0.
+This will separate results by null character '' and ensures that results will be correct even if filenames contain spaces, strange chars , newlines, whatever because on unix file names are allowed to contain everything excep / (assigned to paths) and except null chars.
 
-Method 1 - To perform actions on each file
+.B Method 1 - To perform actions on each file
 while IFS= read -r -d '' fn;do var+=("$fn");done < <(find . -name '*.sh' -print0)
 
-Method 2 - Quick store of filenames in array
+.B Method 2 - Quick store of filenames in array
 readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
 
-Other Methods:
+.B Other Methods:
 find . -print0 | xargs -r0 something with
+
+.B The globbing method to create an array with files
+shopt -s nullglob dotglob #to have files with names beginning with a dot and avoid glob expanding to * if no files match
+files=(*)  ## or fies=(*.sh), etc
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
 Search for a process using top . Top seems to catch all processes:
