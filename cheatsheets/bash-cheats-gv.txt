@@ -271,13 +271,10 @@ Tip: When you gksu terminal from normal user account then $USER and $LOGNAME are
 [[ ! -z $1 ]]  equals to [[ -n $1 ]] # -n operator makes the opposite job of -z. Returns true / success / exit code 0 if it is set 
 [[ ! -d $1 ]] && echo "Argument passed is not a directory - please send a dir" && return
 
-Check if a slash '/' exist in the end of variable and add it if it is missing
-$ echo "/home/gv/Desktop" |sed 's![^/]$!&/!'
-/home/gv/Desktop/
-The bash way : a="/home/gv/Desktop"; echo ${a:-1} --> prints the last char. 
-Then is simple: if last char is not / then add a slash
+[[ ! $diskstatus =~ ^(ready|online)$ ]] && echo "Not OK: $diskstatus" # Regex match of two values.
 
-[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
+$ echo "/home/gv/Desktop" |sed 's![^/]$!&/!' --> /home/gv/Desktop/ #Check if a slash '/' is present in the end- add it if missing
+$ d="/home/gv/Desktop"; [[ "${d: -1}" != "/" ]] && d="${d}/" #bash alternative: if last char is not a dash, add a dash
 
 ##CONDITION CHECK on command output , based on the return code of command without the need to compare $?.
 if command; then
