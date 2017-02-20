@@ -82,13 +82,13 @@ awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2 #Bot
 awk '{getline <"file2";print $1}{print $1}' file1 #Reading is done by file2 , all fields correspond to file2
 awk '{getline var2 <"file2";print var2}{print $1}' file1 #each line of file2 goes to var2 unsplit; Field Records refer to file1.
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT IF Print lines if specific columns have same value
 awk -F ':' '$3==$4' file.txt -->  
 echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
 echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:VARIABLES
 ##Import variables
 You can import a shell variable by awk -v awkvar=$shellvar (i.e awk -v dt=$date).
@@ -100,7 +100,7 @@ $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
 $ IFS== read var value < fifo
 $ eval export $var=$value
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:REPLACE Switch position of comma separated fields:
 echo "textA,textB,textC,dateD" |awk -F, '{A=$3; $3=$2; $2=A; print}' OFS=,
 textA,textC,textB,dateD
@@ -110,7 +110,7 @@ print all the lines between word1 and word2 : awk '/Tatty Error/,/suck/' a.txt
 
 Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH MULTIPLE DELIMITERS
 $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
 Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
@@ -134,7 +134,7 @@ echo "value1,string1;string2;string3;string4" |awk -F"[;,]" 'NR==1{for(i=2;i<=NF
 In case of file , separated with new lines you need to apply this a bit different version: 
 awk -F"[;,]" 'NR==1{print;next}{for(i=2;i<=NF;i++)print $1","$i}' file
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:SEARCH / GREP Search for a pattern with not known occurencies:
 awk '{{for(i=1;i<=NF;i++)if($i == "name:") printf $(i+1)" "$(i+2)" "} print ""; }' yourfile
 
@@ -146,7 +146,7 @@ If line has more than 3 the -F solution will miss the rest entries.
 Also check this out: awk '{for(i=3;i<=NF;++i)print $i}'
 awk '{for(i=5;i<=NF;i++) {printf $i " "} ; printf "\n"}' awkTest2.txt
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:PRINT Produce a sed script to replace values to a file with entries from another file
 http://unix.stackexchange.com/questions/340246/how-to-replace-a-string-in-file-a-by-searching-string-map-in-file-b#340247
 
@@ -165,7 +165,7 @@ The sed part: $ sed -f script.sed letter.txt
 On the other hand, bash way opens the file once and , makes replacements in memory ($var) and when finished just echo the $var.
 Bash solution doesnot require any external tools; it is just bash parameter expansion feature.
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:REPLACE Insert dash in string
 String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
 awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
@@ -178,7 +178,7 @@ $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<fi
 $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 Mind the \0 usage of sed (refers to data on hold , kind of history/previous value)
 
-#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+----------------------------------------------------------------------------------------------------------------
 AWK:REPLACE  Replace values upon criteria matching:
 Input:
   a b c
@@ -609,7 +609,9 @@ Now the calls to array are valid, since the elements are stored in a[$1] of file
 So when the second file1 is read, the call to a[$5] = a[f2d1] = the stored values of first file2 are printed.
 
 
-AWK:REGEX MATCH
+AWK:REGEX MATCH AND REPLACE on XML Files
+
+##XML Replace No1
 http://stackoverflow.com/questions/42307534/get-attributes-of-a-parent-tag-in-xml/42322481#42322481
 Consider a file with various xml entries like:
 <tile x="765" y="491" z="7">
@@ -633,3 +635,36 @@ This is divided in four groups:
 
 By using parenthesis you can group your regex; You can later select which part of regex you need to call (we call 3rd group = id="2114")
 
+##XML Replace No2 - https://goo.gl/DL2hBl
+$ cat file
+<word key="ACTIVE" group="Service application" value="testvalue1"/>
+<word key="ACTIVE" group="Service application" value="testvalue2"/>
+<word key="ACTIVE" group="Service application" value="testvalue3"/>
+<word key="ACTIVE" group="Service application" value="testvalue4"/>
+<word key="ACTIVE" group="Service application" value=""/> #mind the empty value
+
+$ awk '{print gensub(/(value=")(.+)(".+)/,"\\2","g",$NF)}' file
+testvalue1
+testvalue2
+testvalue3
+testvalue4
+            #Mind the missing field due to missing value on last line of file
+
+$ awk 'FNR==NR{a[FNR]=$0;next}{print gensub(/(value=")(.*)(".+)/,"\\1"a[FNR]"\\3","g",$NF)}' file2 file ##file2 has 4 lines = newvalue1..4
+value="newvalue1"/>
+value="newvalue2"/>
+value="newvalue3"/>
+value="newvalue4"/>
+value="newvalue5"/>
+
+$ awk 'FNR==NR{a[FNR]=$0;next}{$NF=gensub(/(value=")(.*)(".+)/,"\\1"a[FNR]"\\3","g",$NF);print}' file2 file #Working with groups
+# OR without groups
+$ awk 'FNR==NR{a[FNR]=$0;next}{$NF=gensub(/value=".*"\/>/,"value=\""a[FNR]"\"\/>","g",$NF);print}' file2 file #No groups
+<word key="ACTIVE" group="Service application" value="newvalue1"/>
+<word key="ACTIVE" group="Service application" value="newvalue2"/>
+<word key="ACTIVE" group="Service application" value="newvalue3"/>
+<word key="ACTIVE" group="Service application" value="newvalue4"/>
+<word key="ACTIVE" group="Service application" value="newvalue5"/> #Mind that even the empty value is caught and replaced.
+
+This code assumes (acc to OP) that new values are loaded in a new file2 with so many lines as original xml file.
+Since we modify the NF valuer, this code will work only if "value" is the last field of each line = awk $NF
