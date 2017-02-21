@@ -76,11 +76,18 @@ toupper(s) String s to uppercase
 getline Set $0 to next input record from current input file. 
 getline <file2 : Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
 getline var <file2 : Read file2 and assign to var the whole record/line of file2 ($0)
+PS: If you don't provide <file to getline, will get the next line of the current file
 
-##Basic Examples:
+AWK:BASIC FUNCTIONS EXAMPLES
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2 #Both files will be printed in series
 awk '{getline <"file2";print $1}{print $1}' file1 #Reading is done by file2 , all fields correspond to file2
 awk '{getline var2 <"file2";print var2}{print $1}' file1 #each line of file2 goes to var2 unsplit; Field Records refer to file1.
+
+awk '{getline n;print $1,$2}' file #For a file with five lines, second and forth line is stored in var n , 1st,3rd and 5th lines are printed.
+awk '{getline n;print n;print $1,$2}' file # Prints lines 2(n)-1($1,$2)-4(n)-3($1,$2)-4(n)-5($1,$2)
+awk '{getline n;print $1,$2;print n}' file # Prints lines 1-2-3-4-5 ($1,$2 in series) and then line 4 (last n). Mind that print n in the end prints only after the file is finished
+awk '{getline n1;getline n2;print $1,$2}' file #Prints lines 1 and 4. getlne n1 gets line2 , getline n2 gets line3, line1 is printed, line4 is printed, line5 goes to n1 - no more lines - end.
+
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT IF Print lines if specific columns have same value
