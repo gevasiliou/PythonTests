@@ -715,7 +715,7 @@ touch ff1 ff2 ff3
 rm -fv ff1 ff2 ff3 |while read -r line;do 
 ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
 
-------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
 2) y='$'$x
@@ -728,7 +728,7 @@ Simpler with indirect expansion:
 $ foo=10;x=foo;echo ${!x} 	--> 10
 $ foo=10;x=foo;echo ${x} 	--> foo
 
-------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
 BASH:INDIRECT EXPANSION - Similar to eval
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
 
@@ -757,8 +757,8 @@ Test with this:
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
 the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
 
-------------------------------------------------------------------------------------------------------------------------
-BASH:FILE DESCRIPITORS
+-----------------------------------------------------------------------------------------------------------------------------------------
+BASH:FILE DESCRIPITORS AND REDIRECTIONS
 ##Sources
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
@@ -812,7 +812,7 @@ On the other hand , by assigning stdout to ata-file (just >data-file) you can ca
 normally go to stdout.
 correspondingly you can exec 2>error-file and any programm that prints anything of &2 (stderr) will be sent to error-file.
 
-------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS tricky usage from http://mywiki.wooledge.org/BashFAQ/002
 Let's say you want only the stderr, but not stdout. 
 Well, then first you have to decide where you do want stdout to go: 
@@ -837,16 +837,20 @@ state	: equals to 0>/dev/tty , 1>/dev/tty, 2>/dev/tty and 3 does not exist by de
 
 gv: This swaps stdout and stderr. In real life the succesfull results of the command go to &1 which is printed in screen instead of the command buffed (pipe). The error of the command goes to &2 which has been redirected to buffer/pipe.
 Verificable example:
-sh-4.2$ echo "echo printing: $(cat test 3>&2 2>&1 1>&3)"                                                                                 this is a test #this is printed directly on screen (tty0) by cat
+sh-4.2$ echo "echo printing: $(cat test 3>&2 2>&1 1>&3)" 
+this is a test #this is printed directly on screen (tty0) by cat
 echo printing: #this is the output of the command $(..) which is nothing since with above redirections the pipe will hold only stderr.
 
-sh-4.2$ echo "echo printing: $(cat notexistingfile 3>&2 2>&1 1>&3)"                                                                     echo printing: cat: notexistingfile: No such file or directory 
+sh-4.2$ echo "echo printing: $(cat notexistingfile 3>&2 2>&1 1>&3)" 
+echo printing: cat: notexistingfile: No such file or directory 
 Nothing is printed on the screen. Error message is stored in the pipe / command buffer $(...)
 
 Another redirection example . It is useless but can give some tips on how redirection works:
-sh-4.2$ echo "echo printing: $(cat notexistingfile 1>&2 2>&1)"                                                                           cat: notexistingfile: No such file or directory #printed directly on the screen/tty0
+sh-4.2$ echo "echo printing: $(cat notexistingfile 1>&2 2>&1)"
+cat: notexistingfile: No such file or directory #printed directly on the screen/tty0
 echo printing: #command buffer holds nothing
-sh-4.2$ echo "echo printing: $(cat test 1>&2 2>&1)"                                                                                     this is a test #printed directly on tty0 / screen
+sh-4.2$ echo "echo printing: $(cat test 1>&2 2>&1)"
+this is a test #printed directly on tty0 / screen
 echo printing: #command buffer / pipe holds nothing again
 
 Explanation:
@@ -946,6 +950,10 @@ exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tt
 2>&1 inside script goes detach fd2 from tty0 and send it to wherever fd1 goes INSIDE script = pipe  
 1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
 Brilliant! 
+
+.B Redirecting output to multiple processes:
+$ tr '\n' '\\' <file3 > >(sed 's#a#A#g') > >(sed "s#[\]#\0n#g")
+Apples\norAnges\nbAnAnAs\ncArrots\n
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS - SCRIPT GLOBAL DECLARATION

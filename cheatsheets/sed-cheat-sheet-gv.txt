@@ -261,6 +261,17 @@ client_encryption_options:
     
 sed '/^client_encryption_options:/,+1s/enabled:.*/enabled: true/' file #Mind the +1s trick to catch next line from patter
 
+6. Replace / insert text with multiline text stored in a file/var
+http://stackoverflow.com/questions/42355276/using-multiline-variable-in-sed-command/42356901#42356901
+The whole story for sed to be able to insert multiline text in another file is that this new multiline text must have actually literral \n for line breaks.
+
+$ a=$(tr '\n' '\\' <file3 |sed 's#[\]$##' |sed "s#[\]#\0n#g") ##Convert new lines to a single \, remove this slash from the end , convert all backslashes to literal \ + n
+#Alternative : a=$(tr '\n' '\\' <file3 > >(sed 's#[\]$##' |sed "s#[\]#\0n#g"))
+#Alternative : a=$(sed "s#[\]#\0n#g" <(sed 's#[\]$##' <(tr '\n' '\\' <file3)))
+$ echo "$a"
+apples\noranges\nbananas\ncarrots  ##Original file3 has apples/oranges/bananas/carrots in seperate lines.
+$ sed "2i $a" file4  ##Insert contents of variable $a before line2
+
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
 .B See: http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
