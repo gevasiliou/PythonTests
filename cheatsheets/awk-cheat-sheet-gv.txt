@@ -87,7 +87,7 @@ awk '{getline n;print $1,$2}' file #For a file with five lines, second and forth
 awk '{getline n;print n;print $1,$2}' file # Prints lines 2(n)-1($1,$2)-4(n)-3($1,$2)-4(n)-5($1,$2)
 awk '{getline n;print $1,$2;print n}' file # Prints lines 1-2-3-4-5 ($1,$2 in series) and then line 4 (last n). Mind that print n in the end prints only after the file is finished
 awk '{getline n1;getline n2;print $1,$2}' file #Prints lines 1 and 4. getlne n1 gets line2 , getline n2 gets line3, line1 is printed, line4 is printed, line5 goes to n1 - no more lines - end.
-
+awk '{a=$1;getline;print a,$2}' file # a gets $1 of current line1. getline goes to line2. prints a($1 of line1) and $2 of line2.Next iteration goes to line 3 - a=$1 of line3 , getline gets line4 , print a,$2 prints $1 of line3 and $2 of line4.
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT IF Print lines if specific columns have same value
