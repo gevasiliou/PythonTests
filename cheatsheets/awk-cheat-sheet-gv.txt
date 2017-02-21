@@ -61,8 +61,8 @@ END Denotes block executed once at end of the script
 str1 str2 Concat str1 and str2
 {print $1} : Prints the first field of input (as read using FS separator)
 {print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints by ; forces new line.
-'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab.
-next :goes to next record
+'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
+next :goes to next record - blocks following code execution and restarts from the beginning
 
 ##AWK Builtin Functions
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
