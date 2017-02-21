@@ -715,6 +715,18 @@ touch ff1 ff2 ff3
 rm -fv ff1 ff2 ff3 |while read -r line;do 
 ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
 
+##Working with ASCII values of a string / file 
+$ echo 'this is \"something\"' |od -t x1c                                                                                               0000000  74  68  69  73  20  69  73  20  5c  22  73  6f  6d  65  74  68
+          t   h   i   s       i   s       \   "   s   o   m   e   t   h
+0000020  69  6e  67  5c  22  0a
+          i   n   g   \   "  \n
+od -t x : Prints hex values
+od -t d : Prints dec values
+od -t o : Prints octal values
+Tip1: You can echo a hex ascii value with echo -e "\x5c" => will print a backslash .
+Tip2: You can assign a hex ascii in a variable using var=$'\x5c' - 
+Tip3: You can also use hex values in sed and other tools to avoid escaping : sed 's/\x22/\x5c\x22/g' --> Will escape all double quotes.
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
@@ -955,15 +967,12 @@ Brilliant!
 $ tr '\n' '\\' <file3 > >(sed 's#a#A#g') > >(sed "s#[\]#\0n#g")
 Apples\norAnges\nbAnAnAs\ncArrots\n
 
-------------------------------------------------------------------------------------------------------------------------
-BASH:FILE DESCRIPTORS - SCRIPT GLOBAL DECLARATION
+.B  GLOBAL SCRIPT REDIRECTION
 http://mywiki.wooledge.org/BashFAQ/106
 #!/usr/bin/env bash
 # or whichever shebang you prefer
 exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
-
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
-See FileDescriptor and Redirection for more details.
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
@@ -1121,6 +1130,13 @@ echo $A --> prints 42
 
 Alternative - Directly eval the code 
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
+
+##Here Doc trick to assign strange chars to variable without escaping
+$ IFS='' read -r -d '' var <<'EOF'
+j!'^+%&/()=1!'^+%&/()c
+EOF
+$ echo $var --> Output = j!'^+%&/()=1!'^+%&/()c #This is hard to be assigned even with escaping.
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:IFS Tricks
 bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
