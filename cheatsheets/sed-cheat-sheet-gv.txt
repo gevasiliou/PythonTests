@@ -112,6 +112,8 @@ sed -n '8,12p' #print from line 8 up to 12
 sed -n '16224,16482p;16483q' file #mind the 16483q command (quit). Variables: sed -n "$FL,$LL p" file.txt
 sed -n '8,/pattern/p' #from 8th line up to pattern
 sed -n '/word1/,/word2/p' #from word 1 up to first match of word2. Some times a space is required before p (/ p) = awk '/Tatty Error/,/suck/' a.txt
+sed '/pattern1/,/pattern2/!d;/pattern2/q' file #Print from pat1 to pat2 and quit. Usefull if pattern1 and/or pattern2 repeats in file.
+sed -n '/pattern1/,/pattern2/p;/pattern2/q' file #Same as above - print from pat1 to pat2 and quit.
 sed -n '/pattern/,$p' file #from pattern ip to EOF = last \n. Also can use a starting line i.e '10,$p'
 sed -n '/Description/,/$\/n/p'  - Print from regex match up to last \n
 sed -n '1,/WORD/p' file # Print from 1st line up to pattern word
@@ -121,9 +123,10 @@ sed -n '/regexp/,$!p' a.txt  #exclude from regexp up to EOF and print the rest.
 sed -n 'ADDR1,+N'  #Matches ADDR1 and N lines following ADDR1, i.e sed -n '6,+2p'. ADDR1 can be a line number or a pattern
 sed -n '/regexp/{g;1!p;};h' #Print line before regex (not including the line with regex)
 sed -n '/regexp/{n;p;}' 	#Print line after regex (not including the line with regex)
-sed '/pattern1/,/pattern2/!d;/pattern2/q' file #Print from pat1 to pat2 and quit. Usefull if pattern2 is repeated in the file.
-sed -n '/pattern1/,/pattern2/p;/pattern2/q' file #Same as above - print from pat1 to pat2 and quit.
 
+##Print in reverse = tac emulation
+http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
+sed -n '1!G;h;$p'
 ----------------------------------------------------------------------------------------------------------------------------------------
 SED:REPLACE (s/original/replaced/)
 Also see: http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
@@ -463,7 +466,7 @@ sed -n '30,35p' input.txt
 
 ##Print all input until a line starting with the word 'foo' is found.
 sed '/^foo/q' input.txt
-
+---------------------------------------------------------------------------------------------------------------------------------------
 SED:REPLACE 
 ##To insert a new column at the end(last column) :
 $ sed 's/.*/&,A/' file
@@ -496,7 +499,7 @@ sed '/apple/!s/hello/world/' input.txt
 
 ##Replaces the word 'hello' with 'world' only in all lines excluding lines 4 to 17:
 sed '4,17!s/hello/world/' input.txt
-
+---------------------------------------------------------------------------------------------------------------------------------------
 SED:INSERT 
 ##Insert text to the end of file - after last line
 sed -i -e "\$aTEXTTOEND" <filename>
@@ -519,8 +522,7 @@ sed '2i "George"' a.txt
 
 ##Insert text in line before / after pattern
 sed '/-----/i "George"' a.txt
-i : line before pattern
-a : line after pattern
+i : line before pattern , a : line after pattern
 
 ------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINER:SCRIPTS FOR SED (Unix stream editor)        Dec. 29, 2005
