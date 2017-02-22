@@ -100,32 +100,31 @@ Man displays the file as it would display in any editor , in the old file classi
 man --nh --nj <(sed 's/^SED:/.SH SED:/g; G' cheatsheets/sed*gv.txt)
 man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/---/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
 man --nh --nj <(sed 's/^SED:/.SH SED:/g; s/^$/---/g;G' cheatsheets/sed*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
-
+----------------------------------------------------------------------------------------------------------------------------------------
 SED:PRINT 
 ##FIND AND PRINT ENTRIES FROM CHEATSHEETS TXT FILES
 sed -n '/SED:PRINT.*line.*/,/# -----/p' ./cheatsheets/sed*gv*.txt
 sed -n '/JOIN/,/# ----/p' ./cheatsheets/*
 
 ##Print range
-(a) sed -n '/regexp/p' #grep emulation - Print lines matching regex
-(b) sed -n '8,12p' #print from line 8 up to 12
-(c) sed -n '16224,16482p;16483q' filename #mind the 16483q command. q instructs sed to quit. Without q sed will keep scanning up to EOF.
-    alternative with variables: sed -n "$FL,$LL p" file.txt
-(d) sed -n '8,/pattern/p' #from 8th line up to pattern
-(e) sed -n '/word1/,/word2/p' #from word 1 up to first match of word2. Some times a space is required before p (/ p)
-    awk alternative: awk '/Tatty Error/,/suck/' a.txt
-(f) sed -n '/pattern/,$p' file #from pattern "Description" up to EOF = last \n. Instead of pattern you can use a starting line i.e '10,$p'
-    alternative: sed -n '/Description/,/$\/n/p'  - match up to last \n
-(g) sed -n '1,/WORD/p' file # from 1st line up to pattern word
-(h) sed -n '/regexp/!p' #grep -v match lines NOT containing regexp
-(i) sed -n '1,/regexp/!p' #exclude line 1 up to regexp and print the rest
-(k) sed -n '/regexp/,$!p' a.txt  #exclude from regexp up to EOF and print the rest.
-(l) sed -n 'ADDR1,+N'  #Matches ADDR1 and N lines following ADDR1, i.e sed -n '6,+2p'. ADDR1 can be a line number or a pattern
+sed -n '/regexp/p' #grep emulation - Print lines matching regex
+sed -n '8,12p' #print from line 8 up to 12
+sed -n '16224,16482p;16483q' file #mind the 16483q command (quit). Variables: sed -n "$FL,$LL p" file.txt
+sed -n '8,/pattern/p' #from 8th line up to pattern
+sed -n '/word1/,/word2/p' #from word 1 up to first match of word2. Some times a space is required before p (/ p) = awk '/Tatty Error/,/suck/' a.txt
+sed -n '/pattern/,$p' file #from pattern ip to EOF = last \n. Also can use a starting line i.e '10,$p'
+sed -n '/Description/,/$\/n/p'  - Print from regex match up to last \n
+sed -n '1,/WORD/p' file # Print from 1st line up to pattern word
+sed -n '/regexp/!p' #match lines NOT containing regexp (grep -v operation)
+sed -n '1,/regexp/!p' #exclude line 1 up to regexp and print the rest
+sed -n '/regexp/,$!p' a.txt  #exclude from regexp up to EOF and print the rest.
+sed -n 'ADDR1,+N'  #Matches ADDR1 and N lines following ADDR1, i.e sed -n '6,+2p'. ADDR1 can be a line number or a pattern
+sed -n '/regexp/{g;1!p;};h' #Print line before regex (not including the line with regex)
+sed -n '/regexp/{n;p;}' 	#Print line after regex (not including the line with regex)
+sed '/pattern1/,/pattern2/!d;/pattern2/q' file #Print from pat1 to pat2 and quit. Usefull if pattern2 is repeated in the file.
+sed -n '/pattern1/,/pattern2/p;/pattern2/q' file #Same as above - print from pat1 to pat2 and quit.
 
-##Print lines before /after a regexp, but not the line containing the regexp
-sed -n '/regexp/{g;1!p;};h' #the line before match
-sed -n '/regexp/{n;p;}' 	#the line after match
-
+----------------------------------------------------------------------------------------------------------------------------------------
 SED:REPLACE (s/original/replaced/)
 Also see: http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 
@@ -177,7 +176,7 @@ ltm node /test/10.90.0.1 {
    address 10.90.0.1
 }
 
-1. Lets suppose you want to add at the end of address %200
+.B 1. Lets suppose you want to add at the end of address %200
 sed '/address/ s/$/%200/' a.txt
 s = replace, $= end of line
 
@@ -185,14 +184,14 @@ Alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3"."$4"%200"}'<<<$str);echo $newstr 
 awk '/address/ && sub("$","%200") || 1' file.txt
 
-2. Lets suppose you want to replace the last digit with .20
+.B 2. Lets suppose you want to replace the last digit with .20
 sed '/address/ s/.[0-9]*$/.20/' a.txt
 .[0-9]*$ = regex = starts with dot, contains numbers in range 0-9, multiple numbers (*) and then EOL ($)
 alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
 
-3. Delete text inside multi line file - enclosed by curly brackets
+.B 3. Delete text inside multi line file - enclosed by curly brackets
 This is {
 the multiline
 text file }
@@ -221,8 +220,7 @@ started since line with { and get the next line (N) until substitution ({}) can 
 
 http://unix.stackexchange.com/questions/71670/add-in-begining-to-selected-lines-in-file?rq=1
 
-
-4.Replace dash in string
+.B 4.Replace dash in string
 String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
 $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 Output : 2016-05-31-10-03
@@ -254,14 +252,14 @@ split to understand: the fine part is /(/,/)/ = /(/ , /)/
 insteaf of 'p' at the end we use s/old/new/ for replace.
 
 
-5. Replace text on the next line of pattern match
+.B 5. Replace text on the next line of pattern match
 Input:
 client_encryption_options:
     enabled: false
     
 sed '/^client_encryption_options:/,+1s/enabled:.*/enabled: true/' file #Mind the +1s trick to catch next line from patter
 
-6. Replace / insert text with multiline text stored in a file/var
+.B 6. Replace / insert text with multiline text stored in a file/var
 http://stackoverflow.com/questions/42355276/using-multiline-variable-in-sed-command/42356901#42356901
 The whole story for sed to be able to insert multiline text in another file is that this new multiline text must have actually literral \n for line breaks.
 
@@ -275,7 +273,7 @@ $ sed "2i $a" file4  ##Insert contents of variable $a before line2
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
 .B See: http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
----------------------------------------------------------------------------------------------------------------------------
+
 SED:DELETE 
 ##To remove 1st character in every line:
 sed 's/^.//' file 
@@ -404,7 +402,7 @@ $ sed 's/,[^,]*,/,/' file  /OR/  sed 's/[^,]*,\([^,]*\).*/\1/' file
 
 ## delete the first line of the file:
 $ sed '1d' file
-
+---------------------------------------------------------------------------------------------------------------------------------------
 SED:PRINT 
 ##Print first / last line of the file: 
 $ sed -n '1p' file  / sed -n '$p' file 
@@ -554,7 +552,7 @@ sed '/regex/G'
 
 ## insert a blank line above and below every line which matches "regex"
 sed '/regex/{x;p;x;G;}'
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:NUMBERING:
 
 ## number each line of a file (simple left alignment). Using a tab (see note on '\t' at end of file) instead of space will preserve margins.
@@ -568,7 +566,7 @@ sed '/./=' filename | sed '/./N; s/\n/ /'
 
 ## count lines (emulates "wc -l")
 sed -n '$='
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:TEXT CONVERSION AND SUBSTITUTION 
 
 ## IN UNIX ENVIRONMENT: convert DOS newlines (CR/LF) to Unix format.
@@ -660,7 +658,7 @@ gsed -r ':a;s/(^|[^0-9.])([0-9]+)([0-9]{3})/\1\2,\3/g;ta'
 ## add a blank line every 5 lines (after lines 5, 10, 15, 20, etc.)
 gsed '0~5G'                  # GNU sed only
 sed 'n;n;n;n;G;'             # other seds
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SELECTIVE PRINTING OF CERTAIN LINES:
 
 ## print first 10 lines of file (emulates behavior of "head")
@@ -747,7 +745,7 @@ sed -n '3,${p;n;n;n;n;n;n;}' # other seds
 
 ## print section of file between two regular expressions (inclusive)
 sed -n '/Iowa/,/Montana/p'             # case sensitive
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SELECTIVE DELETION OF CERTAIN LINES:
 
 ## print all of file EXCEPT section between 2 regular expressions
@@ -806,9 +804,8 @@ sed -e :a -e '/^\n*$/N;/\n$/ba'        # ditto, except for gsed 3.02.*
 ## delete the last line of each paragraph
 sed -n '/^$/{p;h;};/./{x;/./p;}'
 
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SPECIAL APPLICATIONS:
-
-
 ## get Usenet/e-mail message header
 sed '/^$/q'                # deletes everything after first blank line
 
@@ -846,7 +843,7 @@ gsed '/./{H;d};x;y/\n/\v/' file | sort | sed '1s/\v//;y/\v/\n/'
 (under DOS: the "dir /b" switch returns bare filenames in all caps).
 echo @echo off >zipup.bat
 dir /b *.txt | sed "s/^\(.*\)\.TXT/pkzip -mo \1 \1.TXT/" >>zipup.bat
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:TYPICAL USE: 
 Sed takes one or more editing commands and applies all of them, in sequence, to each line of input. 
 After all the commands have been applied to the first input line, that line is output and a second input line is taken for processing, and the cycle repeats. 
@@ -868,7 +865,7 @@ To fully exploit the power of sed, one must understand "regular expressions." Fo
 
 The manual ("man") pages on Unix systems may be helpful (try "man sed", "man regexp", or the subsection on regular expressions in "man ed"), but man pages are notoriously difficult. 
 They are not written to teach sed use or regexps to first-time users, but as a reference text for those already acquainted with these tools.
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:QUOTING SYNTAX: 
 The preceding examples use single quotes ('...') instead of double quotes ("...") to enclose editing commands, since sed is typically used on a Unix platform. 
 Single quotes prevent the Unix shell from intrepreting the dollar sign ($) and backquotes (`...`), which are expanded by the shell if they are enclosed in double quotes. 
@@ -880,7 +877,7 @@ SED:USE OF '\t' IN SED SCRIPTS:
 For clarity in documentation, we have used the expression '\t' to indicate a tab character (0x09) in the scripts.
 However, most versions of sed do not recognize the '\t' abbreviation, so when typing these scripts from the command line, you should press
 the TAB key instead. '\t' is supported as a regular expression metacharacter in awk, perl, and HHsed, sedmod, and GNU sed v3.02.80.
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:VERSIONS OF SED: 
 Versions of sed do differ, and some slight syntax variation is to be expected. In particular, most do not support the use of labels (:name) or branch instructions (b,t) within editing commands, except at the end of those commands. 
 We have used the syntax which will be portable to most users of sed, even though the popular GNU versions of sed allow a more succinct syntax. 
@@ -895,7 +892,7 @@ it is heartening to know that GNU sed will let you reduce it to:
 
 In addition, remember that while many versions of sed accept a command like "/one/ s/RE1/RE2/", some do NOT allow "/one/! s/RE1/RE2/", which contains space before the 's'. 
 Omit the space when typing the command.
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:OPTIMIZING FOR SPEED: 
 If execution speed needs to be increased (due to large input files or slow processors or hard disks), substitution will be executed more quickly if the "find" expression is specified before giving the "s/.../.../" instruction. 
 
@@ -917,6 +914,6 @@ If you have any additional scripts to contribute or if you find errors in this d
 ## To qualify as a one-liner, the command line must be 65 characters or less. 
 
 Various scripts in this file have been written or contributed by:
-
+--------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:DOCS
 More Docs: http://sed.sourceforge.net/
