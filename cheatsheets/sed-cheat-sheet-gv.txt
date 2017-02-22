@@ -194,7 +194,7 @@ alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
 
-.B 3. Delete text inside multi line file - enclosed by curly brackets
+##Delete text inside multi line file - enclosed by curly brackets
 This is {
 the multiline
 text file }
@@ -223,7 +223,7 @@ started since line with { and get the next line (N) until substitution ({}) can 
 
 http://unix.stackexchange.com/questions/71670/add-in-begining-to-selected-lines-in-file?rq=1
 
-.B 4.Replace dash in string
+##Replace dash in string
 String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
 $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 Output : 2016-05-31-10-03
@@ -233,7 +233,7 @@ $ cut --output-delimiter='-' -c7-19,20-21 file.txt
 $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
 $ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
 
-## REPLACE STRING AFTER PATTERN MATCH
+## Replace string after pattern match
 You can combine sed words search (/word1/,/word2/) and then you can continue on the same line to perform replace with usual s/old/new/
 Input Example:
 priority = 0
@@ -249,20 +249,19 @@ Command: sed '/\[shovel\]/,/^$/ s/enabled = 0/enabled = 1/' file
 First part=/\[shovel\]/,/^$/ : from word [shovel] up to the next empty line (empty lines contain just start(^) and end ($) chars)
 Second part=s/enabled = 0/enabled = 1/ : usual sed replace in form s/old/new
 
-##Another example of replace after match:
+## Replace after a range with patterns match :
 sed '/(/,/)/s/line/newline/g' #replaces line0-1-2-etc with newline0-1-2-etc in a file where first line and last line are in format (line0 ... up to lineX)
 split to understand: the fine part is /(/,/)/ = /(/ , /)/
 insteaf of 'p' at the end we use s/old/new/ for replace.
 
-
-.B 5. Replace text on the next line of pattern match
+## Replace text on the next line of pattern match
 Input:
 client_encryption_options:
     enabled: false
     
 sed '/^client_encryption_options:/,+1s/enabled:.*/enabled: true/' file #Mind the +1s trick to catch next line from patter
 
-.B 6. Replace / insert text with multiline text stored in a file/var
+## Replace / insert text with multiline text stored in a file/var
 http://stackoverflow.com/questions/42355276/using-multiline-variable-in-sed-command/42356901#42356901
 The whole story for sed to be able to insert multiline text in another file is that this new multiline text must have actually literral \n for line breaks.
 
@@ -272,6 +271,18 @@ $ a=$(tr '\n' '\\' <file3 |sed 's#[\]$##' |sed "s#[\]#\0n#g") ##Convert new line
 $ echo "$a"
 apples\noranges\nbananas\ncarrots  ##Original file3 has apples/oranges/bananas/carrots in seperate lines.
 $ sed "2i $a" file4  ##Insert contents of variable $a before line2
+
+##Insert text in the middle of a file - before pattern match
+http://stackoverflow.com/questions/42381852/sed-append-before-the-last-occurrence-of-a-character/42387699#42387699
+$ sed -n '/class Foo2 {/,/^}$/{s/^}$/Insert here\n\0/};p' file
+Assume a file with various classes in the format
+public class Foo {
+   // Some code
+   // There will be functions here, so there are other {}
+}
+
+Above sed will match range from pattern class Foo2 { up to first alone } (closure of class) , and will insert a text before the closing } - Actually will replace the class closing } (^}$) with mytext & new line & replaced part \0 = ^}$
+Was tested here: http://www.tutorialspoint.com/execute_bash_online.php?PID=0Bw_CjBb95KQMQ2FfcV9NdHdrOEE
 
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
