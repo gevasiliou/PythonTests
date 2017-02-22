@@ -110,6 +110,7 @@ This also works: IFS=$'\n' read -d '' -r -a lines < file
 ------------------------------------------------------------------------------------------------------------------------
 ##Read and separate a file based on NULL character only and not on new lines
 http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
+http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-and-output
 
 NULL Separated file : /proc/1/environ to variables script
 You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
@@ -117,16 +118,39 @@ You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will bec
 You can convert any file to null separated (for testing) by cat file |tr '\n' '\0'
 
 To split the files based on null you need something like this:
-$ while IFS= read -r -d '' line ; do vars+=("$line");done <file;declare -p vars
-Mnd the gap in -d option of read.
+$ while IFS= read -r -d '' line ; do vars+=("$line");done <file #Mind the gap in -d option of read.
+declare -p vars
 
-Also , with readarray - without loop : 
+Also , with readarray - without loop (bash 4.4 and above): 
 IFS= readarray -t -d '' vars2 <file3;declare -p vars2
-PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d ''
+PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d '' - maybe -d $'\0' could also work (spaced)
 
-This also works: readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
-This should work but in reallity it gets only the first element: IFS= read -d '' -r -a lines < <(find . -name '*.sh' -print0)
-Also i tried with IFS=$'\0', IFS='', IFS=$'' , no IFS , but no luck
+This also works for files : readarray -t -d '' var2 < <(find . -print0)
+
+This does not works without loop- it gets only the first element: 
+IFS= read -d '' -r -a lines < <(find . -name '*.sh' -print0) #I also tried with IFS=$'\0', IFS='', IFS=$'' , no IFS , but no luck
+
+Need to be combined with a loop to work:
+while IFS= read -r -d '' file;do
+echo "file found=$file" #this can be whatever , i.e an array assignment filearray+=("$file")
+done < <(find . -print0)
+
+For files this also works ok:
+find . -print0 |while IFS= read -r -d '' file;do echo "file found=$file";done
+
+
+.B PRINTING A NULL SEPARATED VARIABLE
+For a variable, according to http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
+while IFS= read -r -d '' line ; do
+    echo "line=$line"
+done <<<"$var"
+In realiry this method works for null separated files (done<file) but never worked with a VAR
+Test it with var=$(find . -print0). It did not work even with $(printf '%s\0' "$var")
+
+The only way for this to work with a variable is to transform the variable to a format that will preserve the null (base64) , since bash removes the null byte from vars.
+
+You need to do something like var=$(find . -print0 |base64) and on the "done" part of the while you need to apply 
+done < <(echo "$var" |base64 -d) - See the ARGS section for details
 
 ------------------------------------------------------------------------------------------------------------------------
 ## Read while read method:
@@ -401,23 +425,25 @@ Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
-##Find Loop: Loop in files with find - the correct way
+##Loop in files with find using null as file names separator (the correct way to loop)
 By Stephane Chazelas : http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
 
 As a general idea, to loop on files the glob method is better.
 for f in dir/* ; do something with $f;done
 
-If you need to do it with find, the only accurate approach is to use find -print0.
-This will separate results by null character '' and ensures that results will be correct even if filenames contain spaces, strange chars , newlines, whatever because on unix file names are allowed to contain everything excep / (assigned to paths) and except null chars.
+If you need to do it with find, the only accurate approach is to use find -print0 that will separate file names with \0 = null byte
+This will ensure that results will be correct even if filenames contain spaces, strange chars , newlines, whatever because on unix file names are allowed to contain everything except / (assigned to paths) and except null chars.
 
-.B Method 1 - To perform actions on each file
+.B Method 1 - To perform actions on each file - null separated
 while IFS= read -r -d '' fn;do var+=("$fn");done < <(find . -name '*.sh' -print0)
 
-.B Method 2 - Quick store of filenames in array
+.B Method 2 - Quick store of filenames in array without loop
 readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
+Unfortunatelly the read -r -d '' -a array < <(find . -print0) does not work - does not loop on the results.
 
-.B Other Methods:
+.B Pipe find results to other commands:
 find . -print0 | xargs -r0 something with
+find . -print0 |while IFS= read -r -d '' file;do echo "file found=$file";done #instead of echo you could built an array or whatever
 
 .B The globbing method to create an array with files
 shopt -s nullglob dotglob #to have files with names beginning with a dot and avoid glob expanding to * if no files match
@@ -619,6 +645,33 @@ More Checks:
     $ echo "${@}" --> ls *.sh *.txt
     $ shift && echo "${@}" --> *.sh *.txt
     $ shift && echo "${@}" --> *.txt
+
+##ARGS null separated
+You can manipulate args that may contain any character using null byte as a separator.
+arg1="some more";arg2="text here";args=$(echo -e "$arg1\0$arg2\0" |base64) 
+#it is important to have null even at the end to separate the last item
+#we need to convert to base64 since bash tends to remove the null byte from variables. With base64 we preserve it.
+while IFS= read -r -d '' f;do echo "f= $f";done< <(echo "$args" |base64 -d) #base64 variable is decoded
+
+.B Function test with null separated args
+function test { while IFS= read -r -d '' f;do echo "f= $f";done< <(echo "$@" |base64 -d);}
+test "$args" #works correctly. One arg is sent containing more args null separated.
+
+.B Function Test - Different multi separated args
+function test2 { for arg in $@;do echo "test2-arg=" $(echo "$arg" |base64 -d);done;}
+arg11=$(echo -e "$arg1\0" |base64); arg22=$(echo -e "$arg2\0" |base64)
+test2 $arg11 $arg22
+#args are understood and printed correctly in output
+
+.B Tip
+For bash 4.4 and above you could also use mapfile/readarray that support -d option (delimiter):
+mapfile -t -d '' arr < <(echo "$args" |base64 -d)
+mapfile -t -d '\0' b < <(sort_array_function "${a[@]}") 
+#see also http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-and-output
+
+Another way to print null separated args/vars/arrays is to use printf :
+  printf '%s\0' "${sorted[@]}"
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
