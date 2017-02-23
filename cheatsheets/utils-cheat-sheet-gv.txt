@@ -113,11 +113,11 @@ To assign a delimiter of \n,\t you have to use -d$'\n' (similar to IFS)
 
 CUT can act directly on each line of file. You don't need while & read line loop.
 
-Instead of -f option you can use cut to isolate part of text based on chars: 
+Instead of -f option you can use cut to isolate part of text based on chars with -c option:
 cut -c9-10 file ==> gets characters from 9 to 10. similary you can get c1-5 to get only the 5 first chars of EACH file line.
 Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
 
- Insert dash in string
+##Insert dash in string
  String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
  $ cut --output-delimiter='-' -c7-19,20-21 file.txt
  Output : 2016-05-31-10-03
@@ -165,20 +165,12 @@ head -n $2 "$1" | tail -n 1
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:JOIN
+Joins two files based on certain criteria.
 join -a1 -o 1.2     - /dev/null # print the second field
 join -a1 -o 1.2,1.1 - /dev/null # reorder the first two fields
 See man join and also info join for better explanation
 
-
-##Join two Files based on common fields:
-http://unix.stackexchange.com/questions/342814/combine-two-csv-file-based-on-condition#342839
-join -o 0,1.2,1.3,2.3 <(sort A.csv) <(sort B.csv)
--o: Obey Format - specify a particular format. 
--o 0 : Stands for the merged field and is different than 1.1 or 2.1 who stand for file 1 field 1 and file 2 field 2.
-If file2 has a line that is not present on file 1, then using -o 1.1 will print an empty space in that field.
-
-
-##More interesting options of Join: 
+##interesting options of Join: 
 -a1 and/or -a2 : print non matched lines of file 1 and/or 2
 -e EMPTY: replace missing lines EMPTY
 -t char: Use char as delimiter
@@ -186,6 +178,13 @@ If file2 has a line that is not present on file 1, then using -o 1.1 will print 
 -2.4 : Join on field 4 of file 2
 --nocheck_order : Don't complain about unsorted input files
 --header : Treat 1st line as header
+
+##Join two Files based on common fields:
+http://unix.stackexchange.com/questions/342814/combine-two-csv-file-based-on-condition#342839
+join -o 0,1.2,1.3,2.3 <(sort A.csv) <(sort B.csv)
+-o: Obey Format - specify a particular format. 
+-o 0 : Stands for the merged /common field and is different than 1.1 or 2.1 who stand for file 1 field 1 and file 2 field 2.
+If file2 has a line that is not present on file 1, then using -o 1.1 will print an empty space in that field.
 
 ##Another join example: 
 Join file b.txt and bb.txt. Preserve the contents of file b.txt and insert new contents from file bb.txt
@@ -208,14 +207,11 @@ parameterB=1
 parameterC=0
 parameterD=0
 
-##More Joins
-File1
-Category ID
-C1  A1
-
-File2
-Purchase ID
-O1  A1
+##More Join Examples
+File1            |File2
+-----------------|------------
+Category ID      |Purchase ID
+C1  A1           |O1  A1
 
 Resulting File3
 O1 A1 C1
@@ -295,12 +291,14 @@ Replace new lines with null:
  tr '\n' '\0' <in >out 
 tr '\\n' '\\0' <in >out 
 .ft B tr '\n' '\0' <in >out 
+
+Mind the [=C=] synthax. Treats variations of the letter given as same letter . For example [=e=] will treat all 'e' (with tones, etc) as plain e
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SORT 
 http://www.skorks.com/2010/05/sort-files-like-a-master-with-the-linux-sort-command-bash/
-Mind the options -u and -k.
-
+Mind the options -u and -k for defininig the sort field (i.e -k2) and -t for setting fields delimiter (i.e -t"|")
 -k lets you defind the sort key. You can have many -k entries.
+
 Moreover with -k you can define except from the column (-k1) also the letters range to make the sort (i.e -k1,5 = 1st Col, chars 1 to 5)
 
 Example:
