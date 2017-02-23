@@ -246,6 +246,11 @@ while read -r prereq && read -r target; do
 done < file.txt
 PS: Mind that two lines are read as a pair. Line 1 and Line 2 , and then Line 3-Line4.
 You miss the Line 2- Line3 combination
+
+Can be also used for filenames:
+while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'file*')
+f1=./file1, f2=./file2
+f1=./file3, f2=./file4
 ------------------------------------------------------------------------------------------------------------------------
 ##Read Only the first two lines.
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
@@ -375,6 +380,11 @@ output of find can be piped to wc -l , xargs, and other commands.
 Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
 PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
 
+##Read File Names as a pair
+while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'file*')
+f1=./file1, f2=./file2
+f1=./file3, f2=./file4
+
 ##UNUSUAL FILE NAMES 
 Consider files with spaces in their name (i.e a a (01).txx)
 
@@ -407,7 +417,7 @@ find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator.
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
 find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g/"name="%p/"type="%Y\\n
 
-##BASH:FIND -EXEC
+##FIND -EXEC
 find can accept an -exec option in two formats:
 -exec command {} \; #In this method command is invocated in each result of find
 -exec command {} +  #In this method command is invocated after buffering an amount of find results.
