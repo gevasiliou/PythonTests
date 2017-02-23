@@ -558,6 +558,15 @@ awk '$3 != "None" && $4 != "None" {print $2}'	:Print if two fields match the sam
 echo This++++this+++is+not++done | awk '{gsub(/\++/," ");}1' ==> Removes all +. Actually replaces two ++ with a space
 echo This++++this+++is+not++done | awk -F'++' '{$1=$1}1' ==> Same as above (http://stackoverflow.com/questions/14432209/substitute-a-regex-pattern-using-awk)
 
+awk 'BEGIN{OFS=FS="|"}{$0=$3OFS$2OFS$1}{print $1}' file7 : This reassigns $0 = swaps original field1 with 3. After swap, awk prints field $1 of the new $0 ==> $3 of original file
+awk '!a[$0]++' file1 file2 file3				:This prints unique lines among all files even if UNSORTED!! http://unix.stackexchange.com/questions/159695/how-does-awk-a0-work
+awk 'a[$0]++' file1 file2 file3					:This prints duplicate lines among all files even if UNSORTED!!
+awk 'BEGIN{OFS=FS="|"}{if (FILENAME=="file8") $0=$1OFS$1OFS$1}!a[$2]++' file8 file7 #:This reassings $0 of file8 in order $2 to match $2 of file 7 and then removes duplicates based on $2.
+awk 'BEGIN{OFS=FS="|"}{if (FILENAME=="file8") {$0=$1OFS$1OFS$1} else {b=$0}}{if (a[$2]++) print b}' file8 file7 :Prints duplicates of file 8 (patterns) and file7 (data). 
+Bug is that comparison is made on field2 (in both files) so if data file7 has same $2 with different $1 and $3 will be exluded also.
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
 AWK:READ FROM 2 FILES
 ##Basics
 Consider the following two files:
@@ -637,7 +646,7 @@ f1d9 f1d10 f1d11 f1d12 f2d9 f2d10 f2d11
 Now the calls to array are valid, since the elements are stored in a[$1] of file2 = a[f2d1] (for first line)
 So when the second file1 is read, the call to a[$5] = a[f2d1] = the stored values of first file2 are printed.
 
-
+----------------------------------------------------------------------------------------------------------------------------------
 AWK:REGEX MATCH AND REPLACE on XML Files
 
 ##XML Replace No1
