@@ -42,28 +42,30 @@ For complicated data manipulation is usual to have a seperate file full with AWK
 Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
 
 ##AWK Reserved Words
-awk '/pattern/ {action}' file↵ Execute action for matched pattern 'pattern' on file 'file'
-$0 Reference current record line
-FS Field separator of input file (default whitespace)
-OFS Field separator of the outputted data (default whitespace)
-NF Number of fields in current record/line (i.e {print $NF})
-NR Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
-FNR Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
-FILENAME Reference current input file
-ORS Record separator of the outputted data (default newline)
-RS Record separator of input file (default newline)
-^ Match beginning of field
-== Equal operator for if
-~ Match regex opterator for if (i.e if ($2 ~ "something") print $0)
-!~ Do not match operator
--F Command line option to specify input field delimiter before starting awk script.
-BEGIN Denotes block executed once at start of the script
-END Denotes block executed once at end of the script
-str1 str2 Concat str1 and str2
-{print $1} : Prints the first field of input (as read using FS separator)
-{print $1,$2; print $3,$4} : Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints by ; forces new line.
-'BEGIN {FS=OFS="\t"}; : Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
-next :goes to next record - blocks following code execution and restarts from the beginning
+awk '/pattern/ {action}' file 		# Execute action for matched pattern 'pattern' on file 'file'
+$0 									# Reference current record line
+FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
+-F 									# Command line option to specify input field delimiter before starting awk script.
+OFS 								# Field separator of the outputted data (default whitespace)
+NF 									# Number of fields in current record/line (i.e {print $NF})
+NR 									# Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
+FNR 								# Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
+FILENAME 							# Reference current input file
+ORS 								# Record separator of the outputted data (default newline)
+RS 									# Record separator of input file (default newline)
+^ , $ 								# Match beginning/end of field
+== 									# Equal operator for if
+~ 									# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
+!~ 									# Do not match operator
+BEGIN 								# Denotes block executed once at start of the script
+END 								# Denotes block executed once at end of the script
+str1 str2 							# Space Concatenates str1 and str2
+{print $1} 							# Prints the first field of input (as read using FS separator)
+{print $1,$2; print $3,$4} 			# Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints by ; forces new line.
+'BEGIN {FS=OFS="\t"}; 				# Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
+next 								# Goes to next record - blocks following code execution and restarts from the beginning
+while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
+do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
 
 ##AWK Builtin Functions
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
@@ -583,6 +585,8 @@ Bug is that comparison is made on field2 (in both files) so if data file7 has sa
 awk 'BEGIN { cnt = 10; cnt += 10; print "Counter =", cnt }'       #cnt is increased by 10,prints 20. Also available: -= ,*= (multiply),/= (divide),%= (modulo), ^= or**=(raise)
 awk '{ $6 = ($5 + $4 + $3 + $2) ; print $6 }' inventory-shipped   # Assign contents to a field, even if the field is out of normal range
 
+echo 1 | awk '{ printf("%02d\n", $1) }' 		# Prints numbers with leading zero. If number is >10 then no leading zero is added.
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 AWK:READ FROM 2 FILES
@@ -730,11 +734,59 @@ AWK:GREP EMULATION MULTIPLE FILES
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42419795#42419795
 bash while loop and awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2 per pair of files = 30 awks
 
-Try for one awk:
+Try for one awk - everything to be done inside awk:
+
+Project Basis:
+awk -v file1="20161201.csv" 
+'BEGIN
+{
+	days=1;
+	nextday=1;
+	while (days<31) 
+	{
+		split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8]; 
+		file2=sprintf("%s%s%02d%s",year,month,day+nextday,".csv"); 
+		if (getline < file2 < 0) {print file2 "---not exists";days=days+1;nextday=nextday+1} else 
+			{
+			print "exists";
+			while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]}; 
+			while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2};
+			file1=file2;days=days+1;nextday=1;delete ff2;delete ff1;delete a;
+			}
+	}
+}'
+
+
+
+SubRoutines Testing
+
 awk -v file1="20161202.csv" -v file2="20161203.csv" 'BEGIN{while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]}; \
 while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2}}'
 123456 50000 some value
 123457 70000 some value
+#This is indeed the different rows between file1 - file2 given as fixed strings here
+
+awk -v file="20161202.csv" 'BEGIN{FS="";split(file,fn,FS);print fn[1],"-",fn[2],"-",fn[3]}' 		#Splits filename of file by chars -output= 2-0-1). You can restrore FS later if you wish by using FS=" "
+
+awk -v file="20161202.csv" 'BEGIN{FS="";split(file,fn,FS);year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8]; \
+print year"--"month"--"day}' 																		#prints 2016--12--02
+
+awk -v file="20161202.csv" 'BEGIN{split(file,fn,"");year=fn[1]fn[2]fn[3]fn[4]; \
+month=fn[5]fn[6];day=fn[7]fn[8];file1=sprintf("%s%s%02d%s",year,month,day+1,".csv");print file1}'	#Prints 20161203.csv = next day file
+Replacing print with ;print file1,(getline < file1 < 0)?"not exists":"exists"}'   prints new day filename and if exists or not (!)
+
+awk -F: '{if(system("[ ! -d " $6 " ]") == 0) {print $1 " " $3 " " $7}}' /etc/passwd 	# Checks with system call if filename ($6) is directory
 
 
+Grand Testing (working good!!)
+awk -v file1="20161201.csv" 'BEGIN{days=1;nextday=1;while (days<5){{split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8];file2=sprintf("%s%s%02d%s",year,month,day+nextday,".csv");if (getline < file2 < 0) {print file2 "---not exists--" "compare of",file1,"vs",file2,"skipped";days=days+1;nextday=nextday+1} else {print file2 "--found--comparing",file1,"vs","file2;while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]};while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2};file1=file2;days=days+1;nextday=1;delete ff1;delete ff2;delete a}}}}'
+Output:
+20161202.csv--found--comparing 20161201.csv 20161202.csv
+123457 80000 some value
+20161203.csv--found--comparing 20161202.csv 20161203.csv
+123457 70000 some value
+123458 30000 some value
+20161204.csv---not exists--compare of 20161203.csv 20161204.csv skipped
+20161205.csv---not exists--compare of 20161203.csv 20161205.csv skipped
+Remark: The last valid file is kept to be compared with the next consecutive file even if it is >1 day long.
 
