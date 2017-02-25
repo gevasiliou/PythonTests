@@ -1,8 +1,8 @@
 AWK:CHEATS BY GV
+https://www.gnu.org/software/gawk/manual/gawk.html
 https://www.tutorialspoint.com/awk/awk_arithmetic_functions.htm
 http://www.pement.org/awk/awk1line.txt
 http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
-https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
 AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 https://www.shortcutfoo.com/app/dojos/awk/cheatsheet
@@ -83,7 +83,7 @@ getline var <file2      # Read file2 and assign to var the whole record/line of 
 nextfile                # goes to the next file - changes the flow of the script. 
 operators               # https://www.tutorialspoint.com/awk/awk_operators.htm
 
-simple conditions checks       # Can be expressed either simple like awk '$5 == "abc123"' - prints lines that field5 match abc123. Print is ommited since it is the default awk action
+simple conditions checks       # Can be expressed like awk '$5 == "abc123"' - prints lines that field5 match abc123. Print is ommited since it is the default awk action
 advanced conditions checks     # {if (expression) {commands for true} else {commands for false}}
 expr?true:false                # Conditional Expression - ternary operator. expression is evaluated and true command is run if expression=true
 
@@ -734,30 +734,6 @@ AWK:GREP EMULATION MULTIPLE FILES
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42419795#42419795
 bash while loop and awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2 per pair of files = 30 awks
 
-Try for one awk - everything to be done inside awk:
-
-Project Basis:
-awk -v file1="20161201.csv" 
-'BEGIN
-{
-	days=1;
-	nextday=1;
-	while (days<31) 
-	{
-		split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8]; 
-		file2=sprintf("%s%s%02d%s",year,month,day+nextday,".csv"); 
-		if (getline < file2 < 0) {print file2 "---not exists";days=days+1;nextday=nextday+1} else 
-			{
-			print "exists";
-			while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]}; 
-			while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2};
-			file1=file2;days=days+1;nextday=1;delete ff2;delete ff1;delete a;
-			}
-	}
-}'
-
-
-
 SubRoutines Testing
 
 awk -v file1="20161202.csv" -v file2="20161203.csv" 'BEGIN{while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]}; \
@@ -777,9 +753,72 @@ Replacing print with ;print file1,(getline < file1 < 0)?"not exists":"exists"}' 
 
 awk -F: '{if(system("[ ! -d " $6 " ]") == 0) {print $1 " " $3 " " $7}}' /etc/passwd 	# Checks with system call if filename ($6) is directory
 
+awk -v f="20121202" 'BEGIN{match(f,/(....)(..)(..)/,arr);print arr[1],arr[2],arr[3],arr[4]}'
 
-Grand Testing (working good!!)
-awk -v file1="20161201.csv" 'BEGIN{days=1;nextday=1;while (days<5){{split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8];file2=sprintf("%s%s%02d%s",year,month,day+nextday,".csv");if (getline < file2 < 0) {print file2 "---not exists--" "compare of",file1,"vs",file2,"skipped";days=days+1;nextday=nextday+1} else {print file2 "--found--comparing",file1,"vs","file2;while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]};while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2};file1=file2;days=days+1;nextday=1;delete ff1;delete ff2;delete a}}}}'
+awk -v file1="20161201.csv" 'function sepname(file) {match(file,/(....)(..)(..)/,arr);print arr[1];return (arr[2])}BEGIN{print file1,sepname(file1),arr[3]}'
+2016
+20161201.csv 12 01
+
+awk -v file1="20161201.csv" 'function incfile(file,days) {match(file,/(....)(..)(..)/,fn);newfile=sprintf("%s%s%02d%s",fn[1],fn[2],fn[3]+days,".csv");return (newfile)};BEGIN{print incfile(file1,3)}'
+20161204.csv
+
+awk '{max=($2>max)?$2:max};END{print max}' 20161203.csv 		#Prints the max value of $2 inside csv file
+
+##Compare two consecutives files respecting that second file must be no more than +1 day of the first file
+http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42450786#42450786
+
+    awk -v file1="20161201.csv" \
+    'function incfile(file,days)                                        #function receives two arguments: file and days
+        {
+        match(file,/(....)(..)(..)/,fn);                                #splits the string of file to format fn[1]=YYYY,fn[2]=MM and fn[3]=DD
+        newfile=sprintf("%s%s%02d%s",fn[1],fn[2],fn[3]+days,".csv");    #this function increase the filename by days variable
+        return (newfile)                                                #i.e file 20161201.csv returns 20161201+days
+        };
+    BEGIN \
+    {
+        chkdays=1; 
+        while (chkdays<=15)
+        {
+            {
+            file2=incfile(file1,1);                                     #Built filename of file2 by increasing file1 +1 day
+            if (getline < file2 < 0)                                    #Check if file2 exists
+                {
+                print file1,"vs",file2,"skipped:",file2 "  not found";  #Print a help message - can be removed
+                chkdays=chkdays+2;                                      #increase days counter for the while loop by 2
+                file1=incfile(file1,2);                                 #Increase filename of file1 by 2 days (20161201 will be 20161203)
+                file2=incfile(file2,2);                                 #The same for filename of file2 (20161202 will be 20161204)
+                }
+            else                                                        #if file2 exists
+                {
+                close(file2);                                           
+                print "comparing",file1,"vs",file2; 
+                while (getline var <file1)                              #read from file1 a line and assign it to var
+                    {split(var,ff1,OFS);a[ff1[2]]};                     #split line from file 2 (var) to fields, and keep the field2 in an array as index
+                while (getline var2 <file2)
+                    {
+                    split(var2,ff2,OFS);                                #same for file2.split the line read (var2) 
+                    if (!(ff2[2] in a)) {print ">",var2;l=l+1};         #check if ff2[2] (file2-field2) is not found on the array created by file1-field2
+                    }
+                if (l>maxd) {maxd=l;maxp=file1 " vs " file2};           #hold/save max different lines found and hold also the files that maxd was found
+                file1=file2;                                            #Assign file2 to be file1 in order to repeat the loop
+                chkdays=chkdays+1;                                      #Increase check days counter by 1
+                delete a;l=0;close(file1);close(file2)                  #unset all necessary vars and close files
+                }
+            }
+        };                                                              #End of BEGIN section
+        print "max different lines=",maxd,"found at pair:",maxp         #Print the results
+    }'                                                                  #Finished
+
+
+##Alternatives: The last valid file is kept to be compared with the next consecutive file even if it is >1 day long.
+
+awk -v file1="20161201.csv" 'BEGIN{days=1;nextday=1;while (days<15){{split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4]; \
+month=fn[5]fn[6];day=fn[7]fn[8];file2=sprintf("%s%s%02d%s",year,month,day+nextday,".csv"); \
+if (getline < file2 < 0) {print file2 "---not exists--" "compare of",file1,"vs",file2,"skipped";days=days+1;nextday=nextday+1} \
+else {close(file2);print file2 "--found--comparing",file1,"vs",file2; \
+while (getline var <file1) {split(var,ff1,OFS);a[ff1[2]]};while (getline var2 <file2) {split(var2,ff2,OFS);\
+if (!(ff2[2] in a)) print var2};file1=file2;days=days+1;nextday=1;delete a;close(file1);close(file2)}}}}'
+
 Output:
 20161202.csv--found--comparing 20161201.csv 20161202.csv
 123457 80000 some value
@@ -788,5 +827,8 @@ Output:
 123458 30000 some value
 20161204.csv---not exists--compare of 20161203.csv 20161204.csv skipped
 20161205.csv---not exists--compare of 20161203.csv 20161205.csv skipped
-Remark: The last valid file is kept to be compared with the next consecutive file even if it is >1 day long.
 
+
+Filename split alternative (first two lines above):
+awk -v file1="20161201.csv" 'BEGIN{days=1;nextday=1;while (days<15){{match(file1,/(....)(..)(..)/,fn);
+year=fn[1];month=fn[2];day=fn[3];file2=sprintf("%s%s%02d%s",fn[1],fn[2],fn[3]+nextday,".csv"); \
