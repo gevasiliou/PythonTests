@@ -930,3 +930,30 @@ Various scripts in this file have been written or contributed by:
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:DOCS
 More Docs: http://sed.sourceforge.net/
+
+SED:REGEX VS PERL
+The sed operation can be done by perl -pe.
+Actually perl support for regex is a bit better than sed.
+
+##Regex - see also info sed - regex
+One of most tricky sed usage is to use the s/pattern/replace format in order to perform easy grep regex matches.
+Extended Regex Grouping with parenthesis allow to "divide" the pattern in parts that you can refer afterwards to them with \1,\2, etc
+PS: to use groups you need sed -r or -E
+
+See this example:
+$ a="http://unix.stackexchange.com/questions/ask"
+$ sed -r 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com/questions
+
+$ perl -pe 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com
+
+The problem of sed is that matches .* in a greedy way. Actually matches all chars after first group
+In regex, the use of ? operator after pattern multiplier (*,+,?,etc) is used to advise a lazy non-greedy regex match = 1st match
+Sed for second group, ignores the non-greedy operator ? and keeps providing wrong results.
+
+Perl on the other hand handles correctly the non-greedy ? operator and second groups matches all chars between 1st and 3rd group.
+
+##More about perl
+Actually the above example uses the s/pattern/replace format of sed which works in exactly the same way as sed.
+So this examples are valid:
+perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacements, using a different delimiter
+perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacement,like sed

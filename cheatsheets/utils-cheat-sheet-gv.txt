@@ -1,7 +1,7 @@
 UTILS:CHEAT SHEET by GV
 https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
 https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
-#-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 UTILS:BASICS - FILE MANIPULATIONS
 Depending on the job you can use different commands:
 
@@ -10,7 +10,7 @@ paste file1 file2: Prints field of both files side by side , ignoring matching c
 diff file1 file2 : Prints differences of files 
 sort file1 file2 fileN: Sorts the files. Can be adjusted to sort on a specific columnt (i.e 1.2 = file 1 column2)
 join file1 file2 : Joins files in a common field
-
+------------------------------------------------------------------------------------------------------------------------
 UTILS:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##Read this cheat file with man pages:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
@@ -102,6 +102,11 @@ find . -type f | parallel -j+1 grep mypattern #use the parallel utility
 find ./appsfiles/ -type f | parallel -k -j200% -n 2000 -m grep -H -n -e "Exec=" -e "Comment" -e "Generic" -e "Name" {}
 PS1: by timing above find |parallel vs a single grep yeld same results on 5000 desktop files.
 PS2: This gives 50% MORE time than single grep : time find ./appsfiles/* -type f -print0 | xargs -r0 -P2 grep -H -n -e "Exec=" -e "Comment" -e "Generic" -e "Name" {}
+
+##grep regex or
+grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
+match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
+can be used as -Eow to match words in a line
 
 #-----------------------------------------------------------------------------------------------------------------------
 
