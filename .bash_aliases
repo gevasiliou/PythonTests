@@ -23,7 +23,8 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 alias printfunctions='set |grep -A2 -e "()"'
 alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
-alias hexit='od -w32 -t x1c -v'
+alias hexit='od -w32 -An -t x1c -v'
+#alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
 
@@ -160,6 +161,16 @@ echo "dtoe: convert date to epoch. Send a date or pipe me a date in format 14/Fe
 [[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
 echo "Date to be converted = $dt" >&2
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+}
+
+function toascii {
+[[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
+echo "Warning : Possible null chars have been removed by bash. Pipe to od -tx1c instead"
+echo -e "Var:\c";echo "$st" | od -An -tc
+echo -e "Dec:\c";echo "$st" | od -An -tu1 
+echo -e "Oct:\c";echo "$st" | od -An -to1 
+echo -e "Hex:\c";echo "$st" | od -An -tx1c |sed -n '1p'
+#Also this works: od -An -t uC
 }
 
 #TODO

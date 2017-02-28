@@ -46,7 +46,7 @@ awk '/pattern/ {action}' file 		# Execute action for matched pattern 'pattern' o
 $0 									# Reference current record line
 FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
 -F 									# Command line option to specify input field delimiter before starting awk script.
-OFS 								# Field separator of the outputted data (default whitespace)
+OFS 								# Field separator of the outputted data (default whitespace). Mind that this can be assigned after script like awk '{your script}' OFS=: file
 NF 									# Number of fields in current record/line (i.e {print $NF})
 NR 									# Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
 FNR 								# Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
@@ -80,7 +80,7 @@ toupper(s)              # String s to uppercase
 getline                 # Set $0 to next input record from current input file. 
 getline <file2          # Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
 getline var <file2      # Read file2 and assign to var the whole record/line of file2 ($0). Without <file current file is used
-nextfile                # goes to the next file - changes the flow of the script. 
+nextfile                # goes to the next file - changes the flow of the script (does not return back)
 operators               # https://www.tutorialspoint.com/awk/awk_operators.htm
 
 simple conditions checks       # Can be expressed like awk '$5 == "abc123"' - prints lines that field5 match abc123. Print is ommited since it is the default awk action
@@ -233,17 +233,7 @@ C 1 1 1
 D 1 0 1
 
 AWK script : 
-BEGIN { OFS = FS = "\t" }
-
-NR != 1 {
-   for (i = 2; i <= NF; ++i) {
-       if ($i != "0") {
-           $i = "1";
-       }
-   }
-}
-
-{ print }
+BEGIN { OFS = FS = "\t" }NR != 1 {for (i = 2; i <= NF; ++i) {if ($i != "0") {$i = "1";}}}{ print }
 
 Runit : awk -f script.awk datafile
 
@@ -398,7 +388,8 @@ x;x;x;x;x;x;cmd="ColumnDrop TABLE_NAME_2 COLUMN_Y || lbk_dropcolumn TABLE_NAME_2
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:PRINT last and first line
 awk 'NR==1 {first = $0} END {print; print first}' file
-Just save the first line to a variable (first in this example)
+Just save the first line to a variable (first in this example). print in the END, by default will print the last $0=last line
+
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:SEARCH LIKE GREP WITH GAWK AND VARIABLE
 $ i="Mytestserver02"
@@ -407,8 +398,7 @@ $ awk /"$i"/'{print $2}' d3.txt # returns the second field , space separated
 Or even awk /"$i"/ file will bring the matched line (all fields)
 Although, experts claim that allowing expansion of a bash var in awk is a bad technique.
 
-This source gives some alternatives:
-http://cfajohnson.com/shell/cus-faq-2.html#Q24
+This source gives some alternatives: http://cfajohnson.com/shell/cus-faq-2.html#Q24
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:PRINT lines with unique fields (uniq emulation)
 awk -vFS=";" '!unique[$2]++' c.txt
@@ -459,44 +449,139 @@ two found
 1 3 3 1
 0 0 0 0
 
-##Array Chalenge : Identify how '!a[$0]++' works and removes duplicate lines or 'a[$0]++' prints duplicates
+Mind that the declaration a["three"]="tria" has been overwritten by a["three"]++ which assigns a new numeric value
 
-#cat file4
-Line1
-line2
-line3
-line4
-line5
-line2
 
-# awk 'a[$0]++;END{print "";for (i in a) print i,a[i]}' file4
-line2
+##Array Chalenge : Identify how 'a[$0]++ or '!a[$0]++' works 
+'a[$0]++' prints only duplicate lines anywhere in file (no sorting required)
+'!a[$0]++' prints only unique lines, anywhere in file (no sorting required)
+There is a kind of explanation here: https://unix.stackexchange.com/questions/159695/how-does-awk-a0-work/159697
 
-Line1 1
-line2 2
-line3 1
-line4 1
-line5 1
+It is actually a condition check together with array creation, both combined in one command.
+But the condition check is not identical to '$0 in a' - if it was only 'a[$0]' without ++ should work - but does not.
 
-# awk '!a[$0]++;END{print "";for (i in a) print i,a[i]}' file4
-Line1
-line2
-line3
-line4
-line5
+.B Let's examine the easy case : a[$0]++
+This prints duplicate lines - Lines that are found exactly two times. If a line is repeated for more than 2 times will be printed.
 
-Line1 1
-line2 2
-line3 1
-line4 1
-line5 1
+Basics:
+'{print $0}' is the default action and will be executed if omitted. This is why awk '1' file will print all lines
+Simple test conditions (i.e 'NR==FNR{do this}') do not require the full "if (expr) {}" syntax.
+a[$0] is a direct array creation of array a with index $0 = line1 , line2, etc from file - value is nothing.
+a[$0]++ does array element creation also but also applies a numeric value (0 for the first time) to the just created array element
+The second time that awk will read $0 which was found before, the reference a[$0]++ will add +1 to the existed a[$0] , and it's value will change from 0 to 1.
+On the same time, the expression a[$0]++ is evaluated as a condition. Actually the value of a[$0] is checked. 
+If the value of a[$0] is 1 (meaning that one line has been found two times), 1 means true and awk will perform it's default action (print $0)
+But if the value of a[$0] is 0 (line found only once) then 0 means false = no printing.
 
-Also play with awk 'a[$0]++;1' and ;0 to see the differences
+Mind that if a line appears three times , then a[$0] will return two . Two is also evaluated as true and thus even this third line will be printed.
+Actually whatever is not false = 0 , will be handled as true by awk.
 
+
+.B Examining the '!a[$0]++' case - print unique lines
+
+Using negation (!) in front of a[$0]++ you don't affect the array creation but you affect condition check result and thus the print $0.
+
+The negation will revert the result of values stored in each a[$0] element. 
+If an element is found only once, it's regular value will be zero 0.
+With negation this will be reverted to 1 and will be printed.
+If a[$0] value is more than 0 (1,2,3,whatever) will be reverted to zero by the negation ! , and thus will not be printed.
+As a result , only unique lines will be printed, excluding all repeating lines (no matter how many times they do repeat)
+
+In all cases the condition check a[$0] refers to the element value and it is different than $0 in a = presence of $0 in array indexes
+
+.B Important: 
+Using just awk 'a[$0]' file4 is not printing duplicate lines as i would expect. Actually is not printing unique lines either, or all lines. Prints nothing.
+This happens because without ++ the element a[$0] gets a null value (and not 0 nor 1,2,etc)
+On the other hand, using awk '!a[$0]' file4 prints all the lines - no filtering.
+
+Mind these tests:
+# awk 'a[$0]' file4 										---> Prints nothing. I was expecting to print something (either unique or duplicate lines)
+
+# awk 'a[$0];{if ($0 in a) print}' file4 or 'a[$0];$0 in a'	---> Prints all the lines of file4. 
+																 This is because the if check is after the array assignment and thus always $0 will be found inside array
+
+# awk '{if ($0 in a) print};a[$0]' file4 or '$0 in a;a[$0]'	---> Prints correctly only duplicate lines = equivalent to 'a[$0]++'  Works because condition check ($0 in a)is done before array assignment.
+# awk awk '!($0 in a);a[$0]' file4 							---> Prints correctly only unique lines. 
+															     Mind that '!$0 in a;a[$0]' does NOT work- requires parenthesis
+
+
+# awk 'BEGIN{print !1,!2,!3,!4}' ---> 0 0 0 0					# Direct negation of any number gives 0
+# awk 'BEGIN{print a,george}'    ---> 							# Prints nothing - null. a and george are handled as newly declared variables with out a value
+# awk 'BEGIN{print !a,!george}'  ---> 1 1						# The null value of vars a and george is reverted and prints 1 1
+
+# awk '{print a[$0]}' file4      ---> 							# Prints nothing - null for each line (a block of null lines is printed)
+
+# awk '{print a[$0]++ ,$0 ,a[$0]}' file4
+0 line1 1						# 1st prints the value of a[$0]=a["line1"]=0 (not assigned yet). Then prints the $0 (just for me to see)
+0 line2 1						# At the end - 3rd column - it prints the value of a[$0] after has been increased by ++ = 1
+0 line3 1						# If the first argument was ++a[$0] then 1st and 3rd column would have been identical (tested)
+0 line4 1						# Obviously the trick to work is based on the value of 1st column=before initial assignment
+0 line5 1						#  
+1 line2 2						# When we reach this line , since has been found before, we find a value of 1
+1 line3 2						# Same for this line
+2 line2 3						# In this line we found already a value of 2 for a["line2"]
+
+# awk 'a[$0]++' file4
+line2							# a[$0] = 1 = print $0
+line3							# a[$0] = 1 = print $0
+line2							# a[$0] = 2 = print $0
+
+# awk '{print a[$0], !a[$0]++ ,$0 ,a[$0]}' file4
+  1 line1 1						# 1st:a[$0]=null , 2nd: !a[$0]++ = null reverted to 1 and add one , 4th =1 real value of a["line1"]
+  1 line2 1						# All lines found with null value (2nd col) are reverted by ! to 1 and get printed
+  1 line3 1
+  1 line4 1
+  1 line5 1
+1 0 line2 2						# here the second column reports zero because had been previously assigned a value by ++ (col 1 = 1)
+1 0 line3 2						# if it was never assigned a value (like awk '!a[$0]') then here would be also 1 @ 2nd col.
+2 0 line2 3						# Since the value of these three last lines is reverted to zero by ! at time accessed by awk they don't get printed
+
+# awk '!a[$0]' file4			---> all lines printed 		# Prints ALL the lines - no filtering.
+# awk '{print !a[$0]}' file4	---> all 1					# Print 1 for every line - unique and repeated lines. 
+															# No value assignment is ever made , thus even the second time that we found line2 , 
+															# has value null which is reverted to 1 and this is why we see all 1 and all lines are printed in previous example
+
+
+
+As a result awk '!a[$0]' file4 is based on the return value of 2nd col above and prints lines 1-2-3-4-5 . 
+last three lines (2-3-2) had already a value when awk reached them (had been found before) the negation turns this value to 0 = no print
+
+
+
+You can instead of a[$0] assign a different field like a[$2] if you want to print duplicate lines in terms of dupplicates in field 2.
+
+##ARRAYS EXAMPLE - GREP SIMULATION
+https://stackoverflow.com/questions/42239179/fastest-way-to-find-lines-of-a-text-file-from-another-larger-text-file-in-bash
+(grep -F -f file1 file2 but restricted to field2 of file2)
+
+.B awk 'FNR==NR{hash[$1]; next}$2 in hash' file1.txt FS='|' file2.txt
+
+file1 has patterns only. file2 has three fields in format field1|field2|field3. 
+Target is to print lines from file2 in which field 2 match the patterns of file1.
+
+
+for the first file (FNR==NR) an array hash is created with index the field 1 of file1 (= the pattern).
+If file1 has foo in a line , we would create hash["foo"]. This happens for all the lines / patterns of file1
+When next finishes the file1, we go to file2. We check if field 2 ($2) bellongs to the array hash.
+If this condition returns true, awk default action is performed (print $0 of file2)
+This is equivalent to if ($2 in hash) {print $0}, but written in a smart compact way.
+
+##Alternative classic grep not restricted to checking field 2:
+awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (index($0,i)) {print; break}}' file1.txt FS='|' file2.txt
+Same logic as before (file1 loaded in hash array) but the whole line of file2 ($0) is compared to hash array indexes
+This will allow matches even if pattern of file1 has been found at any field of file2 (1-2-3), not only in field 2 as before.
+This is directly equivallent 'grep -F -f file1 file2'
+
+Can be done also using match : 
+awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (match($0,i)) {print; break}}' file1.txt FS='|' file2.txt
 
 ##ARRAYS EXAMPLE
 [: http://unix.stackexchange.com/questions/344856/take-two-columns-in-a-tab-delimited-file-and-merge-into-one/344880?noredirect=1#comment610394_344880 :]
 awk 'BEGIN{FS=OFS=" "}{z[NR]=$1FS$3; print $1,$2}END{for (i=1; i<=NR; i++){print z[i]}}' a.txt
+
+
+##Arrays next chalenge: awk output is modified if you apply 'a[$0]++;1' or 0 (actually 0 is the default)
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 
