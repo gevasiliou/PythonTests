@@ -930,30 +930,57 @@ Various scripts in this file have been written or contributed by:
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:DOCS
 More Docs: http://sed.sourceforge.net/
-
-SED:REGEX VS PERL
-The sed operation can be done by perl -pe.
+--------------------------------------------------------------------------------------------------------------------------------------
+SED:REGEX VS PERL - DOMAIN NAME EXTRACT FROM URL
+The sed operations can be done by perl -pe.
 Actually perl support for regex is a bit better than sed.
 
-##Regex - see also info sed - regex
 One of most tricky sed usage is to use the s/pattern/replace format in order to perform easy grep regex matches.
 Extended Regex Grouping with parenthesis allow to "divide" the pattern in parts that you can refer afterwards to them with \1,\2, etc
-PS: to use groups you need sed -r or -E
+PS: to use regex groups you need sed -r (extended regex)
 
 See this example:
 $ a="http://unix.stackexchange.com/questions/ask"
 $ sed -r 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com/questions
-
 $ perl -pe 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com
 
-The problem of sed is that matches .* in a greedy way. Actually matches all chars after first group
+The problem of sed is that matches .* in a greedy way. Actually matches all chars (.*) after first group
 In regex, the use of ? operator after pattern multiplier (*,+,?,etc) is used to advise a lazy non-greedy regex match = 1st match
-Sed for second group, ignores the non-greedy operator ? and keeps providing wrong results.
+Sed regex in second group (.*?), ignores the non-greedy operator '?' and keeps providing wrong results.
 
 Perl on the other hand handles correctly the non-greedy ? operator and second groups matches all chars between 1st and 3rd group.
 
+##Domain Name Extraction with sed - Workarounds
+Since you can not do this sed+regex groups 
+One work around to extract the domain name from sting $a is to use sed transliretate and subsitute.
+Transiletarate the slash '/' to a new line or even to null which is more correct.
+Both examples give the desired output = unix.stackexchange.com
+
+echo "$a" |sed -n "y|/|\n|;s/.*\n\n//;P"				#This works due to P instead of p . P prints current pattern space up to first new line
+echo "$a" |sed "y|/|\x00|;s/.*\x00\x00//;s/\x00.*//"	#This transliterates slash to null (\0) and then removes everything up to double null and then everything after first null up to the end.
+
+Examining the null:
+echo "$a" |sed "y|/|\x00|" |hexit
+0000000  68  74  74  70  3a  00  00  75  6e  69  78  2e  73  74  61  63  6b  65  78  63  68  61  6e  67  65  2e  63  6f  6d  00  71  75
+          h   t   t   p   :  \0  \0   u   n   i   x   .   s   t   a   c   k   e   x   c   h   a   n   g   e   .   c   o   m  \0   q   u
+0000040  65  73  74  69  6f  6e  73  00  61  73  6b  0a
+          e   s   t   i   o   n   s  \0   a   s   k  \n
+
+echo "$a" |sed "y|/|\x00|;s/.*\x00\x00//" |hexit
+0000000  75  6e  69  78  2e  73  74  61  63  6b  65  78  63  68  61  6e  67  65  2e  63  6f  6d  00  71  75  65  73  74  69  6f  6e  73
+          u   n   i   x   .   s   t   a   c   k   e   x   c   h   a   n   g   e   .   c   o   m  \0   q   u   e   s   t   i   o   n   s
+0000040  00  61  73  6b  0a
+         \0   a   s   k  \n
+
+echo "$a" |sed "y|/|\x00|;s/.*\x00\x00//;s/\x00.*//" |hexit
+0000000  75  6e  69  78  2e  73  74  61  63  6b  65  78  63  68  61  6e  67  65  2e  63  6f  6d  0a
+          u   n   i   x   .   s   t   a   c   k   e   x   c   h   a   n   g   e   .   c   o   m  \n
+
+.B Domain Name Extraction Alternative Workaround
+sed "s#.*//##;s#/.*##" 		#Deletes from start up to // and then from first slash / up to end=keeps the middle
+
 ##More about perl
-Actually the above example uses the s/pattern/replace format of sed which works in exactly the same way as sed.
-So this examples are valid:
-perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacements, using a different delimiter
-perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacement,like sed
+Actually the above perl example uses the s/pattern/replace format of sed , which works in exactly the same way as sed.
+
+perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacement, using a different delimiter
+perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacements,like sed /g

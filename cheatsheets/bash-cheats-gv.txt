@@ -623,7 +623,8 @@ esac
 
 Also see the BASH:READ Section for sending args through a file in various cases.
 
-##Build a custom command with args by set - make use of positional parameters
+##USE OF SET FOR CUSTOM USAGE
+Build a custom command with args by set - make use of positional parameters
 http://unix.stackexchange.com/questions/338852/array-as-value-for-tar-exclude/338854#comment599032_338854
 
 You can use the $@ as a kind of variable to make commands.
@@ -655,6 +656,11 @@ More Checks:
     $ echo "${@}" --> ls *.sh *.txt
     $ shift && echo "${@}" --> *.sh *.txt
     $ shift && echo "${@}" --> *.txt
+
+.B Use set to strip domain name from http address
+dom="http://unix.stackexchange.com/questions/ask"
+FS=/; set -- $dom; echo "$3" :--->unix.stackexchange.com
+Alternativelly can be done with cut -d/ -f3, or with regex groups (perl) or with tricky sed (i.e sed "y|/|\x00|;s/.*\x00\x00//;s/\x00.*//")
 
 ##ARGS null separated
 You can manipulate args that may contain any character using null byte as a separator.
@@ -698,8 +704,14 @@ if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
 #Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
+
 Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
+
+FOO="http://unix.stackexchange.com/questions/ask"
+tmp="${FOO#*//}" 	#Removes everything from begininng up to first found pattern '//'
+echo "${tmp%%/*}" : unix.stackexchange.com		#remove everyting from end up to last/longest (%%) pattern '/' . One % = shortest/first
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS AND TRICKS
 ##Resources: 
