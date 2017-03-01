@@ -34,4 +34,4 @@ process-information process [763,login [pam] (login)
 ]
 
 
-
+ps --libxo json -o pid,args |head |tr '}' '\n' |sed 's/["{:]//g;s/arguments//g;s/pid//g'
