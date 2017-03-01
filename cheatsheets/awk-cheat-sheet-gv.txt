@@ -467,14 +467,18 @@ Basics:
 '{print $0}' is the default action and will be executed if omitted. This is why awk '1' file will print all lines
 Simple test conditions (i.e 'NR==FNR{do this}') do not require the full "if (expr) {}" syntax.
 a[$0] is a direct array creation of array a with index $0 = line1 , line2, etc from file - value is nothing.
-a[$0]++ does array element creation also but also applies a numeric value (0 for the first time) to the just created array element
-The second time that awk will read $0 which was found before, the reference a[$0]++ will add +1 to the existed a[$0] , and it's value will change from 0 to 1.
+a[$0]++ does array element creation also but also applies a numeric value (1 for the first time) to the just created array element
+The second time that awk will read $0 which was found before, the reference a[$0]++ will add +1 to the existed a[$0] , and it's value will change from 1 to 2.
+
 On the same time, the expression a[$0]++ is evaluated as a condition. Actually the value of a[$0] is checked. 
 If the value of a[$0] is 1 (meaning that one line has been found two times), 1 means true and awk will perform it's default action (print $0)
 But if the value of a[$0] is 0 (line found only once) then 0 means false = no printing.
 
+What is important is that condition check takes place before increment (post increment method).
+If it was ++a[$0] = pre increment, the condition check would have diferent results, since the a[$0] would have a value.
+
 Mind that if a line appears three times , then a[$0] will return two . Two is also evaluated as true and thus even this third line will be printed.
-Actually whatever is not false = 0 , will be handled as true by awk.
+Actually whatever is not 0 or null OR whatever is set will be handled as true by awk and will be printed.
 
 
 .B Examining the '!a[$0]++' case - print unique lines
@@ -482,26 +486,36 @@ Actually whatever is not false = 0 , will be handled as true by awk.
 Using negation (!) in front of a[$0]++ you don't affect the array creation but you affect condition check result and thus the print $0.
 
 The negation will revert the result of values stored in each a[$0] element. 
-If an element is found only once, it's regular value will be zero 0.
-With negation this will be reverted to 1 and will be printed.
-If a[$0] value is more than 0 (1,2,3,whatever) will be reverted to zero by the negation ! , and thus will not be printed.
-As a result , only unique lines will be printed, excluding all repeating lines (no matter how many times they do repeat)
+In the very first reading, a[$0] is null=unset.  With negation ! this will be reverted to 1 and will be printed.Then ++ will add 1 to this element
+
+On the second time that a[$0] will be found , condition checking will see a value of 1 (set from the first time).
+Any value more than 0 (1,2,3,whatever) will be reverted to zero by the negation ! , and thus will not be printed.
+As a result , only true unique lines of the file will be printed, excluding all repeating lines (no matter how many times they do repeat)
 
 In all cases the condition check a[$0] refers to the element value and it is different than $0 in a = presence of $0 in array indexes
 
+The success of this method is based on the following facts:
+check of a[$0] value happens before assignment due to post increment a[$0]++ 
+AWK will print an array element if has a valid value = not zero , not null , not unset
+Negation mark will revert above behavior. All nulls/zeros will become 1 (and printed), and all non zero numbers will become 0 (not printed)
+
 .B Important: 
-Using just awk 'a[$0]' file4 is not printing duplicate lines as i would expect. Actually is not printing unique lines either, or all lines. Prints nothing.
-This happens because without ++ the element a[$0] gets a null value (and not 0 nor 1,2,etc)
-On the other hand, using awk '!a[$0]' file4 prints all the lines - no filtering.
+Using just awk 'a[$0]' file4 is not printing duplicate lines , is not printing unique lines or all lines. Prints nothing.
+This happens because without ++ the element a[$0] has a null value (and not 0 nor 1,2,etc) and nulls are not printed
+On the other hand, using awk '!a[$0]' file4 prints all the lines - no filtering since the initiall null value is reverted to 1 by !
 
 Mind these tests:
-# awk 'a[$0]' file4 										---> Prints nothing. I was expecting to print something (either unique or duplicate lines)
+# awk '{print a[$0]}' file4      ---> 							# Prints nothing - null for each line (a block of null lines is printed)
+
+# awk 'a[$0]' file4 										---> Prints nothing. a[$0] will have null value at the first time and this new value will be preserved since there is no assignment like ++.
 
 # awk 'a[$0];{if ($0 in a) print}' file4 or 'a[$0];$0 in a'	---> Prints all the lines of file4. 
-																 This is because the if check is after the array assignment and thus always $0 will be found inside array
+																 This is because the if check is after the array assignment and thus always $0 will be found inside array a
 
-# awk '{if ($0 in a) print};a[$0]' file4 or '$0 in a;a[$0]'	---> Prints correctly only duplicate lines = equivalent to 'a[$0]++'  Works because condition check ($0 in a)is done before array assignment.
-# awk awk '!($0 in a);a[$0]' file4 							---> Prints correctly only unique lines. 
+# awk '{if ($0 in a) print};a[$0]' file4 or '$0 in a;a[$0]'	---> Prints correctly repeated/duplicate lines = similar to 'a[$0]++'  
+																 Works because condition check ($0 in a)is done before array assignment.
+
+# awk awk '!($0 in a);a[$0]' file4 							---> Prints correctly only unique lines for the same reason (check before assignment)
 															     Mind that '!$0 in a;a[$0]' does NOT work- requires parenthesis
 
 
@@ -509,34 +523,34 @@ Mind these tests:
 # awk 'BEGIN{print a,george}'    ---> 							# Prints nothing - null. a and george are handled as newly declared variables with out a value
 # awk 'BEGIN{print !a,!george}'  ---> 1 1						# The null value of vars a and george is reverted and prints 1 1
 
-# awk '{print a[$0]}' file4      ---> 							# Prints nothing - null for each line (a block of null lines is printed)
 
 # awk '{print a[$0]++ ,$0 ,a[$0]}' file4
-0 line1 1						# 1st prints the value of a[$0]=a["line1"]=0 (not assigned yet). Then prints the $0 (just for me to see)
-0 line2 1						# At the end - 3rd column - it prints the value of a[$0] after has been increased by ++ = 1
+0 line1 1						# 1st Col prints the value of a[$0]=a["line1"]=0 (not assigned yet). 
+0 line2 1						# At the end - 3rd column - it prints the value of a[$0] after has been assigned by ++ = 1
 0 line3 1						# If the first argument was ++a[$0] then 1st and 3rd column would have been identical (tested)
-0 line4 1						# Obviously the trick to work is based on the value of 1st column=before initial assignment
+0 line4 1						# Obviously the trick to work is based on the value of 1st column=check value before initial assignment
 0 line5 1						#  
-1 line2 2						# When we reach this line , since has been found before, we find a value of 1
+1 line2 2						# When we reach this line , since has been found before, we find a value of 1 before the new ++
 1 line3 2						# Same for this line
-2 line2 3						# In this line we found already a value of 2 for a["line2"]
+2 line2 3						# In this line we found already a value of 2 for a["line2"] since has been increased ++ two times so far
 
 # awk 'a[$0]++' file4
-line2							# a[$0] = 1 = print $0
-line3							# a[$0] = 1 = print $0
-line2							# a[$0] = 2 = print $0
+line2							# a[$0] = 1 = print 
+line3							# a[$0] = 1 = print 
+line2							# a[$0] = 2 = print
+Remark: Due to this behavior the use of '$0 in a;a[$0]' is better  to exclude repeated lines since the test is based in condition if $0 belongs to a and not in the value of a[$0]
 
 # awk '{print a[$0], !a[$0]++ ,$0 ,a[$0]}' file4
-  1 line1 1						# 1st:a[$0]=null , 2nd: !a[$0]++ = null reverted to 1 and add one , 4th =1 real value of a["line1"]
-  1 line2 1						# All lines found with null value (2nd col) are reverted by ! to 1 and get printed
+  1 line1 1						# 1st:a[$0]=null , 2nd: !a[$0]++ = null reverted to 1 and THEN add one , 4th =1 final value of a["line1"] after ++
+  1 line2 1						# All lines found with null value at 1st col are reverted by ! to 1 (2nd col) and thus get printed
   1 line3 1
   1 line4 1
   1 line5 1
-1 0 line2 2						# here the second column reports zero because had been previously assigned a value by ++ (col 1 = 1)
+1 0 line2 2						# here the second column reports zero because 1st col found with a value from previous assignments by ++ (col 1 = 1)
 1 0 line3 2						# if it was never assigned a value (like awk '!a[$0]') then here would be also 1 @ 2nd col.
 2 0 line2 3						# Since the value of these three last lines is reverted to zero by ! at time accessed by awk they don't get printed
 
-# awk '!a[$0]' file4			---> all lines printed 		# Prints ALL the lines - no filtering.
+# awk '!a[$0]' file4			---> all lines printed 		# Prints ALL the lines - no filtering, because at time of check a[$0] has null (reverted to 1 by ! and thus printed)
 # awk '{print !a[$0]}' file4	---> all 1					# Print 1 for every line - unique and repeated lines. 
 															# No value assignment is ever made , thus even the second time that we found line2 , 
 															# has value null which is reverted to 1 and this is why we see all 1 and all lines are printed in previous example
@@ -545,8 +559,6 @@ line2							# a[$0] = 2 = print $0
 
 As a result awk '!a[$0]' file4 is based on the return value of 2nd col above and prints lines 1-2-3-4-5 . 
 last three lines (2-3-2) had already a value when awk reached them (had been found before) the negation turns this value to 0 = no print
-
-
 
 You can instead of a[$0] assign a different field like a[$2] if you want to print duplicate lines in terms of dupplicates in field 2.
 
@@ -620,49 +632,54 @@ http://www.pement.org/awk/
 
 Tip: print is the default action of awk, so even if ommited print will be performed.
 
-awk '{print $1}' file 				#Print first field for each record in file
-awk '{print FNR "\t" $0}'			#Print line numbers in each file = cat -n
+sort -u file | awk 'NR==FNR{seen[$1]++;next}seen[$1]==1' - file 	# Use of awk combined with pipe/stdin and a file *actually the same file.
+																	# http://unix.stackexchange.com/questions/348252/print-if-for-the-same-1st-field-theres-a-single-value-of-2nd-field-on-all-lines
+
+awk '1; NR%3==0 {print "----"}' file					# Prints some dashes every three lines. Actually is a division modulo NR(lines) / 3 = 0. Modulo will be zero for NR 3,6,9,etc (multipliers of 3)
+awk 'FNR==1 && $1==8 && $2>500{print FILENAME}' *.csv 	# Prints file names of all the files satisfying all three criteria (Field 1 to be 8 and field 2 to be more than 500 at first line of each file)
+awk '{print $1}' file 					#Print first field for each record in file
+awk '{print FNR "\t" $0}'				#Print line numbers in each file = cat -n
 awk '/regex/' 						    #print only lines which match regular expression (emulates "grep")
 awk 'BEGIN {IGNORECASE=1};/regexp/'		#case insensitive grep
 awk '!/regex/' 						    #print only lines which do NOT match regex (emulates "grep -v")
-awk '$2 == "foo"' file				#Print any line where field 2 is equal to "foo" in file
-awk '$2 != "foo"' file				#Print lines where field 2 is NOT equal to "foo" in file
-awk '$1 ~ /regex/' file				#Print line if field 1 matches regex in file
-awk '$1 !~ /regex/' file			#Print line if field 1 does NOT match regex in file
-awk '$7  ~ /^[a-f]/'    			#print line if field #7 matches regex
-awk '$7 !~ /^[a-f]/'    			#print line if field #7 does NOT match regex
-awk 'NR!=1{print $1}' file		#Print first field for each record in file excluding the first record
-awk 'END{print NR}' 				  #count lines (emulates "wc -l").Actually prints NR after end of file. NR is always counted by awk.
+awk '$2 == "foo"' file					#Print any line where field 2 is equal to "foo" in file
+awk '$2 != "foo"' file					#Print lines where field 2 is NOT equal to "foo" in file
+awk '$1 ~ /regex/' file					#Print line if field 1 matches regex in file
+awk '$1 !~ /regex/' file				#Print line if field 1 does NOT match regex in file
+awk '$7  ~ /^[a-f]/'    				#print line if field #7 matches regex
+awk '$7 !~ /^[a-f]/'    				#print line if field #7 does NOT match regex
+awk 'NR!=1{print $1}' file				#Print first field for each record in file excluding the first record
+awk 'END{print NR}' 					#count lines (emulates "wc -l").Actually prints NR after end of file. NR is always counted by awk.
 awk '$1 > $2 {print $1,$2,$1-$2}' filename		#prints Field1 , Field2 and difference $1-$2 for all lines that $1>$2
 
 awk '/foo/{n++}; END {print n+0}' file			#Print total number of lines that contain foo
 awk '{total=total+NF};END{print total}' file	#Print total number of fields in all lines
 
 awk '/regex/{getline;print}' file				      #Print line immediately after regex, but not line containing regex in file
-awk 'length > 32' file							          #Print lines with more than 32 characters in file
+awk 'length > 32' file						          #Print lines with more than 32 characters in file
 
-awk 'NR==12' file								              #Print line number 12 of file
+awk 'NR==12' file										#Print line number 12 of file
 awk '{s=0; for (i=1; i<=NF; i++) s=s+$i; print s}'  	#print the sums of the fields of every line
 awk '{for (i=1; i<=NF; i++) s=s+$i}; END{print s}' 		#print the sums of the fields of ALL lines
 
-awk 'BEGIN{ORS="\n\n"};1' 						  #double space a file - also awk '1;{print ""}'
-awk '1;{print "\n"}'                    #triple space a file
+awk 'BEGIN{ORS="\n\n"};1'							#double space a file - also awk '1;{print ""}'
+awk '1;{print "\n"}'								#triple space a file
 
 awk '{print FNR "\t" $0}' files* 				#precede each line by its line number FOR THAT FILE (left alignment).
 awk '{print NR "\t" $0}' files* 				#precede each line by its line number FOR ALL FILES TOGETHER, with tab.
-awk '{printf("%5d : %s\n", NR,$0)}' 		#number each line of a file (number on left, right-aligned)
-awk 'NF{$0=++a " :" $0};1' 						  #number each line of file, but only print numbers if line is not blank
+awk '{printf("%5d : %s\n", NR,$0)}'				#number each line of a file (number on left, right-aligned)
+awk 'NF{$0=++a " :" $0};1' 						#number each line of file, but only print numbers if line is not blank
 
-awk '/Beth/{n++}; END {print n+0}' file           #print the total number of lines that contain "Beth"
-awk '$1 > max {max=$1; maxline=$0}; END{ print max, maxline}'        #print the largest first field and the line that contains it
-awk '{ print NF ":" $0 } ' 						          #print the number of fields in each line, followed by the line
-awk '{ print $NF }' 							          #print the last field of each line
-awk '{ field = $NF }; END{ print field }'		#print the last field of the last line
-awk ’length($0) > 80’ data                  #print lines with length more than 80
-awk ’NF > 0’ data                           #print any line with at least one record=no blank line
-awk 'NF > 4' 									              #print every line with more than 4 fields
-awk '$NF > 4' 									            #print every line where the value of the last field is > 4
-awk 'BEGIN{while (a++<513) s=s " "; print s}' 	#create a string of a specific length (e.g., generate 513 spaces)
+awk '/Beth/{n++}; END {print n+0}' file           					#print the total number of lines that contain "Beth"
+awk '$1 > max {max=$1; maxline=$0}; END{ print max, maxline}'       #print the largest first field and the line that contains it
+awk '{ print NF ":" $0 } ' 						          			#print the number of fields in each line, followed by the line
+awk '{ print $NF }' 							          			#print the last field of each line
+awk '{ field = $NF }; END{ print field }'							#print the last field of the last line
+awk ’length($0) > 80’ data                  						#print lines with length more than 80
+awk ’NF > 0’ data               						            #print any line with at least one record=no blank line
+awk 'NF > 4' 									        		    #print every line with more than 4 fields
+awk '$NF > 4' 									            		#print every line where the value of the last field is > 4
+awk 'BEGIN{while (a++<513) s=s " "; print s}' 						#create a string of a specific length (e.g., generate 513 spaces)
 
 gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' #insert 49 spaces after column #6 of each input line.
 
@@ -678,7 +695,7 @@ awk '/regex/{print x};{x=$0}' 							#print the line immediately before a regex,
 awk '/regex/{getline;print}' 							#print the line immediately after a regex, but not the line containing the regex
 awk '/AAA/ && /BBB/ && /CCC/' 							#grep for AAA and BBB and CCC (in any order on the same line). Works even with ||
 awk '/AAA.*BBB.*CCC/' 									#grep for AAA and BBB and CCC (in that order)
-awk '/regex/,0' OR awk '/regex/,EOF'										#print section of file from regular expression to end of file - alternative awk '/regex/,EOF'
+awk '/regex/,0' OR awk '/regex/,EOF'					#print section of file from regular expression to end of file - alternative awk '/regex/,EOF'
 awk 'NR==8,NR==12' 										#print section of file based on line numbers (lines 8-12, inclusive)
 awk 'NR==52 {print;exit}'  				        		#print line number 52 - efficient on large files. Alternative awk 'NR==52'
 awk '/Iowa/,/Montana/' 									#print section of file between two regular expressions (inclusive-case sensitive)
@@ -905,7 +922,7 @@ while (getline var2 <file2) {split(var2,ff2,OFS);if (!(ff2[2] in a)) print var2}
 awk -v file="20161202.csv" 'BEGIN{FS="";split(file,fn,FS);print fn[1],"-",fn[2],"-",fn[3]}' 		#Splits filename of file by chars -output= 2-0-1). You can restrore FS later if you wish by using FS=" "
 
 awk -v file="20161202.csv" 'BEGIN{FS="";split(file,fn,FS);year=fn[1]fn[2]fn[3]fn[4];month=fn[5]fn[6];day=fn[7]fn[8]; \
-print year"--"month"--"day}' 																		#prints 2016--12--02
+print year"--"month"--"day}' 				#prints 2016--12--02
 
 awk -v file="20161202.csv" 'BEGIN{split(file,fn,"");year=fn[1]fn[2]fn[3]fn[4]; \
 month=fn[5]fn[6];day=fn[7]fn[8];file1=sprintf("%s%s%02d%s",year,month,day+1,".csv");print file1}'	#Prints 20161203.csv = next day file

@@ -166,10 +166,10 @@ date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 function toascii {
 [[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
 echo "Warning : Possible null chars have been removed by bash. Pipe to od -tx1c instead"
-echo -e "Var:\c";echo "$st" | od -An -tc
-echo -e "Dec:\c";echo "$st" | od -An -tu1 
-echo -e "Oct:\c";echo "$st" | od -An -to1 
-echo -e "Hex:\c";echo "$st" | od -An -tx1c |sed -n '1p'
+echo -e "Var:\c";echo "$st" | od -w40 -An -tc
+echo -e "Dec:\c";echo "$st" | od -w40 -An -tu1 
+echo -e "Oct:\c";echo "$st" | od -w40 -An -to1 
+echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c |sed -n '1p'
 #Also this works: od -An -t uC
 }
 

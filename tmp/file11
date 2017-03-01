@@ -1,17 +1,12 @@
-*** begin ibmdb error message ***
-Sun Dec 18 20:50:57 2016 - program 'execjob', User 'OSID:root', RMId 'root'  Driver Version '9.0.1.14.865 2015-01-20 04:00:00'
-DELETEDBREC() error on file 'USERRPT' in 'GEN'
-
-DeleteSqlRec(lawson."USERRPT", 1)
-DB2 FATAL ERROR for SQLExecute - Code: 40001/-911
-[IBM][CLI Driver][DB2/AIX64] SQL0911N  The current transaction has been rolled
+*** begin ibmdb error message 1***
 back because of a deadlock or timeout.  Reason code "66".  SQLSTATE=40001
 
-*** begin ibmdb error message ***
+*** begin ibmdb error message 2***
 Sun Dec 18 21:50:57 2016 - program 'execjob', User 'OSID:root', RMId 'root'  Driver Version '9.0.1.14.865 2015-01-20 04:00:00'
 DELETEDBREC() error on file 'USERRPT' in 'GEN'
 
 DeleteSqlRec(lawson."USERRPT", 1)
 DB2 FATAL ERROR for SQLExecute - Code: 40001/-911
 [IBM][CLI Driver][DB2/AIX64] SQL0911N  The current transaction has been rolled
+incompatible with type Alpha
 back because of a deadlock or timeout.  Reason code "68".  SQLSTATE=40001
