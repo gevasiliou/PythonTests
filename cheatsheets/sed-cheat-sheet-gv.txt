@@ -984,3 +984,18 @@ Actually the above perl example uses the s/pattern/replace format of sed , which
 
 perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacement, using a different delimiter
 perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacements,like sed /g
+
+## BSD Replacements exercise
+Each line should be terminated with \r\n , but lines only with \n must be concatenated with previous line
+Made easily with PERL, while non-gnu sed would have million of warnings:
+
+echo -ne "abc\r\ndef\nijk\r\nlmn\r\n" |cat -vte
+abc^M$
+def$
+ijk^M$
+lmn^M$
+
+echo -ne "abc\r\ndef\nijk\r\nlmn\r\n" |perl -pe "s/\r\n/\0/g;s/\n//g;s/\0/\r\n/g" |cat -vte
+abc^M$
+defijk^M$
+lmn^M$
