@@ -1,0 +1,119 @@
+BSD:CHEATSHEET BY GV
+We have FreeBSD which is different than OpenBSD and different than NetBSD
+Though, some commands might be common, since the "core" is BSD in all flavors
+
+BSD:FREEBSD 11
+https://www.freebsd.org/doc/handbook/x11-wm.html
+https://forums.freebsd.org/threads/7634/
+https://wiki.lxde.org/en/FreeBSD
+
+##Installation of BSD 
+Get the appropriate ISO image. I used netinstall image.
+
+##Updating repositories
+The very first time:
+portsnap fetch
+portsnap extract
+portsnap update
+
+All the other times , skip the "extract" step.
+
+##Install a FreeBSD pkg
+pkg install XXX
+
+##Installation of XFCE 4.12 or LXDE
+
+.B 1. pkg install xinit xorg xdm nano
+pkg install xfce xfce4-goodies
+or
+pkg install lxde-meta
+
+.B 2. nano /etc/ttys
+find ttyv8 and change xterm off to on (ttyv8 should include /usr/local/bin/xdm -nodaemon)
+ 
+.B 3. nano /etc/rc.conf
+add these lines
+hald_enable="YES"
+dbus_enable="YES"
+ 
+.B 4. Create xsession/xinitrc (BSD Wiki)
+create an executable ~/.xsession:
+echo "exec /usr/local/bin/startxfce4 --with-ck-launch" >> ~/.xsession
+chmod +x ~/.xsession
+
+For lxde i created .xsession (but i forgot chmod +x) but i also created echo "exec startlxde" >>~/.xinitrc  
+Although some tutorials claim that you need to chmod +x .xinitrc , i didn't do it.
+
+After restart i got a strange looking login screen and then laptop booted in lxde.
+
+In XFCE installation login remains in terminal, and after login xfce is not autostarting; i need to apply startxfce4 from CLI and starts ok.
+
+.B 5. Reboot
+ 
+##Install virtual box guest additions
+https://www.freebsd.org/doc/handbook/virtualization-guest-virtualbox.html
+
+.B pkg install virtualbox-ose-additions
+ 
+Then,add these lines to /etc/rc.conf:
+vboxguest_enable="YES"
+vboxservice_enable="YES"
+ 
+
+## Enable VT-x Intel Virtualization Technology.
+In order to use 64bit OS under VBox, you need to enable virtualization technology in bios.
+In some cases , VBox does not show options for 64bit OS but only 32bit OS are available on the list.
+In some other cases VBOX displays both 32 and 64bit OSes, but complains about bios disabled VT-x , and VM is not starting at all.
+
+.B To enable VT-X, you need to go to bios and look for the corresponding Hyper Virtualization settings.
+If host is Windows you need also to enable Virtualization from Windows Components.
+If host is linux you can confirm that vt-x is enabled by looking at cpu flags: cat /proc/cpuinfo |grep --color -E "vmx|svm"
+
+if virtual box keeps complaining about bios disabled VT-x though you have enabled this setting in bios and though you can see the corresponding flags in cpuinfo, then you may solve this problem by completely powering off your computer. 
+
+.B Not reboot but complete power off. 
+
+It seems that some bios need a total power cut off to enable VT-X (happened to HP 620 laptop). 
+After power off / power on i was ok in HP620.
+
+
+Important : When installing on Virtual Box, make sure that you have enabled serial ports since by default serial ports are disabled
+
+##FREE BSD Shell
+The default login shell is csh.
+By installing xfce , bash will also be installed.
+If not you can install it manually using pkg install bash
+Follow the on-screen instructions to update necessary config files.
+
+Remember that you need to type bash in order to load bash, since by default csh is loaded even within xfce
+
+
+
+BSD:OPENBSD 6
+
+##Instalation
+I succeed to complete the installation on virtual box using iso image install60.iso
+
+##Installing XFCE4 in OpenBSD
+http://www.gabsoftware.com/tips/tutorial-installing-xfce-on-openbsd-4-8/ (quite outdated)
+
+I just run pkg_add nano xfce and it kind of worked.
+
+Also i had to edit the /etc/rc.conf.local and change the xdm flag from null to NO
+Before the change of this flag , PC was entering to some kind of ugly / native X11 Desktop Environment
+After setting this xdm flag to NO, login stayed at terminal.
+After login, i had to type startxfce4.
+I noticed that windows are missing buttons so i also started xfwm4 & from a terminal
+After this , xfce was working (manually) fine.
+
+I also tried xfwm4 --replace , but xfwm4 was still not auto loading.
+
+##Package Manager
+http://www.openbsd.org/faq/faq15.html
+
+Get info about packages
+pkg_info -Q xfce
+Will give you a list of all xfce packages in repos , with "installed" marking where appropriate.
+
+##ManPages
+http://man.openbsd.org/

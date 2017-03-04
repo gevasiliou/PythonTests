@@ -1,9 +1,52 @@
-----------------------------------
-Server                    Port
-----------------------------------
-Local                      1001
-
------------------------------------------
-Name        Country        Count
------------------------------------------
-XXX          Berm uda        999
+{
+    "result": [{
+        "id": "a4e2a4682e286dea803aaa4d2aff851212c3",
+        "name": "test.com",
+        "status": "active",
+        "paused": false,
+        "type": "partial",
+        "development_mode": 0,
+        "verification_key": "12312312-123123",
+        "original_name_servers": ["dns1.test.com", "dns2.test.com"],
+        "original_registrar": null,
+        "original_dnshost": "register",
+        "modified_on": "2017-02-24T17:59:59.080278Z",
+        "created_on": "2017-01-31T20:27:03.395683Z",
+        "meta": {
+            "step": 4,
+            "wildcard_proxiable": false,
+            "custom_certificate_quota": 0,
+            "page_rule_quota": 3,
+            "phishing_detected": false,
+            "multiple_railguns_allowed": false
+        },
+        "owner": {
+            "type": "organization",
+            "id": "12312123123",
+            "name": "Test"
+        },
+        "permissions": ["#analytics:read", "#billing:edit", "#billing:read", "#cache_purge:edit", "#dns_records:edit", "#dns_records:read", "#lb:edit", "#lb:read", "#logs:read", "#organization:edit", "#organization:read", "#ssl:edit", "#ssl:read", "#waf:edit", "#waf:read", "#zone:edit", "#zone:read", "#zone_settings:edit", "#zone_settings:read"],
+        "plan": {
+            "id": "0feeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "name": "Free Website ",
+            "price ": 0,
+            "currency ": "USD ",
+            "frequency ": "",
+            "is_subscribed ": true,
+            "can_subscribe ": false,
+            "legacy_id ": "free ",
+            "legacy_discount ": false,
+            "externally_managed ": false
+        }
+    }],
+    "result_info": {
+        "page": 1,
+        "per_page ": 20,
+        "total_pages": 1,
+        "count ": 1,
+        "total_count ": 1
+    },
+    "success ": true,
+    "errors ": [],
+    "messages ": []
+}

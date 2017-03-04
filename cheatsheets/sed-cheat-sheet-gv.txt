@@ -535,6 +535,9 @@ sed '2i "George"' a.txt
 sed '/-----/i "George"' a.txt
 i : line before pattern , a : line after pattern
 
+## Inseert a pattern after the (same) pattern
+sed -i 's/\(Samsung\)/\1\n\1/' input.txt		#The parentheses capture the word, then \1 puts it back twice with a newline in between.
+
 ------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINER:SCRIPTS FOR SED (Unix stream editor)        Dec. 29, 2005
 ------------------------------------------------------------------------------------------------------------------------------

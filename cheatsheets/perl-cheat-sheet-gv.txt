@@ -454,6 +454,7 @@ perl -ne 'print if int($.) ~~ (13, 19, 67)'
 
 ## Print all lines between two regexes (including lines that match regex)
 perl -ne 'print if /regex1/../regex2/'
+perl -ne'print if /foo/i' file.txt    #Case insensitive
 
 ## Print all lines from line 17 to line 30
 perl -ne 'print if $. >= 17 && $. <= 30'
