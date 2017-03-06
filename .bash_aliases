@@ -173,6 +173,24 @@ echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c |sed -n '1p'
 #Also this works: od -An -t uC
 }
 
+
+function dupes {
+echo "dupes: Find duplicate files under cwd , including subdirectories. Pipe to grep to limit the results returned" >&2
+[[ -z $1 ]] && echo "Current Working Directory ($PWD) will be used." && local dn="$PWD" || local dn="$1"
+if [[ "$dn" == "/" ]];then
+	read -p "Are you sure you want to search all directories under / ?" rep
+	[[ "$rep" =~ ^[nN] ]] && return
+fi	
+
+echo "Directory to Examine=$dn"
+while IFS= read -r -d '' res;do local fn+=( "$res" );done < <(find "$dn" -print0)
+dupes=$(LC_ALL=C sort <(printf '\<%s\>$\n' "${fn[@]##*/}") |uniq -d)
+grep -e "$dupes" <(printf '%s\n' "${fn[@]}")  |awk -F/ '{print $NF,"==>",$0}' |LC_ALL=C sort
+#In bash 4.4 You can also use IFS= readarray -t -d '' fn< <(find . -print0)
+#Before bash 4.4 , readarray does not accept -d (delimiter) option
+#You can also allow a $2 for filename pattern , and thus convert fine to find "$dn" -name $2 -print0
+}
+
 #TODO
 # make a function manit to work as pipe : contents=$(</dev/stdin) && man <(contents after man formatting) or man /dev/stdin
 # You need to apply some defaults though. 
