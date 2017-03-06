@@ -2,6 +2,7 @@ BASH:CHEATS BY GV
 
 BASH:BASICS
 http://mywiki.wooledge.org/BashFAQ
+http://mywiki.wooledge.org/BashSheet#Arrays
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
 BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
 BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
@@ -1078,6 +1079,8 @@ see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-f
 BASH:ASSOCIATIVE ARRAYS (declare -A array)
 http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
+
+##Using Associative Arrays
 Works like dictionaries of advanced programming languages.
 You can assign whatever index you want (i.e array[file])
 declare -A MYMAP=( [foo]=bar [baz]=quux [corge]=grault ); echo ${MYMAP[foo]};echo ${MYMAP[baz]} -> bar \n quux
@@ -1094,11 +1097,17 @@ declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $
 --> baz b --- quux
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo ${#MYMAP[@]}  --> 2 # Number of keys in an associative array
 
-Number Indexing of Associative Array :
+##Number Indexing of Associative Array :
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS[0]} --- ${MYMAP[${KEYS[0]}]}" -> foo a --- bar   # KEYS=(${!MYMAP[@]}) = a normal array containing all the keys of the associative array. You can then refer to associative array with numerical index (0,1,2,etc)
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
 --> foo a --- bar
 --> baz b --- quux
+
+##Associative Arrays over files / globbing
+declare -A file_hash;for file in *; do file_hash+=([$file]=1);done
+file_array=(*);declare -A file_hash=( $(echo ${file_array[@]} | sed 's/[^ ]*/[&]=&/g') )  #Not working on bash 4.4
+declare -A filehash; eval $(printf 'filehash+=(["%s"]=1);' *.txt) #Works ok
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS WHEREIS & WHATIS
 whereis finds where is the executable of a programm (whereis sed). 
