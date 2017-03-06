@@ -108,8 +108,30 @@ awk '{if ($1>="3") nextfile;print $0}' file2 file1          # This prints line 1
 
 awk '{print ($0==p?"":$0); p=$0}' file                      # Checks consecutive lines;print with condition check. If $0 equals to var p then print "" else print $0. At the end assign p=$0.
 
+##Skip Input Columns
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6
+#Use of substr combined with index, since substr expects an integer as starting point and this is what index function returns.
+
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="";print}'
+   Field4 Field5 Field6
+#Mind the gaps in the beginning. You can use this if you need to "delete" particular columns.
+#Actually you are not really delete those columns but you replace their contents with a blank value and this is assigned to $0 structure
+
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x08";print}' 
+ Field4 Field5 Field6
+#Just one space in front due to hex 08 = back space. Mind that awk handles hex codes nicely. It is strange that more bckspaces are ignored if entered (i.e ="\x08\x08\x08"). It is also strange that \x00 is handled as an empty value ""
+
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{gsub($1FS$2FS$3FS$4,$4);print}'  --> Field4 Field5 Field6   
+#Columns 1-2-3-4 have been replaced by column4. No gaps here.
+
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x1b";print $0}'  ->No blanks are printed in the beginning.
+Although if you pipe the output to |od -An -t x1c you will see that \x1b (esc) chars are present but not printed = non-printable char.
+ 1b  20  1b  20  1b  20  46  69  65  6c  64  34  20  46  69  65  6c  64  35  20  46  69  65  6c  64  36  0a
+ 033     033     033      F   i   e   l   d   4       F   i   e   l   d   5       F   i   e   l   d   6  \n 
+
 ----------------------------------------------------------------------------------------------------------------
-AWK:PRINT IF Print lines if specific columns have same value
+AWK:PRINT WITH IF CONDITION
+##Print lines if specific columns have same value
 awk -F ':' '$3==$4' file.txt -->  Prints only when $3 equals to $4. print can be ommited since it is the default action.
 echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
 echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
