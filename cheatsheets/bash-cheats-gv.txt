@@ -803,7 +803,21 @@ Tip1: You can echo a hex ascii value with echo -e "\x5c" => will print a backsla
 Tip2: You can assign a hex ascii in a variable using var=$'\x5c' - 
 Tip3: You can also use hex values in sed and other tools to avoid escaping : sed 's/\x22/\x5c\x22/g' --> Will escape all double quotes.
 
------------------------------------------------------------------------------------------------------------------------------------------
+
+##Looping over hexadecimal values
+Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
+The most easy way is to use printf since natively supports hex printing
+
+for ((i=0;i<128;i++));do                     #Decimal Numbers in Looping but Hex Output !
+h1=$(printf "%#x\n" $i) && echo "$h1"        #prints 0x7a
+h2=$(printf "%x\n" $i) && echo "$h2"         #prints just 7a. This can combined in bash /awk/sed/perl with \x in front
+h3=$(printf "\\\x%x\n" "20") && echo "$h3"   #prints \x14 - ready to be used in bash/sed/perl/awk as hex code (i.e echo -e "$3")
+done
+
+Testing:
+$ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x3c, Second echo prints <
+
+--------------------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL - Understanding EVAL:
 1) foo=10 x=foo
 2) y='$'$x
