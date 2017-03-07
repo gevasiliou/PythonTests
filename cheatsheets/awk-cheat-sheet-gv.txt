@@ -86,6 +86,7 @@ operators               # https://www.tutorialspoint.com/awk/awk_operators.htm
 simple conditions checks       # Can be expressed like awk '$5 == "abc123"' - prints lines that field5 match abc123. Print is ommited since it is the default awk action
 advanced conditions checks     # {if (expression) {commands for true} else {commands for false}}
 expr?true:false                # Conditional Expression - ternary operator. expression is evaluated and true command is run if expression=true
+Directories on the command line are fatal for standard awk; gawk ignores them if not in POSIX mode.
 
 AWK:BASIC FUNCTIONS EXAMPLES
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2                   #Both files will be printed in series
@@ -108,6 +109,16 @@ awk '{if ($1>="3") nextfile;print $0}' file2 file1          # This prints line 1
 
 awk '{print ($0==p?"":$0); p=$0}' file                      # Checks consecutive lines;print with condition check. If $0 equals to var p then print "" else print $0. At the end assign p=$0.
 
+awk 'BEGIN {while ((getline a[++c] < "file1") > 0) { } print c}' #Reads file1 and prints the total number of lines. Mind the array indexes.
+
+PROCINFO["/dev/stdin", "READ_TIMEOUT"] = 5000
+while ((getline < "/dev/stdin") > 0) print $0               # Read user input with timeout
+
+awk 'BEGIN{system("echo 1 > f")}'
+
+awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
+
+
 ##Skip Input Columns
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6
 #Use of substr combined with index, since substr expects an integer as starting point and this is what index function returns.
@@ -128,6 +139,8 @@ echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x1b";print $
 Although if you pipe the output to |od -An -t x1c you will see that \x1b (esc) chars are present but not printed = non-printable char.
  1b  20  1b  20  1b  20  46  69  65  6c  64  34  20  46  69  65  6c  64  35  20  46  69  65  6c  64  36  0a
  033     033     033      F   i   e   l   d   4       F   i   e   l   d   5       F   i   e   l   d   6  \n 
+
+PS: For a fixed known number of columns , you can always do 'print $4,$5,$6'
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
@@ -364,6 +377,7 @@ AWK:REPLACE - DELETE STRING
 awk '{ gsub(",","",$3); print $3 }' /tmp/data.txt
 Replaces , with null in field $3 and then prints $3
 If $3 is not provided , then gsub operation is performed in $0=Whole Record = Whole line
+Alternative :$3=""
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT IF-THEN
@@ -475,7 +489,7 @@ Mind that the declaration a["three"]="tria" has been overwritten by a["three"]++
 
 
 ##Array Chalenge : Identify how 'a[$0]++ or '!a[$0]++' works 
-'a[$0]++' prints only duplicate lines anywhere in file (no sorting required)
+'a[$0]++' prints only duplicate lines (up to two-not more) anywhere in file (no sorting required)
 '!a[$0]++' prints only unique lines, anywhere in file (no sorting required)
 There is a kind of explanation here: https://unix.stackexchange.com/questions/159695/how-does-awk-a0-work/159697
 
@@ -492,39 +506,42 @@ a[$0] is a direct array creation of array a with index $0 = line1 , line2, etc f
 a[$0]++ does array element creation also but also applies a numeric value (1 for the first time) to the just created array element
 The second time that awk will read $0 which was found before, the reference a[$0]++ will add +1 to the existed a[$0] , and it's value will change from 1 to 2.
 
-On the same time, the expression a[$0]++ is evaluated as a condition. Actually the value of a[$0] is checked. 
+On the same time, the expression a[$0]++ is evaluated as a condition. Actually the value of a[$0] before the ++ is checked. 
 If the value of a[$0] is 1 (meaning that one line has been found two times), 1 means true and awk will perform it's default action (print $0)
 But if the value of a[$0] is 0 (line found only once) then 0 means false = no printing.
 
+Actually awk evaluates as true any value different than zero or null. This can be checked by applying a[$0]-- which achieve the same results.
+
 What is important is that condition check takes place before increment (post increment method).
-If it was ++a[$0] = pre increment, the condition check would have diferent results, since the a[$0] would have a value.
+If it was ++a[$0] = pre increment, the condition check would happen after ++ , a[$0] would have value 1 even the first time found.
+
 
 Mind that if a line appears three times , then a[$0] will return two . Two is also evaluated as true and thus even this third line will be printed.
-Actually whatever is not 0 or null OR whatever is set will be handled as true by awk and will be printed.
 
+Actually whatever is not 0 or null OR whatever is set will be handled as true by awk and will be printed, and this applies to strings or even to negative numbers.
 
 .B Examining the '!a[$0]++' case - print unique lines
 
 Using negation (!) in front of a[$0]++ you don't affect the array creation but you affect condition check result and thus the print $0.
 
 The negation will revert the result of values stored in each a[$0] element. 
-In the very first reading, a[$0] is null=unset.  With negation ! this will be reverted to 1 and will be printed.Then ++ will add 1 to this element
+In the very first reading, a[$0] is null=unset and returns 0=false.  
+With negation ! this will be reverted to 1 and will be printed.Then (pody increment) the ++ operator will add 1 to this element
 
 On the second time that a[$0] will be found , condition checking will see a value of 1 (set from the first time).
-Any value more than 0 (1,2,3,whatever) will be reverted to zero by the negation ! , and thus will not be printed.
+Any value different than 0 (1,2,3,-1,-2,-3,whatever) will return true and by ! will be reverted to zero thus will not be printed.
 As a result , only true unique lines of the file will be printed, excluding all repeating lines (no matter how many times they do repeat)
-
-In all cases the condition check a[$0] refers to the element value and it is different than $0 in a = presence of $0 in array indexes
 
 The success of this method is based on the following facts:
 check of a[$0] value happens before assignment due to post increment a[$0]++ 
-AWK will print an array element if has a valid value = not zero , not null , not unset
+AWK will print an array element if has any valid value = not zero , not null , not unset
 Negation mark will revert above behavior. All nulls/zeros will become 1 (and printed), and all non zero numbers will become 0 (not printed)
 
 .B Important: 
 Using just awk 'a[$0]' file4 is not printing duplicate lines , is not printing unique lines or all lines. Prints nothing.
-This happens because without ++ the element a[$0] has a null value (and not 0 nor 1,2,etc) and nulls are not printed
-On the other hand, using awk '!a[$0]' file4 prints all the lines - no filtering since the initiall null value is reverted to 1 by !
+This happens because without ++ the element a[$0] has a null value (and not 0 nor 1,2,etc) and nulls are evaluated as false thus no printing
+On the other hand, using awk '!a[$0]' file4 prints all the lines - no filtering since the initiall null value is reverted to 1 by ! =all printed.
+Due to the absence of ++, the value of a[$0] remains null=false
 
 Mind these tests:
 # awk '{print a[$0]}' file4      ---> 							# Prints nothing - null for each line (a block of null lines is printed)
@@ -600,6 +617,15 @@ When next finishes the file1, we go to file2. We check if field 2 ($2) bellongs 
 If this condition returns true, awk default action is performed (print $0 of file2)
 This is equivalent to if ($2 in hash) {print $0}, but written in a smart compact way.
 
+##Alternative grep method by GV
+awk 'NR==FNR{a[$0]++;next}a[$0]' patterns bigfile #replace $0 with $2
+This will print all the lines of big file that a[$0] of big file has a regular -different than zero - value
+If a[$0] of bigfile is null that means that a[$0] was not found in patterns = array element not created
+
+##grep -v method by GV
+awk 'NR==FNR{a[$0]++;next}!a[$0]' patterns bigfile #replace $0 with $2
+All lines in bigfile not found in patterns file will return false which will be reverted to true & printed
+
 ##Alternative classic grep not restricted to checking field 2:
 awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (index($0,i)) {print; break}}' file1.txt FS='|' file2.txt
 Same logic as before (file1 loaded in hash array) but the whole line of file2 ($0) is compared to hash array indexes
@@ -608,6 +634,10 @@ This is directly equivallent 'grep -F -f file1 file2'
 
 Can be done also using match : 
 awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (match($0,i)) {print; break}}' file1.txt FS='|' file2.txt
+
+GV Way: 
+awk 'NR==FNR{a[$0]++;next}(a[$1] || a[$2] || a[$3])' patterns bigfile #considering that patterns file has only one field
+
 
 ##ARRAYS EXAMPLE
 [: http://unix.stackexchange.com/questions/344856/take-two-columns-in-a-tab-delimited-file-and-merge-into-one/344880?noredirect=1#comment610394_344880 :]

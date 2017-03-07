@@ -371,6 +371,7 @@ Pattern [8-9]|1[0-4] will epxand to chars 8-9 OR 10-11-12-13-14 (as chars)
 Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-100
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIND 
+Read here why you never parse output of ls: http://mywiki.wooledge.org/BashGuide/Practices#Quoting (chap 5)
 POSIX Find Manual :http://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
 ##Use find as ls alternative
 find /home/gv -maxdepth 1 -type d -> list only directories
