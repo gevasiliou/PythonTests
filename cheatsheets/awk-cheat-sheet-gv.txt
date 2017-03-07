@@ -1,4 +1,5 @@
 AWK:CHEATS BY GV
+http://awk.freeshell.org/ #also check freenod irc - channel awk
 https://www.gnu.org/software/gawk/manual/gawk.html
 https://www.tutorialspoint.com/awk/awk_arithmetic_functions.htm
 http://www.pement.org/awk/awk1line.txt
@@ -671,7 +672,19 @@ awk 'NR==FNR{a[$0]++;next}(a[$1] || a[$2] || a[$3])' patterns bigfile #consideri
 awk 'BEGIN{FS=OFS=" "}{z[NR]=$1FS$3; print $1,$2}END{for (i=1; i<=NR; i++){print z[i]}}' a.txt
 
 
-##Arrays next chalenge: awk output is modified if you apply 'a[$0]++;1' or 0 (actually 0 is the default)
+##AWK:CHALLENGE : Modification of awk output with 1
+http://awk.freeshell.org/AwkTips
+The 1 stands for true and forces awk to print. 
+This is usefull in idiomatic coding, when you want to quickly built a kind of expression.
+Real Example:
+Suppose a file with contents line1-line2-line3
+
+awk '{sub(/ine/,"foo")}' or awk 'sub(/ine/,"foo")'    --> Output will be lfoo1-lfoo2-lfoo3
+awk '{sub(/www/,"foo")}' or awk 'sub(/www/,"foo")'    --> Output will be nothing! No substitution made.
+awk '{sub(/www/,"foo")}1' or awk 'sub(/www/,"foo");1' --> Output will be all the lines, no matter if the subs succeed or failed.
+
+awk '{sub(/1/,"foo")}1' or awk 'sub(/1/,"foo");1' --> Output will be all the lines; replaced (like line1 = linefoo) or not. 
+.B Thus this command with the use of ;1 is directly equivalent to sed 's/pattern/replacement' 
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -707,6 +720,7 @@ NaN 1   2   NaN 1   2   1
 AWK:ONELINERS
 http://www.pement.org/awk/awk1line.txt
 http://www.pement.org/awk/
+http://awk.freeshell.org/AwkTips
 
 Tip: print is the default action of awk, so even if ommited print will be performed.
 
@@ -772,7 +786,7 @@ gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' #insert 
 
 awk '{ print $NR }'		#NR is number of records=number of lines. This will print $1 for 1st line, $2 for second line, etc
 awk 'NR < 11' 					#print first 10 lines of file (emulates behavior of "head")
-awk 'NR>1{exit};1' 				#print first line of file (emulates "head -1")
+awk 'NR>1{exit};1' 				#print first line of file and then exits(emulates "head -1")
 awk '{y=x "\n" $0; x=$0};END{print y}' 		#print the last 2 lines of a file (emulates "tail -2")
 awk 'END {print}' 				#print the last line of a file (emulates "tail -1")
 awk 'END {print NR}' 				#print the number of lines of a file (emulates wc -l <file)
@@ -789,8 +803,9 @@ awk '/Iowa/,/Montana/' 				#print section of file between two regular expression
 awk '$1 ~ /foo/ { print $0 }' BBS-list  	#print if field1 matches pattern foo
 
 awk NF OR awk '/./'				#delete ALL blank lines from a file (same as "grep '.' ") - alternative awk '/./'
+awk 'NF--'              			# removes last field and prints the line
 awk 'a !~ $0; {a=$0}' 				#remove duplicate, consecutive lines (emulates "uniq")
-awk '!a[$0]++' OR awk '!($0 in a){a[$0];print}' #remove duplicate, nonconsecutive lines - even unsorted!!
+awk '!a[$0]++' OR awk '!($0 in a){a[$0];print}' #remove duplicate, nonconsecutive lines - even unsorted!! = Advance uniq 
 
 gawk -v BINMODE="w" '1' infile >outfile 	#IN DOS ENVIRONMENT# convert DOS newlines (CR/LF) to Unix format. Alternative: tr -d \r <infile >outfile
 awk '{sub(/^[ \t]+/, "")};1' 			#delete leading whitespace (spaces, tabs) from front of each line aligns all text flush left
