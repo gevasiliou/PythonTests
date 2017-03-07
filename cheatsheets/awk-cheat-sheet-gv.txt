@@ -158,12 +158,17 @@ AWK:EXTERNAL VARIABLES
 ##Import variables
 You can import a shell variable by awk -v awkvar=$shellvar (i.e awk -v dt=$date).
 Inside awk you need to refer to awkvraible without $.
+Each external var requires it's own -v declaration.
 
 ##Export AWK variables
 $ mkfifo fifo
 $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
 $ IFS== read var value < fifo
 $ eval export $var=$value
+
+##Export Alternatives
+If you need to catch let's say one var you can also do it like shellvar=$(awk...). Whatever awk prints will be stored in $() pipe buffer.
+For more vars, you could also use a temp file , printing inside va="value"\n and then you could source the file in shell scripts.
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:REPLACE Switch position of comma separated fields:
