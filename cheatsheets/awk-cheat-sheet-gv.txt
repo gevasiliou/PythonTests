@@ -58,50 +58,16 @@ RS 								# Record separator of input file (default newline)
 ^ , $ 								# Match beginning/end of field
 == 								# Equal operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
-!~ 								# Do not match operator
-BEGIN 								# Denotes block executed once at start of the script
+!~ 								# Regex not equal operator
+BEGIN 								# Denotes block executed once at start of the script (No input processed yet)
 END 								# Denotes block executed once at end of the script
-str1 str2 							# Space Concatenates str1 and str2
+a=str1 OFS str2 						# Space Concatenates str1 , OFS and str2
 {print $1} 							# Prints the first field of input (as read using FS separator)
-{print $1,$2; print $3,$4} 			# Prints field 1 and 2 in one line and field 3 and 4 on the next line. separating prints by ; forces new line.
-'BEGIN {FS=OFS="\t"}; 				# Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
-next 								# Goes to next record - blocks following code execution and restarts from the beginning
+{print $1,$2; print $3,$4} 		# Prints field 1 & 2 in one line, and field 3 & 4 on next line.(print sthing with ; = "\n") 
+'BEGIN {FS=OFS="\t"}; 			# Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
+next 						# Goes to next record - blocks following code execution and restarts from the beginning
 while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
 do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
-
-##Conditional Expressions Clarification
-Mind that the compact awk usage allows awk 'condition{action}' without if - then
-Action can be ommited; in this case the default action (print $0) is performed. 
-On the condition side we can have either boolean condition check (true /false) or arithmetical checks (i.e awk 'NR>10')
-
-Moreover all vars have a value. You can either built an expression based on the actual value of the variable , or based on the fact if this variable has a value or not (boolean testing).
-In Boolean testing, awk will evaluated as true whatever variable has a non-zero / non-null value, no matter if it is negative or positive.
-
-See this difference:
-.B (A) awk 'a[$0]++' file	  #Prints all non unique lines of a file.
-Here the status of the a[$0]++ is checked (before increasement). If a[$0]++ has any valid value will be printed
-First line a[$0] is null=no printing and then increasing value from null/zero to 1 (++)
-All the other times that same $0 is found will have a value different than zero thus will be printed.
-
-.B (B) awk '(a[$0]++ == 1)' file #Prints all lines that found two times . Emulates uniq -d
-Here the real value of a[$0]++ is checked before increasement and printing is done only when a[$0] is 1 
-On the first line a[$0] will return null=false=0 
-On the second line a[$0] will have a value of 1 = printing
-On the third line a[$0] will have a valuer of 2 = non printing
-
-.B (C) Code Golf Challenge: How to emulate uniq -D with as less code as possible.
-uniq -d prints the lines that found to be repeated two or more times  
-So even if line1 is repeated 10 times, uniq -d will just print line1 (one time) and this is what (B) does.
-
-uniq -D print ALL repeating lines . If line1 repeats 10times, uniq -D will print line1 10 times.
-This is close to awk (A) but (A) is not printing the first occurence of a future repeated line. 
-awk (A) prints only the next occurences after first. So for a 10 times found line1 awk (A) will print Line1 9 times.
-
-We could force an extra separated print a[$0] for all duplicated lines (i.e in END) but this may mess output format. 
-It is more challenging to print duplicates along with their NR in which they found in file (print them as you found them)
-
-Another alternative would be in END to print array elements a[$0] with a value >1. But for big files this should be inefficient.
-
 
 ##AWK Builtin Functions
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
@@ -190,6 +156,48 @@ awk -F"," -v OFS=":" '{ $1 = $1; print }' <<<"one,two,three" #Prints one:two:thr
 The statement $1=$1 will reconstruct the $0 according to OFS. If you just print $0, will be printed with comma.
 
 PS: printing fields i.e {print $1,$2) will be done by respecting OFS.
+
+##Conditional Expressions Clarification
+Mind that the compact awk usage allows awk 'condition{action}' without if - then
+Action can be ommited; in this case the default action (print $0) is performed. 
+On the condition side we can have either boolean condition check (true /false) or arithmetical checks (i.e awk 'NR>10')
+
+Moreover all vars have a value. You can either built an expression based on the actual value of the variable , or based on the fact if this variable has a value or not (boolean testing).
+In Boolean testing, awk will evaluated as true whatever variable has a non-zero / non-null value, no matter if it is negative or positive.
+
+See this difference:
+.B (A) awk 'a[$0]++' file	  #Prints all non unique lines of a file.
+Here the status of the a[$0]++ is checked (before increasement). If a[$0]++ has any valid value will be printed
+First line a[$0] is null=no printing and then increasing value from null/zero to 1 (++)
+All the other times that same $0 is found will have a value different than zero thus will be printed.
+
+.B (B) awk '(a[$0]++ == 1)' file #Prints all lines that found two times . Emulates uniq -d
+Here the real value of a[$0]++ is checked before increasement and printing is done only when a[$0] is 1 
+On the first line a[$0] will return null=false=0 
+On the second line a[$0] will have a value of 1 = printing
+On the third line a[$0] will have a valuer of 2 = non printing
+
+.B (C) Code Golf Challenge: How to emulate uniq -D with as less code as possible.
+uniq -d prints the lines that found to be repeated two or more times  
+So even if line1 is repeated 10 times, uniq -d will just print line1 (one time) and this is what (B) does.
+
+uniq -D print ALL repeating lines . If line1 repeats 10times, uniq -D will print line1 10 times.
+This is close to awk (A) but (A) is not printing the first occurence of a future repeated line. 
+awk (A) prints only the next occurences after first. So for a 10 times found line1 awk (A) will print Line1 9 times.
+
+We could force an extra separated print a[$0] for all duplicated lines (i.e in END) but this may mess output format. 
+It is more challenging to print duplicates along with their NR in which they found in file (print them as you found them)
+
+Another alternative would be in END to print array elements a[$0] with a value >1. But for big files this should be inefficient.
+
+##Transform Header only line to header + field 1 +field2
+http://stackoverflow.com/questions/42669125/how-to-convert-heading-of-file-content-into-column-using-awk/42672530#42672530
+
+My way: awk 'BEGIN{FS=OFS="|"}NF==1{h=$0;next}$0=h OFS $0' file1 #Fallpit: No blank line is printed between headers change
+
+Smart way: awk 'BEGIN{FS=OFS="|"} NF==1{h=$0} {print (NF==1?"": h OFS $0)}' file1 #Includes blank line on every header change
+
+Another Smart Way : awk -F '|' '{if(NF==2)$0=F"|"$0;else{F=$1;$0=""}}NR>1' YourFile
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
