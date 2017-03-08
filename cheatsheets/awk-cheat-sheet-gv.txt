@@ -1,4 +1,12 @@
 AWK:CHEATS BY GV
+
+OFS is not affecting the print of $0. 
+If you print $0 the line is printed with initiall FS.
+You can workaround this either by gensub(FS,OFS,"G",$0) or more clever awk -v OFS=: '{ $1 = $1; print }' <<<"one,two,three"
+
+awk 'BEGIN { str=sprintf("%40s", " ");gsub(" ","-",str);print str }' #Will print 40 dashes (first spaces that will be converted to dashes
+
+
 http://awk.freeshell.org/ #also check freenod irc - channel awk
 https://www.gnu.org/software/gawk/manual/gawk.html
 https://www.tutorialspoint.com/awk/awk_arithmetic_functions.htm
