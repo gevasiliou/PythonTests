@@ -54,8 +54,8 @@ echo "printarray: Prints indexed array $1 as stored in bash environment "
 # [1]="two
 # [2]="fi ve" #works even with space in array values
 [[ -z $1 ]] && echo "Provide an array variable to display" && return
-declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g" #Only valid in GNU Sed
-
+#declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g" #Only valid in GNU Sed
+declare -p $1 | perl -pe "s/declare -a $1=\(//g; s/\)$//g; s/\" \[/\n\[/g" #Valid in BSD
 }
 
 function mandiff { 
