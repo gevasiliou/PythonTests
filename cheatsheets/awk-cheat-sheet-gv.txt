@@ -1,13 +1,6 @@
 AWK:CHEATS BY GV
-
-OFS is not affecting the print of $0. 
-If you print $0 the line is printed with initiall FS.
-You can workaround this either by gensub(FS,OFS,"G",$0) or more clever awk -v OFS=: '{ $1 = $1; print }' <<<"one,two,three"
-
-awk 'BEGIN { str=sprintf("%40s", " ");gsub(" ","-",str);print str }' #Will print 40 dashes (first spaces that will be converted to dashes
-
-
 http://awk.freeshell.org/ #also check freenod irc - channel awk
+http://awk.freeshell.org/AwkTips
 https://www.gnu.org/software/gawk/manual/gawk.html
 https://www.tutorialspoint.com/awk/awk_arithmetic_functions.htm
 http://www.pement.org/awk/awk1line.txt
@@ -55,17 +48,17 @@ awk '/pattern/ {action}' file 		# Execute action for matched pattern 'pattern' o
 $0 									# Reference current record line
 FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
 -F 									# Command line option to specify input field delimiter before starting awk script.
-OFS 								# Field separator of the outputted data (default whitespace). Mind that this can be assigned after script like awk '{your script}' OFS=: file
-NF 									# Number of fields in current record/line (i.e {print $NF})
-NR 									# Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
-FNR 								# Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
-FILENAME 							# Reference current input file
-ORS 								# Record separator of the outputted data (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
+OFS 			# Field separator of the outputted data (default whitespace). Mind that this can be assigned after script like awk '{your script}' OFS=: file
+NF 			# Number of fields in current record/line (i.e {print $NF})
+NR 			# Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
+FNR 			# Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
+FILENAME 		# Reference current input file
+ORS 			# Record separator of the outputted data (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
 RS 								# Record separator of input file (default newline)
 ^ , $ 								# Match beginning/end of field
-== 									# Equal operator for if
-~ 									# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
-!~ 									# Do not match operator
+== 								# Equal operator for if
+~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
+!~ 								# Do not match operator
 BEGIN 								# Denotes block executed once at start of the script
 END 								# Denotes block executed once at end of the script
 str1 str2 							# Space Concatenates str1 and str2
@@ -75,6 +68,40 @@ str1 str2 							# Space Concatenates str1 and str2
 next 								# Goes to next record - blocks following code execution and restarts from the beginning
 while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
 do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
+
+##Conditional Expressions Clarification
+Mind that the compact awk usage allows awk 'condition{action}' without if - then
+Action can be ommited; in this case the default action (print $0) is performed. 
+On the condition side we can have either boolean condition check (true /false) or arithmetical checks (i.e awk 'NR>10')
+
+Moreover all vars have a value. You can either built an expression based on the actual value of the variable , or based on the fact if this variable has a value or not (boolean testing).
+In Boolean testing, awk will evaluated as true whatever variable has a non-zero / non-null value, no matter if it is negative or positive.
+
+See this difference:
+.B (A) awk 'a[$0]++' file	  #Prints all non unique lines of a file.
+Here the status of the a[$0]++ is checked (before increasement). If a[$0]++ has any valid value will be printed
+First line a[$0] is null=no printing and then increasing value from null/zero to 1 (++)
+All the other times that same $0 is found will have a value different than zero thus will be printed.
+
+.B (B) awk '(a[$0]++ == 1)' file #Prints all lines that found two times . Emulates uniq -d
+Here the real value of a[$0]++ is checked before increasement and printing is done only when a[$0] is 1 
+On the first line a[$0] will return null=false=0 
+On the second line a[$0] will have a value of 1 = printing
+On the third line a[$0] will have a valuer of 2 = non printing
+
+.B (C) Code Golf Challenge: How to emulate uniq -D with as less code as possible.
+uniq -d prints the lines that found to be repeated two or more times  
+So even if line1 is repeated 10 times, uniq -d will just print line1 (one time) and this is what (B) does.
+
+uniq -D print ALL repeating lines . If line1 repeats 10times, uniq -D will print line1 10 times.
+This is close to awk (A) but (A) is not printing the first occurence of a future repeated line. 
+awk (A) prints only the next occurences after first. So for a 10 times found line1 awk (A) will print Line1 9 times.
+
+We could force an extra separated print a[$0] for all duplicated lines (i.e in END) but this may mess output format. 
+It is more challenging to print duplicates along with their NR in which they found in file (print them as you found them)
+
+Another alternative would be in END to print array elements a[$0] with a value >1. But for big files this should be inefficient.
+
 
 ##AWK Builtin Functions
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
@@ -154,6 +181,15 @@ Although if you pipe the output to |od -An -t x1c you will see that \x1b (esc) c
  033     033     033      F   i   e   l   d   4       F   i   e   l   d   5       F   i   e   l   d   6  \n 
 
 PS: For a fixed known number of columns , you can always do 'print $4,$5,$6'
+
+## Force output to respect OFS in printing of $0
+Normally OFS is not affecting the print of $0. if you just {print} the input line will be printed as it is, ignoring OFS.
+You can workaround this either by awk -F"," 'gensub(FS,OFS,"G",$0)' OFS=: <<<"one,two,three"
+or more cleverly: 
+awk -F"," -v OFS=":" '{ $1 = $1; print }' <<<"one,two,three" #Prints one:two:three
+The statement $1=$1 will reconstruct the $0 according to OFS. If you just print $0, will be printed with comma.
+
+PS: printing fields i.e {print $1,$2) will be done by respecting OFS.
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
@@ -617,24 +653,26 @@ last three lines (2-3-2) had already a value when awk reached them (had been fou
 You can instead of a[$0] assign a different field like a[$2] if you want to print duplicate lines in terms of dupplicates in field 2.
 
 ##More tricky usages
-awk '!a[$0]++' equals to awk '(a[$0]++ == 0)' #Prints also unique lines. In this alt syntax, it seems that parenthesis is evaluated 
-arithmetically.For every line that a[$0]++ is evaluated as null=zero then print it because the whole parenthesis will return true.
+.B awk '!a[$0]++' <==> '(a[$0]++ == 0)' 
+Prints also unique lines. In this alt syntax, it seems that parenthesis is evaluated arithmetically.
+For every line that a[$0]++ is evaluated as null=zero then print it because the whole parenthesis will return true.
 
-awk '(a[$0]++ == 1)'  #Will print repeated lines - equivalent to uniq -d but without sorting requirement. Will print "line1" ONCE even if line1 is found two or more times.
-
-In this usage awk will print if a[$0] has a value equal to 1 (arithmetically) = lines found more than two times.
+.B awk '(a[$0]++ == 1)'  #Direct equivalent to uniq -d
+Arithmetic Comparison and not boolean. Will print repeated lines - equivalent to uniq -d but without sorting requirement. 
+Will print "line1" ONCE has been found a second time (and thus a[$0]==1) . Works if line1 is found two or more than two times.
 First time a[$0]++ will be evaluated as null=0 and will not print. 
-Second time a[$0]++ will be evaluated as 1 and will print. (then will be increased by 1 more).
+Second time a[$0]++ will be evaluated as 1 and will print. (then will be increased by 1 more - post increment).
 Third and more times, a[$0]++ will have a value greater than 1 and will not print.
 
 This is different to awk 'a[$0]++' since in this awk, the a[$0] is evaluated with true or false and not arithmetically.
 With 'a[$0]++' we have a print for every line that is not null/0 . So if line1 exists three times will be printed two times.
 
-awk 'a[$0]++' is equivalent to awk '(a[$0]++ > 0)'  #In alt syntax with arithmetic evaluation the whole parenthesis will be true if a[$0} is greater than zero before increment. Zero will be only the first time found thus will return arithmetically false.
+.B awk 'a[$0]++' <==> awk '(a[$0]++ > 0)'
+In alt syntax with arithmetic evaluation the whole parenthesis will be true if a[$0} is greater than zero before increment. 
+Zero will be only the first time found thus will return arithmetically false.
 
-awk '(a[$0]++ > 1)' #This will print all lines that they do repeat more than two times. First occurence a[$0] would be found zero, second would be found 1, more than two will be found greater than 1
-
-
+.B awk '(a[$0]++ > 1)' 
+This will print all lines that they do repeat more than two times. First occurence a[$0] would return zero, second would be found 1, more than two will be found greater than 1 = parenthesis true=print
 
 #-----------------------------------------------------------------------------------------------------------------------
 ##ARRAYS EXAMPLE - GREP SIMULATION
@@ -723,6 +761,21 @@ Output:
 A   B   C   D   E   F   G	
 1   2   3   4   5   6   7	
 NaN 1   2   NaN 1   2   1	
+#-----------------------------------------------------------------------------------------------------------------------
+AWK:UNDERLINE HEADERS by Gilles
+http://unix.stackexchange.com/questions/349790/how-to-insert-a-new-line-after-the-first-line-in-a-file-that-is-similar-to-it/349885?noredirect=1#comment619305_349885
+
+##Add dashes bellow each field of 1st line (not space nor tab) 
+awk '{print} NR==1 {gsub(/[^\t ]/, "-"); print}'	
+Incredibly smart: 
+The initial {print} prints whatever record comes in awk <==> print $0.
+If NR==1 = 1st line, global replacement of all chars that is not a tab nor a space with a dash. Then print
+You don't need to calculate any lenght etc. You just replace the whole $0 with dashes , excluding tabs and spaces (delimiters)
+When the second line comes in, initial {print} will print $0, but the replacement gsub will be skipped since NR >1
+
+##Variations
+awk '{print} NR==1 {gsub(/[^ \t]/, "-"); while (sub(/- -/, "---")) {}; print}'  #Tricky:WIll insert a long dashed line bellow 1st line.
+awk '{print} NR==1 {gsub(/[^\t]/, "-"); print}'			#Add a dash bellow every non tab char of line1.
 
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ONELINERS
@@ -731,13 +784,14 @@ http://www.pement.org/awk/
 http://awk.freeshell.org/AwkTips
 
 Tip: print is the default action of awk, so even if ommited print will be performed.
+Tip: In condition checks it is usuall that /string/ refers to patterns . For fixed checks do not ude /../ but simmply =="..."
 
 sort -u file | awk 'NR==FNR{seen[$1]++;next}seen[$1]==1' - file 	
 # Use of awk combined with pipe/stdin and a file *actually the same file. Also possible with awk '...' file file (doube pass)
 # http://unix.stackexchange.com/questions/348252/print-if-for-the-same-1st-field-theres-a-single-value-of-2nd-field-on-all-lines
 
 awk '1; NR%3==0 {print "----"}' file			
-# Prints some dashes every three lines. Actually is a division modulo NR(lines) / 3 = 0. Modulo will be zero for NR 3,6,9,etc (multipliers of 3)
+# Prints some dashes every three lines. Actually is a division modulo NR(lines) / 3 = 0. Modulo will be zero for NR 3,6,9,etc (multipliers of 3) and non-zero in all other numbers.
 
 awk 'FNR==1 && $1==8 && $2>500{print FILENAME}' *.csv 	
 # Prints file names of all the files satisfying all three criteria (Field 1 to be 8 and field 2 to be more than 500 at first line of each file)
@@ -752,12 +806,12 @@ awk '$2 != "foo"' file					#Print lines where field 2 is NOT equal to "foo" in f
 awk '$1 ~ /regex/' file					#Print line if field 1 matches regex in file
 awk '$1 !~ /regex/' file				#Print line if field 1 does NOT match regex in file
 awk 'if ($0 ~ /edu/ && $0 ~ /li/) print'		#Two Patterns - Boolean AND
-awk ‘$0 ~ /foo/ && ($2 == bar++)’			# AND Operation. Var bar is not incremented if no substring ‘foo’ is found on recode. 
+awk ‘$0 ~ /foo/ && ($2 == bar++)’			# AND Operation. Var bar is not incremented if no substring ‘foo’ is found on record. 
 /foo|bar|baz/  { buzzwords++ }END{print buzzwords, "buzzwords seen" }	#regex patter with or + counting + printing of counts
 awk '$7  ~ /^[a-f]/'    				#print line if field #7 matches regex
 awk '$7 !~ /^[a-f]/'    				#print line if field #7 does NOT match regex
 awk 'NR!=1{print $1}' file				#Print first field for each record in file excluding the first record
-awk 'END{print NR}' 					#count lines (emulates "wc -l").Actually prints NR after end of file. NR is always counted by awk.
+awk 'END{print NR}' 					#count lines (emulates "wc -l").Actually prints NR after end of file. 
 awk '$1 > $2 {print $1,$2,$1-$2}' filename		#prints Field1 , Field2 and difference $1-$2 for all lines that $1>$2
 
 awk '/foo/{n++}; END {print n+0}' file			#Print total number of lines that contain foo
@@ -776,7 +830,7 @@ awk '1;{print "\n"}'					#triple space a file
 awk '{print FNR "\t" $0}' files* 			#precede each line by its line number FOR THAT FILE (left alignment).
 awk '{print NR "\t" $0}' files* 			#precede each line by its line number FOR ALL FILES TOGETHER, with tab.
 awk '{printf("%5d : %s\n", NR,$0)}'			#number each line of a file (number on left, right-aligned)
-x == y ? a[i++] : b[i++]				# The famous conditions expressions - mind the trick to increment array indexes
+x == y ? a[i++] : b[i++]				#The famous conditions expressions - mind the trick to increment array indexes
 awk 'NF{$0=++a " :" $0};1' 				#number each line of file, but only print numbers if line is not blank
 
 awk '/Beth/{n++}; END {print n+0}' file           		#print the total number of lines that contain "Beth"
@@ -788,14 +842,19 @@ awk ’length($0) > 80’ data     					#print lines with length more than 80
 awk ’NF > 0’ data      		    			        #print any line with at least one record=no blank line
 awk 'NF > 4' 						        #print every line with more than 4 fields
 awk '$NF > 4' 							#print every line where the value of the last field is > 4
+
 awk 'BEGIN{while (a++<513) s=s " "; print s}' 			#create a string of a specific length (e.g., generate 513 spaces)
-
+awk 'BEGIN { str=sprintf("%40s", " ");gsub(" ","-",str);print str }' #Will print 40 spaces and then convert to 40dashes 
 gawk --re-interval 'BEGIN{while(a++<49)s=s " "};{sub(/^.{6}/,"&" s)};1' #insert 49 spaces after column #6 of each input line.
+awk '{print} NR==1 {gsub(/[^\t ]/, "-"); print}'	#Tricky by Gilles: Add dashes bellow each field of 1st line (not space nor tab) 
+awk '{print} NR==1 {gsub(/[^ \t]/, "-"); while (sub(/- -/, "---")) {}; print}'  #Tricky:WIll insert a long dashed line bellow 1st line.
+awk '{print} NR==1 {gsub(/[^\t]/, "-"); print}'			#Add a dash bellow every non tab char of line1.
 
-awk '{ print $NR }'		#NR is number of records=number of lines. This will print $1 for 1st line, $2 for second line, etc
+
+awk '{ print $NR }'	    	                #NR is number of records/lines. Will print $1 for 1st line, $2 for second line, etc
 awk 'NR < 11' 					#print first 10 lines of file (emulates behavior of "head")
 awk 'NR>1{exit};1' 				#print first line of file and then exits(emulates "head -1")
-awk '{y=x "\n" $0; x=$0};END{print y}' 		#print the last 2 lines of a file (emulates "tail -2")
+awk '{y=x "\n" $0; x=$0};END{print y}' 		#print the last 2 lines of a file (emulates "tail -2"). Alt: y=x ORS $0
 awk 'END {print}' 				#print the last line of a file (emulates "tail -1")
 awk 'END {print NR}' 				#print the number of lines of a file (emulates wc -l <file)
 awk '$5 == "abc123"' 				#print any line where field #5 is equal to "abc123"
@@ -810,9 +869,9 @@ awk 'NR==52 {print;exit}'  			#print line number 52 - efficient on large files. 
 awk '/Iowa/,/Montana/' 				#print section of file between two regular expressions (inclusive-case sensitive)
 awk '$1 ~ /foo/ { print $0 }' BBS-list  	#print if field1 matches pattern foo
 
-awk NF OR awk '/./'				#delete ALL blank lines from a file (same as "grep '.' ") - alternative awk '/./'
-awk 'NF--'              			# removes last field and prints the line
-awk 'a !~ $0; {a=$0}' 				#remove duplicate, consecutive lines (emulates "uniq")
+awk NF 						#delete ALL blank lines from a file (same as "grep '.' ") - alternative awk '/./'
+awk 'NF--'              			#removes last field and prints the line. Actually reconstructs the record with -1 field
+awk 'a !~ $0; {a=$0}' 				#remove duplicate, consecutive lines (emulates classic "uniq")
 awk '!a[$0]++' OR awk '!($0 in a){a[$0];print}' #remove duplicate, nonconsecutive lines - even unsorted!! = Advance uniq 
 
 gawk -v BINMODE="w" '1' infile >outfile 	#IN DOS ENVIRONMENT# convert DOS newlines (CR/LF) to Unix format. Alternative: tr -d \r <infile >outfile
@@ -856,21 +915,31 @@ awk '$3 != "None" && $4 != "None" {print $2}'		#Print if two fields match the sa
 awk 'length < 64'					# print only lines of less than 65 characters
 
 echo This++++this+++is+not++done | awk '{gsub(/\++/," ");}1' ==> Removes all +. Actually replaces two ++ with a space
-echo This++++this+++is+not++done | awk -F'++' '{$1=$1}1' ==> Same as above (http://stackoverflow.com/questions/14432209/substitute-a-regex-pattern-using-awk)
+echo This++++this+++is+not++done | awk -F'++' '{$1=$1}1' ==> Same as above (http://stackoverflow.com/questions/14432209/substitute-a-regex-pattern-using-awk). This works because OFS is not assigned = default = space. The $1=$1 is reconstructing the output record with the use of OFS.
 
 awk 'BEGIN{OFS=FS="|"}{$0=$3OFS$2OFS$1}{print $1}' file7 	# This reassigns $0 = swaps original field1 with 3. After swap, awk prints field $1 of the new $0 ==> $3 of original file
-awk '!a[$0]++' file1 file2 file3				#This prints unique lines among all files even if UNSORTED!! http://unix.stackexchange.com/questions/159695/how-does-awk-a0-work
-awk 'a[$0]++' file1 file2 file3					#This prints duplicate lines among all files even if UNSORTED!!
 
-awk 'NR==FNR{a[$2];next}$2 in a' file1 file2     		#grep -f operation - exact match of $2 / file1 with $2/file2. Prints matches. Alt: awk 'NR==FNR{a[$2]=1;next}a[$2]' file1 file2
-awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2  		#like above but prints unmatched results = grep -v -f. 
-awk '{if (NR==FNR){a[$2];next};if (!($2 in a)) print}' file1 file2 	#Equivalent of the above short oneliner.
+awk '!a[$0]++' file1 file2 file3				#This prints unique lines among all files even if UNSORTED!! http://unix.stackexchange.com/questions/159695/how-does-awk-a0-work
+
+awk 'a[$0]++' file1 file2 file3					#This prints all non unique lines among all files even if UNSORTED!!
+
+awk '(a[$0]++ == 1)'  						#Direct equivalent to uniq -d - Arithmetic Evaluation - not boolean
+
+awk 'NR==FNR{a[$2];next}$2 in a' file1 file2     	#grep -f operation - exact match of $2 / file1 with $2/file2. Prints matches. 
+
+awk 'NR==FNR{a[$2]=1;next}a[$2]' file1 file2		#Same as above but even more tricky. This works justs by boolean checking if a[$2] when reading the second file has a value or not (set by file1). Null value=No Value = False=no print.
+
+
+awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2    		        #like above but prints unmatched results = grep -v -f. 
+awk '{if (NR==FNR){a[$2];next};if (!($2 in a)) print}' file1 file2 	#Long Equivalent of the above short oneliner.
 
 awk 'BEGIN{OFS=FS="|"}{if (FILENAME=="file8") $0=$1OFS$1OFS$1}!a[$2]++' file8 file7           # This reassings $0 of file8 in order $2 to match $2 of file 7 and then removes duplicates based on $2.
+
 awk 'BEGIN{OFS=FS="|"}{if (FILENAME=="file8") {$0=$1OFS$1OFS$1} else {b=$0}}{if (a[$2]++) print b}' file8 file7 # Prints duplicates of file 8 (patterns) and file7 (data). 
 Bug is that comparison is made on field2 (in both files) so if data file7 has same $2 with different $1 and $3 will be exluded also.
 
 awk 'BEGIN { cnt = 10; cnt += 10; print "Counter =", cnt }'       #cnt is increased by 10,prints 20. Also available: -= ,*= (multiply),/= (divide),%= (modulo), ^= or**=(raise)
+
 awk '{ $6 = ($5 + $4 + $3 + $2) ; print $6 }' inventory-shipped   # Assign contents to a field, even if the field is out of normal range
 
 echo 1 | awk '{ printf("%02d\n", $1) }' 		# Prints numbers with leading zero. If number is >10 then no leading zero is added.
