@@ -700,13 +700,27 @@ If this condition returns true, awk default action is performed (print $0 of fil
 This is equivalent to if ($2 in hash) {print $0}, but written in a smart compact way.
 
 ##Alternative grep method by GV
-awk 'NR==FNR{a[$0]++;next}a[$0]' patterns bigfile #replace $0 with $2
+awk 'NR==FNR{a[$0]=1;next}a[$0]' patterns bigfile #replace $0 with $2
 This will print all the lines of big file that a[$0] of big file has a regular -different than zero - value
 If a[$0] of bigfile is null that means that a[$0] was not found in patterns = array element not created
 
 ##grep -v method by GV
-awk 'NR==FNR{a[$0]++;next}!a[$0]' patterns bigfile #replace $0 with $2
+awk 'NR==FNR{a[$0]=1;next}!a[$0]' patterns bigfile #replace $0 with $2
 All lines in bigfile not found in patterns file will return false which will be reverted to true & printed
+
+.B GV Method Pitfalls:
+As a matter of speed even in big files has been proved that the a[$2] vs ($2 in a) is the same speed.
+Though my method with checking status of a[$2] has a major pitfall. 
+If the $2 of bigfile is not valid in array a, then will return null/zero , will not be printed (that is desiarable).
+But on the same time this array element WILL BE CREATED and this means that you consume huge amount of memory without reason.
+
+On the other hand, the method ($2 in a) checks for existance of $2 in indeces of array a but is not creating array elements.
+
+One workaround for a[$2] would be to delete the array element afterwards in order to free space. 
+But if you delete a[$2] after print, the second time that same pattern is found in bigfile might not be printed (like grep -m1)
+
+Unless is to be done something like this (not tested)
+awk 'NR==FNR{a[$0]=1;next}a[$0]?print:delete a[$0]' patterns bigfile #If a[$0] returns true print $0, else delete a[$0]
 
 ##Alternative classic grep not restricted to checking field 2:
 awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (index($0,i)) {print; break}}' file1.txt FS='|' file2.txt
@@ -718,6 +732,8 @@ Can be done also using match :
 awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (match($0,i)) {print; break}}' file1.txt FS='|' file2.txt
 
 GV Way: 
+Based on the return status of a[$1] or a[$2] or a[$3] . If null/zero returns false = no print. If has a value = true = print
+
 awk 'NR==FNR{a[$0]++;next}(a[$1] || a[$2] || a[$3])' patterns bigfile #considering that patterns file has only one field
 
 
@@ -803,6 +819,9 @@ awk '1; NR%3==0 {print "----"}' file
 
 awk 'FNR==1 && $1==8 && $2>500{print FILENAME}' *.csv 	
 # Prints file names of all the files satisfying all three criteria (Field 1 to be 8 and field 2 to be more than 500 at first line of each file)
+
+awk 'BEGIN{FS="";OFS="-"}$1=$1' 			#Input chars will be transformed to dash separated. By setting FS to null "" awk treats each char as a field. 
+							#By $1=$1 you force the output to be redisigned acc to new different OFS="-"
 
 awk '{print $1}' file 					#Print first field for each record in file
 awk '{print FNR "\t" $0}'				#Print line numbers in each file = cat -n
