@@ -417,9 +417,9 @@ nl /boot/config-4.9.0-1-amd64 |tail
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT / GREP WITH MULTIPLE PATTERNS - Simulate agrep (grep with AND) for patterns read from a file:
 http://unix.stackexchange.com/questions/341076/how-to-find-all-files-containing-various-strings-from-a-long-list-of-string-comb
-Basic: awk '/pattern1/ && /pattern2/'
-while IFS= read -r line;do awk "$line" *.txt;done<./tmp/d1.txt
+Basic Command: awk '/pattern1/ && /pattern2/' file   #Performs the default action print $0
 
+while IFS= read -r line;do awk "$line" *.txt;done<./tmp/d1.txt
 Above will print in screen the matched lines of all txt files.
 If we need to print only the filename and not the matched contents then awk must be used like this:
 awk "$line""{print FILENAME}" *.txt
@@ -447,7 +447,7 @@ grep pattern1 file |grep pattern2 |grep pattern3
 The final output would include all three patterns. 
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
-AWK:SEARCH/GREP MULTIPLE PATTERNS AND PRINT THEM  
+AWK:GREP AND MULTIPLE PATTERNS CASE B  
 awk '/Label 3/ { print $3 } /Label 5/ { print $3 }'  <==>  grep -E 'Label 3 \|Label 5' |cut -d' ' -f3
 Mind the print function between patterns.
 AWK can directly print to a file using { print $3 >>"F3.csv" }
@@ -461,6 +461,38 @@ Consider a file with lines
 Label 3 70
 Label 4 95
 Label 5 100
+
+#------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+AWK:GREP AND MULTIPLE PATTERNS CASE C  
+Consider small patterns file with two patterns per line.
+Consider big data file with lines in where the patterns can be in different order
+awk '/pattern1/ && /pattern2/'  works fine, either directly or by applying awk -f <(sed ..... patterns) datafile
+
+What about a full awk implementation to handle the two patterns in an AND way?
+##1. awk 'BEGIN { getline < "patterns"; split($0, patterns) } { for (i in patterns) if ($0 !~ patterns[i]) next; print }' file1 
+#Above works only for 1st line of patterns (by geirha)
+
+##2. awk 'NR==FNR{patts[$1]=$2;next}{for (i in patts) if (($0 ~ i) && ($0 ~ patts[i])) print}' patterns file1  
+Restricted to work for only two patterns per line but works ok (regex match - no word match)
+
+##3.awk 'NR==FNR{data[$0]=$0;next}{for (i in data) if ((data[i] ~ $1) && (data[i] ~ $2)) print data[i]}' file1 patterns  
+#works even ok with pitfall that big data file is loaded in memory instead of patterns file.
+
+##4.awk 'NR==FNR{patts[$0]="\\<" $1 "\\>.*\\<" $2 "\\>|\\<" $2 "\\>.*\\<" $1 "\\>";next} \
+    {for (i in patts) {if ($0 ~ patts[i]) print}}' patterns file1   
+#Just one more alternative using regex AND and word matching. AND can be emulated with pattern1.*pattern2 | pattern2.*pattern1
+Patterns are transformed from "833 7777" to "\<833\>.*\<7777\> | \<7777\>.*\<833\>"
+
+##5. awk 'NR==FNR{patts[$0]="\\<" $1 "\\>.*\\<" $2 "\\>|\\<" $2 "\\>.*\\<" $1 "\\>";next} \
+{for (i in patts) {if ($0 ~ patts[i]) !found[i]?found[i]=$0:found[i]=found[i] ORS $0}} \
+END{for (k in found) {print found[k];print "-----"}}' patterns file1   
+#The final solution : word matching of pattterns with logical AND operation and printing in the end with matching groups and a separator string. Test it online : http://www.tutorialspoint.com/execute_bash_online.php?PID=0Bw_CjBb95KQMd2JiTTJndl9TLU0
+
+##6. Extending to work with a 2d array in gawk , by geirha
+printf 'p1 p2\np3\n' > patterns
+awk 'NR==FNR{for(i=1;i<=NF;++i)patts[FNR][$i];n=FNR;next}END{for(j=1;j<=n;++j){for(p in patts[j]) print j, p}}' patterns
+
+$0 in array checks can be made like : <geirha> for (i = 1; i <= NF; ++i) if ($i in patts[j]) ...
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT print a line before the pattern match and also the line containing the pattern 'Solaris': 
