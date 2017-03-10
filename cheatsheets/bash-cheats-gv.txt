@@ -822,12 +822,13 @@ $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x
 
 --------------------------------------------------------------------------------------------------------------------------------------
 BASH:EVAL AND INDIRECT EXPANSION
-1) foo=10 x=foo
+http://tldp.org/LDP/abs/html/ivr.html
+1) foo=10 && x=foo
 2) y='$'$x
 3) echo $y --> $foo
-5) eval y='$'$x   #or eval y="\$$x"
-6) echo $y --> 10 # or even 
-*) eval echo '$'$x ->10 # also works - alt: eval echo "\$$x"
+4) eval y='$'$x   #or eval y="\$$x"
+5) echo $y --> 10 # or even 
+6) eval echo '$'$x ->10 # also works - alt: eval echo "\$$x"
 
 Simpler with indirect expansion:
 $ foo=10;x=foo;echo ${!x} 	--> 10
