@@ -2,7 +2,8 @@ BASH:CHEATS BY GV
 
 BASH:BASICS
 http://mywiki.wooledge.org/BashFAQ
-http://mywiki.wooledge.org/BashSheet#Arrays
+http://mywiki.wooledge.org/BashSheet
+
 http://tiswww.case.edu/php/chet/bash/bashref.html#SEC31 - Search for "replace"
 BASH CHEAT SHEET : https://github.com/pkrumins/bash-redirections-cheat-sheet/blob/master/bash-redirections-cheat-sheet.pdf
 BASH HACKERS EXAMPLES / PARAMETER EXPANSION , ETC: http://wiki.bash-hackers.org/syntax/pe
@@ -11,6 +12,7 @@ IO REDIRECTION: http://tldp.org/LDP/abs/html/io-redirection.html
 https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 http://ss64.com/bash/expr.html
 https://debian-administration.org/article/150/Easily_renaming_multiple_files
+http://www.ccs.neu.edu/research/gpc/MSim/vona/terminal/VT100_Escape_Codes.html
 Also very good info available at local 'man bash' and particularly the section SHELL BUILTIN COMMANDS (find it with / in man page view)
 
 Check man bash for :
@@ -819,20 +821,21 @@ Testing:
 $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x3c, Second echo prints <
 
 --------------------------------------------------------------------------------------------------------------------------------------
-BASH:EVAL - Understanding EVAL:
+BASH:EVAL AND INDIRECT EXPANSION
 1) foo=10 x=foo
 2) y='$'$x
 3) echo $y --> $foo
-5) eval y='$'$x
-6) echo $y --> 10 # or even eval echo '$'$x will work
-Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
+5) eval y='$'$x   #or eval y="\$$x"
+6) echo $y --> 10 # or even 
+*) eval echo '$'$x ->10 # also works - alt: eval echo "\$$x"
 
 Simpler with indirect expansion:
 $ foo=10;x=foo;echo ${!x} 	--> 10
 $ foo=10;x=foo;echo ${x} 	--> foo
 
------------------------------------------------------------------------------------------------------------------------------------------
-BASH:INDIRECT EXPANSION - Similar to eval
+Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
+
+##Indirect Expansion Examples
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
 
 $ for i in {1..4};do eval my${i}var="./path${i}_tofile";eval echo "$""my${i}var";done
@@ -854,11 +857,31 @@ my2var
 my3var
 my4var
 
-Difference compared to eval:
+## Indirect Expansion vs Eval
 No. eval will execute potential command substitutions. Indirect expansion will not. 
 Test with this: 
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
 the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
+
+##Indirect Expansion in arrays
+http://unix.stackexchange.com/questions/20171/indirect-return-of-all-elements-in-an-array
+
+One of the most often cases is the need to use eval or indirect expansion in arrays.
+Bash does not allow IE to be applied in $!arr[@]} because same operator is used in order to get array indices
+
+A real life usage is to have i.e two different arrays and ask from user (or get from script) which array to print:
+$ arr1=("one" "two")
+$ arr2=("alpha" "omega")
+$ declare -p arr1 arr2
+declare -a arr1=([0]="one" [1]="two")
+declare -a arr2=([0]="alpha" [1]="omega")
+$ user="1"   #user selection
+$ tmp="arr$user[@]" && declare -p tmp
+declare -- tmp="arr1[@]"
+$ newarr=("${!tmp}") && declare -p newarr
+declare -a newarr=([0]="one" [1]="two")
+
+a=(one two three) && b="a[@]" && echo "${!b}" && newArr=( "${!b}" ) && declare -p newArr
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS AND REDIRECTIONS

@@ -20,6 +20,7 @@ All the other times , skip the "extract" step.
 
 ##Install a FreeBSD pkg
 pkg install XXX
+pkg info -q XXX 					#Get info about package
 
 ##Installation of XFCE 4.12 or LXDE
 

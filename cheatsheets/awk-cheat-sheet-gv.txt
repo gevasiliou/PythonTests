@@ -9,6 +9,7 @@ https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
 AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
 https://www.shortcutfoo.com/app/dojos/awk/cheatsheet
 http://web.mit.edu/gnu/doc/html/gawk_5.html
+awk xml parsing: http://awk.freeshell.org/XMLScraping
 
 AWK:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##Read this cheat file with man pages:
@@ -37,6 +38,10 @@ For sed explanation see the sed cheatsheet.
 
 AWK:BASICS
 Depending on the application you can call AWK once to load the file and then you can manipulate the fields within AWK.
+The whole awk syntax is based on the patter awk 'condition1{action1}condition2{action2}...'
+If action is missing then print $0 is performed (default actions) (i.e awk 'NR==3' :prints the third line
+If condition is missing then condition 1=true is used (default) and the action is always performed. i.e awk '{print $2}'
+
 Typical usage advantage is when you need to read multiple patterns / values /columns / data from the same file.
 If you do that with loop & grep you most probably it will be necessary to grep many times the same file and this makes the script slow.
 Instead you can just once AWK the file and do whatever nanipulation you need inside AWK.
@@ -44,28 +49,29 @@ For complicated data manipulation is usual to have a seperate file full with AWK
 Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
 
 ##AWK Reserved Words
-awk '/pattern/ {action}' file 		# Execute action for matched pattern 'pattern' on file 'file'
+awk '/pattern/ {action}' file 		# Execute action for matched 'pattern' condition 
 $0 									# Reference current record line
 FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
 -F 									# Command line option to specify input field delimiter before starting awk script.
-OFS 			# Field separator of the outputted data (default whitespace). Mind that this can be assigned after script like awk '{your script}' OFS=: file
-NF 			# Number of fields in current record/line (i.e {print $NF})
-NR 			# Line number of the current record. It keeps increasing in the second file if provided (awk '...' file1 file2)
+OFS 			# Output Field separator (default whitespace). Mind that this can be assigned in command line like awk '{your script}' OFS=: file or awk -F" " -v OFS="\t"
+NF 				# Number of fields in current record/line (i.e {print $NF})
+NR 				# Record Line number of the input stream. It keeps increasing in the second file if provided (awk '...' file1 file2)
 FNR 			# Reference number of the current record relative to current input file . If more than one file is given in awk, it is reset
 FILENAME 		# Reference current input file
-ORS 			# Record separator of the outputted data (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
-RS 								# Record separator of input file (default newline)
-^ , $ 								# Match beginning/end of field
+ORS 			# Output Record separator (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
+RS 				# Record separator of input file (default newline)
+^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
 !~ 								# Regex not equal operator
 BEGIN 								# Denotes block executed once at start of the script (No input processed yet)
 END 								# Denotes block executed once at end of the script
-a=str1 OFS str2 						# Space Concatenates str1 , OFS and str2
+a=str1 OFS str2 					# Space Concatenates str1 , OFS and str2
 {print $1} 							# Prints the first field of input (as read using FS separator)
 {print $1,$2; print $3,$4} 		# Prints field 1 & 2 in one line, and field 3 & 4 on next line.(print sthing with ; = "\n") 
 'BEGIN {FS=OFS="\t"}; 			# Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
-next 						# Goes to next record - blocks following code execution and restarts from the beginning
+next 						    # Goes to next record - blocks following code execution and restarts from the beginning
+nextfile					    # Stops the processing of current file1 and goes to file2 , starting from the beginning
 while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
 do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
 
@@ -124,14 +130,43 @@ awk 'BEGIN{system("echo 1 > f")}'
 
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
 
+##Match Function
+usually usage is match(string,substring).
+awk '{print match($0,"-")}' <<<""abc-cde-fgh"       -> prints 4= the position of substr inside string. Even if the search term is "-c" will return 4. 
 
-##Skip Input Columns
+match can accept a third argument = array var. 
+awk '{print match($0,"-cd",a)}{for (i in a) print i,",",a[i]}' <<<"abc-cde-fgh"
+4 #print of match
+0Rstart , 4   #print of the array. 
+0Rlength , 3  #print of the array
+0 , -cd       #print of the array.Index 0,value "-cd"
+
+##Advanced match usage as a regexp mapping tool
+match can return different start,length and array indexes for more matches at once. 
+Also can return in array elements each regex group with a separate index that can be used in whole awk program
+awk 'match($0,/(.*)-...-(.*)/,a){for (i in a) print i,a[i]}' <<<"abc-cde-fgh"  #
+0start 1		#Array printing of start position and length of each pattern
+0length 11	#Printing is random, since for i in a prints in random order by default
+1start 1
+2start 9
+2length 3
+1length 3
+0 abc-cde-fgh	#a[0] : Contains the whole matched substring. Equals to the original string in this case since the pattern matches the whole input string
+1 abc			#a[1] : contains the first regex group. You can call a[1] from now on, and this will print abc
+2 fgh			#a[2] : contains the second regex group
+
+
+##Another Match Example with partial regex matching
+awk '{print match($0,/-(...)-/,a)}{for (i in a) print i,a[i]}' <<<"abc-cde-fgh"     #a[0]="-cde-" and "a[1]=cde"
+
+
+##Skip Input Columns Techniques
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6
 #Use of substr combined with index, since substr expects an integer as starting point and this is what index function returns.
 
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="";print}'
    Field4 Field5 Field6
-#Mind the gaps in the beginning. You can use this if you need to "delete" particular columns.
+#Mind the gaps in the beginning. Especially usefull if you need to "delete" middle columns.
 #Actually you are not really delete those columns but you replace their contents with a blank value and this is assigned to $0 structure
 
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x08";print}' 
@@ -146,9 +181,17 @@ Although if you pipe the output to |od -An -t x1c you will see that \x1b (esc) c
  1b  20  1b  20  1b  20  46  69  65  6c  64  34  20  46  69  65  6c  64  35  20  46  69  65  6c  64  36  0a
  033     033     033      F   i   e   l   d   4       F   i   e   l   d   5       F   i   e   l   d   6  \n 
 
-PS: For a fixed known number of columns , you can always do 'print $4,$5,$6'
+For a fixed known number of columns , you can always do 'print $4,$5,$6'
 
-## Force output to respect OFS in printing of $0
+For a known/fixed number of columns you can also delete completely a middle column with awk '$0=$1FS$2FS$4'
+
+
+Removing Columns from the end:
+awk 'NF--' 		#Removes last column
+awk 'NF-=2'		#Removes last two columns
+awk 'NF=$3'		#Removes all columns after column 3
+
+## Force output to respect OFS when printing of $0
 Normally OFS is not affecting the print of $0. if you just {print} the input line will be printed as it is, ignoring OFS.
 You can workaround this either by awk -F"," 'gensub(FS,OFS,"G",$0)' OFS=: <<<"one,two,three"
 or more cleverly: 
