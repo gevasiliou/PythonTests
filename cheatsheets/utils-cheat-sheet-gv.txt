@@ -108,6 +108,15 @@ grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
 match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
 can be used as -Eow to match words in a line
 
+##GREP look ahead method:
+$ cat /var/log/messages.1 |grep  'sda:'
+Mar 10 03:37:14 debian kernel: [    7.122304]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
+
+$ cat /var/log/messages.1 |grep -Po 'sd[a-z]+: \Ksd[a-z0-9].*'
+sda1 sda2 sda3 sda4 < sda5 sda6 >
+
+\K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 UTILS:CUT
@@ -183,6 +192,7 @@ See man join and also info join for better explanation
 -2.4 : Join on field 4 of file 2
 --nocheck_order : Don't complain about unsorted input files
 --header : Treat 1st line as header
+Tip: Combining join with LC_ALL=C in front, speeds up almost 40%.
 
 ##Join two Files based on common fields:
 http://unix.stackexchange.com/questions/342814/combine-two-csv-file-based-on-condition#342839
@@ -279,6 +289,8 @@ Source Code of CAT:
 http://git.savannah.gnu.org/gitweb/?p=coreutils.git;a=blob;f=src/cat.c;h=001408576c4c17a156c1e8761ed2d9c96aa3d0cf;hb=refs/heads/master
 CAT help and man page are quite good. 
 TAC is the opposite of CAT; Prints lines of file upside down (start from last).
+cat -A or cat -vet displays non printable chars. Can be done better with |od -t x1c
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:LN - Create links.
 Combine -s to create symbolic links; otherwise will create hardlinks.

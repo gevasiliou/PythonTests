@@ -1,12 +1,15 @@
 #!/bin/bash
-#echo "Just an echo - nothing more to be done here"
-#echo "Parameter received="$#
-#[[ -z $1 ]] && echo "parameter 1 is emty"
+echo "Just an echo - nothing more to be done here"
+
 echo "You run this script as USER=$USER"
 echo "Your HOME dir is $HOME"
 echo "Your PATH is $PATH"
+echo "Parameter received="$#
+[[ -z $1 ]] && echo "parameter 1 is emty"
 
-#read -p "Press any key to try to run the .bash_aliases function dpkgnum"
+read -p "Enter a value" 
+echo "you entered $REPLY"
+
 #dpkgnum agrep
 
 #read -p "press any key to try to load agrep manual from debian.manpages web site"

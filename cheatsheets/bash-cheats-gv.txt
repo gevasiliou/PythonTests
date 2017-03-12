@@ -63,8 +63,7 @@ To see the results of various locales use this test:
 $ LC_ALL=C sort <<< $'a\nb\nA\nB'
 You can try with en_US, with UTF, with POSIX , etc
 See the difference:
-$ LC_ALL=C man
-What manual page do you want?
+
 $ LC_ALL=en_US sort <<< $'a\nb\nA\nB'
 a
 A
@@ -306,9 +305,16 @@ fi
 BASH:RUN COMMAND AS DIFFERENT USER : 
 gksu -u gv command. Usefull if you are in root terminal and want to execute i.e google-chrome-stable
 Run Google Chrome as Root : http://unix.stackexchange.com/questions/175967/how-to-run-google-chrome-as-root-in-linux/332128#332128
-Easy trick : gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
+Easy trick : su or gksu -u gv google-chrome-stable - works fine either by root terminal or by root login
+
+Notice the difference:
+# su - gv -c "echo $(whoami)" --> root
+# su - gv -c 'echo $(whoami)' --> gv
+
+Double quotes are expanded first 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:CONDITION CHECKS 
+Space is required around braces AND around operators : [ "$a" != "$b" ]  and not [ "$a"!="$b" ] 
 See also man bash and man test
 One line if check : This is based to the operation of && which executes the next command only if previous command exit with 0 = succesfull exit = pseudocode as TRUE (if it maybe the only time that something with value zero is translated to true!)
 For else conditions or for performing actions under false conditions you can use ! operator (not) in front of expression which will reverse exit code.
@@ -425,12 +431,14 @@ find . -printf "depth="%d/"sym perm="%M/"perm="%m/"size="%s/"user="%u/"group="%g
 find can accept an -exec option in two formats:
 -exec command {} \; #In this method command is invocated in each result of find
 -exec command {} +  #In this method command is invocated after buffering an amount of find results.
+
+.B Multiple exec options
 find dirname ... -exec somecommand {} \; -exec someothercommand {} \; #by wildcard
 
 .B Example with grep
 [: http://unix.stackexchange.com/questions/85789/grep-in-couple-thousands-files :]
 find . -type f -exec grep PATTERN {} +   # packs as many files as it can per command invocation, 
-find . -type f -exec grep PATTERN {} \;  #rungs grep in every find result = much slower
+find . -type f -exec grep PATTERN {} \;  #runs grep in every find result = much slower
 
 find / -type f -print0 | xargs -r0 -P2 grep -Hi 'the brown dog'
 
@@ -438,6 +446,7 @@ find / -type f -print0 | xargs -r0 -P2 grep -Hi 'the brown dog'
 Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
+
 
 ##Loop in files with find using null as file names separator (the correct way to loop)
 By Stephane Chazelas : http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
@@ -452,8 +461,8 @@ This will ensure that results will be correct even if filenames contain spaces, 
 while IFS= read -r -d '' fn;do var+=("$fn");done < <(find . -name '*.sh' -print0)
 
 .B Method 2 - Quick store of filenames in array without loop
-readarray -t -d '' var2 < <(find . -name '*.sh' -print0)
-Unfortunatelly the read -r -d '' -a array < <(find . -print0) does not work - does not loop on the results.
+readarray -t -d '' var2 < <(find . -name '*.sh' -print0) #-d option only in bash >= 4.4
+Unfortunatelly the read -r -d '' -a array < <(find . -print0) does not work directly because read gets one line only.Requires while.
 
 .B Pipe find results to other commands:
 find . -print0 | xargs -r0 something with
@@ -462,6 +471,10 @@ find . -print0 |while IFS= read -r -d '' file;do echo "file found=$file";done #i
 .B The globbing method to create an array with files
 shopt -s nullglob dotglob #to have files with names beginning with a dot and avoid glob expanding to * if no files match
 files=(*)  ## or fies=(*.sh), etc
+
+##Combine basename and null separation to process files
+$ while read -r -d '' file;do echo "ffmpeg -i $file -q 1 ${file}_%d.jpeg";done < <(find . -name "a*.txt" -printf %f\\0)
+printf %f prints only filename without directory (=basename) and \\0 applies null after filename (separator)
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
@@ -698,9 +711,8 @@ Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from
 Scroll to the end of page for more one-liners.
 http://wiki.bash-hackers.org/syntax/pe
 
-Command substitution : Use contents of file as parameter: $(<file)
-Command $(cat file) can be replaced by the equivalent but faster $(< file).
-example: echo "$(<file.txt) -- similar to cat file.txt
+Command substitution : Use contents of file as parameter: $(<file) #emulates cat
+Command $(cat file) can be replaced by the equivalent but faster $(< file).  : echo "$(<file.txt) -- similar to cat file.txt
 if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
 if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
@@ -709,12 +721,16 @@ if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 #Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
 #Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
 
-Remove first and last char with bash expansion: a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
+Remove first and last char with bash expansion: 
+a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
 --> Original a="some@some.com" - Modified a= some@some.com - First and Last char removed
 
 FOO="http://unix.stackexchange.com/questions/ask"
 tmp="${FOO#*//}" 	#Removes everything from begininng up to first found pattern '//'
 echo "${tmp%%/*}" : unix.stackexchange.com		#remove everyting from end up to last/longest (%%) pattern '/' . One % = shortest/first
+
+Replace last dot with dash:
+a='2.5.2.pl';echo "${a%.*}-${a##*.}" ----> 2.5.2-pl
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS AND TRICKS
@@ -897,6 +913,15 @@ http://www.tldp.org/LDP/abs/html/ioredirintro.html
 ##BASICS: 
 fd0=stdin , fd1=stdout , fd2=stderr - Equals to 0>/dev/tty, 1>/dev/tty , 2>/dev/tty
 This redirection format >/dev/null ()or >wherever) EQUALS TO 1>/dev/null (or 1>wherever) == redirection of stdout
+
+default descriptor for < redirection is 0, STDIN_FILENO
+default descriptor for > redirection is 1, STDOUT_FILEN
+
+You can close a file descriptor using &-
+If you exec >&- this equals to 1>&- = close stdout
+If you exec <&- this equals to 0<&- = close stdin. This in a terminal closes the terminal (simulates control D = EOT)
+Mind that if you specify a fd , then you can close it either with > or <. Thus exec 0>&- also works like exec <&- (both close terminal)
+
 
 IF you try : test=$(java -version);echo $test then you will receive output of java -version in your terminal but var test will be empty.
 But if you try test=$(java -version 2>&1);echo $test works ok.

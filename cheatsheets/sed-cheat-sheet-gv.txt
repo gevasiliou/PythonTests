@@ -149,6 +149,7 @@ sed -n '/regexp/,$!p' a.txt  #exclude from regexp up to EOF and print the rest.
 sed -n 'ADDR1,+N'  #Matches ADDR1 and N lines following ADDR1, i.e sed -n '6,+2p'. ADDR1 can be a line number or a pattern
 sed -n '/regexp/{g;1!p;};h' #Print line before regex (not including the line with regex)
 sed -n '/regexp/{n;p;}' 	#Print line after regex (not including the line with regex)
+read -a arr -p "Enter line numbers: " ;sed -n "${arr[*]/%/p;}" infile  #Prints lines acc to user input.Based on bash echo "${arr[*]/%/p;}" -->1p; 3p; 5p; 7p;
 
 ##Print in reverse = tac emulation
 http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
