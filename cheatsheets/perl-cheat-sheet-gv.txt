@@ -43,6 +43,29 @@ abc^M$
 defijk^M$
 lmn^M$
 
+##HTML Tags Replacement
+$ echo "$ht" |perl -0777 -pe "s/\n/\0/g;s/<style>.*<\/style>/$st/g;s/\0/\n/g"
+Where $ht is a multline html code (lines separated with \n), and $st is some multiline replacement text also including \n
+See http://stackoverflow.com/questions/42739324/remove-a-specific-tag-and-replace-it-with-awk/42741305#42741305
+
+Notice: Without -0777 this will not work. The 0777 instructs perl to slurp the whole file and process it all together.
+Without -0777 perl will operate per each input line, as all the usual tools (i.e sed).
+Another alternative would be to describe the pattern like <style>\n.*\n.*\n<\/style>\n
+This would also work because the whole file is loaded from perl with 0777, and will NOT work with sed easily since sed works per input line.
+This is why sed has a set of commands to append data to pattern space / buffer space.
+
+
+PERL:Useful One-Line Scripts for Perl                    Dec 03 2013 | version 1.10
+--------------------------------                    -----------   ------------
+
+Compiled by Peteris Krumins (peter@catonmat.net, @pkrumins on Twitter)
+http://www.catonmat.net -- good coders code, great reuse
+
+Latest version of this file is always at:
+
+    http://www.catonmat.net/download/perl1line.txt
+
+
 PERL:FILE SPACING 
 ------------
 

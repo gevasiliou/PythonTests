@@ -463,6 +463,7 @@ Label 4 95
 Label 5 100
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
+
 AWK:GREP AND MULTIPLE PATTERNS CASE C  
 Consider small patterns file with two patterns per line.
 Consider big data file with lines in where the patterns can be in different order
@@ -491,8 +492,21 @@ END{for (k in found) {print found[k];print "-----"}}' patterns file1
 ##6. Extending to work with a 2d array in gawk , by geirha
 printf 'p1 p2\np3\n' > patterns
 awk 'NR==FNR{for(i=1;i<=NF;++i)patts[FNR][$i];n=FNR;next}END{for(j=1;j<=n;++j){for(p in patts[j]) print j, p}}' patterns
+array checks can be made like : <geirha> for (i = 1; i <= NF; ++i) if ($i in patts[j]) ...
 
-$0 in array checks can be made like : <geirha> for (i = 1; i <= NF; ++i) if ($i in patts[j]) ...
+Complete code using 2D arrays with two or more patterns check on the same record in any order:
+http://www.tutorialspoint.com/execute_bash_online.php?PID=0Bw_CjBb95KQMaTBHTlY3LXRaTFE
+
+awk 'NR==FNR{for (i=1;i<=NF;i++) patts[FNR][$i]=1;f1=FNR;next}    #all patterns are held in a 2D array in format patts[1][patt1] patts[1][patt2], etc
+#Reading of the data file
+ {for (k=1;k<=f1;k++) #iterating through patts array [FNR] indices
+  {  
+    {gotit=0;for (r=1;r<=NF;r++) if ($r in patts[k]) gotit++}    #Iterating through all fields of curret data file record
+    {if (gotit==2) found[k]?found[k]=found[k] ORS $0:found[k]=$0}    #If two indices of patts[k] match fields of $0. Can be changed to >2, >3, etc  
+  }
+}
+END{for (l in found) {print found[l];print "-----"}}' patterns file1   
+
 
 #------------#-------------##------------#-------------##------------#-------------##------------#-------------#
 AWK:PRINT print a line before the pattern match and also the line containing the pattern 'Solaris': 
