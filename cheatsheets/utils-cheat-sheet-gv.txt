@@ -311,6 +311,16 @@ tr '\\n' '\\0' <in >out
 
 Mind the [=C=] synthax. Treats variations of the letter given as same letter . For example [=e=] will treat all 'e' (with tones, etc) as plain e
 ------------------------------------------------------------------------------------------------------------------------
+UTILS:XARGS
+xargs can be used to separate arguments. default action is echo .
+Various usage examples:
+
+tr '\n' '\0' < file | xargs -0 mkdir
+xargs -d '\n' mkdir -p < file        #GNU Xargs with -d (delimiter) set to \n. Usefull if the file contains dirname with spaces.
+grep -r 'someword' |xargs -r grep otherword   #chained greps - xargs -r filters out empty data (second grep does not called if empty result is passed by first grep)
+find . -type f -name '*.txt' -print0 |xargs -0 somecommand_here
+
+------------------------------------------------------------------------------------------------------------------------
 UTILS:SORT 
 http://www.skorks.com/2010/05/sort-files-like-a-master-with-the-linux-sort-command-bash/
 Mind the options -u and -k for defininig the sort field (i.e -k2) and -t for setting fields delimiter (i.e -t"|")
