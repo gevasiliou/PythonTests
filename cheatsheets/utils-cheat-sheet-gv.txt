@@ -109,13 +109,16 @@ match lines with one word, that have less than 4 letters a-z , and also catch wo
 can be used as -Eow to match words in a line
 
 ##GREP look ahead method:
+\K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
+
 $ cat /var/log/messages.1 |grep  'sda:'
 Mar 10 03:37:14 debian kernel: [    7.122304]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
 
 $ cat /var/log/messages.1 |grep -Po 'sd[a-z]+: \Ksd[a-z0-9].*'
 sda1 sda2 sda3 sda4 < sda5 sda6 >
 
-\K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
+$ a="Configuration file 'hello2.conf' is in use by process 735." && echo "$a" |grep -Po 'process \K[0-9]*'
+735 (https://regex101.com/r/hxwGPA/1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 
