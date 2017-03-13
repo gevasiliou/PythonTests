@@ -657,7 +657,7 @@ You can add as many parameters as you wish.
 
 Also , you can refer to this $@ var with "${@:2:1}" -> will print the second argument of $@
 
-Example by StackExchange:
+Example by StackExchange (Gilles):
 set tar -zcvf "$FILE" 
 set "$@" --exclude='/home/user/test1'
 set "$@" --exclude='/home/user/test2'
@@ -739,6 +739,15 @@ BASH:TIPS AND TRICKS
 ##Resources: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
+http://wiki.bash-hackers.org/snipplets/start
+
+##Print a dashed line in full terminal width
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+OR printf '%.0s-' {1..20}; echo  #will print just 20 dashes
+OR eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
+
+##Identify the width of the terminal
+tput cols
 
 ##Using subshells: 
 $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
