@@ -99,6 +99,8 @@ Check man bash for :
 readarray /  mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array] #man bash line 2981
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] #man bash line 3056
 
+Important: When you need to read a file with while read -r and separate it according to a custom separator (i.e :) adjust accordingly the IFS=: and not -d: option of read.
+
 ------------------------------------------------------------------------------------------------------------------------
 ##Read file to array
 http://stackoverflow.com/questions/11393817/bash-read-lines-in-file-into-an-array/11395181#11395181
