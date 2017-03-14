@@ -20,7 +20,7 @@ perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g
 
 ##Replacement using regexp 
 Perl has great support to non-greedy regex groups .
-sed -r supports extended regexp  but does not support not-greedy operator (?)
+sed -r supports extended regexp  but does not support not-greedy operator (.*?)
 
 a="http://unix.stackexchange.com/questions/ask"
 perl -pe 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com  			#mind the non-greedy operator in group 2
@@ -66,6 +66,11 @@ Without -0777 perl will operate per each input line, as all the usual tools (i.e
 Another alternative would be to describe the pattern like <style>\n.*\n.*\n<\/style>\n
 This would also work because the whole file is loaded from perl with 0777, and will NOT work with sed easily since sed works per input line.
 This is why sed has a set of commands to append data to pattern space / buffer space.
+
+##Replacement with backreference to replaced parts ($1)
+echo "...." |perl -pe 's/Q([0-9])/\nQ\1/g'
+EQUALS TO
+perl -pe 's/(Q\d)/\n$1/g'
 
 
 PERL:Useful One-Line Scripts for Perl                    Dec 03 2013 | version 1.10
