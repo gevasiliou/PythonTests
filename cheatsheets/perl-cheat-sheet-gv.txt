@@ -68,10 +68,20 @@ This would also work because the whole file is loaded from perl with 0777, and w
 This is why sed has a set of commands to append data to pattern space / buffer space.
 
 ##Replacement with backreference to replaced parts ($1)
-echo "...." |perl -pe 's/Q([0-9])/\nQ\1/g'
-EQUALS TO
-perl -pe 's/(Q\d)/\n$1/g'
+echo "...." |perl -pe 's/Q([0-9])/\nQ\1/g' #Inserts a new line before Q and then appends group1
+EQUALS TO 
+perl -pe 's/(Q\d)/\n$1/g' #Q has been included in the group , mind the use of $1 as backref to replaced part
+OR EVEN TO 
+perl -pe 's/Q\d/\n$&/g' #no capture group usage - \d = digits = [0-9] , $& is backref the whole replaced part
 
+##More About Regex
+The Stack Overflow Regular Expressions FAQ :
+http://stackoverflow.com/questions/22937618/reference-what-does-this-regex-mean/22944075#22944075
+Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even with grep -Po
+
+Non Capturing group : '(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
+
+-------------------------------------------------------------------------------------------------------------------------------------
 
 PERL:Useful One-Line Scripts for Perl                    Dec 03 2013 | version 1.10
 --------------------------------                    -----------   ------------
