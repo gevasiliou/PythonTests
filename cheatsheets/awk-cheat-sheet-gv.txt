@@ -60,6 +60,7 @@ FNR 			# Reference number of the current record relative to current input file .
 FILENAME 		# Reference current input file
 ORS 			# Output Record separator (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
 RS 				# Record separator of input file (default newline)
+FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS defines what a field does NOT contain thus is field separator
 ^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)

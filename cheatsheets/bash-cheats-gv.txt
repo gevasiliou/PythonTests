@@ -1125,6 +1125,14 @@ http://mywiki.wooledge.org/BashFAQ/106
 exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
 
+.B Redirection explained for enginners
+Imagine each device as a lamp and each fd as a wire. If lamp found to be not connected to a wire is destroyed.
+Thus initial state is fd1 --> screen. To remove fd1 wire from screen you need to connect first a helper wire (exec 3&>1)
+Once lamp/screen is connected with wire 3 you can remove wire 1 and attach it in another lamp (i.e file)
+Inside a script redirection looks like that lamp1 (stdout) is enclosed in a box (subshell). 
+When lamp 1 lits (stdout), it lits inside box, while lamp 2 (stderr) lamp still remains out of the box.
+
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.

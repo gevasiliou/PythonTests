@@ -74,13 +74,19 @@ perl -pe 's/(Q\d)/\n$1/g' #Q has been included in the group , mind the use of $1
 OR EVEN TO 
 perl -pe 's/Q\d/\n$&/g' #no capture group usage - \d = digits = [0-9] , $& is backref the whole replaced part
 
-##More About Regex
+##Regex and PCRE Regex
 The Stack Overflow Regular Expressions FAQ :
 http://stackoverflow.com/questions/22937618/reference-what-does-this-regex-mean/22944075#22944075
 Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even with grep -Po
 
 Non Capturing group : '(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
 
+##Grep the first number from a line.
+grep -Po '^.*?\K\d+'   #*=one char zero or more , ? = non greedy , \K=forget previous, \d+ = [0-9]+ , +:1 or more
+line one 333 more --> 333
+456 another line  --> 456
+
+Perl Equivalent: perl -lne 'print $& if /\d+/' inputfile
 -------------------------------------------------------------------------------------------------------------------------------------
 
 PERL:Useful One-Line Scripts for Perl                    Dec 03 2013 | version 1.10
