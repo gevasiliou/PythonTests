@@ -256,13 +256,26 @@ while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'f
 f1=./file1, f2=./file2
 f1=./file3, f2=./file4
 ------------------------------------------------------------------------------------------------------------------------
-##Read Only the first two lines.
+##Read Only the first two lines of a file or a variable or a process
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
+
+#consider that alpha produces "a b c\n" and "d" in separate line. 
+#calling beta $(alpha) each char was an arg (not desirable)
+#calling beta "$(alpha) arg1 ($1) was getting "a b c\nd" and arg2 was empty (not desirable)
+
+IFS=$'\n' read -d '' a b < <(echo $'a b c\nd') #mind that -d should be set to null in order IFS to work correctly (Anubhava)
+declare -p a b --> prints "declare -- a="a b c"" & "declare -- b="d"" 
+
+All time classic : readarray -t args < <(alpha) && beta "${args[@]}" #will by default sepearate args by \n
+
+Best trick :   alpha | xargs -d "\n" beta 
+
 ------------------------------------------------------------------------------------------------------------------------
 Read Using line builtin
 line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
+
 ------------------------------------------------------------------------------------------------------------------------
 ##Read loop with file descriptor
 exec 9< "$file"
@@ -272,6 +285,7 @@ while IFS= read -r line <&9; do
 done
 exec 9<&-
 ------------------------------------------------------------------------------------------------------------------------
+
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
