@@ -1,1 +1,5 @@
-another line
+"$@" >&2
+++ pwd
+/home/gv/Desktop/PythonTests
+set +vx 
+++ set +vx
