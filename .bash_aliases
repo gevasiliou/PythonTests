@@ -18,7 +18,7 @@ alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/sha
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 alias lsdir='ls -l -d */'
 alias dirsize='du -h'
-alias gitsend='git add . && git commit -m "update" && git push'
+alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 alias printfunctions='set |grep -A2 -e "()"'
