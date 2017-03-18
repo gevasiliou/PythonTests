@@ -1,2 +1,3 @@
-pwd
-/home/gv/Desktop/PythonTests
+#set -x
+"$@" >&2
+set +v
