@@ -60,7 +60,9 @@ FNR 			# Reference number of the current record relative to current input file .
 FILENAME 		# Reference current input file
 ORS 			# Output Record separator (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
 RS 				# Record separator of input file (default newline)
+RT				# Record Terminator . Is like the RS but in case of multi RS it is dynamically updated to keep the current used separator/terminator to display the last field. Thus it's setting varies acc to multi RS value.
 FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS defines what a field does NOT contain thus is field separator
+
 ^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
@@ -242,6 +244,70 @@ My way: awk 'BEGIN{FS=OFS="|"}NF==1{h=$0;next}$0=h OFS $0' file1 #Fallpit: No bl
 Smart way: awk 'BEGIN{FS=OFS="|"} NF==1{h=$0} {print (NF==1?"": h OFS $0)}' file1 #Includes blank line on every header change
 
 Another Smart Way : awk -F '|' '{if(NF==2)$0=F"|"$0;else{F=$1;$0=""}}NR>1' YourFile
+
+
+## PRINTF
+The great about printf("%s",var) is that does not print new lines along ALL the input lines, and thus you can concatenate fields of ALL lines with just one command.
+If you apply "%s\n" will emulate the behavior of classic print in awk = will print the desired field on each separate line.
+in a script like '{printf("%s",$0) all lines of input file will become one single line = new lines ignored.
+
+Compare:
+echo -e "a b c\nd e f\n" |awk '{print $0}' --> prints a b c in one line and d e f in the next line - AS EXPECTED
+echo -e "a b c\nd e f\n" |awk '{printf("%s", $0)}' --> a b cd e f  - all in one line - new lines / ORS ignored
+echo -e "a b c\nd e f\n" |awk '{printf("%s\n", $0)}' --> same as print $0
+echo -e "a b c\nd e f\n" |awk '{printf("%s%s", $0,RT)}' --> same as print $0 since RT is new line = RS
+
+echo -e "a,b,c\nd,e,f\n" |awk -v RS="," '{printf("%s%s", $1,$3)}' ---> Will print in ONE line abcef = The first field of all the lines.
+
+## PRINTF - CUSTOM RS AND RT
+Combining printf with multi RS and RT you can easily reconstructure the original input record no matter in how many pieces has been split by awk and multi RS.
+Actually RT is the dynamic RS used each time to split the records.
+
+Tests:
+
+echo -e "a,b,c\nd,e,f\n" |awk -v RS="," '{print NR,$1,$2}'
+1 a 
+2 b 
+3 c d   #Mind that d is $2 because between c and d there is not comma but newline
+4 e     #This is why usually when you want to split completelly all fields to records, in RS you include also the new line i.e RS=",|\n"
+5 f     
+
+echo -e "a,b,c\nd,e,f\n" |awk -v RS=",|\n" '{print NR,$1,$2}'
+1 a 
+2 b 
+3 c 
+4 d 
+5 e 
+6 f 
+7  
+
+And now this is how Printf and RT can come in play to make the record back to normal. RT will change values dynamically.
+For line1 (a) , RT will be comma. But for line 4 (d) RT will be new line.
+
+echo -e "a,b,c\nd,e,f\n" |awk -v RS=",|\n" '{print $1,RT}'
+a ,   # Line 1 - RT comma 
+b ,   # Line 2 - RT comma
+c     # Line 3 - RT new line
+        # Just an empty new line that follows field c - before d
+d ,   # Line 4 - RT comma
+e ,   # Line 5 - RT comma
+f     # Line 6 - RT new line
+
+  
+
+But above printing does not even close to the original record. What about this one:
+
+# echo -e "a,b,c\nd,e,f\n" |awk -v RS=",|\n" '{printf("%s%s", $1,RT)}'
+a,b,c
+d,e,f
+
+Yes this is identical to input record using printf (ignoring new lines) and printing RT dynamic value.
+The new line is produced because RT will be \n when reading field "d".
+
+With this method, you can break down all the fields to records, you can manipulate/change them , and then print them back to the original format
+using the printf (no - new lines) instead of print and making use of RT dynamically changing value along the corresponding records.
+You just need to include \n in the customized RS for this shit to work.
+PS: If you try to set ORS=RS="multi Record separators here" it does not work. Print will just print the whole regex as ORS instead of comma or new line or whatever.
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
