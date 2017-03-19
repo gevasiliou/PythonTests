@@ -816,14 +816,21 @@ last three lines (2-3-2) had already a value when awk reached them (had been fou
 
 You can instead of a[$0] assign a different field like a[$2] if you want to print duplicate lines in terms of dupplicates in field 2.
 
+To understand how awk boolean evaluation works in above codes, you can also apply !a[$0]-- that will have the same behavior.
+Only first time a[$0] will be zero = > reverted => true = print. All the next times will be -1,-2 but since it is not zero is evaluated as true / valid by awk = no print due to negation mark
+
+
 ##More tricky usages
-.B awk '!a[$0]++' <==> '(a[$0]++ == 0)' 
+.B awk '!a[$0]++' <==> '(a[$0]++ == 0)'  # Bothe emulate uniq
 Prints also unique lines. In this alt syntax, it seems that parenthesis is evaluated arithmetically.
 For every line that a[$0]++ is evaluated as null=zero then print it because the whole parenthesis will return true.
 
+.B awk '{seen[$0]++}END{for (i in seen) print seen[i],i}' file4  <===> uniq -c (all lines with No of occurences found)
+
 .B awk '(a[$0]++ == 1)'  #Direct equivalent to uniq -d
-Arithmetic Comparison and not boolean. Will print repeated lines - equivalent to uniq -d but without sorting requirement. 
-Will print "line1" ONCE has been found a second time (and thus a[$0]==1) . Works if line1 is found two or more than two times.
+Uniq -d prints only repeating lines = lines found more than one time (either 2 times or more).
+Above AWK with arithmetic Comparison can achieve this without sorting requirement. 
+awk will print "line1" ONE Time as soon as this line has been found again (and thus a[$0]==1) . 
 First time a[$0]++ will be evaluated as null=0 and will not print. 
 Second time a[$0]++ will be evaluated as 1 and will print. (then will be increased by 1 more - post increment).
 Third and more times, a[$0]++ will have a value greater than 1 and will not print.
