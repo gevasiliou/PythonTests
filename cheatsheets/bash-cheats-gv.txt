@@ -878,6 +878,11 @@ $ foo=10;x=foo;echo ${x} 	--> foo
 Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
 
 ##Indirect Expansion Examples
+
+$ function test { for (( i=1; i<=$#; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1
+$ function test { for (( i=1; i<=$#; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd
+
+
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
 
 $ for i in {1..4};do eval my${i}var="./path${i}_tofile";eval echo "$""my${i}var";done
