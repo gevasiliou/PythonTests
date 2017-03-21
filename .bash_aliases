@@ -114,11 +114,17 @@ local d="$1"
 
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
 echo "directory to scan and print= $d"
-
+if [[ "$2" == "--full" ]];then 
+  echo "Will go inside subdirs!" 
+  local depth=""
+else
+  echo "Will not go inside subdirs!" 
+  local depth=" -maxdepth 1"
+fi
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
 	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
 	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
-	find "$d" -maxdepth 1 -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* ]] \
+	find "$d" $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* ]] \
 	    && [[ $(file $0) == *"ASCII"* || $(file $0) == *"empty"* ]] && \
 	    echo "$0" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
 	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics 
