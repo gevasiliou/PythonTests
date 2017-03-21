@@ -127,7 +127,7 @@ else
 	#Call the man as pager to display files contents. Man formatting is necessary: 
 	#File must be double spaced and empty lines to be replaced with .BR. 
 	#Existed line breaks will be substitued by .LP = new paragraph 
-	#Lines starting with ##### will be Headers (.SH)
+	#Lines starting with #-!# will be Headers (.SH)
 	#man header to be inserted in the beginning of the file = before first line
 	#backslashes must be man escaped : \ becomes \e (also \\ works for man)
 fi
