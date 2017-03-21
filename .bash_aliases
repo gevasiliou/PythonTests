@@ -107,20 +107,22 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 }
 
 function dcat() { 
-echo "dcat: directory cat - cat files within directory $1, excluding subdirs"
+echo "dcat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return
 local d="$1"
-[[ ! -d $d ]] && echo "This is not a directory" && return
+[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return
 
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
 echo "directory to scan and print= $d"
+
 if [[ "$2" == "--full" ]];then 
-  echo "Will go inside subdirs!" 
+  echo "Will go inside subdirs! Maybe gonna be long time to finish this..." 
   local depth=""
 else
-  echo "Will not go inside subdirs!" 
+  echo "Will not go inside subdirs" 
   local depth=" -maxdepth 1"
 fi
+
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
 	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
 	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
