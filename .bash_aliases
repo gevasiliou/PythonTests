@@ -16,7 +16,7 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
-alias lsdir='ls -l -d */'
+#alias lsdir='ls -l -d */'
 alias dirsize='du -h'
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
@@ -43,6 +43,12 @@ echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory s
 # in files, ls might fail to catch filenames with strange chars in name (spaces,tabs,newlines,etc)
 }
 
+function lsdir { 
+[[ -z "$1" ]] && local d="$PWD" || local d="$1"
+[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
+ls -all "$d" |grep '^d' 
+#alternative : find "$d" -maxdepth 1 -type d |column
+}
 
 function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
 
