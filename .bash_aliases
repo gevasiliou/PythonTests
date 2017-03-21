@@ -110,11 +110,11 @@ function dcat() {
 echo "dcat: directory cat - cat files within directory $1, excluding subdirs"
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return
 local d="$1"
-if [[ ! -d $d ]]; then 
-	echo "This is not a directory" && return
-else
-	[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-	echo "directory to scan and print= $d"
+[[ ! -d $d ]] && echo "This is not a directory" && return
+
+[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
+echo "directory to scan and print= $d"
+
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
 	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
 	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
@@ -130,7 +130,7 @@ else
 	#Lines starting with #-!# will be Headers (.SH)
 	#man header to be inserted in the beginning of the file = before first line
 	#backslashes must be man escaped : \ becomes \e (also \\ works for man)
-fi
+
 }
 
 function findexec {
