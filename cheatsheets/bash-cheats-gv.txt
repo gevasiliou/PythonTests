@@ -1174,6 +1174,7 @@ cat <&3
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
+
 FIFOs actually work as named buffers. With all subshells/subprocesses can share info.
 Maybe some commands do not accept input by refular files but from fifos and/or file descriptors. 
 
@@ -1204,20 +1205,22 @@ In terminal 1 if you run cat something >fifo1 & , this will release prompt1 and 
 
 terminal 2 will print immediately whatever comes in fifo.
 
-See: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+See: 
+http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+http://stackoverflow.com/documentation/bash/399/redirection#t=201703221519166519836
 
-Example1:
+.B Example1:
 $ ls -l /tmp > myPipe &
 $ cat < myPipe or grep 'word' <mypipe or whatever.
 As a general idea pipe is used just like a file.
 This works on the same terminal because the use of & (background) is in reallity a subshell.
 
-Example2:
+.B Example2:
 $ { ls -l && cat file3; } >mypipe &
 [2] 5582
 $ cat <mypipe	#Prints correctly the file list AND file3 contents afterwards
 
-Example3:
+.B Example3:
 # ls -l >mypipe &
 [2] 5589
 # cat file3 >mypipe &
@@ -1225,25 +1228,35 @@ Example3:
 # cat <mypipe
 This also works ok. Mind that first are printed the contents of file3 (LIFO configuration)
 
-Example4:
+.B Example4:
 # var=$(cat <mypipe ) &
 [2] 5599
 # ls -l >mypipe
 [2]+  Done                    var=$(cat <mypipe )
 # echo "$var"    -----> prints NOTHING since the var has been assigned a value in a subshell 
 
-Example5:
+.B Example5:
 # { pipedata=$(<mypipe) && echo "$pipedata"; } &
 [2] 5632
 # ls >mypipe ---> Prints correctly the output of ls
 
-Example6:
+.B Example6:
 # pipedata=$(<mypipe)  #this hangs expecting the data
 From another terminal ls -l >mypipe works and releases terminal 1. Also var pipedata has the correct value in terminal 1
 Even in script , the script hangs.
 If you do pipedata=$(<mypipe) & does not hang but data inside mypipe are not stored to pipedata - echoes nothing.
 
+.B Example 7:
+# export pipedata
+# pipedata=$(<mypipe) &
+[2] 5783
+# ls -l *.sh >mypipe
+[2]+  Done                    pipedata=$(<mypipe)
+# echo "$pipedata"   ---> Prints Correctly!
+Assigns pipe data to a variable / array in the same shell (same terminal/script) without hanging.
+The variable is made available to both shell and subshell using export. 
 
+ 
 ------------------------------------------------------------------------------------------------------------------------
 
 BASH:ASSOCIATIVE ARRAYS (declare -A array)
