@@ -28,6 +28,9 @@ alias hexit='od -w32 -An -t x1c -v'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
 
+# ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
+# Uses octal to build the whole ascii table
+
 function lsnum { 
 echo "lsnum: Counts the files in the location provided ($1)" >&2
 [[ -z $1 ]] && local d=$PWD || local d=$1
