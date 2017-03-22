@@ -64,16 +64,8 @@ $ LC_ALL=C sort <<< $'a\nb\nA\nB'
 You can try with en_US, with UTF, with POSIX , etc
 See the difference:
 
-$ LC_ALL=en_US sort <<< $'a\nb\nA\nB'
-a
-A
-b
-B
-$ LC_ALL=C sort <<< $'a\nb\nA\nB'
-A
-B
-a
-b
+$ LC_ALL=en_US sort <<< $'a\nb\nA\nB'  --> a A b B   #printed in separated lines - concatanated here for space saving
+$ LC_ALL=C sort <<< $'a\nb\nA\nB'      --> A B a b   #printed in separated lines - concatanated here for space saving
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
@@ -102,7 +94,7 @@ read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] 
 Important: When you need to read a file with while read -r and separate it according to a custom separator (i.e :) adjust accordingly the IFS=: and not -d: option of read.
 
 ------------------------------------------------------------------------------------------------------------------------
-##Read file to array
+##READ FILE TO ARRAY
 http://stackoverflow.com/questions/11393817/bash-read-lines-in-file-into-an-array/11395181#11395181
 mapfile -t -O1 var <input.txt --> each line of file goes into array var, withou loop. You just need to refer to line1 as var[1]
 mapfile -t -O1 var < <(sed/grep/awk/cat/etc 'expression' file) to feed mapfile with the results of a command
@@ -112,11 +104,11 @@ PS2: readarray can also be used like <<<"$var"
 This also works: IFS=$'\n' read -d '' -r -a lines < file
 
 ------------------------------------------------------------------------------------------------------------------------
-##Read and separate a file based on NULL character only and not on new lines
+##READ LINES FROM FILE NULL SEPARATED (and not new lines)
 http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
 http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-and-output
 
-NULL Separated file : /proc/1/environ to variables script
+Example of NULL Separated file : /proc/1/environ to variables script
 You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
 
 You can convert any file to null separated (for testing) by cat file |tr '\n' '\0'
@@ -125,16 +117,16 @@ To split the files based on null you need something like this:
 $ while IFS= read -r -d '' line ; do vars+=("$line");done <file #Mind the gap in -d option of read.
 declare -p vars
 
-Also , with readarray - without loop (bash 4.4 and above): 
+Also , with readarray - without loop (bash 4.4 and above since readarray before bash 4.4 does not support -d option): 
 IFS= readarray -t -d '' vars2 <file3;declare -p vars2
 PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to be -d '' - maybe -d $'\0' could also work (spaced)
 
-This also works for files : readarray -t -d '' var2 < <(find . -print0)
+This also works for find files : readarray -t -d '' var2 < <(find . -print0)
 
 This does not works without loop- it gets only the first element: 
 IFS= read -d '' -r -a lines < <(find . -name '*.sh' -print0) #I also tried with IFS=$'\0', IFS='', IFS=$'' , no IFS , but no luck
 
-Need to be combined with a loop to work:
+READ Need to be combined with a loop to work:
 while IFS= read -r -d '' file;do
 echo "file found=$file" #this can be whatever , i.e an array assignment filearray+=("$file")
 done < <(find . -print0)
@@ -142,8 +134,7 @@ done < <(find . -print0)
 For files this also works ok:
 find . -print0 |while IFS= read -r -d '' file;do echo "file found=$file";done
 
-
-.B PRINTING A NULL SEPARATED VARIABLE
+## PRINTING A NULL SEPARATED VARIABLE
 For a variable, according to http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
 while IFS= read -r -d '' line ; do
     echo "line=$line"
@@ -157,7 +148,7 @@ You need to do something like var=$(find . -print0 |base64) and on the "done" pa
 done < <(echo "$var" |base64 -d) - See the ARGS section for details
 
 ------------------------------------------------------------------------------------------------------------------------
-## Read while read method:
+## WHILE READ METHODS 
 while read -r var1 var2 ;do ....;done<file.txt :will assign var1 to first field of line 1 and var2 to second field.
 If the file has more than two fields, then var1 will get the first text and var2 will get all the rest text (all of them)
 
@@ -170,7 +161,7 @@ To read whole lines use just IFS= (empty = whole line is returned) - But in this
 Skip Lines Trick inside loop : [[ $line = \#* ]] && continue #skips lines starting with # = comments
 
 ------------------------------------------------------------------------------------------------------------------------
-## Read lines and split to space separated fields
+## READ LINES AND SPLIT TO SPACE SEPARATED FIELDS
 you can combine also multi read (line read / field read) like this:
 while IFS= read -r line;do IFS=' ' read -r -a v1 <<<"$line";done<c.txt
 OR 
@@ -190,13 +181,13 @@ while IFS= read -r lines;do readarray -t -d' ' -O"${#vars[@]}" vars <<<"$lines";
 Or you can use the read -r -a method and transfer fields to another array that will not be overwritten by the next line.
 
 ------------------------------------------------------------------------------------------------------------------------
-## Read a single text/var with read -r:
+## READ A SINGLE STRING/VARIABLE WITH read -r:
 http://mywiki.wooledge.org/BashFAQ/001
 read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
 read -r first last junk <<< "$a" 
-# first will contain "Bob", last will contain "Smith", junk holds everything else that follows
+# $first will contain "Bob", last will contain "Smith", junk holds everything else that follows
 ------------------------------------------------------------------------------------------------------------------------
-## Read lines from file and split to fields separated by double quotes 
+## READ FROM FILE AND SPLIT FIELD BY DOUBLE QUOTES 
 Line Example : "aaa bbb" "xxx yyy"  # Next line can be of the same pattern plus a new line separator at end of prev line
 Target : separate fields of line like $1="aaa bbb" $2="xxx yyy" in order to be sent to a function or command
 
@@ -244,7 +235,7 @@ To call an external command (not a function) it seems that `xargs command <file`
 
 In case you want to parse whole lines from file as an argument to a function you can simply use : /some/command "$(<file.txt)"
 ------------------------------------------------------------------------------------------------------------------------
-##Read file in pair of two lines at same time
+##READ IN PAIR OF TWO LINES
 while read -r prereq && read -r target; do
    printf '%s: %s\n' "$target" "$prereq"
 done < file.txt
@@ -256,7 +247,7 @@ while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'f
 f1=./file1, f2=./file2
 f1=./file3, f2=./file4
 ------------------------------------------------------------------------------------------------------------------------
-##Read Only the first two lines of a file or a variable or a process
+##READ FIRST TWO LINES ONLY 
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
 
@@ -272,12 +263,12 @@ All time classic : readarray -t args < <(alpha) && beta "${args[@]}" #will by de
 Best trick :   alpha | xargs -d "\n" beta 
 
 ------------------------------------------------------------------------------------------------------------------------
-Read Using line builtin
+##READ WITH LINE BUILTIN
 line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
 
 ------------------------------------------------------------------------------------------------------------------------
-##Read loop with file descriptor
+##READ:LOOP WITH FILE DESCRIPTOR
 exec 9< "$file"
 while IFS= read -r line <&9; do
   cat > ignoredfile
@@ -285,7 +276,13 @@ while IFS= read -r line <&9; do
 done
 exec 9<&-
 ------------------------------------------------------------------------------------------------------------------------
+##READ - SPLIT STRING TO CHARS
+$ while read -rn1 char;do printf '%s\n' "$char";done <<<"1.Nf3 c5 2.e4 Nc6"
 
+Trick:
+$ while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
+echo "$sumA"  ---> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+
+------------------------------------------------------------------------------------------------------------------------
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
@@ -848,7 +845,7 @@ Tip2: You can assign a hex ascii in a variable using var=$'\x5c' -
 Tip3: You can also use hex values in sed and other tools to avoid escaping : sed 's/\x22/\x5c\x22/g' --> Will escape all double quotes.
 
 
-##Looping over hexadecimal values
+##PRINTF: Looping over hexadecimal values
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
 The most easy way is to use printf since natively supports hex printing
 
@@ -861,7 +858,17 @@ done
 Testing:
 $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x3c, Second echo prints <
 
+
+##PRINTF: CONVERT CHARS TO ASCII VALUE
+$ printf '%d\n' "'a" or "'a'" -> prints 97 . For some reason the letter must be within single quotes. 
+$ var="a"; printf '%d\n' "'$var'" --> also prints 97
+
+ASCII Sum:
+while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
+echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
+$ bc <<<"${sumA:0:-1}"    ---->> 1114
 --------------------------------------------------------------------------------------------------------------------------------------
+
 BASH:EVAL AND INDIRECT EXPANSION
 http://tldp.org/LDP/abs/html/ivr.html
 1) foo=10 && x=foo
@@ -879,8 +886,8 @@ Also try to use #{a,b}="some" - bash will complain that a="some" command not rec
 
 ##Indirect Expansion Examples
 
-$ function test { for (( i=1; i<=$#; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1
-$ function test { for (( i=1; i<=$#; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd
+$ function test { for (( i=1; i<=$#; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1 since i is 1 from for
+$ function test { for (( i=1; i<=$#; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd since $i becomes $1 
 
 
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
