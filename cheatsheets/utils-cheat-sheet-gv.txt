@@ -276,7 +276,7 @@ For files you can directly run '$column -t file.txt'
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:BC Calculator
-a="$(<a.txt)" #supposing file a has a number
+a="$(<a.txt)" #supposing file "a" exists and has a number inside
 b="$(<b.txt)" #similary
 bc <<<"$a + $b"
 c="$( bc <<<"$a + $b" )"
@@ -286,6 +286,11 @@ by bash and a few other shells), you may instead use printf to send the addition
 
 printf '%s + %s\n' "$a" "$b" | bc
 c="$( printf '%s + %s\n' "$a" "$b" | bc )"
+
+##Tricky printf + bc usage to sum up ascii values:
+while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
+echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
+$ bc <<<"${sumA:0:-1}"    ---->> 1114
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS: CAT AND TAC
 Source Code of CAT:
