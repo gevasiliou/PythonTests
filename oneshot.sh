@@ -7,8 +7,12 @@ echo "Your PATH is $PATH"
 echo "Parameter received="$#
 [[ -z $1 ]] && echo "parameter 1 is emty"
 
+#{ pipedata=$(<mypipe) && echo "$pipedata"; } &
+#pipedata=$(<mypipe)
+
 read -p "Enter a value" 
 echo "you entered $REPLY"
+#echo "$pipedata"
 
 #dpkgnum agrep
 

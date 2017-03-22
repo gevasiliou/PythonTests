@@ -817,7 +817,7 @@ declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due t
 PS: Alternative for lower/upper case is ${a^^} and ${a,,}
 
 ##Assign same value to multiple commands using bash parameter expansion: 
-eval {a,b,c}="some text" # Without eval is not operating.
+eval {a,b,c}="some text" # Variables a , b and c will get value some text. Without eval is not operating.
 
 ##Identify files/ commands : 
 type command (try i.e type grep and type eval)
@@ -866,7 +866,8 @@ $ var="a"; printf '%d\n' "'$var'" --> also prints 97
 ASCII Sum:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
-$ bc <<<"${sumA:0:-1}"    ---->> 1114
+$ bc <<<"${sumA:0:-1}"    ---->> 1114   #with 0:-1 the trailing + is removed.
+
 --------------------------------------------------------------------------------------------------------------------------------------
 
 BASH:EVAL AND INDIRECT EXPANSION
@@ -1157,7 +1158,19 @@ Thus initial state is fd1 --> screen. To remove fd1 wire from screen you need to
 Once lamp/screen is connected with wire 3 you can remove wire 1 and attach it in another lamp (i.e file)
 Inside a script redirection looks like that lamp1 (stdout) is enclosed in a box (subshell). 
 When lamp 1 lits (stdout), it lits inside box, while lamp 2 (stderr) lamp still remains out of the box.
+------------------------------------------------------------------------------------------------------------------------
 
+BASH:WORKING WITH /dev
+http://tldp.org/LDP/abs/html/devref1.html
+http://stackoverflow.com/documentation/bash/399/redirection#t=201703221237056414693
+
+$ cat </dev/tcp/time.nist.gov/13      ---> 53082 04-03-18 04:26:54 68 0 0 502.3 UTC(NIST) *
+
+$ exec 5<>/dev/tcp/www.net.cn/80 && echo -e "GET / HTTP/1.0\n" >&5 && cat <&5
+
+exec 3</dev/tcp/www.google.com/80
+printf 'GET / HTTP/1.0\r\n\r\n' >&3
+cat <&3
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FIFO NAMED PIPES
@@ -1166,25 +1179,73 @@ Maybe some commands do not accept input by refular files but from fifos and/or f
 
 To create a FIFO pipe use "mkfifo mypipe1"
 This actually creates a kind of FIFO file with name mypipe1 (can be seen with ls). 
+
 Command "file mypipe1" will advise that this is a fifo.
 Delete a fifo by rm mypipe1, as with any regular file.
-You can echo something to this FIFO using echo "something" >mypipe1 . Mind that terminal prompt is trapped.
-And you can then retrieve the buffer data (i.e from another shell) using cat mypipe1 or cat <mypipe1 and terminal1 and terminal2 prompt are released
+
+You can echo something to this FIFO using echo "something" >mypipe1 . Mind that terminal prompt is trapped and terminal hangs until you retrieve 
+the buffer data (from another terminal/shell/subshell) using cat <mypipe1 . Once finished terminal1 and terminal2 are released.
+
 After cat , the fifo is empty - can be verified by trying to cat again.
 Once you cat fifo in terminal2 and info has no data , terminal 2 remains trapped awaiting for data to come.
 But once data comes in , will be printed and prompt will be freed.
 Yad designed uses fifos in this example: https://sourceforge.net/p/yad-dialog/wiki/Frontend%20for%20find+grep%20commands/
+
 Another example is the wikipedia netcat small proxy
 mkfifo backpipe; nc -l 12345  0<backpipe | nc www.google.com 80 1>backpipe
+
 This makes the fifo, and redirects local connections to port 12345 to google (default netcat operation)
 but also redirects response back to browser!! (this is not netcat default operation)
 You can verify if a fifo is present with if [[ ! -p "$pipe" ]];then mkfifo XXX;fi
 
-There are various techniques to cheat the fifo "one-shot" behavior.
-In terminal 1 if you run cat >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
+There are various techniques to cheat the fifo "one-shot" and hanging behavior.
+
+In terminal 1 if you run cat something >fifo1 & , this will release prompt1 and you can then echo many times to fifo1 witout terminal1 to be trapped again.
+
 terminal 2 will print immediately whatever comes in fifo.
-see also: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+
+See: http://stackoverflow.com/questions/8410439/how-to-avoid-echo-closing-fifo-named-pipes-funny-behavior-of-unix-fifos
+
+Example1:
+$ ls -l /tmp > myPipe &
+$ cat < myPipe or grep 'word' <mypipe or whatever.
+As a general idea pipe is used just like a file.
+This works on the same terminal because the use of & (background) is in reallity a subshell.
+
+Example2:
+$ { ls -l && cat file3; } >mypipe &
+[2] 5582
+$ cat <mypipe	#Prints correctly the file list AND file3 contents afterwards
+
+Example3:
+# ls -l >mypipe &
+[2] 5589
+# cat file3 >mypipe &
+[3] 5590
+# cat <mypipe
+This also works ok. Mind that first are printed the contents of file3 (LIFO configuration)
+
+Example4:
+# var=$(cat <mypipe ) &
+[2] 5599
+# ls -l >mypipe
+[2]+  Done                    var=$(cat <mypipe )
+# echo "$var"    -----> prints NOTHING since the var has been assigned a value in a subshell 
+
+Example5:
+# { pipedata=$(<mypipe) && echo "$pipedata"; } &
+[2] 5632
+# ls >mypipe ---> Prints correctly the output of ls
+
+Example6:
+# pipedata=$(<mypipe)  #this hangs expecting the data
+From another terminal ls -l >mypipe works and releases terminal 1. Also var pipedata has the correct value in terminal 1
+Even in script , the script hangs.
+If you do pipedata=$(<mypipe) & does not hang but data inside mypipe are not stored to pipedata - echoes nothing.
+
+
 ------------------------------------------------------------------------------------------------------------------------
+
 BASH:ASSOCIATIVE ARRAYS (declare -A array)
 http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.

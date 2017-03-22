@@ -18,6 +18,12 @@ Read Sed Online Cheat Sheets in terminal : curl -sL -o- http://sed.sourceforge.n
 
 For a detailed explanation of BRE and ERE (basic and extended regular expressions) see info sed at the relevant chapter.
 
+##SED REGEX
+The usuall group match with () seems to work better with sed -e and escaped parenthesis \(\)
+Or sed -E /(..)\1/
+# echo -e "abcd\nacvfdtt\ntert" |sed -e '/\(.\).*\1/d'    ---> abcd  #deletes words with duplicate letters using basic regex
+# echo -e "abcd\nacvfdtt\ntert" |sed -E '/(.).*\1/d'      ---> abcd  #tha same as above with extender regex
+
 ##SEPARATORS 
 All tutos describe operations with /. Slash can be replaced with any character (i.e ! or #) to make reading easier.
 Actually is not only a visual help but can become quite a functional trick.
