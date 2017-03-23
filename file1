@@ -1,4 +1,12 @@
-col1=val1|col2=val2|col3=val3|col4=val4
-col1=val1|col2=val2|col4=val4|col5=val5|col6=val6
-col1=val1|col3=val3|col4=val4|col6=val6
-col1=val1|col2=val2|col3=val3|col4=val4|col5=val5|col6=val6
+LOCATION 0 X 0
+VALUE 1a 2 3
+VALUE 1b 2 3
+VALUE 1c 2 3
+LOCATION 1 X 0
+VALUE 1d 2 3
+VALUE 1e 2 3
+VALUE 1f 2 3
+LOCATION 2 X 0
+VALUE 1g 2 3
+VALUE 1h 2 3
+VALUE 1i 2 3
