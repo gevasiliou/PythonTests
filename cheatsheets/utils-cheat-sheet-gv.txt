@@ -120,6 +120,10 @@ sda1 sda2 sda3 sda4 < sda5 sda6 >
 $ a="Configuration file 'hello2.conf' is in use by process 735." && echo "$a" |grep -Po 'process \K[0-9]*'
 735 (https://regex101.com/r/hxwGPA/1)
 
+##GREP - Count occurences of a char within a string
+var="text,text,text,text"
+number_of_occurrences=$(grep -o "," <<< "$var" | wc -l)
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 UTILS:CUT
