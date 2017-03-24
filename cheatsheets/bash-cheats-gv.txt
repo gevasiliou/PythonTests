@@ -1404,6 +1404,16 @@ j!'^+%&/()=1!'^+%&/()c
 EOF
 $ echo $var --> Output = j!'^+%&/()=1!'^+%&/()c #This is hard to be assigned even with escaping.
 
+
+##Combine array declaration with process substitution and here doc
+readarray -t arr < <( del_comments <<EOF
+a       # comm1
+b       # comm2
+# comm3
+c
+EOF
+)
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:IFS Tricks
 bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
