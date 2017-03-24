@@ -122,7 +122,9 @@ $ a="Configuration file 'hello2.conf' is in use by process 735." && echo "$a" |g
 
 ##GREP - Count occurences of a char within a string
 var="text,text,text,text"
-number_of_occurrences=$(grep -o "," <<< "$var" | wc -l)
+GREP: reps=$(grep -o "," <<< "$var" | wc -l)
+AWK Alternative: num=`echo $var |  awk -F"," '{print NF-1}'  #or {print NF?NF-1:0}
+BASH Alternative: reps="${var//[^,]}" && echo "${#reps}"  #removes everything except comma
 
 #-----------------------------------------------------------------------------------------------------------------------
 
