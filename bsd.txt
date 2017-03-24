@@ -1,0 +1,2 @@
+for ((i=1;i<50;i++));do echo -e "<film$i>..............</film$i>" >>file4;done
+awk '$0 ~/<film.*>/{++delim} {file = sprintf("chunk%s", int(delim/7)); print >file; }' file4 
