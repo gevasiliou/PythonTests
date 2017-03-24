@@ -752,6 +752,11 @@ http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 http://wiki.bash-hackers.org/snipplets/start
 
+##Count occurences of a char within a string (var="text,text,text,text")
+GREP: reps=$(grep -o "," <<< "$var" | wc -l)
+AWK : awk -F"," '{print NF-1}' <<<"$var" #or {print NF?NF-1:0}
+BASH : reps="${var//[^,]}" && echo "${#reps}"  #removes everything except comma
+
 ##Print a dashed line in full terminal width
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 OR printf '%.0s-' {1..20}; echo  #will print just 20 dashes
@@ -845,14 +850,14 @@ Tip2: You can assign a hex ascii in a variable using var=$'\x5c' -
 Tip3: You can also use hex values in sed and other tools to avoid escaping : sed 's/\x22/\x5c\x22/g' --> Will escape all double quotes.
 
 
-##PRINTF: Looping over hexadecimal values
+##PRINTF: Looping over hexadecimal values (hex loop)
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
 The most easy way is to use printf since natively supports hex printing
 
 for ((i=0;i<128;i++));do                     #Decimal Numbers in Looping but Hex Output !
 h1=$(printf "%#x\n" $i) && echo "$h1"        #prints 0x7a
 h2=$(printf "%x\n" $i) && echo "$h2"         #prints just 7a. This can combined in bash /awk/sed/perl with \x in front
-h3=$(printf "\\\x%x\n" "20") && echo "$h3"   #prints \x14 - ready to be used in bash/sed/perl/awk as hex code (i.e echo -e "$3")
+h3=$(printf "\\\x%x\n" "20") && echo "$h3"   #prints \x14 - ready to be used in bash/sed/perl/awk as hex code (i.e echo -e "$h3")
 done
 
 Testing:
@@ -860,7 +865,7 @@ $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x
 
 
 ##PRINTF: CONVERT CHARS TO ASCII VALUE
-$ printf '%d\n' "'a" or "'a'" -> prints 97 . For some reason the letter must be within single quotes. 
+$ printf '%d\n' "'a" or "'a'" -> prints 97 . For some reason the letter must be enclosed by double quotes and with single quotes!. 
 $ var="a"; printf '%d\n' "'$var'" --> also prints 97
 
 ASCII Sum:
@@ -883,21 +888,21 @@ Simpler with indirect expansion:
 $ foo=10;x=foo;echo ${!x} 	--> 10
 $ foo=10;x=foo;echo ${x} 	--> foo
 
-Also try to use #{a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
+Also try to use ${a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
 
 ##Indirect Expansion Examples
 
-$ function test { for (( i=1; i<=$#; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1 since i is 1 from for
-$ function test { for (( i=1; i<=$#; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd since $i becomes $1 
+$ function test { for (( i=1; i<="$#"; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1 since i is 1 due to for loop
+$ function test { for (( i=1; i<="$#"; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd since $i becomes $1 
 
+Indirect expansion is also found to be written in the format eval 'echo "${'"$i"'}"'  <-> $1 when i expands to 1
 
 http://stackoverflow.com/questions/42047532/bash-for-loop-to-set-a-variable-its-value-and-evaluate-it/42047814?noredirect=1#comment71311357_42047814
 
-$ for i in {1..4};do eval my${i}var="./path${i}_tofile";eval echo "$""my${i}var";done
+$ for i in {1..2};do eval my${i}var="./path${i}_tofile";eval echo "$""my${i}var";done
 ./path1_tofile
 ./path2_tofile
-./path3_tofile
-./path4_tofile
+
 Tip: the first eval (eval my${i}var) can be avoided using declare my${i}var
 Remark: OP tried to print the values using echo "$my${i}var" , which never worked (variable within a variable - bash panic!)
 
@@ -906,14 +911,12 @@ For echo part, instead of using eval , the same can be achieved with Indirect Ex
 # for i in {1..4};do declare my${i}var="./path${i}_tofile";tmpvar=my${i}var;echo ${!tmpvar};done
 
 Mind the difference If you don't use the indirect expansion :
-# for i in {1..4};do declare my${i}var="./path${i}_tofile";tmpvar=my${i}var;echo ${tmpvar};done
+# for i in {1..2};do declare my${i}var="./path${i}_tofile";tmpvar=my${i}var;echo ${tmpvar};done
 my1var
 my2var
-my3var
-my4var
 
 ## Indirect Expansion vs Eval
-No. eval will execute potential command substitutions. Indirect expansion will not. 
+Eval is possible to execute potential command substitutions. Indirect expansion will not. 
 Test with this: 
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
 the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
@@ -930,7 +933,7 @@ $ arr2=("alpha" "omega")
 $ declare -p arr1 arr2
 declare -a arr1=([0]="one" [1]="two")
 declare -a arr2=([0]="alpha" [1]="omega")
-$ user="1"   #user selection
+$ user="1"   #user selection - could be read -p "select array" user
 $ tmp="arr$user[@]" && declare -p tmp
 declare -- tmp="arr1[@]"
 $ newarr=("${!tmp}") && declare -p newarr
@@ -938,7 +941,7 @@ declare -a newarr=([0]="one" [1]="two")
 
 a=(one two three) && b="a[@]" && echo "${!b}" && newArr=( "${!b}" ) && declare -p newArr
 
------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS AND REDIRECTIONS
 ##Sources
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
