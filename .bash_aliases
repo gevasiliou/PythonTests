@@ -22,7 +22,8 @@ alias gitsend='git add . && git commit -m "update" && git push && git show --nam
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 alias printfunctions='set |grep -A2 -e "()"'
-alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
+#alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
+alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w32 -An -t x1c -v'
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
