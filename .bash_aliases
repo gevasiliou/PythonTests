@@ -23,6 +23,8 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
 alias printfunctions='set |grep -A2 -e "()"'
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
+#lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
+
 alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w32 -An -t x1c -v'
 #alias asciit='od -An -tuC'
