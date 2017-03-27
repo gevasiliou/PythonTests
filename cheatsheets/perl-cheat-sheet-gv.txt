@@ -44,7 +44,7 @@ sed -i -r 's/(.*\[[0-9]+\][[0-9]+\].*)(\{0.0\})(.*)/\1{\2}\3/'
 
 Tip: If the regex described does not make a perfect match with input , then the whole input string is returned.
 
-##BSD Replacements
+##BSD REPLACEMENTS
 Perl replacements work really good even in BSD.
 
 Example: Each line should be terminated with \r\n , but lines only with \n must be concatenated with previous line
@@ -61,7 +61,7 @@ abc^M$
 defijk^M$
 lmn^M$
 
-##HTML Tags Replacement
+##HTML TAGS REPLACEMENT
 $ echo "$ht" |perl -0777 -pe "s/\n/\0/g;s/<style>.*<\/style>/$st/g;s/\0/\n/g"
 Where $ht is a multline html code (lines separated with \n), and $st is some multiline replacement text also including \n
 See http://stackoverflow.com/questions/42739324/remove-a-specific-tag-and-replace-it-with-awk/42741305#42741305
@@ -72,21 +72,27 @@ Another alternative would be to describe the pattern like <style>\n.*\n.*\n<\/st
 This would also work because the whole file is loaded from perl with 0777, and will NOT work with sed easily since sed works per input line.
 This is why sed has a set of commands to append data to pattern space / buffer space.
 
-##Replacement with backreference to replaced parts ($1)
+##REPLACEMENT WITH BACK REFERENCE ($1 OR $&) 
 echo "...." |perl -pe 's/Q([0-9])/\nQ\1/g' #Inserts a new line before Q and then appends group1
 EQUALS TO 
 perl -pe 's/(Q\d)/\n$1/g' #Q has been included in the group , mind the use of $1 as backref to replaced part
 OR EVEN TO 
 perl -pe 's/Q\d/\n$&/g' #no capture group usage - \d = digits = [0-9] , $& is backref the whole replaced part
 
-##Regex and PCRE Regex
+##REGEX - PCRE
 The Stack Overflow Regular Expressions FAQ :
 http://stackoverflow.com/questions/22937618/reference-what-does-this-regex-mean/22944075#22944075
 Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even with grep -Po
 
-Non Capturing group : '(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
+##Non Capturing group 
+'(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
 
-##Grep the first number from a line.
+##\w and \s abbreviations for words ans space
+echo $'Unites State | California | UNIX | ABC DE' |perl -pe 's/[a-zA-Z]+[[:space:]]+[a-zA-Z]+/\"$&\"/g'
+"Unites State" | California | UNIX | "ABC DE"    #adds double quotes in entries with space inbetween
+Short PCRE Alternative : perl -pe 's/\w+\s+\w+/\"$&\"/g' 
+
+##GREP FIRST NUMBER OF LINE .
 grep -Po '^.*?\K\d+'   #*=one char zero or more , ? = non greedy , \K=forget previous, \d+ = [0-9]+ , +:1 or more
 line one 333 more --> 333
 456 another line  --> 456
