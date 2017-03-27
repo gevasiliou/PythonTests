@@ -337,10 +337,12 @@ find . -type f -name '*.txt' -print0 |xargs -0 somecommand_here
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SORT 
 http://www.skorks.com/2010/05/sort-files-like-a-master-with-the-linux-sort-command-bash/
-Mind the options -u and -k for defininig the sort field (i.e -k2) and -t for setting fields delimiter (i.e -t"|")
+Mind the options -u and -k for defininig the sort field (i.e -k2) and -t for setting fields delimiter (i.e -t"|" or -t:, etc)
 -k lets you defind the sort key. You can have many -k entries.
 
 Moreover with -k you can define except from the column (-k1) also the letters range to make the sort (i.e -k1,5 = 1st Col, chars 1 to 5)
+
+Tip: To be sure that your -k selection works ok , you can apply for testing i.e -k3r (reverse). This means sort by 3rd column in reverse order.
 
 Example:
 root@debi64:/home/gv/Desktop# sort -k1,5 a.txt b.txt
