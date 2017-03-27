@@ -7,6 +7,12 @@ echo "Your PATH is $PATH"
 echo "Parameter received="$#
 [[ -z $1 ]] && echo "parameter 1 is emty"
 
+printf "%d args:" $# && printf " <%s>" "$@"  && echo
+#demonstrating word splitting - Test with ./oneshot.sh hello world "how are you?"  --> <hello> <world> <how are you?>
+#More word splitting examples:
+#log=/some/text/inside/here IFS=/
+#./oneshot.sh $log  ==> 5 args: <> <some> <text> <insided> <here>
+
 #{ pipedata=$(<mypipe) && echo "$pipedata"; } &
 #pipedata=$(<mypipe)
 
