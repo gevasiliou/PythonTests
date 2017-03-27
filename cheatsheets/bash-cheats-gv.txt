@@ -435,6 +435,7 @@ find /path/to/ -name '*.txt' -and -not -name 'manifest.txt'
 
 Usage: Multiple file names / types:
 find /tmp -name '*.pdf' -or -name '*.doc' | xargs rm #mind the -or operator. 
+Tip: We can avoid the use of find by enabling bash extended glob options (see shopt starglob and extglob chapter inhere) 
 
 ##FIND CUSTOM PRINTING
 find /dir1 -type f -printf "%f\n" #prints only file name, without directory in front.
@@ -497,7 +498,7 @@ pgrep search for processes matching pattern even partially. pidof could be used 
 Defaut output of pgrep is to seperate processes found with new lines. By echo \n is removed and a space is used.
 If you replaace that space with a comma, then can be fed to top -p which accepts multiple pids (comma seperated)
 
-Processes List and Kill
+##PROCESSES LIST - KILL
 ps all and ps aux
 list all of tty1 : ps -t tty1
 Isolate pids: ps -t tty1 |cut -d" " -f1
@@ -621,6 +622,55 @@ alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var"
 for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
 
 ------------------------------------------------------------------------------------------------------------------------
+BASH:WORD SPLITTING
+http://mywiki.wooledge.org/WordSplitting
+Mainly affects args in scripts / functions , affects array elements splitting and also affects the behavior of read command.
+
+The shell's parser performs several operations on your commands before finally executing them. Understanding how your original command will be transformed by the shell is of paramount importance in writing robust scripts. From the bash man page:
+
+The order of expansions is: brace expansion, tilde expansion, parameter, variable and arithmetic expansion and command substitution (done in a left-to-right fashion), word splitting, and pathname expansion
+
+To understand word splitting consider a simple bash script called i.e args , including:
+#!/bin/sh
+printf "%d args:" $# && printf " <%s>" "$@" && echo
+
+Tests:
+args hello world "how are you?"                  --> 3 args: <hello> <world> <how are you?>
+var="This is a variable" && args $var            --> 4 args: <This> <is> <a> <variable>
+log=/var/log/qmail/current IFS=/ && args $log    --> 5 args: <> <var> <log> <qmail> <current>
+
+Thing become weird in case of filenames, i.e args $(ls -l). As a general idea we do not want to let word splitting occur when filenames
+are involved. (See http://mywiki.wooledge.org/BashPitfalls for a discussion of this particular issue.)
+
+Double quoting an expansion suppresses word splitting, except in the special cases of "$@" and "${array[@]}"
+var="This is a variable"; args "$var"                     --> 1 args: <This is a variable>
+array=(testing, testing, "1 2 3"); args "${array[@]}"     --> 3 args: <testing,> <testing,> <1 2 3>
+
+"$@" causes each positional parameter to be expanded to a separate word; its array equivalent likewise causes each element of the array to be expanded to a separate word.
+There are very complicated rules involving whitespace characters in IFS. Quoting the man page again:
+
+If IFS is unset, or its value is exactly <space><tab><newline>, the default, then any sequence of IFS characters serves to delimit words. 
+If IFS has a value other than the default, then sequences of the whitespace characters space and tab are ignored at the beginning and end of the word, as long as the whitespace character is in the value of IFS (an IFS whitespace character). 
+Any character in IFS that is not IFS whitespace, along with any adjacent IFS whitespace characters, delimits a field. 
+A sequence of IFS whitespace characters is also treated as a delimiter. If the value of IFS is null, no word splitting occurs.
+
+If IFS contains non-whitespace characters, then empty words can be generated:
+$ getent passwd sshd                     --> sshd:x:100:65534::/var/run/sshd:/usr/sbin/nologin
+$ IFS=:; args $(getent passwd sshd)      --> 7 args: <sshd> <x> <100> <65534> <> </var/run/sshd> </usr/sbin/nologin>
+
+If above expansion result to a single word with * , then a further filename expansion is performed by bash (globbing).
+PS: Pathname expansion can be disabled with set -f; though this can lead to surprising and confusing code.
+
+When using the read command, word splitting is performed on the input, but only when multiple variable names are given, or when read -a is used (to populate an array). 
+Quoting is irrelevant here, though this behavior can be disabled by removing whitespace from IFS
+
+Tip: Word splitting is not performed on expansions in assignments. Thus, one does not need to quote anything in a command like these:
+foo=$bar OR bar=$(a command) OR logfile=$logdir/foo-$(date +%Y%m%d) OR PATH=/usr/local/bin:$PATH ./myscript
+In either case, quoting anyway will not break anything. This is why experts advise "always quote" = "always prevent word splitting".
+Experienced coders can selectively remove quoting to achieve the per case required results making advantage of word splitting.
+
+------------------------------------------------------------------------------------------------------------------------
+
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 
