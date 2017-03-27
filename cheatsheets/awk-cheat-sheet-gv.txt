@@ -134,7 +134,8 @@ awk 'BEGIN{system("echo 1 > f")}'
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
 
 
-##AWK Split function 
+##AWK FIELDS SPLITTING - SPLIT FUNCTION 
+http://awk.freeshell.org/RangeOfFields
 You can set FS to multiple chars like -F"[:;]" and the $0 will be splitted in many pieces.
 Though there is no way to refer to the delimiter used for each fiels. Even if you print FS it will print literally [:;].
 As a result, in such situation the output will respect OFS (space by default) and will be a mess.
