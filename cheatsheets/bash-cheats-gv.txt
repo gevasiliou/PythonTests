@@ -1427,6 +1427,11 @@ The IFS variable holds the characters that Bash sees as word boundaries in this 
 These characters are also assumed when IFS is unset. 
 When IFS is empty (nullstring), no word splitting is performed at all.
 
+The correct way to assign values to IFS is the bash way $'...' . 
+This way is also used when you need to store special chars in any variable , i.e a=$'this is some\ntest' . 
+You can not do above operation (embed newline) without using $' ' . If you try like a="this is a \ntest" the \n will be literal.
+Ugly alternative for variables : a=$(echo -e "this is \n a test")
+
 #### Special IFS settings used for string parsing. ####
 Whitespace == :Space:Tab:Line Feed:Carriage Return:
 WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
@@ -1487,11 +1492,56 @@ extdebug       	off
 extglob        	off
 failglob       	off
 ------------------------------------------------------------------------------------------------------------------------
+BASH:SHELL OPTIONS - GLOB SPECIFIC OPTIONS
+http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
+https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
+http://stackoverflow.com/questions/42969978/how-to-preserve-directory-structure-but-delete-some-of-its-contents-using-bas#comment73036677_42969978
+http://www.linuxjournal.com/content/bash-extended-globbing
+
+When we need to iterate through folders, we can enable bash globstar option using shopt -s globstar
+Also BASH has some more options that affect globbing:
+
+According to man bash:
+.B globstar
+   If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories.
+   If the pattern is followed by a ‘/’, only directories and subdirectories match.
+.B dotglob
+   If set, Bash includes filenames beginning with a ‘.’ in the results of filename expansion.
+.B extglob
+   If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
+   Extended globbing Pattern Matching as described by the bash man page:
+     ?(pattern-list)   Matches zero or one occurrence of the given patterns
+     *(pattern-list)   Matches zero or more occurrences of the given patterns
+     +(pattern-list)   Matches one or more occurrences of the given patterns
+     @(pattern-list)   Matches one of the given patterns
+     !(pattern-list)   Matches anything except one of the given patterns
+   Most common use of extglob is using rm !(file1|file2|file*) in which rm will ignore the files given in the ( ) list.
+   You can echo the rm command first, and if extglob is enabled and working even with echo the files to be deleted will be printed.
+   More extglob examples:
+     $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
+     $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
+     $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead)
+     
+##Example of iterating through files ignoring files/patterns stored in a file (gitignore case)
+shopt -s globstar
+declare -A filelist=()                                              # Create an associative array where filenames become array keys
+for file in **; do filelist[$file]=1; done                          # Build a list of all files...
+while read -r file; do unset filelist[$file]; done < .rmignore      # Remove files to be ignored.
+echo rm -v "${!filelist[@]}"                                        # Delete what is left in the array keys
+
+Remark: Needs testing to be sure that this method will correctly exclude patterns in .rmignore (i.e dir1/file*)
+
+Alternative while loop above that will also use for (seems more correct - proposed by ghoti @ SO
+while read -r glob; do for file in $glob; do unset filelist[$file];done;done < .rmignore
+This method should work for sure even on patterns included in .rmignore due to the call of the for loop = glob iteration with pattern that was read by .rmignore file.
+------------------------------------------------------------------------------------------------------------------------
+
 BASH:FIND Iterate through various folders without find:
-for i in a b c d e
+for i in a b c d e             #a list a-b-c-d-e is ginven in for and i will go through all this list
 do
     (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
 done
+------------------------------------------------------------------------------------------------------------------------
 
 BASH:FUNCTIONS AND ALIASES
 ##Alias
