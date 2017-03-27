@@ -133,11 +133,55 @@ awk 'BEGIN{system("echo 1 > f")}'
 
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
 
+
+##AWK Split function 
+You can set FS to multiple chars like -F"[:;]" and the $0 will be splitted in many pieces.
+Though there is no way to refer to the delimiter used for each fiels. Even if you print FS it will print literally [:;].
+As a result, in such situation the output will respect OFS (space by default) and will be a mess.
+
+A good alternative similar to RS and RT (=last separator used to split records) is to use SPLIT function .
+Split will split the $0 in pieces according to a customized regex, and will store each piece in an array and each separator used for splitting 
+in a separate "seps" array.
+Most important if you combine split with printf you can rebuild the record accuratelly = identical to Input Record $0
+
+SPLIT Test:
+
+$ echo "$b"
+alert tcp any any -> any any (msg: "this is a "dummy" rule (to test) the rule"; flow:to server; sid:1233; rev:1; no case; content: "nothing";)
+
+$ echo "$b" |awk '{fsep="[\";:]";split($0,f,"y|[\";:]",sep);for (k=1;k<=length(f);k++) printf("No=%s \t|Val=%s \t\t|Seperator=%s\n", k,f[k],sep[k])}'
+No=1 	|Val=alert tcp an 		|Seperator=y
+No=2 	|Val= an 		        |Seperator=y
+No=3 	|Val= -> an 		    |Seperator=y
+No=4 	|Val= an 		        |Seperator=y
+No=5 	|Val= (msg 		        |Seperator=:
+No=6 	|Val=  		            |Seperator="
+No=7 	|Val=this is a  		|Seperator="
+No=8 	|Val=dumm 		        |Seperator=y
+No=9 	|Val= 		            |Seperator="
+No=10 	|Val= rule (to test) the rule 		|Seperator="
+No=11 	|Val= 		    |Seperator=;
+No=12 	|Val= flow 		|Seperator=:
+No=13 	|Val=to server 	|Seperator=;
+No=14 	|Val= sid 		|Seperator=:
+No=15 	|Val=1233 		|Seperator=;
+No=16 	|Val= rev 		|Seperator=:
+No=17 	|Val=1 		    |Seperator=;
+No=18 	|Val= no case 	|Seperator=;
+No=19 	|Val= content 	|Seperator=:
+No=20 	|Val=  		    |Seperator="
+No=21 	|Val=nothing 	|Seperator="
+No=22 	|Val= 		    |Seperator=;
+No=23 	|Val=) 		    |Seperator=
+
+
+
 ##Match Function
 usually usage is match(string,substring).
 awk '{print match($0,"-")}' <<<""abc-cde-fgh"       -> prints 4= the position of substr inside string. Even if the search term is "-c" will return 4. 
 
 match can accept a third argument = array var. 
+In this array all captured regex groups/expressions are stored.
 awk '{print match($0,"-cd",a)}{for (i in a) print i,",",a[i]}' <<<"abc-cde-fgh"
 4 #print of match
 0Rstart , 4   #print of the array. 
@@ -162,6 +206,10 @@ awk 'match($0,/(.*)-...-(.*)/,a){for (i in a) print i,a[i]}' <<<"abc-cde-fgh"  #
 ##Another Match Example with partial regex matching
 awk '{print match($0,/-(...)-/,a)}{for (i in a) print i,a[i]}' <<<"abc-cde-fgh"     #a[0]="-cde-" and "a[1]=cde"
 
+
+##REGEX Non greedy operator equivalent by Chazelas:
+http://unix.stackexchange.com/questions/49601/how-to-reduce-the-greed-of-a-regular-expression-in-awk
+Perl (.*?)(;) = match everything up to first ;  <===> (.[^;]*)(;)  or (.[^;]*;) if you want ; to be included in the match
 
 ##Skip Input Columns Techniques
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6

@@ -8,9 +8,10 @@ http://www.strawberryperl.com/
 
 
 PERL:REPLACEMENTS
-##Classic Replacement
+##Classic sed alike Replacement
 Use the classic bash/sed format but much better than sed.
-in sed it is common operation like 's/\n//g' (delete all \n) to fail. In Perl works fine (some times -0777 is required = slurp all input at once and process it all together)
+in sed it is common operation like 's/\n//g' (delete all \n) to fail. 
+In Perl works fine (some times -0777 is required = slurp all input at once and process it all together)
  
 Actually the above perl example uses the s/pattern/replace format of sed , which works in exactly the same way as sed.
 
@@ -18,7 +19,7 @@ a="http://unix.stackexchange.com/questions/ask"
 perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacement, using a different delimiter
 perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacements,like sed /g
 
-##Replacement using regexp 
+##Replacement using regexp and non-greedy / lazy operator
 Perl has great support to non-greedy regex groups .
 sed -r supports extended regexp  but does not support not-greedy operator (.*?)
 
@@ -26,8 +27,12 @@ a="http://unix.stackexchange.com/questions/ask"
 perl -pe 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com  			#mind the non-greedy operator in group 2
 sed -r 's#(.*//)(.*?)(/.*)#\2#' <<<"$a" ---> unix.stackexchange.com/questions	#non-greedy operator ignored by sed.
 
+##REGEX Non greedy operator equivalent by Chazelas:
+http://unix.stackexchange.com/questions/49601/how-to-reduce-the-greed-of-a-regular-expression-in-awk
+(.*?)(;) = match everything up to first ;  <===> (.[^;]*)(;)  or (.[^;]*;) if you want ; to be included in the match
 
-.B Another example with regex groups:
+
+##Another example with regex groups:
 $ echo "$a" && perl -pe "s/(.*?)({)(.*?)(})(.*)/\1\{\2\3\4\}\5/" <<<"$a"
 static double    testVar1          [2][8]  = {0.0}    ;  /* This is for testing var 1 */
 static double    testVar1          [2][8]  = {{0.0}}    ;  /* This is for testing var 1 */ 
