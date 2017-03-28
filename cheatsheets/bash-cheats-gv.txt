@@ -111,7 +111,9 @@ http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-an
 Example of NULL Separated file : /proc/1/environ to variables script
 You can view this file with cat /proc/1/environ |tr '\0' '\n' #all null will become new lines
 
+
 You can convert any file to null separated (for testing) by cat file |tr '\n' '\0'
+Or for testing you can feed read with find . -type f -print0
 
 To split the files based on null you need something like this:
 $ while IFS= read -r -d '' line ; do vars+=("$line");done <file #Mind the gap in -d option of read.
@@ -123,10 +125,15 @@ PS: I tried to apply as a delimiter -d$'\0' or -d '\x00' but not working. Has to
 
 This also works for find files : readarray -t -d '' var2 < <(find . -print0)
 
-This does not works without loop- it gets only the first element: 
+READ with null values does not work without loop- it gets only the first element: 
 IFS= read -d '' -r -a lines < <(find . -name '*.sh' -print0) #I also tried with IFS=$'\0', IFS='', IFS=$'' , no IFS , but no luck
 
-READ Need to be combined with a loop to work:
+Workaround: IFS=$'\n' read -d '' -r -a arr1 < <(tr '\0' '\n' </proc/1/environ); declare -p arr1
+[0]="SHLVL=1" [1]="HOME=/" [2]="init=/sbin/init" [3]="TERM=linux" [4]="drop_caps=" 
+[5]="BOOT_IMAGE=/boot/vmlinuz-4.9.0-1-amd64" [6]="PATH=/sbin:/usr/sbin:/bin:/usr/bin" [7]="PWD=/" [8]="rootmnt=/root")
+Workaround will break if values include newlines = useless use of -print0 
+
+To correctly READ null values separated data need to be combined with a loop to work:
 while IFS= read -r -d '' file;do
 echo "file found=$file" #this can be whatever , i.e an array assignment filearray+=("$file")
 done < <(find . -print0)
@@ -187,6 +194,7 @@ read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-67
 read -r first last junk <<< "$a" 
 # $first will contain "Bob", last will contain "Smith", junk holds everything else that follows
 ------------------------------------------------------------------------------------------------------------------------
+
 ## READ FROM FILE AND SPLIT FIELD BY DOUBLE QUOTES 
 Line Example : "aaa bbb" "xxx yyy"  # Next line can be of the same pattern plus a new line separator at end of prev line
 Target : separate fields of line like $1="aaa bbb" $2="xxx yyy" in order to be sent to a function or command
@@ -247,6 +255,7 @@ while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'f
 f1=./file1, f2=./file2
 f1=./file3, f2=./file4
 ------------------------------------------------------------------------------------------------------------------------
+
 ##READ FIRST TWO LINES ONLY 
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt
@@ -264,7 +273,7 @@ Best trick :   alpha | xargs -d "\n" beta
 
 ------------------------------------------------------------------------------------------------------------------------
 ##READ WITH LINE BUILTIN
-line <file will print the first line of file
+$ line <file will print the first line of file
 can also be assigned to a var: a=$(line <file)
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -283,6 +292,64 @@ Trick:
 $ while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"  ---> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+
 ------------------------------------------------------------------------------------------------------------------------
+##MORE READ EXAMPLES (DELIMITERS, WORD SPLIT, ARRAYS)
+Read supports -a option for array. 
+read builtin default separator is new line. If read founds a new line then exits.
+Word Splitting can be done by adjusting IFS
+
+Example:
+IFS="[;]" read -a array <<<$'one;two;three;no more' && declare -p array --> [0]="one" [1]="two" [2]="three" [3]="no more"
+
+If the input contains new line then read is terminated on this new line due to internal default delimiter 
+IFS="[;]" read -a array <<<$'one;two;\nthree;no more' && declare -p array  --> [0]="one" [1]="two"
+
+For array declaration among multiple lines , you can either apply one of the "read two lines" techniques 
+OR you can make this trick and avoid the use of while loop:
+
+$ echo "$a"
+one;two;
+three;no more;
+
+$ IFS=[$'\n'";"] read -d '' -a arr1 <<<"$a"; declare -p arr1   #Luckilly enough IFS accepts regex : newline or ;
+declare -a arr1=([0]="one" [1]="two" [2]="three" [3]="no more")
+
+You can also force splitting only by new lines:
+$ IFS=$'\n' read -d '' -a arr1 <<<"$a"; declare -p arr1   ---> [0]="one;two;" [1]="three;no more;"
+
+And you can expand this newlines splitting to array technique in files without the need to use a while loop
+$ cat file11
+Ubuntu, 120, 143, 154
+Yggdrasil, 144, 170-171
+Yood, Charles, 6
+We Were Young, Bob, 178-179
+Zawinski, Jamie, 204
+
+$ IFS=$'\n' read -d '' -a arr1 <file11; declare -p arr1 
+[0]="Ubuntu, 120, 143, 154" 
+[1]="Yggdrasil, 144, 170-171" 
+[2]="Yood, Charles, 6" 
+[3]="We Were Young, Bob, 178-179"       #mind that space in line was succesfully handled
+[4]="Zawinski, Jamie, 204"
+
+The success of above read operations is based on setting -d '' = set internal read delimiter to null/nothing. 
+Thus splitting is made purely based on IFS values
+
+Trick: By disabling read -d and also by diasbling IFS you can get the whole file in one array position = one line
+IFS= read -d '' -a arr1 <file11; declare -p arr1 
+declare -a arr1=([0]=$'Ubuntu, 120, 143, 154\nYggdrasil, 144, 170-171\nYood, Charles, 6\nWe Were Young, Bob, 178-179\nZawinski, Jamie, 204\n')
+
+You can also make use of this technique to read null separated values without while read loop:
+
+
+About word splitting, setting temporary value to IFS affects the word splitting significantly:
+IFS= read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no more"   #No split at space
+read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no" [1]="more"  #Split at space
+
+
+	
+------------------------------------------------------------------------------------------------------------------------
+
+
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
