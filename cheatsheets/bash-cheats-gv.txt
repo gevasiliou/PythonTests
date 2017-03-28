@@ -971,6 +971,25 @@ Test with this:
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
 the indirect expansion is essentially "variable not found, substitute the empty string", while eval executes the nasty command.
 
+Some more tests:
+a="ls -l";foo=a;echo "${!foo}"       ---> Prints ls -l
+a="ls -l";foo=a;eval "${!foo}"       ---> Executes ls -l
+a="ls *.sh";foo=a;"${!foo}"          ---> bash: ls *.sh: command not found
+a="ls";foo=a;"${!foo}"               ---> Executes simple ls
+a="ls -l";foo=a;${!foo}              ---> Executes ls -l
+a="ls *.sh";foo=a;${foo}             ---> a command not found -same with dquotes
+a="ls *.sh";foo=a;eval echo ${foo}   ---> Prints a - same with double quotes
+a="ls";foo=a;eval ${foo}             ---> bash: a: command not found - same with dquotes
+a="ls";foo=a;eval \$"${foo}"         ---> executes ls
+a="ls";foo=a; echo \$"${foo}"        ---> prints $a
+
+a="ls";foo=$a;${foo}                 ---> executes ls either with single or double quotes
+a="ls";foo=$a;echo ${foo}            ---> prints ls
+
+Also:
+name=$'My name is \x3b\x6c\x73'; eval "user=$name" --> will execute ls (hexcode = ;ls --> my name is; ls
+
+
 ##Indirect Expansion in arrays
 http://unix.stackexchange.com/questions/20171/indirect-return-of-all-elements-in-an-array
 
