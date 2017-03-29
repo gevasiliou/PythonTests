@@ -346,7 +346,16 @@ IFS= read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;tw
 read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no" [1]="more"  #Split at space
 
 
-	
+##Trick with IFS and values in one line - one variable:
+
+Instead of creating an array with values and manipulate array items like:
+IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
+for k in "${list[@]}";do  #actions ;done
+
+You can  do:
+variable="Yeseva+One, Yrsa"
+IFS="[, ]" for i in $variable;do #actions;done
+
 ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -557,7 +566,12 @@ files=(*)  ## or fies=(*.sh), etc
 $ while read -r -d '' file;do echo "ffmpeg -i $file -q 1 ${file}_%d.jpeg";done < <(find . -name "a*.txt" -printf %f\\0)
 printf %f prints only filename without directory (=basename) and \\0 applies null after filename (separator)
 
+## Iterate through various folders simulating find with a for loop in a list:
+for i in a b c d e ;do
+  (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
+done
 ------------------------------------------------------------------------------------------------------------------------
+
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
 Search for a process using top . Top seems to catch all processes:
 top -p $(echo $(pgrep time) |sed 's/ /,/g')
@@ -736,6 +750,55 @@ foo=$bar OR bar=$(a command) OR logfile=$logdir/foo-$(date +%Y%m%d) OR PATH=/usr
 In either case, quoting anyway will not break anything. This is why experts advise "always quote" = "always prevent word splitting".
 Experienced coders can selectively remove quoting to achieve the per case required results making advantage of word splitting.
 
+##Trick with IFS and values in one line - one variable:
+
+Instead of creating an array with values and manipulate array items like:
+IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
+for k in "${list[@]}";do  #actions ;done
+
+You can  do:
+variable="Yeseva+One, Yrsa"
+IFS="[, ]" for i in $variable;do #actions;done
+
+------------------------------------------------------------------------------------------------------------------------
+BASH:IFS Tricks
+bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
+The IFS variable holds the characters that Bash sees as word boundaries in this step. The default contains the characters
+<space>
+<tab>
+<newline>
+These characters are also assumed when IFS is unset. 
+When IFS is empty (nullstring), no word splitting is performed at all.
+
+The correct way to assign values to IFS is the bash way $'...' . 
+This way is also used when you need to store special chars in any variable , i.e a=$'this is some\ntest' . 
+You can not do above operation (embed newline) without using $' ' . If you try like a="this is a \ntest" the \n will be literal.
+Ugly alternative for variables : a=$(echo -e "this is \n a test")
+
+#### Special IFS settings used for string parsing. ####
+Whitespace == :Space:Tab:Line Feed:Carriage Return:
+WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
+No Whitespace == Line Feed:Carriage Return
+NO_WSP=$'\x0A'$'\x0D'
+
+later, you can just set IFS=${WSP_IFS}
+
+You can temporary set IFS inside a command like while IFS=: read -r lines
+Set IFS= to read whole lines , separated by \n
+Or set IFS=$'\n'
+Set IFS to any char to perform special field split
+For file with lines in format field1:field2:field3 using IFS= you will get the whole line, using IFS=: you can split each field.
+
+##Trick with IFS and values in one line - one variable:
+
+Instead of creating an array with values and manipulate array items like:
+IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
+for k in "${list[@]}";do  #actions ;done
+
+You can  do:
+variable="Yeseva+One, Yrsa"
+IFS="[, ]" for i in $variable;do #actions;done
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BASH:ARGS - POSITIONAL PARAMETERS 
@@ -859,8 +922,32 @@ FOO="http://unix.stackexchange.com/questions/ask"
 tmp="${FOO#*//}" 	#Removes everything from begininng up to first found pattern '//'
 echo "${tmp%%/*}" : unix.stackexchange.com		#remove everyting from end up to last/longest (%%) pattern '/' . One % = shortest/first
 
-Replace last dot with dash:
-a='2.5.2.pl';echo "${a%.*}-${a##*.}" ----> 2.5.2-pl
+a='2.5.2.pl';echo "${a%.*}-${a##*.}" ----> 2.5.2-pl      #Replace last dot with dash:
+
+##Lowercase - UpperCase
+http://stackoverflow.com/questions/2264428/converting-string-to-lower-case-in-bash-shell-scripting
+$ string="A FEW WORDS"
+$ echo "${string,}"  --> a FEW WORDS
+$ echo "${string,,}" --> a few words
+$ echo "${string,,[AEIUO]}" --> a FeW WoRDS #Only vowels
+$ string="A Few Words" && declare -l string && string=$string; echo "$string" --> a few words
+
+$ string="a few words" && echo "${string^}"  ---> A few words
+$ echo "${string^^}"                         ---> A FEW WORDS
+$ echo "${string^^[aeiou]}"                  ---> A fEw wOrds
+$ string="A Few Words" && declare -u string && string=$string; echo "$string" ---> A FEW WORDS
+
+$ string="A Few Words" && echo "${string~~}"      --> a fEW wORDS   #Toggle
+$ string="A FEW WORDS" && echo "${string~}"       --> a fEW wORDS   #Toggle
+$ string="a few words" && echo "${string~}"       --> A Few Words   #Toggle
+$ string="a few words" && $ declare -c string && string=$string && echo "$string"       ---> A few words #Capitalize
+$ string="a few words" && string=($string) && string="${string[@]^}" && echo "$string"  ---> A Few Words
+$ declare -c string && string=(a few words) && echo "${string[@]}"                      ---> A Few Words
+
+Alternatives:
+echo "$a" | tr '[:upper:]' '[:lower:]'
+echo "$a" | awk '{print tolower($0)}'
+echo "$a" | perl -ne 'print lc'
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS AND TRICKS
@@ -985,7 +1072,7 @@ $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x
 $ printf '%d\n' "'a" or "'a'" -> prints 97 . For some reason the letter must be enclosed by double quotes and with single quotes!. 
 $ var="a"; printf '%d\n' "'$var'" --> also prints 97
 
-ASCII Sum:
+##CHARACTERS ASCII Sum:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
 $ bc <<<"${sumA:0:-1}"    ---->> 1114   #with 0:-1 the trailing + is removed.
@@ -1554,34 +1641,6 @@ EOF
 )
 
 ------------------------------------------------------------------------------------------------------------------------
-BASH:IFS Tricks
-bash hackers word split:http://wiki.bash-hackers.org/syntax/expansion/wordsplit
-The IFS variable holds the characters that Bash sees as word boundaries in this step. The default contains the characters
-<space>
-<tab>
-<newline>
-These characters are also assumed when IFS is unset. 
-When IFS is empty (nullstring), no word splitting is performed at all.
-
-The correct way to assign values to IFS is the bash way $'...' . 
-This way is also used when you need to store special chars in any variable , i.e a=$'this is some\ntest' . 
-You can not do above operation (embed newline) without using $' ' . If you try like a="this is a \ntest" the \n will be literal.
-Ugly alternative for variables : a=$(echo -e "this is \n a test")
-
-#### Special IFS settings used for string parsing. ####
-Whitespace == :Space:Tab:Line Feed:Carriage Return:
-WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
-No Whitespace == Line Feed:Carriage Return
-NO_WSP=$'\x0A'$'\x0D'
-
-later, you can just set IFS=${WSP_IFS}
-
-You can temporary set IFS inside a command like while IFS=: read -r lines
-Set IFS= to read whole lines , separated by \n
-Or set IFS=$'\n'
-Set IFS to any char to perform special field split
-For file with lines in format field1:field2:field3 using IFS= you will get the whole line, using IFS=: you can split each field.
-------------------------------------------------------------------------------------------------------------------------
 BASH:OPTIONS  
 Globbing ,bash filename expansion, bash options ans shopt options
 Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
@@ -1671,14 +1730,6 @@ Alternative while loop above that will also use for (seems more correct - propos
 while read -r glob; do for file in $glob; do unset filelist[$file];done;done < .rmignore
 This method should work for sure even on patterns included in .rmignore due to the call of the for loop = glob iteration with pattern that was read by .rmignore file.
 ------------------------------------------------------------------------------------------------------------------------
-
-BASH:FIND Iterate through various folders without find:
-for i in a b c d e             #a list a-b-c-d-e is ginven in for and i will go through all this list
-do
-    (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
-done
-------------------------------------------------------------------------------------------------------------------------
-
 BASH:FUNCTIONS AND ALIASES
 ##Alias
 You can use alias some='your alias or your function here'
