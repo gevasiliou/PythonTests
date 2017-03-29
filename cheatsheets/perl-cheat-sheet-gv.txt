@@ -79,7 +79,8 @@ perl -pe 's/(Q\d)/\n$1/g' #Q has been included in the group , mind the use of $1
 OR EVEN TO 
 perl -pe 's/Q\d/\n$&/g' #no capture group usage - \d = digits = [0-9] , $& is backref the whole replaced part
 
-##REGEX - PCRE
+##REGEX & PCRE
+Regex Tester: http://rubular.com/r/jpSVUvCGHr
 The Stack Overflow Regular Expressions FAQ :
 http://stackoverflow.com/questions/22937618/reference-what-does-this-regex-mean/22944075#22944075
 Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even with grep -Po
