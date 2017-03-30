@@ -34,6 +34,8 @@ alias hexit='od -w32 -An -t x1c -v'
 # ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
 # Uses octal to build the whole ascii table
 
+function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
+
 function lsnum { 
 echo "lsnum: Counts the files in the location provided ($1)" >&2
 [[ -z $1 ]] && local d=$PWD || local d=$1
