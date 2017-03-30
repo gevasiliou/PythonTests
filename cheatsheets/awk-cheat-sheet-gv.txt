@@ -82,8 +82,8 @@ do {actions} while (conditions)		# Alternative while loop syntax. Break, Continu
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 
 sub(regex, sub, string) # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
-gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s
-gensub(regexp, replacement, how [, target])  #Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions.
+gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts \& in replacement = backref to replaced part. Does not accept \\1 like gensub
+gensub(regexp, replacement, how [, target])  #Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions. Seems that does not accept \& but accepts groups like \\1,\\2
 substr(str, start, l)   # Returns substring of string str, starting at index start of length l. If length is omitted, the suffix of str starting at index start is returned.
 system(cmd)             # Execute cmd and return exit status. Usefull if you need to insert a file between records (instead to load in memory, cat it)
 tolower(s)              # String s to lowercase
@@ -184,7 +184,7 @@ No=23 	|Val=) 		    |Seperator=
 
 
 
-##Match Function
+##MATCH FUNCTION
 usually usage is match(string,substring).
 awk '{print match($0,"-")}' <<<""abc-cde-fgh"       -> prints 4= the position of substr inside string. Even if the search term is "-c" will return 4. 
 
@@ -218,6 +218,13 @@ awk '{print match($0,/-(...)-/,a)}{for (i in a) print i,a[i]}' <<<"abc-cde-fgh" 
 ##REGEX Non greedy operator equivalent by Chazelas:
 http://unix.stackexchange.com/questions/49601/how-to-reduce-the-greed-of-a-regular-expression-in-awk
 Perl (.*?)(;) = match everything up to first ;  <===> (.[^;]*)(;)  or (.[^;]*;) if you want ; to be included in the match
+
+##ADVANCED MATCH
+echo "$a"
+Text1 somethingAA0123456something,elseAA9876543foo text1
+$ awk '{match($0,/(\w+\s)(\w+)(\w\w[0-9]{7})(\w+,\w+)(\w\w[0-9]{7})(\w+\s)(\w+)/,a);print a[1],a[3],",",a[5],a[7]}' <<<"$a"
+Text1 AA0123456,AA9876543 text1
+
 
 ##Skip Input Columns Techniques
 echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6
