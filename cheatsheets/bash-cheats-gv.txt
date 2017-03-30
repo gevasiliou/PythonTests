@@ -1107,6 +1107,9 @@ $ bc <<<"${sumA:0:-1}"    ---->> 1114   #with 0:-1 the trailing + is removed.
 
 BASH:EVAL AND INDIRECT EXPANSION
 http://tldp.org/LDP/abs/html/ivr.html
+http://mywiki.wooledge.org/BashFAQ/048 - Eval command and security issues
+http://mywiki.wooledge.org/BashFAQ/006#eval
+
 1) foo=10 && x=foo
 2) y='$'$x
 3) echo $y --> $foo

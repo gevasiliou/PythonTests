@@ -80,6 +80,7 @@ do {actions} while (conditions)		# Alternative while loop syntax. Break, Continu
 
 ##AWK Builtin Functions
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
+http://awk.freeshell.org/Backreferences   #apply to gensub,etc
 
 sub(regex, sub, string) # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
 gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts \& in replacement = backref to replaced part. Does not accept \\1 like gensub
@@ -142,7 +143,9 @@ awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output
 
 
 ##AWK FIELDS SPLITTING - SPLIT FUNCTION 
+http://awk.freeshell.org/Frequently_Asked_Questions#toc1
 http://awk.freeshell.org/RangeOfFields   #more field splitting techniques in this link
+
 You can set FS to multiple chars like -F"[:;]" and the $0 will be splitted in many pieces.
 Though there is no way to refer to the delimiter used for each fiels. Even if you print FS it will print literally [:;].
 As a result, in such situation the output will respect OFS (space by default) and will be a mess.
