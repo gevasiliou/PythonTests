@@ -141,6 +141,11 @@ awk 'BEGIN{system("echo 1 > f")}'
 
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
 
+##FIELD SEPARATOR - SPECIAL USE OF WHITESPACE
+awk 'BEGIN{FS=" ";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"    ---> xxx_ccc_vvv_bbb_333_444_555
+awk -v OFS="_" '{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"              ---> xxx_ccc_vvv_bbb_333_444_555
+awk 'BEGIN{FS="\\s";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"  ---> xxx_ccc_vvv_bbb________333__444__555
+
 
 ##AWK FIELDS SPLITTING - SPLIT FUNCTION 
 http://awk.freeshell.org/Frequently_Asked_Questions#toc1
@@ -384,6 +389,9 @@ PS: If you try to set ORS=RS="multi Record separators here" it does not work. Pr
 
 Tip:
 Es[ecially in Fields Splitting, you can apply a kind of ternary if at printf : for (k=1;k<=NF,k++) printf("%s%s",$k,(k==NF)?ORS:OFS)
+
+Remark:
+It seems that RS accepts OR in regex in format RS=",|\n" but ORS accepts regex but not OR;thus ORS=RS=regex fails if OR is given
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
