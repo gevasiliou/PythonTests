@@ -612,6 +612,12 @@ Isolate pids: ps -t tty1 |cut -d" " -f1
 Remove new line chars: ps -t tty1 |echo $(cut -d" " -f1)
 Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) # kill requires pids to be seperated by spaces, not new lines.
 Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
+
+##EXPORT TOP DATA TO VARIABLE OR TO OTHER PROGRAMM
+Top instead of continuous running can forced to run only once providing static results using -bn1 = batch mode , one iteration
+Most of top options can be used with this batch mode , i.e -u gv = reports jobs/tasks for user gv
+top -bn1 -u gv |grep 'whatever' or awk or sed or > file , etc
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS EXPANSION
 http://wiki.bash-hackers.org/syntax/pe#use_a_default_value
