@@ -1845,6 +1845,13 @@ In this way you use the -FC args only if ls runs from a terminal and not from a 
 
 
 BASH:EXAMPLES
+##NORMAL GLOBBING
+http://stackoverflow.com/questions/20796200/how-to-iterate-over-files-in-a-directory-with-bash
+
+for f in * , for f in */* , */*.txt , *.txt or ./*.txt , or ./*/*/*.txt (3rd sub dir in the tree), etc
+for filename in /Data/*.txt; do
+This method does not go automatically inside subdirs recursivelly 
+
 ##FIND ALL DIRECTORIES (AND/OR FILES) RECURSIVELLY
 http://stackoverflow.com/questions/43134407/how-to-rename-directory-and-subdirectories-recursively-in-linux/43134693#43134693
 
@@ -1859,7 +1866,16 @@ for subd in **/ ; do          # You can use ** instead of **/ to return both fil
   #Do you stuff here with $subd directories
 done
 
-With globstar you can limit the results to file only (like -type f of find) , thus you can just filter the results:
-if [[ -e "$subd" ]];then #do commands for files;fi
+With globstar you can limit the results to file only (like -type f of find) using **/*.txt or **/*.*
+Mind that **/* will return also directories. This creates a bug : not possible to isolate extensionless files
+Mind also that this format is acceptable for globstar :for ff in tmp/**/*.* or ./**/tmp/** 
+
+
+Or you can use ** and filter the results: if [[ -e "$subd" ]];then #do commands for files;fi
 Or you can use **/ to list directories and stepinto directories with CD and execute another for ./* loop.
 
+##DOUBLE QUOTING FAILURES in GLOBING
+for ff in ./**/tmp/** ;do echo Type - "$(file "$ff")" ;done  ---> Type - ./tmp/tmp2/file09 99: empty
+for ff in ./**/tmp/** ;do echo Type - "$(file $ff)" ;done    ---> 
+Type - ./tmp/tmp2/file09: cannot open `./tmp/tmp2/file09' (No such file or directory)
+99:                cannot open `99' (No such file or directory)
