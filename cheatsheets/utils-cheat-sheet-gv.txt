@@ -11,8 +11,9 @@ diff file1 file2 : Prints differences of files
 sort file1 file2 fileN: Sorts the files. Can be adjusted to sort on a specific columnt (i.e 1.2 = file 1 column2)
 join file1 file2 : Joins files in a common field
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:CHEAT SHEET TXT 2 MANPAGE FORMATTING
-##Read this cheat file with man pages:
+UTILS:MAN 
+##CHEAT SHEET TXT 2 MANPAGE FORMATTING
+Read this cheat file with man pages:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
 man formatting: man 7 man & man 7 man-pages
 groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
@@ -33,6 +34,55 @@ Man sections / header start with .SH.
 Subsection start with .SS. Alternativelly you can use .B to make this line bold. .B follows text identation - .SS has it's own idents.
 The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
 The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
+
+##MAN - SEE MANPAGES OF NON INSTALLED PACKAGES USING CURL (see also manon shell script)
+You can either decompress a .deb in the screen and ask man to display it OR
+you can download the .deb package and decompress/display the manpages available and finally delete the .deb unless you plan to tinstall it!
+
+.B On line - No deb download
+$ apt --print-uris download agrep
+'http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb' agrep_4.17-9_amd64.deb 194788 SHA256:4d3648e483f9a367b821095c9d6e24016b486723920e4abc34324ad1c89f2867
+$ curl -sL -o- 'http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb' |dpkg -c /dev/stdin  --> Provides a list of all the contents inside deb
+$ curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -t  --> Also provide a list of deb contents
+
+$ curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -xO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin
+
+The use of dpkg-deb --fsys-tarfile is required since deb packages when unzipped are constisted of two major subfiles.
+
+.B With downloading deb package
+$ apt download agrep                           ---> Get:1 http://ftp.gr.debian.org/debian jessie/non-free amd64 agrep amd64 4.17-9 [195 kB]
+OR 
+$ curl -sLO "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" # curl -O saves the file in CWD
+
+$ dpkg -c $(ls *.deb)                          ---> prints contents of data.tar inside deb file on the screen
+$ dpkg-deb --fsys-tarfile $(ls *.deb) |tar -t  ---> also prints data.tar content on the screen
+$ dpkg-deb --fsys-tarfile $(ls *.deb) |tar -xO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin -->display the man page correctly on screen
+
+OR
+ar -t "$(ls *.deb)"  --> Lists the main packages of the deb wrapper (data.tar.gz/xz , control.tar.gz/xz , debian-binary)
+ar -p "$(ls *.deb)" data.tar.gz |tar -zt  --> Listing files . data.tar coule be gz (like agrep) or .xz (in this case we need tar -Jt)
+ar -p "$(ls *.deb)" data.tar.gz |tar -xzO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin   --> works ok
+
+#-----------------------------------------------------------------------------------------------------------------------
+UTILS:DEB - TAR FILES
+Extract any compressed text file from downloaded deb:
+apt-get download netcat
+ar -p `ls *.deb` data.tar.xz |tar -Jt  #list files 
+ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |gunzip |cat (or less or whatever)
+OR
+ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |man /dev/stdin (man does unzip!)
+
+for some reason tar fails to unzip the last gz file (but gunzip works ok):
+ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |tar -xzO |cat
+
+if the file is not compressed you can just run tar -O (output to stdout = screen)
+ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/copyright
+
+curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -tz --wildcards --no-anchored '*.h'   #archive file listing with wildcards - avoiding grep
+curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -zt |grep '/src/.*\.h$'               #classic tar archive file listing
+curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzO --wildcards --no-anchored '*.h'    #extract and dump contents on screen
+curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzf - --wildcards --no-anchored '*.h'  #extract and save files locally in a new directory tar-1.29 (goes into CWD)
+curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -t # Displays files in deb archive, identical to dpkg -c
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:GREP
@@ -446,3 +496,19 @@ UTILS:TIME & STRACE
 You can monitor performance in bash using the time or the strace utils.
 time grep pattern file will  #report you details about the time required to execute command (grep)
 strace -cf grep pattern file #will also report performance in a much more analytical way, displaying also all the processes to complete the command.
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:APT
+apt list pkg
+apt list pkg* # Be carefull that bash filename expansion applies to *. You may need to apply set -f for this one or to double quote it like "pkg*"
+apt show pkg  # Show details of pkg
+apt search keyword  #Search all pkgs in all repos for the keyword/description given
+apt install pkg
+apt purge pkg
+apt-file search showmount   or /bin/showmount #advises which package you need to install in order to get showmount
+OR JUST 
+apt search showmount --> nfs-common  #or apt-cache search showmount
+apt --print-uris install pkg   # Returns the names of the .deb packages that will be installed in case of apt install. Works also with apt-get
+apt --print-uris download pkg  # Returns the deb file that apt download pkg would download:
+apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool/main/n/nfs-utils/nfs-common_1.3.4-2.1_amd64.deb' nfs-common_1%3a1.3.4-2.1_amd64.deb 230730 SHA256:8fedb6f5d28d521ca6b1623610255c7edf26c011b3c45e07e19e4378902bfab4
+

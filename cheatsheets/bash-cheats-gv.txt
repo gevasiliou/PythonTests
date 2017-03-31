@@ -1230,7 +1230,7 @@ With the 2>&1 you redirect stderr to stdout and thus you can store that output i
 
 <GV Remark>
 Although we said that at initial stage all fds point to screen this means all fds go to /dev/tty and not to >1
-seems that 1&,2& are a kind of "internal variable"
+seems that 1&,2& are a kind of "internal variable" and /dev/stdout is a kind of temp file - sym link
 In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead of 1>/dev/tty=screen)
 </GV Remark>
 
@@ -1265,9 +1265,46 @@ correspondingly you can exec 2>error-file and any programm that prints anything 
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS tricky usage from http://mywiki.wooledge.org/BashFAQ/002
-Let's say you want only the stderr, but not stdout. 
-Well, then first you have to decide where you do want stdout to go: 
-(a)output=$(command 2>&1 >/dev/null)  # Save stderr, discard stdout.
+
+##Basic redirections chain
+The key point to understand redirections is that commands behavior is always the same : 
+normal output goes to /dev/stdout , errors go to /dev/stderr and both of them go to /dev/tty
+
+Works like :
+command output 1>-> /dev/stdout (&1)--> /dev/tty[0] (in CLI)
+command errors 2>-> /dev/stderr (&2)--> /dev/tty[0] (in both CLI and script format $())
+
+Within a pipe - variable:
+command output 1>-> /dev/stdout (&1)--> buffer/pipe (in script format $())
+
+Actually with redirections you alter the last part of the chain.
+You disconnect /dev/stdout for /dev/tty and you connect it somewhere else, i.e in a logfile
+
+So in case of  $(cat 'any file' 3>&1 1>&2 2>&3) we have 
+Initial state in script usage:
+cat command succesfull -> normal output --> stdout -->fd1 --> command pipe
+cat command error (file not found) -------> stderr -->fd2 -->tty0
+
+
+Important: 
+You  can force - redirect something directly to dev/tty (=real screen) instead of the /dev/stdout.
+/dev/stdout serves like intermediate var to connnect tty with command fd &1
+So the norma chain
+command &1>--> /dev/stdout (fd1) --> /dev/tt0
+changes to command &1>--> /dev/tty0 = attach &1 to /dev/tty instead of /dev/stdout
+
+It it the /dev/stdout that is automatically attached to command internal buffer $( ) 
+
+For example you can apply : cat file |tee >/dev/tty |awk '{print $2}'
+This will force tee to print on screen and on the same time data will be available to reach awk
+Equivalent function to tee:
+function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/tty; echo "$a"; }
+Usage cat file |teee |awk '{...}' Prints the output of cat and pipes the data to awk as well
+
+
+##Manipulate stdout & stderr  
+Well, then first you have to choose a non usefully place for stdout to go: 
+(a)output=$(command 2>&1 >/dev/null)  # Save stderr, send stdout to /dev/null = nowhere
 (b)output=$(command 2>&1 >/dev/tty)   # Save stderr, send stdout to the terminal.
 (c)output=$(command 3>&2 2>&1 1>&3-)  # Save stderr, send stdout to script's stderr.
 
@@ -1328,20 +1365,7 @@ sh-4.2$ echo "echo printing: $(cat test 3>&1 1>&2 2>&3)"
 this is a test #normal out (stdout) goes directly to screen 
 echo printing: #command pipe/buffer is empty since no error raised - no data send to stderr.
 
-The key point to understand redirections is that:
-commands behavior is always the same : normal output goes to stdout , errors go to stderr.
-Works like :
-command output -> stdout ->fd1 -> tty0 (in CLI)
-command output -> stdout ->fd1 -> buffer/pipe (in script format $())
-command errors -> stderr ->fd2 -> tty0 (in both CLI and script format $())
-With redirections you only alter the last part of the chain.
-
-So in case of  $(cat 'any file' 3>&1 1>&2 2>&3) we have 
-Initial state in script usage:
-cat command succesfull -> normal output --> stdout -->fd1 --> command pipe
-cat command error (file not found) -------> stderr -->fd2 -->tty0
-
-Redirections:
+Explained Redirections:
 ---------------------------STEP 1 (3>&1)----------------------------------------------------------------------------------
 fd3-----|          #fd3 created and goes to wherever stdout-->fd1 goes = pipe for scripts format 
         |
@@ -1390,7 +1414,7 @@ Meaning: detach fd2 from tty0(default) and send it to wherever fd1 goes (=pipe) 
 But this is not portable and this is why is not used at all. 
 You create a tmp fd3 to go at fd1 in the very beginning , saving the pipe internal location/name , then you ask fd1 to go to wherever fd2 goes (screen , maybe tty0, maybe tty1, maybe something else) and finally you detach fd2 from screen and send it to fd1 previous location = fd3 current location , since you can not redirect fd to a place that no longer exists (like fd1 old place) 
 
-.B ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
+## ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
 This also achieves the swap in a different way:
 exec 3>&1			# Save the place that stdout (1) points to . This is the screen because we are in CLI mode.
 output=$(command 2>&1 1>&3)	# Run command.  stderr is captured, and 
@@ -1402,18 +1426,18 @@ exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tt
 1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
 Brilliant! 
 
-.B Redirecting output to multiple processes:
+## Redirecting output to multiple processes:
 $ tr '\n' '\\' <file3 > >(sed 's#a#A#g') > >(sed "s#[\]#\0n#g")
 Apples\norAnges\nbAnAnAs\ncArrots\n
 
-.B  GLOBAL SCRIPT REDIRECTION
+##  GLOBAL SCRIPT REDIRECTION
 http://mywiki.wooledge.org/BashFAQ/106
 #!/usr/bin/env bash
 # or whichever shebang you prefer
 exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
 
-.B Redirection explained for enginners
+## Redirection explained for enginners
 Imagine each device as a lamp and each fd as a wire. If lamp found to be not connected to a wire is destroyed.
 Thus initial state is fd1 --> screen. To remove fd1 wire from screen you need to connect first a helper wire (exec 3&>1)
 Once lamp/screen is connected with wire 3 you can remove wire 1 and attach it in another lamp (i.e file)

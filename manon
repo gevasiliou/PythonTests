@@ -169,9 +169,9 @@ if [[ $2 == "--down" ]]; then
 	echo "data.tar = $datatar"
 
 	if [[ ${datatar##*.} == "gz" ]];then 
-		options="z"
+		options="z"   #Case of agrep
 	elif [[ ${datatar##*.} == "xz" ]];then
-		options="J"
+		options="J"  # the most common case for data.tar
 	else
 		echo "data.tar is not a gz or xz archive. Exiting"
 		exit 1
@@ -424,6 +424,10 @@ diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-
 # This also works ok : ar -p `ls *.deb` data.tar.xz |unxz |tar -t . You can use unxz and gunzip to unzip xz and gz archives 
 # tar -t is used just for listing . unxz -l claims that does not support stdin (?!)
 
+# Also this works ok for manpages inside deb:
+# dpkg-deb --fsys-tarfile $(ls *.deb) |tar -xO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin -->display the man page correctly on screen
+
+
 # 3. Extract any compressed text file from downloaded deb:
 # apt-get download netcat
 # ar -p `ls *.deb` data.tar.xz |tar -Jt  #list files 
@@ -436,6 +440,8 @@ diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-
 # if the file is not compressed you can just run tar -O (output to stdout = screen)
 # ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/copyright
 
+
+
 # 4. Display contents of an not installed package without downloading
 # apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g #this will isolate the full deb link
 # dpkg -c <(curl -sL -o- $(apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g)) #this does the job
@@ -445,8 +451,10 @@ diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-
 
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -tz --wildcards --no-anchored '*.h'   #archive file listing with wildcards - avoiding grep
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -zt |grep '/src/.*\.h$'               #classic tar archive file listing
-# curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzO --wildcards --no-anchored '*.h'    #dump contents on screen
-# curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzf - --wildcards --no-anchored '*.h'  #save files locally in a new dir tar-1.29 under CWD
+# curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzO --wildcards --no-anchored '*.h'    #extract and dump contents on screen
+# curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzf - --wildcards --no-anchored '*.h'  #extract and save files locally in a new directory tar-1.29 (goes into CWD)
+
+# curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -t # Displays files in deb archive, identical to dpkg -c
 
 
 # 5. Resources:
