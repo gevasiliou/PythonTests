@@ -1836,3 +1836,24 @@ You can do that by unalias, or by $ command ls, or by \ls , etc
 With function you can have something like:
 ls() { if test -t 1; then command ls -FC "$@"; else command ls "$@";fi;}
 In this way you use the -FC args only if ls runs from a terminal and not from a script ; More generally when the &1 is not redirected to /dev/stdout
+
+
+BASH:EXAMPLES
+##FIND ALL DIRECTORIES (AND/OR FILES) RECURSIVELLY
+http://stackoverflow.com/questions/43134407/how-to-rename-directory-and-subdirectories-recursively-in-linux/43134693#43134693
+
+Option 1 : Recurse using Find
+while IFS= read -r -d '' subd;do 
+  #do your stuff here with var $subd
+done < <(find . -type d -print0)      #You can either apply -type f or no type at all
+
+Option 2 : Recurse using Bash globstar option
+shopt -s globstar
+for subd in **/ ; do          # You can use ** instead of **/ to return both files and directories
+  #Do you stuff here with $subd directories
+done
+
+With globstar you can limit the results to file only (like -type f of find) , thus you can just filter the results:
+if [[ -e "$subd" ]];then #do commands for files;fi
+Or you can use **/ to list directories and stepinto directories with CD and execute another for ./* loop.
+
