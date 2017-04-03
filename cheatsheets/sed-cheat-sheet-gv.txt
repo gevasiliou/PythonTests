@@ -160,8 +160,8 @@ read -a arr -p "Enter line numbers: " ;sed -n "${arr[*]/%/p;}" infile  #Prints l
 ##Print in reverse = tac emulation
 http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
 sed -n '1!G;h;$p'
-----------------------------------------------------------------------------------------------------------------------------------------
-SED:REPLACE (s/original/replaced/)
+--------------------------------------------------------------------------------------------------------------------------------------
+SED:REPLACE (s/original/replace/) AND INSERT
 Also see: http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 
 sed  -n 's/Tatty Error/suck/p' a.txt ## This one replaces Tatty Error with word suck and prints the whole changed line
@@ -316,6 +316,38 @@ public class Foo {
 
 Above sed will match range from pattern class Foo2 { up to first alone } (closure of class) , and will insert a text before the closing } - Actually will replace the class closing } (^}$) with mytext & new line & replaced part \0 = ^}$
 Was tested here: http://www.tutorialspoint.com/execute_bash_online.php?PID=0Bw_CjBb95KQMQ2FfcV9NdHdrOEE
+
+
+##INSERT LINE FROM ANOTHER FILE IN THE CURRENT FILE
+http://unix.stackexchange.com/questions/355524/i-want-to-add-n-lines-from-a-filesay-file1-into-another-file-below-the-n-o
+
+sed '/^animal/IR File1' File2
+I: Case insensitive
+R: Queue a line of filename to be read and inserted into the output stream at the end of the current cycle, or when the next input line is read. 
+Note that if filename cannot be read, or if its end is reached, no line is appended, without any error indication.
+
+Example:
+$ cat File1 
+This Dog
+This Cat
+This Duck
+This Horse
+
+$ cat File2
+Animal Name
+AniMal Type
+AnIMal Class
+animal Brand
+
+$ sed '/^animal/IR File1' File2
+Animal Name
+This Dog
+AniMal Type
+This Cat
+AnIMal Class
+This Duck
+animal Brand
+This Horse
 
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
@@ -558,15 +590,15 @@ sed -i "1s/^/<?php /" file
 sed "1i YourTextHere" or sed "1i $h" (with text in variable h)
 
 ##Insert text after second line:
-sed '2a hello'
+sed '2a hello' OR sed "2a $var" for text in variable - mind the double quotes
 Leading whitespaces after the 'a' command are ignored.  The text to add is read until the end of the line.
 
 ## Insert text before second line:
 sed '2i "George"' a.txt
 
 ##Insert text in line before / after pattern
-sed '/-----/i "George"' a.txt
-i : line before pattern , a : line after pattern
+sed '/-----/i "George"' a.txt  OR sed '/-----/a "George"' a.txt
+i : insert text before pattern , a : insert after pattern
 
 ## Inseert a pattern after the (same) pattern
 sed -i 's/\(Samsung\)/\1\n\1/' input.txt		#The parentheses capture the word, then \1 puts it back twice with a newline in between.
