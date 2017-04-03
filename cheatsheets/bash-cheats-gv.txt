@@ -614,7 +614,7 @@ Kill all those processes at once: kill -9 $(ps -t tty1 |echo $(cut -d" " -f1)) #
 Best Solution : kill -9 $(echo $(ps -t tty1 --no-headers -o pid))
 
 ##EXPORT TOP DATA TO VARIABLE OR TO OTHER PROGRAMM
-Top instead of continuous running can forced to run only once providing static results using -bn1 = batch mode , one iteration
+Top instead of continuous running can forced to run only once providing static results using -bn1 = batch mode , -n1=one iteration
 Most of top options can be used with this batch mode , i.e -u gv = reports jobs/tasks for user gv
 top -bn1 -u gv |grep 'whatever' or awk or sed or > file , etc
 
@@ -1068,11 +1068,6 @@ file <file> #will print info about the file , like if it is ASCII
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
 
-##Print the progress of a recursive command in one / the same line (by Duffy):
-touch ff1 ff2 ff3
-rm -fv ff1 ff2 ff3 |while read -r line;do 
-ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
-
 ##Working with ASCII values of a string / file 
 $ echo 'this is \"something\"' |od -t x1c                                                                                               0000000  74  68  69  73  20  69  73  20  5c  22  73  6f  6d  65  74  68
           t   h   i   s       i   s       \   "   s   o   m   e   t   h
@@ -1085,6 +1080,15 @@ Tip1: You can echo a hex ascii value with echo -e "\x5c" => will print a backsla
 Tip2: You can assign a hex ascii in a variable using var=$'\x5c' - 
 Tip3: You can also use hex values in sed and other tools to avoid escaping : sed 's/\x22/\x5c\x22/g' --> Will escape all double quotes.
 
+--------------------------------------------------------------------------------------------------------------------------------------
+BASH:PRINTF
+http://wiki.bash-hackers.org/commands/builtin/printf
+http://www.computerhope.com/unix/uprintf.htm
+
+##Print the progress of a recursive command in one / the same line (by Duffy):
+touch ff1 ff2 ff3
+rm -fv ff1 ff2 ff3 |while read -r line;do 
+ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
 
 ##PRINTF: Looping over hexadecimal values (hex loop)
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
