@@ -84,6 +84,18 @@ curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzO --wildcard
 curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzf - --wildcards --no-anchored '*.h'  #extract and save files locally in a new directory tar-1.29 (goes into CWD)
 curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -t # Displays files in deb archive, identical to dpkg -c
 
+
+$ curl -sL -o- "https://github.com/fhcrc/seqmagick/archive/0.6.1.tar.gz" |tar -zt  --> listing of tar archive files
+$ curl -sLO "https://github.com/fhcrc/seqmagick/archive/0.6.1.tar.gz"; ls -l *.tar.gz
+-rw-r--r-- 1 root root 672141 Apr  3 11:37 0.6.1.tar.gz
+$ tar -tf 0.6.1.tar.gz ---> Listing of the archive files of the saved tar
+
+Tip: Using always -L ensure that curl will follow moved links to their new location. For example bellow command fails without -L:
+$ curl -o- "https://github.com/fhcrc/seqmagick/archive/0.6.1.tar.gz"
+<html><body>You are being <a href="https://codeload.github.com/fhcrc/seqmagick/tar.gz/0.6.1">redirected</a>.</body></html>
+
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:GREP
 ##Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
