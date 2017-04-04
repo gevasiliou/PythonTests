@@ -233,34 +233,43 @@ Text1 somethingAA0123456something,elseAA9876543foo text1
 $ awk '{match($0,/(\w+\s)(\w+)(\w\w[0-9]{7})(\w+,\w+)(\w\w[0-9]{7})(\w+\s)(\w+)/,a);print a[1],a[3],",",a[5],a[7]}' <<<"$a"
 Text1 AA0123456,AA9876543 text1
 
+-----------------------------------------------------------------------------------------------------------------------------
+##SKIP COLUMNS/FIELDS Techniques
+http://stackoverflow.com/questions/15361632/delete-a-column-with-awk-or-sed
+http://stackoverflow.com/questions/43196719/drop-4-first-columns/43201869#43201869
 
-##Skip Input Columns Techniques
-echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' --> Field4 Field5 Field6
-#Use of substr combined with index, since substr expects an integer as starting point and this is what index function returns.
+You can apply some techniques capable to delete some fields, but the result is higly depends on the FS used.
 
-echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="";print}'
-   Field4 Field5 Field6
-#Mind the gaps in the beginning. Especially usefull if you need to "delete" middle columns.
-#Actually you are not really delete those columns but you replace their contents with a blank value and this is assigned to $0 structure
+The most easy solution using default FS is this
+awk '{$1=$2=$3="";print}' <<<"Field1 Field2 Field3 Field4 Field5 Field6" 
+   Field4 Field5 Field6   # gaps inserted in the beginning. Usefull method to "delete" middle columns.
+PS: Actually you do not really delete those columns but you replace them with null data. 
 
-echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x08";print}' 
- Field4 Field5 Field6
-#Just one space in front due to hex 08 = back space. Mind that awk handles hex codes nicely. It is strange that more bckspaces are ignored if entered (i.e ="\x08\x08\x08"). It is also strange that \x00 is handled as an empty value ""
+This solution breaks with other than default FS:
+awk -F"|" '{$1=$2=$3=""}1' <<<"Field1|Field2|Field4_1|Field4|Field5|Field6"              --->#   Field4 Field5 Field6 
+awk -F"|" -v OFS="|" '{$1=$2=$3=""}1' <<<"Field1|Field2|Field4_1|Field4|Field5|Field6"   --->#|||Field4|Field5|Field6
 
-echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{gsub($1FS$2FS$3FS$4,$4);print}'  --> Field4 Field5 Field6   
-#Columns 1-2-3-4 have been replaced by column4. No gaps here.
+Another Solution Could be:
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{print substr($0, index($0,$4))}' -->#Field4 Field5 Field6
+Here we don't have gaps in beginning, but this method fails if fields have similar text
 
-echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{$1=$2=$3="\x1b";print $0}'  ->No blanks are printed in the beginning.
-Although if you pipe the output to |od -An -t x1c you will see that \x1b (esc) chars are present but not printed = non-printable char.
- 1b  20  1b  20  1b  20  46  69  65  6c  64  34  20  46  69  65  6c  64  35  20  46  69  65  6c  64  36  0a
- 033     033     033      F   i   e   l   d   4       F   i   e   l   d   5       F   i   e   l   d   6  \n 
+echo "Field1|Field2|Field4_1|Field4|Field5|Field6"  |awk -F"|" '{print substr($0, index($0,$4))}' 
+#Gets confused and prints $3 also ---> Field4_1|Field4|Field5|Field6
+
+
+Another solution that works good with standard FS but not with other FS is this:
+echo "Field1 Field2 Field3 Field4 Field5 Field6"  |awk '{gsub($1FS$2FS$3FS$4,$4);print}'  --->Field4 Field5 Field6 #no gaps
+echo "Field1|Field2|Field3|Field4|Field5|Field6"  |awk -F"|" '{gsub($1FS$2FS$3FS$4,$4)}1' --->Field4|Field4|Field4|Field4|Field5|Field6
+echo "Field1|Field2|Field3|Field4|Field5|Field6"  |awk -F"|" '{gsub($1FS$2FS$3FS$4,"")}1' --->||||Field5|Field6
 
 For a fixed known number of columns , you can always do 'print $4,$5,$6'
+For a known/fixed number of columns you can also delete completely a middle column with reconstructuring $0 like : awk '$0=$1FS$2FS$4'
 
-For a known/fixed number of columns you can also delete completely a middle column with awk '$0=$1FS$2FS$4'
+##The correct way to remove columns/field as advised by Ed Morton
+http://stackoverflow.com/questions/15361632/delete-a-column-with-awk-or-sed
+echo "Field1|Field2|Field4_1|Field4    |Field5|Field6"  |awk -F"|" '{sub(/([^|]+\|){3}/,"")}1'  #Field4    |Field5|Field6
 
-
-Removing Columns from the end:
+##Removing Columns from the end:
 awk 'NF--' 		#Removes last column
 awk 'NF-=2'		#Removes last two columns
 awk 'NF=$3'		#Removes all columns after column 3
