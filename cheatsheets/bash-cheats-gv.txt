@@ -1758,6 +1758,19 @@ execfail       	off
 extdebug       	off
 extglob        	off
 failglob       	off
+
+##Terminal Automatic Resize/Readjust
+To activate: shopt -s checkwinsize
+To deactivate: shopt -u checkwinsiz
+
+To check: shopt | grep checkwinsize --> You should get checkwinsize    on
+
+"If set, Bash checks the window size after each command and, if necessary, updates the values of LINES and COLUMNS."
+For permanent activation apply shopt -s checkwinsize in your ~/.bashrc.
+
+Also mind that control + L in some terminals is capable to achieve "redraw" 
+Other people claim that solve the "terminal auto resize" problem by using export PROMPT_COMMAND="resize &>/dev/null" at .bashrc
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:SHELL OPTIONS - GLOB SPECIFIC OPTIONS
 http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
