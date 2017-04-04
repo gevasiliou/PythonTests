@@ -1085,11 +1085,6 @@ BASH:PRINTF
 http://wiki.bash-hackers.org/commands/builtin/printf
 http://www.computerhope.com/unix/uprintf.htm
 
-##Print the progress of a recursive command in one / the same line (by Duffy):
-touch ff1 ff2 ff3
-rm -fv ff1 ff2 ff3 |while read -r line;do 
-ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
-
 ##PRINTF: Looping over hexadecimal values (hex loop)
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
 The most easy way is to use printf since natively supports hex printing
@@ -1112,6 +1107,23 @@ $ var="a"; printf '%d\n' "'$var'" --> also prints 97
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
 $ bc <<<"${sumA:0:-1}"    ---->> 1114   #with 0:-1 the trailing + is removed.
+
+
+##PRINTF Effects with Carriage Return
+printf "hello\ragain\rGeorge" --> Will print George. 
+Every time a \r is read by terminal the cursor is moved back to it's first position.
+You can try with printf "helloooooo\rAgain\rGeorge" --> Will print Georgeoooo
+
+We can make use of this effect to print in terminal a rotating progress indicator:
+for k in {1..30};do
+for i in "  \\  " "  |  " "  /  " "  -  " ;do
+sleep 0.2; printf -- "$i \r"; done;done
+
+.B Print the progress of some commands in one line / on the same line (by Duffy):
+touch ff1 ff2 ff3
+rm -fv ff1 ff2 ff3 |while read -r line;do 
+ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
+
 
 --------------------------------------------------------------------------------------------------------------------------------------
 
