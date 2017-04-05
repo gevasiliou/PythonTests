@@ -6,7 +6,7 @@ echo "Your HOME dir is $HOME"
 echo "Your PATH is $PATH"
 echo "Parameter received="$#
 [[ -z $1 ]] && echo "parameter 1 is emty"
-
+echo "parameter 2 is $2"
 printf "%d args:" $# && printf " <%s>" "$@"  && echo
 #demonstrating word splitting - Test with ./oneshot.sh hello world "how are you?"  --> <hello> <world> <how are you?>
 #More word splitting examples:
