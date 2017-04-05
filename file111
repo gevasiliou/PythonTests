@@ -1,12 +1,7 @@
-LOCATION 0 X 0
-VALUE 1a 2 3
-VALUE 1b 2 3
-VALUE 1c 2 3
-LOCATION 1 X 0
-VALUE 1d 2 3
-VALUE 1e 2 3
-VALUE 1f 2 3
-LOCATION 2 X 0
-VALUE 1g 2 3
-VALUE 1h 2 3
-VALUE 1i 2 3
+Point          Fanout   cap   trans   delta   incr   Path
+----------------------------------------------------------
+row1             1       0.02  0.01   0.01     0.03   0.04
+row2             2       0.04
+row3             1       0.01  0.02    0.04    0.05   0.06
+row4                     0.03
+row5                           0.04     0.05   0.07   0.07
