@@ -83,7 +83,7 @@ https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 http://awk.freeshell.org/Backreferences   #apply to gensub,etc
 
 sub(regex, sub, string) # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
-gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts \& in replacement = backref to replaced part. Does not accept \\1 like gensub
+gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts & in replacement part within double quotes= backref to replaced part. Does not accept \\1 like gensub
 gensub(regexp, replacement, how [, target])  #Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions. Seems that does not accept \& but accepts groups like \\1,\\2
 substr(str, start, l)   # Returns substring of string str, starting at index start of length l. If length is omitted, the suffix of str starting at index start is returned.
 system(cmd)             # Execute cmd and return exit status. Usefull if you need to insert a file between records (instead to load in memory, cat it)
@@ -147,6 +147,9 @@ awk -v OFS="_" '{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"             
 awk 'BEGIN{FS="\\s";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"  ---> xxx_ccc_vvv_bbb________333__444__555
 
 
+##GSUB & SUB BACKEREFERENCE TO REPLACED PART
+awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
+Alternative: awk -F":" '{gsub($1,"*" $1 "*")}1'
 ##AWK FIELDS SPLITTING - SPLIT FUNCTION 
 http://awk.freeshell.org/Frequently_Asked_Questions#toc1
 http://awk.freeshell.org/RangeOfFields   #more field splitting techniques in this link
