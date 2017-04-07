@@ -149,7 +149,12 @@ awk 'BEGIN{FS="\\s";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555" 
 
 ##GSUB & SUB BACKEREFERENCE TO REPLACED PART
 awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
+Backreference to work must be in double quotes. Can also be written as sub(/pattern/,"*" "&" "*")
 Alternative: awk -F":" '{gsub($1,"*" $1 "*")}1'
+By default sub/gsub apply substitutions in $0. You can define a different "target" in the end (a specific field or a text or whatever).
+Using sub/gsub the $0 structure is NOT affected.
+So in above examples, though that OFS is undefined = default = space , the output of 1 prints $0 as has been replaced by sub, but without reconstruction the output with OFS.
+
 ##AWK FIELDS SPLITTING - SPLIT FUNCTION 
 http://awk.freeshell.org/Frequently_Asked_Questions#toc1
 http://awk.freeshell.org/RangeOfFields   #more field splitting techniques in this link
