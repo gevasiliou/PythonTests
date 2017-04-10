@@ -562,9 +562,14 @@ echo "mbar bar\nmbaz baz" | xargs mv  --> This is wrong usage. It is translated 
 echo "mbar bar\nmbaz baz" | xargs -l -t mv  -->  Not tested by me but by other. Results to mv mbar bar and mv mbaz baz
 
 Options:
--l = max lines. In bsd xargs -l1 is required (one line)
+-l = max lines. It's use it is depreacated and posix /bsd usage -L1 must be used. 
 -t = verbose . Print each command before execution
--p = prompt. Asks the user to confirm running each command. Requires -t.
+-p = prompt for user confirmation before running each command. Requires -t.
 -r = no run if empty args. Usefull in double greps
 -d'\n' = delimiter
+
+using xargs to operate over files is not suggested.
+For example in above xargs mv, we need to provide the files in a special way (i.e quoted) to handle files with special chars 
+like space in filename, single/double quotes, etc
+echo "mbar bar\n'my foo' foo" | xargs -l -t mv  --> works ok. Without quoting around file "my foo" the mv breaks
 
