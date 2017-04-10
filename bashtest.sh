@@ -760,15 +760,16 @@ exit
 
 }
 
-set -vx
+#set -vx
 function onac {
 	onpower=$(upower -i /org/freedesktop/UPower/devices/line_power_AC |grep online |awk -F " " '{print $NF}')
 [[ "$onpower" == "yes" ]] && ret=0 || ret=1
-}
+
 
 http://askubuntu.com/questions/69556/how-to-check-battery-status-using-terminal
 while inotifywait -e modify /sys/class/power_supply/BAT0/status; do
 #your code here
+a=a
 done
 inotifywait -e create /path/to/watch
 echo "ding!" #will ding when a file or directory gets created in that path.
@@ -783,3 +784,32 @@ while [[ $ret -eq 1 ]]; do
 echo "keep going"
 sleep 5
 done
+}
+
+
+date=$(date +%s) #make an own variabel for seconds since 1970 1/1
+echo "current date: $date"
+case $1 in
+    start)
+      echo "Script started"
+      echo $date > oldTime.txt #add the current time to oldTime.txt
+      ;;
+
+    status)
+      echo "Script has been running:"
+      if [ -e ./oldTime.txt ];then #check to see if the file exists
+      difference=$(( $(date +%s) - $(cat oldTime.txt) )) #calculate the time the script has been running
+      printf "%s\n" "${difference#-}" #print out the time
+      fi #dont know? stop script maybe?
+      ;;
+
+    stop)
+      echo "Script will not stop and has been running:"
+      if [ -e ./oldTime.txt ];then
+      difference=$(( $(date +%s) - $(cat oldTime.txt) ))
+      printf "%s\n" "${difference#-}"
+      rm oldTime.txt #remove the file so when i start the script again it starts from 0
+      fi
+      exit 1 #stops script?
+      ;;
+esac
