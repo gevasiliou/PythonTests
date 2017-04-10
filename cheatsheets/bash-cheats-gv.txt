@@ -1814,7 +1814,7 @@ According to man bash:
      $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
      $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead)
      
-##Example of iterating through files ignoring files/patterns stored in a file (gitignore case)
+##GITIGNORE EXAMPLE - Iterating through files ignoring files/patterns stored in a file (gitignore case)
 shopt -s globstar
 declare -A filelist=()                                              # Create an associative array where filenames become array keys
 for file in **; do filelist[$file]=1; done                          # Build a list of all files...
@@ -1825,7 +1825,14 @@ Remark: Needs testing to be sure that this method will correctly exclude pattern
 
 Alternative while loop above that will also use for (seems more correct - proposed by ghoti @ SO
 while read -r glob; do for file in $glob; do unset filelist[$file];done;done < .rmignore
+
 This method should work for sure even on patterns included in .rmignore due to the call of the for loop = glob iteration with pattern that was read by .rmignore file.
+
+awk and grep alternatives to exclude files:
+#awk 'NR==FNR{a[$0];next}(!($0 in a))' exclude <(find . -maxdepth 1 -type f -printf %f\\n)
+grep -vF -f exclude <(find . -maxdepth 1 -type f -printf %f\\n)
+Tip: using -printf %f on find returns the basename of each file found , thus you do not have to worry about ./file.txt or /full/path/to/file.txt
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FUNCTIONS AND ALIASES
 ##Alias
