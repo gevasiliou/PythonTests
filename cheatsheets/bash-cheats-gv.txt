@@ -384,7 +384,6 @@ PS: Sometimes the use of -r yelds only to the first value [0]="a" and rest value
 
 ------------------------------------------------------------------------------------------------------------------------
 
-
 BASH:PIPES
 Pipes are usefull to send data from one command to the other (i.e cat a.txt |less)
 What needs to be said is that pipes create a subshell.
@@ -576,9 +575,12 @@ This will ensure that results will be correct even if filenames contain spaces, 
 .B Method 1 - To perform actions on each file - null separated
 while IFS= read -r -d '' fn;do var+=("$fn");done < <(find . -name '*.sh' -print0)
 
+Unfortunatelly the read -a method does not work directly with null - read gets one line only.Requires while.
+$ IFS= read -r -d '' -a array < <(find . -print0) 
+This method works without loop for \n delimiter 
+
 .B Method 2 - Quick store of filenames in array without loop
-readarray -t -d '' var2 < <(find . -name '*.sh' -print0) #-d option only in bash >= 4.4
-Unfortunatelly the read -r -d '' -a array < <(find . -print0) does not work directly because read gets one line only.Requires while.
+readarray -t -d '' var2 < <(find . -name '*.sh' -print0) #-d option only in bash >= 4.4 since -d option in readarray is fresh...
 
 .B Pipe find results to other commands:
 find . -print0 | xargs -r0 something with
@@ -596,6 +598,13 @@ printf %f prints only filename without directory (=basename) and \\0 applies nul
 for i in a b c d e ;do
   (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
 done
+
+##FIND & DELETE EMPTY DIRECTORIES
+find . -type d -empty -delete
+find . -depth -type d -empty -exec rmdir {} \;
+find . -depth -type d -print0 | xargs -0 rmdir 2>/dev/null
+
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BASH:PROCESSES ()TOP - HTOP - PS - KILL)
@@ -1936,6 +1945,6 @@ Or you can use **/ to list directories and stepinto directories with CD and exec
 
 ##DOUBLE QUOTING FAILURES in GLOBING
 for ff in ./**/tmp/** ;do echo Type - "$(file "$ff")" ;done  ---> Type - ./tmp/tmp2/file09 99: empty
-for ff in ./**/tmp/** ;do echo Type - "$(file $ff)" ;done    ---> 
+for ff in ./**/tmp/** ;do echo Type - "$(file $ff)" ;done    ---> Error - See bellow:
 Type - ./tmp/tmp2/file09: cannot open `./tmp/tmp2/file09' (No such file or directory)
 99:                cannot open `99' (No such file or directory)
