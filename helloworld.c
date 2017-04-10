@@ -27,6 +27,12 @@ int main()
     
     f = 70.0/3.0;
 	printf("value of f : %f \n", f);
-    
+    /* Attempt to open a file, put file contents in an array , print the array and close the file
+    FILE *myfile;
+    myfile=fopen("file1","r");
+    fread(myArray, sizeof(myArray), myfile);
+    fclose(myfile); 
+    */ 
+
     return 0;
 }
