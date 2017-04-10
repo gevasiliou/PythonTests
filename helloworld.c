@@ -27,6 +27,7 @@ int main()
     
     f = 70.0/3.0;
 	printf("value of f : %f \n", f);
+	/*http://stackoverflow.com/documentation/c/507/files-and-i-o-streams#t=201704101223569451915 */
     /* Attempt to open a file, put file contents in an array , print the array and close the file
     FILE *myfile;
     myfile=fopen("file1","r");
