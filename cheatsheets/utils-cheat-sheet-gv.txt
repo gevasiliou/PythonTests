@@ -554,3 +554,17 @@ file4-3
 shellcolors.sh-684
 
 Tip: For binary/compiled files check out size utility
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:XARGS
+echo -e "foo bar\ndoo dar" | xargs -n 2 mv  --> -n = max number of args per command. This results to mv foo bar and mv doo dar - tested and working ok
+echo "mbar bar\nmbaz baz" | xargs mv  --> This is wrong usage. It is translated by xargs like mv mbar bar mbaz baz
+echo "mbar bar\nmbaz baz" | xargs -l -t mv  -->  Not tested by me but by other. Results to mv mbar bar and mv mbaz baz
+
+Options:
+-l = max lines. In bsd xargs -l1 is required (one line)
+-t = verbose . Print each command before execution
+-p = prompt. Asks the user to confirm running each command. Requires -t.
+-r = no run if empty args. Usefull in double greps
+-d'\n' = delimiter
+
