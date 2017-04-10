@@ -524,3 +524,31 @@ apt --print-uris install pkg   # Returns the names of the .deb packages that wil
 apt --print-uris download pkg  # Returns the deb file that apt download pkg would download:
 apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool/main/n/nfs-utils/nfs-common_1.3.4-2.1_amd64.deb' nfs-common_1%3a1.3.4-2.1_amd64.deb 230730 SHA256:8fedb6f5d28d521ca6b1623610255c7edf26c011b3c45e07e19e4378902bfab4
 
+------------------------------------------------------------------------------------------------------------------------
+UTILS:DU (SIZE OF FILES - DISK USAGE)
+du reports by default size of directories. Can be combined with -a to report also size of files (by default directories sizes is reported)
+Also -d1 restricts max depth to 1. -b returns the real file size and -h returns size in human readable format. -s is for sumarize
+Output of du is by default tab separated. If directory is ommited , current working directory is reported.
+
+$ du -b -h -s /etc
+5.0M	/etc
+
+$ du -ab -h -d1 /etc
+8.2K	/etc/ufw
+42K	/etc/gimp
+12K	/etc/sysstat
+4.0K	/etc/foomatic
+22K	/etc/perl
+14K	/etc/dpkg
+4.4K	/etc/ldap
+40K	/etc/mailcap
+6.8K	/etc/UPower
+81K	/etc/dbus-1
+
+
+$ find . -maxdepth 1 -printf %f-%s\\n  #Output in pure bytes - no human readable option available
+bsd.txt-173
+file4-3
+shellcolors.sh-684
+
+Tip: For binary/compiled files check out size utility
