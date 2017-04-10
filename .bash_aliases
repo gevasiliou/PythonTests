@@ -17,7 +17,7 @@ alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 #alias lsdir='ls -l -d */'
-alias dirsize='du -h'
+alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
@@ -27,6 +27,7 @@ alias printfunctions='set |grep -A2 -e "()"'
 
 alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w32 -An -t x1c -v'
+
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''

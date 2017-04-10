@@ -529,6 +529,8 @@ UTILS:DU (SIZE OF FILES - DISK USAGE)
 du reports by default size of directories. Can be combined with -a to report also size of files (by default directories sizes is reported)
 Also -d1 restricts max depth to 1. -b returns the real file size and -h returns size in human readable format. -s is for sumarize
 Output of du is by default tab separated. If directory is ommited , current working directory is reported.
+You can avoid -a and provide to du * or ./* to force report the files.
+If you use -d1 you can force subdirs (of first level) with ./*/ (enabling bash options you can go deeper)
 
 $ du -b -h -s /etc
 5.0M	/etc
