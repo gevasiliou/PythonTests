@@ -1817,6 +1817,9 @@ According to man bash:
      @(pattern-list)   Matches one of the given patterns
      !(pattern-list)   Matches anything except one of the given patterns
    Most common use of extglob is using rm !(file1|file2|file*) in which rm will ignore the files given in the ( ) list.
+   
+   To use extglob you have to always use parenthesis : i.e array=(!(file*)) will fill the array with all the files but not file1,file2, etc
+   
    You can echo the rm command first, and if extglob is enabled and working even with echo the files to be deleted will be printed.
    More extglob examples:
      $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
@@ -1841,6 +1844,45 @@ awk and grep alternatives to exclude files:
 #awk 'NR==FNR{a[$0];next}(!($0 in a))' exclude <(find . -maxdepth 1 -type f -printf %f\\n)
 grep -vF -f exclude <(find . -maxdepth 1 -type f -printf %f\\n)
 Tip: using -printf %f on find returns the basename of each file found , thus you do not have to worry about ./file.txt or /full/path/to/file.txt
+
+##GITIGNORE Alternative with ignore file containing globs:
+set +f
+touch file1 file2 file3 some more file here
+cat <<EOF >ignore
+file*
+here
+EOF
+arr=($(cat ignore));declare -p arr  #Output : declare -a arr='([0]="file" [1]="file1" [2]="file2" [3]="file3" [4]="here")'
+
+Remark: Readarray/mapfile and read -a method does not perform globbing:
+readarray -t arr <ignore  #Output declare -a arr='([0]="file*" [1]="here")'  - Literal use of 'file*'
+IFS=$'\n' read -r -d '' -a arr <ignore   #Output: declare -a arr='([0]="file*" [1]="here")'. Same for < <(cat ignore)
+
+awk 'NR==FNR{a[$1];next}(!($1 in a))'  <(printf '%s\n' "${arr[@]}") <(find . -type f -printf %f\\n)
+#Output
+some
+more
+ignore
+
+Tip: You can enable extglob and globstar (shopt -s globstar;shopt -s extglob) and thus you can have ** in .ignore and negation
+For extglob negation you need to use !(pattern). Notice that extglob negation returns all files except the one in !(..).
+This is different than git tools negation (usage : !pattern)
+
+##GITIGNORE Using git tools
+http://unix.stackexchange.com/questions/358270/find-files-that-are-not-in-gitignore/358279?noredirect=1#comment634339_358279
+https://git-scm.com/docs/gitignore
+
+git provides git-check-ignore to check whether a file is excluded by .gitignore.
+
+find . -type f -not -path './node_modules*' -a -not -path '*.git*' -a -not -path './coverage*' -exec sh -c 'for f do \
+git check-ignore -q "$f" || printf '%s\n' "$f";done' find-sh {} +
+
+More git tricks:
+git ls-files -- >To show files that are in your checkout and that are tracked by Git
+my_git_repo % git grep --line-number TODO 
+desktop/includes/controllers/user_applications.sh:126:  # TODO try running this without sudo
+desktop/includes/controllers/web_tools.sh:52:   TODO: detail the actual steps here:
+desktop/includes/controllers/web_tools.sh:57:   TODO: check if, at this point, the menurc file exists. i.e. it  was created
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FUNCTIONS AND ALIASES
