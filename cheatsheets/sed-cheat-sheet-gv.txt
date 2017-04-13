@@ -46,6 +46,21 @@ i.e sed 's/'"$a"'/something/g' file
 /REGEXP/I : I is for case insestive. Don't confuse with i which is operation insert
 /REGEXP/M : Multiline mode - cause match of regexp including new lines before/after regexp - ^$ not operating - use \` and \' instead
 
+##Non-Greedy / LAZY Regex Operation
+In perl and grep -P we have the use of ? advising "non greedy" operation.
+Sed .* works always in greedy mode = match . as much as possible 
+
+Example file : <h2 id="customer-id">192238</h2>
+With sed , we can simulate the non-greedy by negation
+sed -r "s/^<.[^>]*>/FOO/" file1  ----> FOO192238</h2> 
+Regex Explained : match beginning (^) string with < followed by any char (.) excluding > ([^>]) for zero or more times (*) ending at >
+This replaces the whole <h2 id="customer-id"> with FOO
+The negation concept is match as many chars excluding the first found [^>]. 
+Without this exclusion the whole line (since it ends with >) will be replaced by FOO.
+Greedy regex s/^<.*>/FOO/ will catch the whole line up to last > : Whole <h2 id="customer-id">192238</h2> --> becomes FOO
+
+In Perl , we would use something like s/^<.*>?/FOO/ and the non-greedy operator ? would instruct Perl to make a lazy match (not up to the last >)
+
 ##Commands Overview
 :  # label
 =  # line_number
@@ -348,6 +363,27 @@ AnIMal Class
 This Duck
 animal Brand
 This Horse
+
+
+##REPLACE HTML / XML ID TAGS
+Generally , the use of a proper xml/html parser is suggested for parsing such kind of data. 
+For simple operations you can use something like this:
+cat <<EOF >file1
+<h1 id="name">John Smith</h1>
+<h2 id="customer-id">192238</h2>
+<h3 id="current-date">Thu 13 Apr 2017</h3>
+EOF
+id="customer-id"
+
+sed -r "/id=\"$id\"/ s/(^<.*id=)[^>]*>/\1\"FOO\">/" <file1
+#Output of second line: <h2 id="FOO">192238</h2>
+#Line1 and Line3 are printed unchanged - as input is provided.
+
+sed -r "/id=\"$id\"/ s/^<.[^>]*>/<FOO>/" file1
+#Output of second line: <FOO>192238</h2>
+
+sed -r "/id=\"$id\"/ s/^<.[^>]*>/FOO/" file1
+#Output of second line : FOO192238</h2>                                                                                                 
 
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
