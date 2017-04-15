@@ -70,7 +70,7 @@ echo "printarray: Prints indexed array $1 as stored in bash environment "
 # [2]="fi ve" #works even with space in array values
 [[ -z $1 ]] && echo "Provide an array variable to display" && return
 #declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g" #Only valid in GNU Sed
-declare -p $1 | perl -pe "s/declare -a $1=\(//g; s/\)$//g; s/\" \[/\n\[/g" #Valid in BSD
+declare -p $1 | perl -pe "s/declare -a $1=\(//g; s/\)$//g; s/\" \[/\n\[/g" #Valid even in BSD
 }
 
 function mandiff { 
@@ -191,6 +191,9 @@ date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 
 function toascii {
 [[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
+#Not tested alternatives:
+#FILE=$1;if [ ! -z "$FILE" ]; then exec 0< "$FILE";fi
+#file="${1}";if [ "${file}" = "-" ] ; then file=/dev/stdin;fi # "toascii -" to read from terminal OR "cmd | toascii -" for pipe or "toascii file" 
 echo "Warning : Possible null chars have been removed by bash. Pipe to od -tx1c instead"
 echo -e "Var:\c";echo "$st" | od -w40 -An -tc
 echo -e "Dec:\c";echo "$st" | od -w40 -An -tu1 
