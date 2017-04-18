@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Shell Level=$SHLVL- Parameter par=$par"
 echo "Just an echo - nothing more to be done here"
 
 echo "You run this script as USER=$USER"

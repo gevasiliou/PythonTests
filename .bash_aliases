@@ -27,7 +27,7 @@ alias printfunctions='set |grep -A2 -e "()"'
 
 alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w32 -An -t x1c -v'
-
+alias man="LESS='+Gg' man"
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
