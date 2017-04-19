@@ -1133,6 +1133,12 @@ touch ff1 ff2 ff3
 rm -fv ff1 ff2 ff3 |while read -r line;do 
 ws=$(( COLUMNS - ${#line} ));printf '\r%s%*s\r%s' "$line" "$ws" " " "$line";sleep 2;done;echo
 
+##PRINTF ZERO PAD NUMBERS - ADD A LEADING ZERO
+printf '%05d\n' "1"   --> 00001
+printf '%02d\n' "1"   --> 01
+printf '%02d\n' "9"   --> 09
+printf '%02d\n' "10"  --> 10
+printf '%02d\n' "110" --> 110
 
 --------------------------------------------------------------------------------------------------------------------------------------
 
