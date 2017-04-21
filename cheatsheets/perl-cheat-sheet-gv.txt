@@ -1,4 +1,6 @@
-PERL:CHEATSHEET - ONELINERS
+PERL:CHEATSHEET - ONELINERS & DOCUMENTATION
+http://perldoc.perl.org/perlrequick.html  #PERL REGULAR EXPRESSIONS QUICK START
+http://perldoc.perl.org/perlretut.html   #PERL REGULAR EXPRESSIONS TUTORIAL
 http://www.catonmat.net/blog/perl-one-liners-explained-part-six/
 http://www.catonmat.net/download/perl1line.txt
 https://github.com/pkrumins/perl1line.txt
@@ -6,6 +8,21 @@ http://www.catonmat.net/blog/perl-book/
 http://nostarch.com/perloneliners
 http://www.strawberryperl.com/
 
+---------------------------------------------------------------------------------------------------------------------------------------
+
+PERL:CLI OPTIONS AND INTERNAL VARIABLES
+-l        #Cause a new line to be printed by 'print'. Without -l no new line is printed unless "\n" is given (like printf)
+-e        #One line script 
+-n        #Similar to sed -n = do not print unless condition 
+-p        #Somehow similar to sed -n '/pattern/p' = force printing.
+-0777     #Paragraph slurp mode. All lines are swallowed and treated as one big text.
+
+$.        #line number for current file handle and can be used for given input file like, i.e perl -pe 's/555/666/ if $. == 2' hello.txt
+$_        #Is the "default" variable , similar to $0 of awk (current record for a line by line read)
+$&        #Refers to "matching" part. Can be used in s/old/new replacements or even like 'print $& if /regex/' = print matched part 
+$1        #Refers usually to regex capture groups , and is readonly.I.E 'print $2 if /(regex1)(regex2)/'. Valid also in s/old/new
+
+---------------------------------------------------------------------------------------------------------------------------------------
 
 PERL:REPLACEMENTS
 ##Classic sed alike Replacement
@@ -109,6 +126,18 @@ grep -o '^[0-9]*' <<<"345.123.155.069"  --> 345   #Multiplier * applies to [0-9]
 egrep -o '^[0-9]+' #One or more number up to the non-number character (=first dot)
 egrep -o '^[0-9]{3}'  #Only three first numbers
 
+perl -lne 'print if /^[0-9]+/' <<<$'345.123.155.069\nsome text\n'              ---> 345.123.155.069 (correct line match)
+perl -lne 'print if /(^[0-9]+)/' <<<$'345.123\nsome text\n234.text'           ---> Prints line1 and 3 (345.123 and 234.text)
+
+perl -ne 'print if /^[0-9]*/' <<<$'345.123.155.069\nsome text\n'              ---> both lines printed since * means zero or more
+perl -lne '/(^[0-9]+)(.*)/;print $1' <<<$'345.123.155.069\nsome text'         ---> 345 and 345 (Prints matched string for every input line!)
+
+perl -0777 -ne '/(^[0-9]+)(.*)/;print $1' <<<$'345.123.155.069\nsome text'    ---> 345 (requires -0777)
+
+perl -lne 'print $1 if /(^[0-9]+)/' <<<$'345.123\nsome text\n234.text'        ---> 345 and 234 in new line
+perl -lne 'print $2 if /(^[0-9]+)(.*)/' <<<$'345.123\nsome text\n234.hello'   ---> Line1 = 123, Line 2 = hello 
+
+
 ##GREP DECIMAL NUMBERS AND ISOLATE THE INT PART
 $ c="scalar throughput:last11730.559888477 TestDmaMac4.sink.udpApp[0]"
 $ egrep -o '[0-9]+[.][0-9]' <<<"$c" |egrep -o '[0-9]+[^.]'   ---> 11730 #First grep will isolate the floating number , second grep will isolate the int part.
@@ -117,25 +146,56 @@ $ sed -r 's/(.*[^0-9.])([0-9]+)(\.[0-9]+.*)/\2/' <<<"$c"     ---> 11730 #sed doe
 
 ##GREP OPERATIONS WITH PERL
 For a variable like 
-var=$'2017-04-21 09:04:42,649 +0000 [exec-12056], uri=/riokc95758/, duration(ms)=422'
+var=$'+0000 [exec-12056], uri=/riokc95758/, duration(ms)=422'
 
 To get everything after and including uri:
 perl -ne 'print /(uri=)(.*)/' <<<"$var"    --->uri=/riokc95758/, duration(ms)=422
 
 To get only uri value (grep -o)
-perl -ne '/(uri=)(.*),/;print $2' <<<"$var"    ---> /riokc95758/
 grep -Po 'uri=\K.[^,]*' <<<"$var"
+perl -lne '/(uri=)(.*),/;print $2' <<<"$var"    ---> /riokc95758/  This works ok for a single line of text. 
+perl -lne '/(uri=)(.*),/;print $2' <<<$'exec-12056, uri=/riokc95758/, duration(ms)=422\nexec-12056, uri=/george/, duration(ms)=453' #prints /riock95758/ and /george/
+perl -lne '/(uri=)(.*),/;print $2' <<<$'uri=/riokc95758/, duration(ms)=422\nexec=/george/, duration(ms)=453' #This prints two times /riock95758/!
+The best solution for perl is 
+perl -lne 'print $2 if /(uri=)(.*),/' <<<$'uri=/riokc95758/, duration(ms)=422\nexec=/george/, duration(ms)=453'  #Will print correctly for the matching line the text /riock95758/
 
 To print uri and duration values (multiple grep -o)
-perl -ne '/(uri=)(.*)(duration\(ms\)=)(.*)/;print $2,$4' <<<"$var"    ---> /riokc95758/, 422
 sed -r "s/(.*uri=)(.[^,]*)(.*duration\(ms\)=)(.[^,]*)(.*)/\2,\4/" <<<"$var"  
+perl -ne '/(uri=)(.*)(duration\(ms\)=)(.*)/;print $2,$4' <<<"$var"    ---> /riokc95758/, 422
+
+Or even better:
+perl -ne 'print $2,$4 if /(uri=)(.*)(duration\(ms\)=)(.*)/' <<<$'uri=/riokc95758/, duration(ms)=422\nexec=/george/, duration(ms)=453'
+This will print /riokc95758/, 422 for the first line but NOTHING on the second line, since second line has 'duration' but not 'uri',thus regex fails.
+
+If we need to print both uri and duration but also separate uri or duration (whatever is available) we should built something like:
+perl -lne 'print $2 if /(uri=)(.*),/;print $2 if /(duration\(ms\)=)(.*)/' <<<$'uri=/riokc95758/, duration(ms)=422\nexec=/george/, duration(ms)=453'
+#Output
+/riokc95758/                           
+422  #Mind the new line due to the different print. Better to remove -l option and print a literall "\n" at the end
+453
+
+
+##PERL MATCHING / GREP MORE EXAMPLES BY http://perldoc.perl.org/perlrequick.html and http://perldoc.perl.org/perlretut.html
+"Hello World" =~ /World/;  # matches
+print "It matches\n" if "Hello World" =~ /World/;
+print "It doesn't match\n" if "Hello World" !~ /World/;
+$_ = "Hello World";print "It matches\n" if /World/;   #If you're matching against $_ , the $_ =~ part can be omitted:
+$foo = 'house'
+'cathouse' =~ /cat$foo/;   # matches 
+'housecat' =~ /${foo}cat/; # matches
+
+In regex matching default delimiters /regex/ can be changed to any char using m in front. Usefull to avoid escaping of /
+"Hello World" =~ m!World!;   # matches, delimited by '!', equivalent to =~ /World/
+"/usr/bin/perl" =~ /\/usr\/bin\/perl/;  # matches   <====> "/usr/bin/perl" =~ m{/perl}; (or m"/perl" or any custom delimiter)
+perl -lne 'print $& if /uri=.[^,]*/'  <===> perl -lne 'print $& if m{uri=.[^,]*}'  #$& = special var refering to the matched part
 
 
 
 -------------------------------------------------------------------------------------------------------------------------------------
-
-PERL:Useful One-Line Scripts for Perl                    Dec 03 2013 | version 1.10
---------------------------------                    -----------   ------------
+-------------------------------------------------------------------------------------------------------------------------------------
+PERL:Useful One-Line Scripts for Perl                                                                      Dec 03 2013 | version 1.10
+--------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
 
 Compiled by Peteris Krumins (peter@catonmat.net, @pkrumins on Twitter)
 http://www.catonmat.net -- good coders code, great reuse
