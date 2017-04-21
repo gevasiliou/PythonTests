@@ -105,9 +105,9 @@ line one 333 more --> 333
 Perl Equivalent: perl -lne 'print $& if /\d+/' inputfile
 
 ##GREP NUMBERS :
-grep -o '^[0-9]*' <<<"345.123.155.069"  --> 345
-Alternatives :
-egrep -o '^[0-9]+' or egrep -o '^[0-9]{3}'
+grep -o '^[0-9]*' <<<"345.123.155.069"  --> 345   #Multiplier * applies to [0-9] only. Dot does not belong in [0-9].
+egrep -o '^[0-9]+' #One or more number up to the non-number character (=first dot)
+egrep -o '^[0-9]{3}'  #Only three first numbers
 
 ##GREP DECIMAL NUMBERS AND ISOLATE THE INT PART
 $ c="scalar throughput:last11730.559888477 TestDmaMac4.sink.udpApp[0]"
