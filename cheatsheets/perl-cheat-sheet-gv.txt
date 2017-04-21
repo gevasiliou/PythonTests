@@ -86,6 +86,9 @@ The Stack Overflow Regular Expressions FAQ :
 http://stackoverflow.com/questions/22937618/reference-what-does-this-regex-mean/22944075#22944075
 Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even with grep -Po
 
+As a general idea all regex tools work in a line by line basis. To capture parts of the line (like grep -o) in most cases is better
+to use a classic sed approach (s/old/new) in which you will isolate the part of the line you want using regexp groups and backreferences
+
 ##Non Capturing group 
 '(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
 
@@ -111,6 +114,22 @@ $ c="scalar throughput:last11730.559888477 TestDmaMac4.sink.udpApp[0]"
 $ egrep -o '[0-9]+[.][0-9]' <<<"$c" |egrep -o '[0-9]+[^.]'   ---> 11730 #First grep will isolate the floating number , second grep will isolate the int part.
 $ perl -pe 's/(.*?)([0-9]+)(\.[0-9]+.*)/\2/' <<<"$c"         ---> 11730 #using the lazy operator ?
 $ sed -r 's/(.*[^0-9.])([0-9]+)(\.[0-9]+.*)/\2/' <<<"$c"     ---> 11730 #sed does not have lazy operator thus we simulate this with negation
+
+##GREP OPERATIONS WITH PERL
+For a variable like 
+var=$'2017-04-21 09:04:42,649 +0000 [exec-12056], uri=/riokc95758/, duration(ms)=422'
+
+To get everything after and including uri:
+perl -ne 'print /(uri=)(.*)/' <<<"$var"    --->uri=/riokc95758/, duration(ms)=422
+
+To get only uri value (grep -o)
+perl -ne '/(uri=)(.*),/;print $2' <<<"$var"    ---> /riokc95758/
+grep -Po 'uri=\K.[^,]*' <<<"$var"
+
+To print uri and duration values (multiple grep -o)
+perl -ne '/(uri=)(.*)(duration\(ms\)=)(.*)/;print $2,$4' <<<"$var"    ---> /riokc95758/, 422
+sed -r "s/(.*uri=)(.[^,]*)(.*duration\(ms\)=)(.[^,]*)(.*)/\2,\4/" <<<"$var"  
+
 
 
 -------------------------------------------------------------------------------------------------------------------------------------
