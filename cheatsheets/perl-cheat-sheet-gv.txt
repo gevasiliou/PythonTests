@@ -1,6 +1,7 @@
 PERL:CHEATSHEET - ONELINERS & DOCUMENTATION
-http://perldoc.perl.org/perlrequick.html  #PERL REGULAR EXPRESSIONS QUICK START
-http://perldoc.perl.org/perlretut.html   #PERL REGULAR EXPRESSIONS TUTORIAL
+http://perldoc.perl.org/perlrequick.html  # PERL REGULAR EXPRESSIONS QUICK START
+http://perldoc.perl.org/perlretut.html    # PERL REGULAR EXPRESSIONS TUTORIAL
+http://perldoc.perl.org/perlvar.html      # PERL PREDEFINED VARIABLES
 http://www.catonmat.net/blog/perl-one-liners-explained-part-six/
 http://www.catonmat.net/download/perl1line.txt
 https://github.com/pkrumins/perl1line.txt
@@ -19,10 +20,16 @@ PERL:CLI OPTIONS AND INTERNAL VARIABLES
 
 $.        #line number for current file handle and can be used for given input file like, i.e perl -pe 's/555/666/ if $. == 2' hello.txt
 $_        #Is the "default" variable , similar to $0 of awk (current record for a line by line read)
-$&        #Refers to "matching" part. Can be used in s/old/new replacements or even like 'print $& if /regex/' = print matched part 
+$&        #Refers to regex "matching" part. Used in s/old/new replacements or like '/[|]../;print $&' <<<"europe|EU" --> |EU  
+$`        #Regex prematch - prints everything prior to pattern: '/[|]../;print $`' <<<"europe|EU" ---> prints europe
+$'        #Regex postmatch - after matched pattern: "/.*[|]/;print $'" <<<"europe|EU" ---> prints EU
 $1        #Refers usually to regex capture groups , and is readonly.I.E 'print $2 if /(regex1)(regex2)/'. Valid also in s/old/new
+$+        #Refers to last regex group: "/(.*)[|](..)/; print $+" <<<"europe|EU"     ---> prints EU
 
----------------------------------------------------------------------------------------------------------------------------------------
+Tips: 
+Most of the Perl Vars require perl -lne to be enclosed with single quotes (especially $1,$2,etc). Double quotes seems not to work wiht i.e $1.
+More predifined perl vars : http://perldoc.perl.org/perlvar.html
+---------------------------------------------------------------------------------------------------------------------------------
 
 PERL:REPLACEMENTS
 ##Classic sed alike Replacement
