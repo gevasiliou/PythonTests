@@ -26,7 +26,7 @@ alias printfunctions='set |grep -A2 -e "()"'
 #lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
 
 alias weather='curl wttr.in/Μαρούσι'
-alias hexit='od -w32 -An -t x1c -v'
+alias hexit='od -w40 -An -t x1c -v'
 alias man="LESS='+Gg' man"
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
