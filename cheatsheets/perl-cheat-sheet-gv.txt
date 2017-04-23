@@ -2,6 +2,7 @@ PERL:CHEATSHEET - ONELINERS & DOCUMENTATION
 http://perldoc.perl.org/perlrequick.html  # PERL REGULAR EXPRESSIONS QUICK START
 http://perldoc.perl.org/perlretut.html    # PERL REGULAR EXPRESSIONS TUTORIAL
 http://perldoc.perl.org/perlvar.html      # PERL PREDEFINED VARIABLES
+http://perldoc.perl.org/perlrun.html      # PERL INTERPRETER RUN OPTIONS - COMMAND LINE SWITCHES
 http://www.catonmat.net/blog/perl-one-liners-explained-part-six/
 http://www.catonmat.net/download/perl1line.txt
 https://github.com/pkrumins/perl1line.txt
@@ -11,12 +12,13 @@ http://www.strawberryperl.com/
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-PERL:CLI OPTIONS AND INTERNAL VARIABLES
+PERL:CLI OPTIONS AND INTERNAL VARIABLES (see perlrun)
 -l        #Cause a new line to be printed by 'print'. Without -l no new line is printed unless "\n" is given (like printf)
 -e        #One line script 
 -n        #Similar to sed -n = do not print unless condition 
 -p        #Somehow similar to sed -n '/pattern/p' = force printing.
 -a        #autosplit record $_ to array F (whitespace separation). perl -alne 'print $F[0]' <<<"one two three"   ----> one
+-F        #Field delimiter for autosplit. must be defined before -e. can be like -F/delim/ or "delim" or 'delim' or $'delim'
 -0777     #Paragraph slurp mode. All lines are swallowed and treated as one big text.
 
 $.        #line number for current file handle and can be used for given input file like, i.e perl -pe 's/555/666/ if $. == 2' hello.txt

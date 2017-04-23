@@ -35,7 +35,10 @@ alias man="LESS='+Gg' man"
 # ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
 # Uses octal to build the whole ascii table
 
-function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
+#function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
+function teee { v="$(</dev/stdin)"; while read -r l;do echo "==>$l" >>/dev/tty;done <<<"$v";echo "$v"; }
+
+
 
 function lsnum { 
 echo "lsnum: Counts the files in the location provided ($1)" >&2
