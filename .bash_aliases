@@ -10,6 +10,7 @@
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
 alias cd..='cd ..'
+alias cd..2='cd .. && cd ..'
 alias cls='clear'
 alias cp='cp -i'
 alias mv='mv -i'
