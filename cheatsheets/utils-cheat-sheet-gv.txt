@@ -586,3 +586,9 @@ UTILS:SEQ
 
 start=3; seq -s" : " -f "data%g" $start 5    ---> data3 : data4 : data5
 -s" : " - item separator
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:TEXT TO ASCII
+$ curl http://artii.herokuapp.com/make?text=Welcome++++Back++++George+\!+\!;echo
+you can assign it in a variable using $( ), you can store in a file with redirection >, etc
+
