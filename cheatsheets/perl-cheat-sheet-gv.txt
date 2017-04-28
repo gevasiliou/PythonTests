@@ -99,7 +99,9 @@ Another alternative would be to describe the pattern like <style>\n.*\n.*\n<\/st
 This would also work because the whole file is loaded from perl with 0777, and will NOT work with sed easily since sed works per input line.
 This is why sed has a set of commands to append data to pattern space / buffer space.
 
-##REPLACEMENT WITH BACK REFERENCE ($1 OR $&) 
+##REPLACEMENT WITH BACK REFERENCE ($1 OR $&)
+Backreferences in Extended Regex are available with \1,\2 etc. On Perl we have $1,$2 , etc but also the \1,\2 works.
+
 echo "...." |perl -pe 's/Q([0-9])/\nQ\1/g' #Inserts a new line before Q and then appends group1
 EQUALS TO 
 perl -pe 's/(Q\d)/\n$1/g' #Q has been included in the group , mind the use of $1 as backref to replaced part
@@ -116,13 +118,31 @@ Regex Online Tester : https://regex101.com/ #Select PCRE = Perl - Works even wit
 As a general idea all regex tools work in a line by line basis. To capture parts of the line (like grep -o) in most cases is better
 to use a classic sed approach (s/old/new) in which you will isolate the part of the line you want using regexp groups and backreferences
 
-##Non Capturing group 
-'(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)
+All Regexes by default are applied from left to right. So regex '.*' match all chars in the line , but '.*a' match any char multiple times plus an 'a'.
+
+All multipliers (*,+,?) by default apply on the last regex metasymbol before the multiplier. 
+You need "grouping" to apply a multiplier to a more complex/grouped regex like IP greping in bellow example.
+
+For example regex '.a+' will match any string with 'anychar+a*one or more times':
+
+grep -E '.a+' <<<$'da\ndaaa\ndbbb\nddddaaa\n'   --->  matches da & daaa & ddddaaa - doesnot match dbbb. 
+dddaaa is matched because '.a+' (daaa) is included in the last line within dddaaa. If you apply -Eo last line will return 'daaa' 
+You can provide grep -w (word match) to limit regex to match on word boundaries only and thus dddaaa will not be matched. 
+(grep -w <==> egrep '\<.a+\>' <==> egrep '\b.a+\b' )
+We use to apply -w when we generally want to avoid substrings (i.e grep -w '11' will match 11 alone (as a word) but will not match 111.
+A simple grep '11' will match both 11 and 111 , or even 10011, or even 'some11' and generally WHATEVER includes '11'.
+
+##GREP IP out of text
+grep -Po '([0-9]+[.])+' <<<$'myip="192.168.1.1"'   ---> 192.168.1.1
+Mind the last '+' multiplier that is applied to the whole ( ) captured group. Without this only '192.' is returned.
 
 ##\w and \s abbreviations for words ans space
 echo $'Unites State | California | UNIX | ABC DE' |perl -pe 's/[a-zA-Z]+[[:space:]]+[a-zA-Z]+/\"$&\"/g'
 "Unites State" | California | UNIX | "ABC DE"    #adds double quotes in entries with space inbetween
 Short PCRE Alternative : perl -pe 's/\w+\s+\w+/\"$&\"/g' 
+
+##Non Capturing groups (applicable to Perl and other regex engines)
+'(?:http|ftp)(.*) - The http/ftp is grouped but not captured , thus \1 will refer to the next group (.*)=whatever follows http/ftp
 
 ##GREP FIRST NUMBER OF LINE .
 grep -Po '^.*?\K\d+'   #*=one char zero or more , ? = non greedy , \K=forget previous, \d+ = [0-9]+ , +:1 or more
@@ -146,7 +166,6 @@ perl -0777 -ne '/(^[0-9]+)(.*)/;print $1' <<<$'345.123.155.069\nsome text'    --
 
 perl -lne 'print $1 if /(^[0-9]+)/' <<<$'345.123\nsome text\n234.text'        ---> 345 and 234 in new line
 perl -lne 'print $2 if /(^[0-9]+)(.*)/' <<<$'345.123\nsome text\n234.hello'   ---> Line1 = 123, Line 2 = hello 
-
 
 ##GREP DECIMAL NUMBERS AND ISOLATE THE INT PART
 $ c="scalar throughput:last11730.559888477 TestDmaMac4.sink.udpApp[0]"
