@@ -37,7 +37,17 @@ alias man="LESS='+Gg' man"
 # Uses octal to build the whole ascii table
 
 #function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
-function teee { v="$(</dev/stdin)"; while read -r l;do echo "==>$l" >>/dev/tty;done <<<"$v";echo "$v"; }
+function teee { 
+	v="$(</dev/stdin)"; 
+	echo '----------------pipe in-------------' >/dev/tty;
+	i=1;
+	while read -r l;do 
+	  echo "$i>$l" >/dev/tty;
+	  let i++;
+	done <<<"$v";
+	echo '----------------pipe out-------------' >/dev/tty;
+	echo "$v"; 
+	}
 
 
 
