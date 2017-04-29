@@ -1002,11 +1002,6 @@ GREP: reps=$(grep -o "," <<< "$var" | wc -l)
 AWK : awk -F"," '{print NF-1}' <<<"$var" #or {print NF?NF-1:0}
 BASH : reps="${var//[^,]}" && echo "${#reps}"  #removes everything except comma
 
-##Print a dashed line in full terminal width
-printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
-OR printf '%.0s-' {1..20}; echo  #will print just 20 dashes
-OR eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
-
 ##Identify the width of the terminal
 tput cols
 
@@ -1139,6 +1134,40 @@ printf '%02d\n' "1"   --> 01
 printf '%02d\n' "9"   --> 09
 printf '%02d\n' "10"  --> 10
 printf '%02d\n' "110" --> 110
+
+##PRINTF DRAW A LINE OF DASHES
+http://wiki.bash-hackers.org/snipplets/print_horizontal_line
+
+printf '%.s-' {1..30}; echo       ---> Prints a line of dashes (30 dashes)-
+Mind the dot before s : %.s <==> %.0s = zero width field for s = invisible = only the dash after s is printed (30 times)
+printf '%.s-%.s#' {1..30}; echo   ---> -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+printf '%20s\n' | tr ' ' -        ---> 20s = Width 20. Prints 20 spaces wich then turned to dashes by tr
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -   ---> Prints A dashed line in full terminal width
+printf '%.0s-' {1..20}; echo  #will print just 20 dashes
+eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
+
+--------------------------------------------------------------------------------------------------------------------------------------
+BASH:UNICODE CHARS
+http://stackoverflow.com/questions/43458809/escaping-double-quotation-marks-in-sed/43461815#43461815
+You can print or replace unicode chars like this:
+$ echo -e "\u201c test \u201d"
+“ test ”
+$ echo -e "\xe2\x80\x9c test \xe2\x80\x9d"
+“ test ”
+
+Above text includes Unicode Left Double Quotation Mark U+201c on the start:
+UTF-8 (hex) 0xE2 0x80 0x9C (e2809c)
+UTF-16 (hex) 0x201C (201c)
+
+And also included Unicode Right Double Quotation Mark U+201d on the end:
+UTF-8 (hex) 0xE2 0x80 0x9D (e2809d)
+UTF-16 (hex) 0x201D (201d) 
+
+It is quite interesting that you can echo directly with \u (=unicode) or you can print with joining the corresponding hex codes \x
+
+Above \x sequences can be used also in other tools like sed:
+$ string=$(echo -e "\u201c test \u201d");echo "$string"              ----> “ test ”
+$ sed -E "s/(\xe2\x80\x9c)(.+)(\xe2\x80\x9d)/**\2**/" <<<"$string"   ----> ** test **
 
 --------------------------------------------------------------------------------------------------------------------------------------
 
