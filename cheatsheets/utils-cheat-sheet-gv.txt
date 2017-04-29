@@ -592,3 +592,9 @@ UTILS:TEXT TO ASCII
 $ curl http://artii.herokuapp.com/make?text=Welcome++++Back++++George+\!+\!;echo
 you can assign it in a variable using $( ), you can store in a file with redirection >, etc
 
+------------------------------------------------------------------------------------------------------------------------
+UTILS:TIMEOUT
+$ timeout command
+Start COMMAND, and kill it if still running after DURATION.
+For example : timeout 2 yes
+timeout --foreground 12s tail -f access.log
