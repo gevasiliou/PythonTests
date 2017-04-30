@@ -1142,6 +1142,8 @@ printf '%.s-' {1..30}; echo       ---> Prints a line of dashes (30 dashes)-
 Mind the dot before s : %.s <==> %.0s = zero width field for s = invisible = only the dash after s is printed (30 times)
 printf '%.s-%.s#' {1..30}; echo   ---> -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 printf '%20s\n' | tr ' ' -        ---> 20s = Width 20. Prints 20 spaces wich then turned to dashes by tr
+printf '%*s\n' 20| tr ' ' -       ---> Same as above,prints 20 dashes: --------------------
+
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -   ---> Prints A dashed line in full terminal width
 printf '%.0s-' {1..20}; echo  #will print just 20 dashes
 eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
