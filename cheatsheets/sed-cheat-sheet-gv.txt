@@ -385,6 +385,17 @@ sed -r "/id=\"$id\"/ s/^<.[^>]*>/<FOO>/" file1
 sed -r "/id=\"$id\"/ s/^<.[^>]*>/FOO/" file1
 #Output of second line : FOO192238</h2>                                                                                                 
 
+
+##DELETE / REPLACE NEW LINES WITH SED
+By default the syntax sed 's/\n//g' file does not work due to the fact that sed works one line at the time.
+
+Workarounds:
+perl -pe 's/\n//g' file* ---> works perfectly and removes all new lines from one or more files.
+find . -type f -name 'file*' -exec bash -c 'tr "\n" " " <$0 >$0.new' {} \;  ---> replace new lines with space in many files.
+sed 'N;s/\n/_/g' file   ---> Replaces only the next new line (N=append next line to sed working space);
+sed 'N;N;s/\n/_/g' file ---> Replaces the next two new lines. for a file having one\ntwo\nthree\nfour --> one_two_three\nfour
+sed ':begin;$!N;s/\n/ /;tbegin'  ---> Replaces all new lines with space (using labels and jumps...)
+
 ---------------------------------------------------------------------------------------------------------------------------
 SED:EXAMPLES BY UNIX SCHOOL
 .B See: http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
@@ -393,7 +404,7 @@ SED:DELETE
 ##To remove 1st character in every line:
 sed 's/^.//' file 
 or 
-sed  's/.//' file
+sed  's/.//' file  #mind the absence of /g modifier (=global replacement)
 
 ## To remove last character of every line : 
 $ sed 's/.$//' file
@@ -429,7 +440,7 @@ $ sed 's/[aoe]//g' file
 $ sed 's/lari//g' file
 
 ## To delete only nth occurrence of a character in every line: 
-$ sed 's/u//2' file #replaces two u and stops. /g replaces all . Leave it blank replace only the first found.
+$ sed 's/u//2' file #replaces two u and stops. /g replaces all . Leave it blank replace only the first u found in line.
 
 ## To delete everything in a line followed by a character: 
 $ sed 's/a.*//' file #In Word RedHat this Returns RedH
