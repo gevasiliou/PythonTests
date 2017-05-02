@@ -1,9 +1,10 @@
-# dns server
-321.34.54.4   my_dns1
-321.34.54.5   my_dns2
-221.3.2.333   my_dns0
-
-
-# dns server2
-321.34.54.4   my_dns1
-321.34.54.5   my_dns2
+ <SubRecord1>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>Value i'm Concerned to Modify</Property>
+ </SubRecord1>
+ <SubRecord2>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>Do not Modify</Property>
+ </SubRecord2>

@@ -386,6 +386,33 @@ sed -r "/id=\"$id\"/ s/^<.[^>]*>/FOO/" file1
 #Output of second line : FOO192238</h2>                                                                                                 
 
 
+##MORE XML TAGS REPLACEMENT
+$ cat file9
+ <SubRecord1>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>Value i'm Concerned to Modify</Property>
+ </SubRecord1>
+ <SubRecord2>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>Do not Modify</Property>
+ </SubRecord2>
+
+$ sed -r '/\bSubRecord1\b/!b;n;n;n;s/(<Property Name=Default>)(.*)(<\/Property>)/\1AAAA\3/' file9   #Go to third line after SubRecord1
+ <SubRecord1>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>AAAA</Property>
+ </SubRecord1>
+ <SubRecord2>
+ <Property Name=Name>My Main Search Keyword</Property>
+ <Property Name=Prompt>Dummy</Property>
+ <Property Name=Default>Do not Modify</Property>
+ </SubRecord2>
+ 
+TIP: The use of word boundaries \b ensures that sed pattern /SubRecord/ (if supplied) will not match SubRecord1 or SubRecord2
+
 ##DELETE / REPLACE NEW LINES WITH SED
 By default the syntax sed 's/\n//g' file does not work due to the fact that sed works one line at the time.
 
