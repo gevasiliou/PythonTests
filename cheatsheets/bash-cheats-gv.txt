@@ -91,7 +91,11 @@ Check man bash for :
 readarray /  mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array] #man bash line 2981
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] #man bash line 3056
 
-Important: When you need to read a file with while read -r and separate it according to a custom separator (i.e :) adjust accordingly the IFS=: and not -d: option of read.
+Important: 
+read is a bash builtin command and though it has a -d (delimiter) option it obeys word splitting acc to IFS. Usefull for null separated data (IFS= and read -d '')
+readarray is a prog and ignores IFS. Default delimiter is new line. Custom delimiter can be adjusted by -d option (i.e -d ' ' = space)
+If you need to read a file with while read -r and use a custom separator (i.e :) adjust IFS=: and do not ude -d: option of read.
+Alternativelly you can disable IFS (i.e while IFS= or IFS="") and thus read -d option will come in play.
 
 ------------------------------------------------------------------------------------------------------------------------
 ##READ FILE TO ARRAY
@@ -205,16 +209,20 @@ Using space as delim will get $1="\"aaa" $2="bbb\"" etc
 
 This guy here builds an array to take advantage of the existed double quotes:
 http://stackoverflow.com/questions/42111441/how-to-pass-command-line-arguments-with-spaces-through-a-variable-in-bash#42111441
+
 while IFS= read -r line;do
   eval args=\("$line"\) 			#or eval args+=\("$line"\)  or declare -a args+=\(....\)
   command_or_function "${args[@]}" 	#or outside the loop if args+=
 done<file.txt
 
 By calling function inside while loop it results that function will be called as many times as file lines
+
 Every time function is called will have args starting from [0] up to number of fields i.e [1]
 In reality the command eval args=\("$line"\) (or declare -a args=), expands to (as seen using set -x)
 ++ args=("aaa bbb" "xxx yyy")
+
 Which is two different array entries! Genious. PS: Brackets are quoted to avoid being handled as sub shell by bash
+
 On the next loop the array is redifined (due to absence of +=) and array elements get the fields of the next line.
 Using += fields of next line will be added to the existed array
 
@@ -237,6 +245,13 @@ aaa bbb
 xxx yyy
 some more
 data here
+
+More examples:
+$ declare -a aa+=( one "two two" three )    ---> aa=([0]="one" [1]="two two" [2]="three")
+$ declare -a aa+=( $'one "two two" three' ) ---> aa=([0]="one \"two two\" three")
+$ declare -a aa+=\($'one "two two" three'\) ---> aa=([0]="one" [1]="two two" [2]="three")  #Works like eval
+All the classic ways using read -r -a array or readarray fail to provide the correct array: [0]=one, [1]=two two, [2]=three
+(i.e read -r -a arr <<<$'one "two two" three' fails. )
 
 More Tips:
 To call an external command (not a function) it seems that `xargs command <file` is enough (??strange!!)
@@ -851,7 +866,7 @@ function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]
 
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
-##ARGS to Array
+##ARGS to Array with reverse order
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
@@ -879,9 +894,13 @@ Build a custom command with args by set - make use of positional parameters
 http://unix.stackexchange.com/questions/338852/array-as-value-for-tar-exclude/338854#comment599032_338854
 
 You can use the $@ as a kind of variable to make commands.
-By applying set ls , command ls is stored in $@.
+By applying set ls or set -- ls, text ls is stored in $@.
 Using echo "$@" will see ls.
 Using just $@ will EXECUTE ls.
+
+Similarly, 
+$ set -- one two three  ===> $@=one two three, $1=one,$2=two,$3=three
+$ set -- one "two three" four ===> $@=one two three four, $1=one,$2=two three,$3=four
 
 You can also append more commands, switches, etc in $@ using set "$@" -d
 Now the command hold in $@ is ls -d. Can be seen with echo, can be executed just like $@
@@ -938,6 +957,40 @@ mapfile -t -d '\0' b < <(sort_array_function "${a[@]}")
 
 Another way to print null separated args/vars/arrays is to use printf :
   printf '%s\0' "${sorted[@]}"
+
+##ARGS WITHIN DOUBLE QUOTES READ FROM PIPE OR FROM COMMAND LINE
+https://unix.stackexchange.com/questions/362485/how-to-read-from-a-pipe-keeping-positional-parameters/362509#362509
+Also see BASH:READ ##SPLIT FIELD BY DOUBLE QUOTES
+
+For a simple script/function like
+function myf { for i in "$@";do echo "$i";done; } 
+You can call it like myf one "two three" four and you will have $1=one, $2=two three and $3=four
+
+You can use this technique to allow similar handling when function / script data are coming from a pipe:
+
+function myf { 
+  if ! [ -t 0 ];then 
+    declare -a args=\($(</dev/stdin)\);
+    set -- "${args[@]}"; 
+  fi;
+  for i in "$@";do 
+    echo "$i";
+    echo -----;
+  done 
+}
+
+OR in one line: 
+$ function myf { if ! [ -t 0 ];then declare -a args=\($(</dev/stdin)\);set -- "${args[@]}"; fi;for i in "$@";do echo "$i";echo -----;done }
+
+
+With above script, both 
+myf 1 "2 3" 4
+echo $'1 "2 3" 4'|myf
+will correctly handle "2 3" as $2
+
+Above script works because of this:
+$ declare -a aa+=\($'one "two two" three'\)
+$ declare -p aa                             ---> declare -a aa=([0]="one" [1]="two two" [2]="three")
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION

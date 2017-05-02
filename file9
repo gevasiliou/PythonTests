@@ -1,1 +1,9 @@
-Sample4;6a0f64d2;size=1;,Sample4;f1cb4733a;size=6;,Sample3;aa44410feb29210c1156;size=2; Sample2;5b91bef2329bd87f4c7;size=2;,Sample1;909cd4e2940f328b3;size=2;Sample3;aa44410feb29210c1156;size=2; 
+# dns server
+321.34.54.4   my_dns1
+321.34.54.5   my_dns2
+221.3.2.333   my_dns0
+
+
+# dns server2
+321.34.54.4   my_dns1
+321.34.54.5   my_dns2
