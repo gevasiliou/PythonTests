@@ -1485,6 +1485,7 @@ year=fn[1];month=fn[2];day=fn[3];file2=sprintf("%s%s%02d%s",fn[1],fn[2],fn[3]+ne
 
 AWK:CASE USAGE AND SWITCH (GNU AWK ONLY)
 http://stackoverflow.com/questions/43779638/bash-script-how-to-loop-through-rows-in-a-csv-file/43780998#43780503
+https://www.gnu.org/software/gawk/manual/html_node/Switch-Statement.html
 
 This shit compares numbers ($1) of current line with number $1 of previous line. 
 If current < previous then devide them. Result is something like 0.966, etc.
