@@ -387,8 +387,6 @@ d ,   # Line 4 - RT comma
 e ,   # Line 5 - RT comma
 f     # Line 6 - RT new line
 
-  
-
 But above printing does not even close to the original record. What about this one:
 
 # echo -e "a,b,c\nd,e,f\n" |awk -v RS=",|\n" '{printf("%s%s", $1,RT)}'
@@ -1484,3 +1482,47 @@ awk -v file1="20161201.csv" 'BEGIN{days=1;nextday=1;while (days<15){{match(file1
 year=fn[1];month=fn[2];day=fn[3];file2=sprintf("%s%s%02d%s",fn[1],fn[2],fn[3]+nextday,".csv"); \
 
 ------------------------------------------------------------------------------------------------------------------------
+
+AWK:CASE USAGE AND SWITCH (GNU AWK ONLY)
+http://stackoverflow.com/questions/43779638/bash-script-how-to-loop-through-rows-in-a-csv-file/43780998#43780503
+
+This shit compares numbers ($1) of current line with number $1 of previous line. 
+If current < previous then devide them. Result is something like 0.966, etc.
+After dividing, round the number and according to rounding print the correspoinding message.
+The only problem is that printf rounding will round 0.99999 to 1.0 and not to 0.9 as requested.
+I solved this situation in my answer at SO using substr($1/p,1,3) ==> returns first three chars of 0.99999 = 0.9
+
+PS: In order to use gnu awk case, you need to first use switch(criteria term).
+
+awk '
+$1<p { 
+    s=sprintf("%.1f",$1/p)
+    switch(s) {
+    case "0.9":            # if comparing to values ranged [0.9-1.0[ use /0.9/
+        print "A"          # ... in which case (no pun) you don't need sprintf
+    case "0.8":
+        print "B"
+    case "0.7":
+        print "c"
+    default:
+        print "D"
+    }
+    exit
+}
+{ p=$1 }' file
+
+This is the if-then-else alternative for non-gnu awk (i.e macosx) that do not support switch and case.
+awk '$1<p { 
+    s=sprintf("%.1f",$1/p)
+    if(s==0.9) 
+        print "A"
+    else if(s==0.8) 
+        print "B"
+    else if(s==0.7) 
+        print "c"
+    else
+        print "D"
+    exit
+}
+{ p=$1 }' file
+
