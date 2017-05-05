@@ -473,6 +473,13 @@ UTILS:DATE
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 I have a smart function in bash profile for this that can work also as a pipe.
 
+##Delete lines from log file older than 30 days 
+For a file with lines like 
+2017/04/04 15:53:22 [11487] building file list)
+
+You can exclude old logs using :
+grep -v "$(date '+%Y/%m/%d' -d '30 days ago')*" logfile
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GIT
 https://git-scm.com/book/tr/v2/Git-Basics-Viewing-the-Commit-History

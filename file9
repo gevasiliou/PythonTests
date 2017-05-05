@@ -1,10 +1,2 @@
- <SubRecord1>
- <Property Name=Name>My Main Search Keyword</Property>
- <Property Name=Prompt>Dummy</Property>
- <Property Name=Default>Value i'm Concerned to Modify</Property>
- </SubRecord1>
- <SubRecord2>
- <Property Name=Name>My Main Search Keyword</Property>
- <Property Name=Prompt>Dummy</Property>
- <Property Name=Default>Do not Modify</Property>
- </SubRecord2>
+abc,def,ghi,klm,nop
+one,two,three,test,four,five,six
