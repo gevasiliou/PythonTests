@@ -1006,8 +1006,9 @@ awk 'BEGIN{FS=OFS=" "}{z[NR]=$1FS$3; print $1,$2}END{for (i=1; i<=NR; i++){print
 
 ##AWK:CHALLENGE : Modification of awk output with 1
 http://awk.freeshell.org/AwkTips
-The 1 stands for true and forces awk to print. 
-This is usefull in idiomatic coding, when you want to quickly built a kind of expression.
+In awk we follow the 'condition{action}' rule over and over. 
+We can have just '{actions}' which presume a missing true condition, thus actions will be always executed.
+On the contrary we can apply just '1' as condition = true which will perform default action = print $0
 Real Example:
 Suppose a file with contents line1-line2-line3
 
@@ -1035,6 +1036,48 @@ awk '/Start of test case/{i++}{print >"a"i}' a.txt
 Counter will be increased in the next found pattern "Start of test case". Each section will be sent to file a1, a2,a3,etc
 With awk you don't need >>. It seems that the file remains open - or awk buffers the data and send them at one push to file.
 For testing : awk '/Start of test case/{i++}{print i,$0}' a.txt
+
+
+##SPLIT A FILE BY PARAGRAPHS / CHAPTERS
+For a file like :
+> Rosa Luxemburg
+aaaaaaaaa
+aaaaaaaaaa
+> Charles Darwin
+bbbbb
+bbbbbbb
+bb
+> Charles Chaplin
+cccc
+ccccc
+c
+> George Vasiliou
+dd
+ddddd
+dd
+dddd
+
+We can print only paragraphs/chapter starting with 'Charles' using: awk '/^>/{p=0}/^> Charles/{p=1}p' file9
+This will set p=0 for every line starting with > (paragraph/chapter separator) unless Chapter begins with "Charles" --> p=1
+Value of p is preserved during the whole awk script. That means that if next line is not starting with >, p will keep having the previous value.
+
+Alternative by Ed:
+As advised by Ed, this can be done using just
+awk /^>/{p=/Charles/}p
+
+This is insanely idiomatic. We have var assignment based on regex /../
+Actually this means that p will become 1/true only if Charles exist in $0
+This is identical to awk '/Charles/' file , but assigned to a variable p.
+
+awk '/Charles/' will print all records containing Charles. 
+This means that expression /Charles/ returns true = 1 and performs default action.
+So {p=/Charles/} will assign 1/true to var p , for all records containing /Charles/.
+If the record starts with > (paragraph separator) but does not contain Charles, expression /Charles/ will return false=0 thus p will be 0.
+If record/line does not start with > then {p=/Charles/} will not be performed at all and p will keep it's previous value (0 or 1 respectively) 
+Remember that null or zero values are considered as false by awk, and thus default action is not performed.
+Value of 1 (or any value actually other than null or zero) is considered as true by awk and default action is performed.
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:COMBINE CSV FILES - TAB SEPARATED (emulates JOIN)
 http://unix.stackexchange.com/questions/345051/concatenate-csv-with-some-shared-columns
