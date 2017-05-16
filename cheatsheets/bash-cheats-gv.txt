@@ -79,6 +79,13 @@ or even trickier you can define your vars like $red and $normal and work it like
 red=$(echo -ne "\033[31m"); normal=$(echo -ne "\033[m");echo $red hi there $normal --> works ok , prints hi there in red color and returns to normal. If you ommit the normal , terminal remains in red!
 Or even better do them functions ! function red { echo -ne "\033[32m";echo $@;echo -ne "\033[m";};red hi there
 
+Even better with printf:
+G="\033[32m"
+N="\033[0m"
+R="\033[31m"
+Y="\033[33m"
+printf "${Y}MCS${N} Service Status is\t\t |${G}UP${N}\n"
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:READ - BASICS
 ##Reading Files (mapfile, readarray, read -r , etc)
