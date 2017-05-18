@@ -1,5 +1,1 @@
-abc,def,ghi,nop,klm
-one,two,three,four,five,six
-$mysql_pass = 'password';
-one more line
-last line
+abc,def,ghi,nop,klm,one,two,three,four,five,six,nine
