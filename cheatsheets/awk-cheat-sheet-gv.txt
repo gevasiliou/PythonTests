@@ -65,10 +65,10 @@ FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS (fi
 
 ^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
-~ 								# Match regex opterator for if (i.e if ($2 ~ "something") print $0)
-!~ 								# Regex not equal operator
+~ 								# Match regex opterator for if (i.e if ($2 ~ /thing/) print $0 - will print lines in which $2 matches anything,something,etc - may require double quotes) 
+!~ 								# Regex not equal operator - negation of previous ~ . Alternative : (!($1~/pattern/))
 BEGIN 								# Denotes block executed once at start of the script (No input processed yet)
-END 								# Denotes block executed once at end of the script
+END 								# Denotes block executed once at end of the script - after all files read
 a=str1 OFS str2 					# Space Concatenates str1 , OFS and str2
 {print $1} 							# Prints the first field of input (as read using FS separator)
 {print $1,$2; print $3,$4} 		# Prints field 1 & 2 in one line, and field 3 & 4 on next line.(print sthing with ; = "\n") 
