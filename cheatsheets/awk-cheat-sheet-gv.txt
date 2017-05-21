@@ -61,7 +61,7 @@ FILENAME 		# Reference current input file
 ORS 			# Output Record separator (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
 RS 				# Record separator of input file (default newline)
 RT				# Record Terminator . Is like the RS but in case of multi RS it is dynamically updated to keep the current used separator/terminator to display the last field. Thus it's setting varies acc to multi RS value.
-FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS defines what a field does NOT contain thus is field separator
+FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS (field separator) defines what a field does NOT contain.
 
 ^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
@@ -146,6 +146,17 @@ awk 'BEGIN{FS=" ";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"   
 awk -v OFS="_" '{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"              ---> xxx_ccc_vvv_bbb_333_444_555
 awk 'BEGIN{FS="\\s";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"  ---> xxx_ccc_vvv_bbb________333__444__555
 
+##FIELDS DEFINITION WITH FPAT (define what a field is)
+Exercise: Print the last numeric chars of a string/line
+grep solution: 
+gv@debian:~$ echo 234ef85 |grep -Eo '[0-9]+$'          ## --> 85
+gv@debian:~$ echo 234ef856 |grep -Eo '[0-9]+$'         ## --> 856
+gv@debian:~$ echo 234ef856a |grep -Eo '[0-9]+$'        ## --> no result
+
+FPAT Solution: Define that fields are only numeric chars 
+echo djfs1d2.3 | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3
+echo djfs1d2.3asdf | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3 (last numeric chars found on string)
+(the last behavior may or may not be desirable)
 
 ##GSUB & SUB BACKEREFERENCE TO REPLACED PART
 awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
@@ -168,7 +179,7 @@ Split will split the $0 in pieces according to a customized regex, and will stor
 in a separate "seps" array.
 Most important if you combine split with printf you can rebuild the record accuratelly = identical to Input Record $0
 
-SPLIT Test:
+##SPLIT Test:
 
 $ echo "$b"
 alert tcp any any -> any any (msg: "this is a "dummy" rule (to test) the rule"; flow:to server; sid:1233; rev:1; no case; content: "nothing";)
