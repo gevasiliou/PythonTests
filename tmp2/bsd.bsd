@@ -1,0 +1,37 @@
+process-information process [763,login [pam] (login)
+, 804,-csh (csh)
+, 813,dbus-launch --sh-syntax --exit-with-session
+, 816,xinit /usr/local/etc/xdg/xfce4/xinitrc
+, 817,X 0 (Xorg)
+, 819,sh /usr/local/etc/xdg/xfce4/xinitrc
+, 825,xfce4-session
+, 828,/usr/local/bin/dbus-launch --sh-syntax --exit-with-session xfce4-session
+, 835,xfwm4 --display 0.0 --sm-client-id 224e566a7-fa81-11e6-942e-0800271dfa71
+, 836,Thunar --sm-client-id 223a679da-fa81-11e6-942e-0800271dfa71 --daemon (thunar)
+, 838,xfce4-panel --display 0.0 --sm-client-id 22366fef4-fa81-11e6-942e-0800271dfa71
+, 841,xfdesktop --display 0.0 --sm-client-id 2240a842f-fa81-11e6-942e-0800271dfa71
+, 882,/usr/local/lib/xfce4/panel/wrapper-1.0 /usr/local/lib/xfce4/panel/plugins/libsystray.so 6 14680096 systray Notification Area Area where notification icons appear
+, 884,/usr/local/lib/xfce4/panel/wrapper-1.0 /usr/local/lib/xfce4/panel/plugins/libactions.so 2 14680097 actions Action Buttons Log out, lock or other system actions
+, 885,/usr/local/lib/xfce4/panel/wrapper-1.0 /usr/local/lib/xfce4/panel/plugins/libsystemload.so 16 14680098 systemload System Load Monitor Monitor CPU load, swap usage and
+, 1571,midori
+, 764,/usr/libexec/getty Pc ttyv1
+, 765,/usr/libexec/getty Pc ttyv2
+, 766,/usr/libexec/getty Pc ttyv3
+, 767,/usr/libexec/getty Pc ttyv4
+, 768,/usr/libexec/getty Pc ttyv5
+, 769,/usr/libexec/getty Pc ttyv6
+, 770,/usr/libexec/getty Pc ttyv7
+, 1147,lxterminal
+, 1148,csh
+, 1152,bash
+, 1739,ps --libxo json -o ,args
+, 1740,head
+, 1741,tr 
+ \\\\n
+, 1742,bash
+, 1158,csh
+, 1174,bash
+]
+
+
+ps --libxo json -o pid,args |head |tr '}' '\n' |sed 's/["{:]//g;s/arguments//g;s/pid//g'

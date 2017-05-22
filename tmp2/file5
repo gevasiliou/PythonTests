@@ -1,0 +1,21 @@
+<tile x="764" y="491" z="7">
+    <item id="1988"/>
+    <inside>
+        <item id="3972"/>
+    </inside>
+</tile>
+<tile x="764" y="492" z="7">
+    <item id="2343"/>
+</tile>
+<tile x="764" y="491" z="7">
+    <item id="2000"/>
+    <inside>
+        <item id="3972" special_description="whatever"/>
+    </inside>
+</tile>
+<tile x="765" y="491" z="7">
+    <item id="2114"/>
+</tile>
+<tile x="764" y="491" z="7">
+    <item id="1988"/>
+</tile>
