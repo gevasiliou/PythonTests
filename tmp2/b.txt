@@ -1,6 +1,0 @@
-abcdef
-abcd
-abc
-pom.
-pom
-i,j,k
