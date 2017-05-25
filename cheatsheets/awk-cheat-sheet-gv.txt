@@ -83,7 +83,7 @@ https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 http://awk.freeshell.org/Backreferences   #apply to gensub,etc
 
 sub(regex, sub, string) # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
-gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts & in replacement part within double quotes= backref to replaced part. Does not accept \\1 like gensub
+sub & gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts & in replacement part within double quotes= backref to replaced part. Does not accept \\1 like gensub
 gensub(regexp, replacement, how [, target])  #Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions. Seems that does not accept \& but accepts groups like \\1,\\2
 substr(str, start, l)   # Returns substring of string str, starting at index start of length l. If length is omitted, the suffix of str starting at index start is returned.
 system(cmd)             # Execute cmd and return exit status. Usefull if you need to insert a file between records (instead to load in memory, cat it)
@@ -161,10 +161,22 @@ echo djfs1d2.3asdf | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3 (last numeric
 ##GSUB & SUB BACKEREFERENCE TO REPLACED PART
 awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
 Backreference to work must be in double quotes. Can also be written as sub(/pattern/,"*" "&" "*")
+
+echo "123 abc" |awk '{sub(/^[0-9]/,"-&")}1'   ##Output: -123 abc
+
 Alternative: awk -F":" '{gsub($1,"*" $1 "*")}1'
 By default sub/gsub apply substitutions in $0. You can define a different "target" in the end (a specific field or a text or whatever).
+
 Using sub/gsub the $0 structure is NOT affected.
 So in above examples, though that OFS is undefined = default = space , the output of 1 prints $0 as has been replaced by sub, but without reconstruction the output with OFS.
+
+The sub/gsub bug:
+a command like sub($5,"something") you might think that will replace fifth field with something.
+In reality, this will replace the text of $5 found in $0 with something.
+
+Example : echo "123 abcdef ab" |awk '{sub($3,"some")}1'   ## 123 somecdef ab
+sub replaced first found text of $3 = ab in $0, and that was on field 2.
+If you provide $3 in sub like awk '{sub($3,"some",$3)}' you force sub to perform replace on $3 but this technique WILL REDESIGN the whole $0 - Structure of $0 is altered.
 
 ##AWK FIELDS SPLITTING - SPLIT FUNCTION 
 http://awk.freeshell.org/Frequently_Asked_Questions#toc1
