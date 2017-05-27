@@ -1,1 +1,3 @@
-[ $# != 2 ] && echo ok;
+foo
+bar
+baz
