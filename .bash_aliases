@@ -219,6 +219,7 @@ echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c |sed -n '1p'
 
 function dupes {
 echo "dupes: Find duplicate files under cwd , including subdirectories. Pipe to grep to limit the results returned" >&2
+#Limit results with grep : $ dupes |grep '\.txt' # escape dot to be treated literally as dot instead of regex
 [[ -z $1 ]] && echo "Current Working Directory ($PWD) will be used." && local dn="$PWD" || local dn="$1"
 if [[ "$dn" == "/" ]];then
 	read -p "Are you sure you want to search all directories under / ?" rep
@@ -232,6 +233,12 @@ grep -e "$dupes" <(printf '%s\n' "${fn[@]}")  |awk -F/ '{print $NF,"==>",$0}' |L
 #In bash 4.4 You can also use IFS= readarray -t -d '' fn< <(find . -print0)
 #Before bash 4.4 , readarray does not accept -d (delimiter) option
 #You can also allow a $2 for filename pattern , and thus convert fine to find "$dn" -name $2 -print0
+
+#awk alternative:
+# find $PWD -name '*.txt' -printf '%f %h\n' |awk '{d[$1]++;f[$1]=f[$1] "--" $2}d[$1]>=2{print $1,":",f[$1]}'
+# a.txt : --/home/gv/Desktop/PythonTests/tmp--/home/gv/Desktop/PythonTests/tmp2
+# b.txt : --/home/gv/Desktop/PythonTests/tmp--/home/gv/Desktop/PythonTests/tmp2
+# file1.txt : --/home/gv/Desktop/PythonTests--/home/gv/Desktop/PythonTests/tmp2
 }
 
 #TODO
