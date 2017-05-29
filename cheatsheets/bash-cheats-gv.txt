@@ -1916,7 +1916,8 @@ BASH:SHELL OPTIONS - GLOB SPECIFIC OPTIONS
 http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
 https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
 http://stackoverflow.com/questions/42969978/how-to-preserve-directory-structure-but-delete-some-of-its-contents-using-bas#comment73036677_42969978
-http://www.linuxjournal.com/content/bash-extended-globbing
+
+.B extglob usage: http://www.linuxjournal.com/content/bash-extended-globbing
 
 When we need to iterate through folders, we can enable bash globstar option using shopt -s globstar
 Also BASH has some more options that affect globbing:
@@ -1943,13 +1944,13 @@ According to man bash:
    More extglob examples:
      $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
      $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
-     $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead)
+     $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead using ! -name)
 
 .B Using extglob with parameter expansion:
 shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
 
-Bug: The use of !(patt1|patt2) is not operating in parameter expansion - see also 
-https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
+Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
+see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
 
 ##GITIGNORE EXAMPLE - Iterating through files ignoring files/patterns stored in a file (gitignore case)
 shopt -s globstar
