@@ -1944,7 +1944,13 @@ According to man bash:
      $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
      $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
      $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead)
-     
+
+.B Using extglob with parameter expansion:
+shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
+
+Bug: The use of !(patt1|patt2) is not operating in parameter expansion - see also 
+https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
+
 ##GITIGNORE EXAMPLE - Iterating through files ignoring files/patterns stored in a file (gitignore case)
 shopt -s globstar
 declare -A filelist=()                                              # Create an associative array where filenames become array keys
