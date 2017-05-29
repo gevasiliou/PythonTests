@@ -1009,18 +1009,33 @@ Command substitution : Use contents of file as parameter: $(<file) #emulates cat
 Command $(cat file) can be replaced by the equivalent but faster $(< file).  : echo "$(<file.txt) -- similar to cat file.txt
 if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
 if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
-#Get name without extension -> ${FILENAME%.*} ⇒ bash_hackers.txt
-#Get extension -> ${FILENAME##*.} ⇒ bash_hackers.txt
-#Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
-#Get directory name -> ${PATHNAME%/*} ⇒ /home/bash/bash_hackers.txt
-#Get filename -> ${PATHNAME##*/} ⇒ /home/bash/bash_hackers.txt
+
+##Separate filename from directoryname (emulates basename and dirname)
+for f="/home/bash/bash_hackers.txt"
+Get directory name -> ${f%/*} ⇒ /home/bash
+Get directory name -> ${f%%/*} ⇒ /home
+Get filename -> ${f##*/} ⇒ bash_hackers.txt
+
+In a script:
+touch ./gv/anotherfile.txt
+for file in ./gv/*;do
+echo "result: $file"                             #result: ./gv/anotherfile.txt
+dname="${file%/*}/" && echo "dir name: $dname"   #dir name: ./gv/ #Mind the trailing manually added slash
+dname="${file%%/*}/" && echo "dir name: $dname"   #dir name: ./   #Mind the trailing manually added slash
+fname="${file##*/}" && echo "file name: $fname"  #file name: anotherfile.txt
+mv -v "${dname}${fname}" "${dname}C_${fname}"    #'./gv/anotherfile.txt' -> './gv/C_anotherfile.txt'
 
 Remove path and extension at once with extglob (shopt -s extglob): s=/the/path/foo.txt;echo ${s//+(*\/|\.*)} -->foo
 
-Get extension of all files , even from extensionless files: 
-awk -F. '{print (NF>1?$NF:"no extension")}'
-base=${filename%.*};ext=${filename#$base.}
+##File Extension - for f="/home/bash/bash_hackers.txt"
+Get filename without extension -> ${f%.*} ⇒ /home/bash/bash_hackers #deletes everything from end (backwards) up to first dot.
+Get extension -> ${f##*.} ⇒ txt  #deletes everything from start up to longest dot 
+As usuall ## represents the longest (last) match and # represents the shortest (first) match (#=search from beginning - forward)
+Same applies to %% and % (%=search from end - backwards)
 
+Get extension : find $PWD -type f -exec bash -c 'echo "${0##*.}"' {} \; -> Lists all extensions found.
+Get extension of all files , even from extensionless files:  awk -F. '{print (NF>1?$NF:"no extension")}'
+base=${filename%.*};ext=${filename#$base.}
 
 Remove first and last char with bash expansion: 
 a=$(echo "\"some@some.com\"");echo "Original a=$a - Modified a= ${a:1:-1} - First and Last char removed"
