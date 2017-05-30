@@ -62,7 +62,7 @@ ORS 			# Output Record separator (default newline). Can be set to another value,
 RS 				# Record separator of input file (default newline)
 RT				# Record Terminator . Is like the RS but in case of multi RS it is dynamically updated to keep the current used separator/terminator to display the last field. Thus it's setting varies acc to multi RS value.
 FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS (field separator) defines what a field does NOT contain.
-
+FIELDWIDTHS     # Defines a fixed field width
 ^ , $ 							# Match beginning/end of field
 == 								# Equal operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ /thing/) print $0 - will print lines in which $2 matches anything,something,etc - may require double quotes) 
@@ -157,6 +157,10 @@ FPAT Solution: Define that fields are only numeric chars
 echo djfs1d2.3 | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3
 echo djfs1d2.3asdf | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3 (last numeric chars found on string)
 (the last behavior may or may not be desirable)
+
+##FIELDWIDTHS - Fixed width fields
+awk 'BEGIN{FIELDWIDTHS="3 6 12 10 14 3 1";OFS=","}{$1=$1}1' <<<"024170529s18687522049000005000011868443700001479N"
+Output: 024,170529,s18687522049,0000050000,11868443700001,479,N
 
 ##GSUB & SUB BACKEREFERENCE TO REPLACED PART
 awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
