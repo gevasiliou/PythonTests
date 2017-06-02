@@ -1067,6 +1067,9 @@ $ string="a few words" && $ declare -c string && string=$string && echo "$string
 $ string="a few words" && string=($string) && string="${string[@]^}" && echo "$string"  ---> A Few Words
 $ declare -c string && string=(a few words) && echo "${string[@]}"                      ---> A Few Words
 
+sed 's/\(.\)\(.\)/\L\1\U\2/g' <<<"something" --> sOmEtHiNg   #toggle each letter
+
+
 Alternatives:
 echo "$a" | tr '[:upper:]' '[:lower:]'
 echo "$a" | awk '{print tolower($0)}'
