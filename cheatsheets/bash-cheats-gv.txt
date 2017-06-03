@@ -584,9 +584,18 @@ Mind the handling of the find results with {} - becomes $0 if you call bash
 find . -type f  ! -name "*.*" -exec mv -v {} {}.txt \;
 find . -type f ! -name "*.*" -exec bash -c 'mv "$0" "$0".mp4' {} \;
 
+.B Complex actions in -exec
+find . -name 'test.txt' -exec sh -c 'echo "mv {} /home/gv/Desktop/PythonTests/tmp/tmp2";echo "rm -r "$(dirname {})"" ' \;
+mv ./tmp3/test.txt /home/gv/Desktop/PythonTests/tmp/tmp2
+rm -r ./tmp3
+mv ./test.txt /home/gv/Desktop/PythonTests/tmp/tmp2
+rm -r .
 
-##Loop in files with find using null as file names separator (the correct way to loop)
-By Stephane Chazelas : http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
+find $PWD $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
+&& [[ $(file $0) == *"ASCII"* || $(file $0) == *"empty"* ]] && echo "$0" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
+
+##LOOP IN FILES WITH FIND AND NULL SEPARATOR (the correct way to loop by Stephane Chazelas)
+http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
 
 As a general idea, to loop on files the glob method is better.
 for f in dir/* ; do something with $f;done
@@ -625,7 +634,6 @@ done
 find . -type d -empty -delete
 find . -depth -type d -empty -exec rmdir {} \;
 find . -depth -type d -print0 | xargs -0 rmdir 2>/dev/null
-
 
 ------------------------------------------------------------------------------------------------------------------------
 
