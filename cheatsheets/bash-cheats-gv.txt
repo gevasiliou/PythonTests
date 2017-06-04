@@ -904,7 +904,7 @@ esac
 
 Also see the BASH:READ Section for sending args through a file in various cases.
 
-##USE OF SET FOR CUSTOM USAGE
+##CUSTOM USAGE OF SET 
 Build a custom command with args by set - make use of positional parameters
 http://unix.stackexchange.com/questions/338852/array-as-value-for-tar-exclude/338854#comment599032_338854
 
@@ -1007,6 +1007,20 @@ Above script works because of this:
 $ declare -a aa+=\($'one "two two" three'\)
 $ declare -p aa                             ---> declare -a aa=([0]="one" [1]="two two" [2]="three")
 
+
+##UNSET ONE OF THE ARGS
+$ set -- 1 2 3 4
+$ printf -- "->%s<-\n" "$@"
+->1<-
+->2<-
+->3<-
+->4<-
+$ set -- "" "${@:2}"
+$ printf -- "->%s<-\n" "$@"
+-><-
+->2<-
+->3<-
+->4<-
 ------------------------------------------------------------------------------------------------------------------------
 BASH:PARAMETERS PRACTICAL_USE_OF_BASH_PARAMETERS_EXPANSION
 Check these one-liners: http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
