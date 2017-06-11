@@ -22,7 +22,7 @@ printf
 printf '%s: %s\n' "$user" "$shell"
 ------------------------------------------------------------------------------------------------------------------------
 BASH:CHEAT SHEET TXT 2 MANPAGE FORMATTING
-##Read this cheat file with man pages:
+##READ THIS CHEAT FILE WITH MAN PAGES:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
 groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
@@ -30,7 +30,7 @@ https://linux.die.net/man/1/help2man
 http://man7.org/linux/man-pages/man7/man-pages.7.html
 man formatting: man 7 man & man 7 man-pages
 
-##Working Command:
+##WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
@@ -40,7 +40,7 @@ Or in a function (i.e sticked at bash_aliases)
 .B man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
 .B }
 
-##man and groff/troff require special handling.
+##MAN AND GROFF/TROFF REQUIRE SPECIAL HANDLING.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
 Line feeds in man pages can be done by inserting .br between two lines.
 More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
@@ -88,7 +88,7 @@ printf "${Y}MCS${N} Service Status is\t\t |${G}UP${N}\n"
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:READ - BASICS
-##Reading Files (mapfile, readarray, read -r , etc)
+##READING FILES (MAPFILE, READARRAY, READ -R , ETC)
 http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
 http://wiki.bash-hackers.org/commands/builtin/read
 http://wiki.bash-hackers.org/commands/builtin/mapfile
@@ -115,7 +115,7 @@ PS2: readarray can also be used like <<<"$var"
 This also works: IFS=$'\n' read -d '' -r -a lines < file
 
 ------------------------------------------------------------------------------------------------------------------------
-##READ LINES FROM FILE NULL SEPARATED (and not new lines)
+##READ LINES FROM FILE NULL SEPARATED (AND NOT NEW LINES)
 http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
 http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-and-output
 
@@ -199,7 +199,7 @@ while IFS= read -r lines;do readarray -t -d' ' -O"${#vars[@]}" vars <<<"$lines";
 Or you can use the read -r -a method and transfer fields to another array that will not be overwritten by the next line.
 
 ------------------------------------------------------------------------------------------------------------------------
-## READ A SINGLE STRING/VARIABLE WITH read -r:
+## READ A SINGLE STRING/VARIABLE WITH READ -R:
 http://mywiki.wooledge.org/BashFAQ/001
 read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
 read -r first last junk <<< "$a" 
@@ -373,7 +373,7 @@ IFS= read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;tw
 read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no" [1]="more"  #Split at space
 
 
-##Trick with IFS and values in one line - one variable:
+##TRICK WITH IFS AND VALUES IN ONE LINE - ONE VARIABLE:
 
 Instead of creating an array with values and manipulate array items like:
 IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
@@ -470,7 +470,7 @@ Tip: When you gksu terminal from normal user account then $USER and $LOGNAME are
 $ echo "/home/gv/Desktop" |sed 's![^/]$!&/!' --> /home/gv/Desktop/ #Check if a slash '/' is present in the end- add it if missing
 $ d="/home/gv/Desktop"; [[ "${d: -1}" != "/" ]] && d="${d}/" #bash alternative: if last char is not a dash, add a dash
 
-##CONDITION CHECK on command output , based on the return code of command without the need to compare $?.
+##CONDITION CHECK ON COMMAND OUTPUT , BASED ON THE RETURN CODE OF COMMAND WITHOUT THE NEED TO COMPARE $?.
 if command; then
     printf "it succeeded\n" #executed when command returns 0
 else
@@ -517,7 +517,7 @@ Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-
 BASH:FIND 
 Read here why you never parse output of ls: http://mywiki.wooledge.org/BashGuide/Practices#Quoting (chap 5)
 POSIX Find Manual :http://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
-##Use find as ls alternative
+##USE FIND AS LS ALTERNATIVE
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
 find /home/gv -maxdepth 1 -> lists both
@@ -526,7 +526,7 @@ output of find can be piped to wc -l , xargs, and other commands.
 Some progs (like whatis) can not accept pipes directly ; In this case you have to use xargs (pipe to xargs which will call the prog)
 PS: By the way, you don't need find to call whatis. You can call whatis directly with wildmark : whatis /usr/bin/*
 
-##Read File Names as a pair
+##READ FILE NAMES AS A PAIR
 while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'file*')
 f1=./file1, f2=./file2
 f1=./file3, f2=./file4
@@ -594,7 +594,7 @@ rm -r .
 find $PWD $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
 && [[ $(file $0) == *"ASCII"* || $(file $0) == *"empty"* ]] && echo "$0" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
 
-##LOOP IN FILES WITH FIND AND NULL SEPARATOR (the correct way to loop by Stephane Chazelas)
+##LOOP IN FILES WITH FIND AND NULL SEPARATOR (THE CORRECT WAY TO LOOP BY STEPHANE CHAZELAS)
 http://unix.stackexchange.com/questions/321697/why-is-looping-over-finds-output-bad-practice
 
 As a general idea, to loop on files the glob method is better.
@@ -621,11 +621,11 @@ find . -print0 |while IFS= read -r -d '' file;do echo "file found=$file";done #i
 shopt -s nullglob dotglob #to have files with names beginning with a dot and avoid glob expanding to * if no files match
 files=(*)  ## or fies=(*.sh), etc
 
-##Combine basename and null separation to process files
+##COMBINE BASENAME AND NULL SEPARATION TO PROCESS FILES
 $ while read -r -d '' file;do echo "ffmpeg -i $file -q 1 ${file}_%d.jpeg";done < <(find . -name "a*.txt" -printf %f\\0)
 printf %f prints only filename without directory (=basename) and \\0 applies null after filename (separator)
 
-## Iterate through various folders simulating find with a for loop in a list:
+## ITERATE THROUGH VARIOUS FOLDERS SIMULATING FIND WITH A FOR LOOP IN A LIST:
 for i in a b c d e ;do
   (cd $i/; for i in Test_*_hit.txt; do cut -f1,2 $i > ${i%.txt}2.txt; done)
 done
@@ -752,7 +752,7 @@ echo ${array[@]:2:1} -> 2   #Start from position 0 and print 1 . eqivalent to ec
 MYARR=(a b c d e f g);echo ${MYARR[@]:2:3}  -->c d e            # Extract a sub-array
 MYARR=(a b c d e f g);echo ${MYARR[@]/d/FOO} --> a b c FOO e f g  # Replace elements that match pattern (d) with word FOO)
 
-##Printing arrays with BASH (declare -p)
+##PRINTING ARRAYS WITH BASH (DECLARE -P)
 MYARR=(a b c d e f g);declare -p MYARR  #Print array in the smart way ;-) Works even with associative arrays.
 #Output --> declare -a MYARR=([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f" [6]="g")
 
@@ -772,6 +772,11 @@ You can also have a function for this : function pa { declare -p $1 |sed s/"decl
 or even assign it to an alias:
 alias printarray='function _pa (){ if [ -z $1 ];then echo "please provide a var";else declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g";fi; };_pa'
 for some reason tr ' ' '\n' raises errors in alias.... We switched to last sed replacing  [ with \n[ 
+
+
+##PREFIX ARRAY ITEMS WITH PARAMETER EXPANSION
+arr=(file*);printf '%s\n' "${arr[@]/#/GV}"  ---> GVfile1
+printf '%s\n' "${arr[@]/#/$PWD/}"           ---> /home/gv/Desktop/PythonTests/file1
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:WORD SPLITTING
@@ -821,7 +826,7 @@ foo=$bar OR bar=$(a command) OR logfile=$logdir/foo-$(date +%Y%m%d) OR PATH=/usr
 In either case, quoting anyway will not break anything. This is why experts advise "always quote" = "always prevent word splitting".
 Experienced coders can selectively remove quoting to achieve the per case required results making advantage of word splitting.
 
-##Trick with IFS and values in one line - one variable:
+##TRICK WITH IFS AND VALUES IN ONE LINE - ONE VARIABLE:
 
 Instead of creating an array with values and manipulate array items like:
 IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
@@ -846,7 +851,7 @@ This way is also used when you need to store special chars in any variable , i.e
 You can not do above operation (embed newline) without using $' ' . If you try like a="this is a \ntest" the \n will be literal.
 Ugly alternative for variables : a=$(echo -e "this is \n a test")
 
-#### Special IFS settings used for string parsing. ####
+#### SPECIAL IFS SETTINGS USED FOR STRING PARSING. ####
 Whitespace == :Space:Tab:Line Feed:Carriage Return:
 WSP_IFS=$'\x20'$'\x09'$'\x0A'$'\x0D'
 No Whitespace == Line Feed:Carriage Return
@@ -860,7 +865,7 @@ Or set IFS=$'\n'
 Set IFS to any char to perform special field split
 For file with lines in format field1:field2:field3 using IFS= you will get the whole line, using IFS=: you can split each field.
 
-##Trick with IFS and values in one line - one variable:
+##TRICK WITH IFS AND VALUES IN ONE LINE - ONE VARIABLE:
 
 Instead of creating an array with values and manipulate array items like:
 IFS="[, ]" read -r -a list <<<"Yeseva+One, Yrsa"  #Convert values to array
@@ -875,18 +880,18 @@ IFS="[, ]" for i in $variable;do #actions;done
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 
-##Iterate through args
+##ITERATE THROUGH ARGS
 function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
 function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
 
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
-##ARGS to Array with reverse order
+##ARGS TO ARRAY WITH REVERSE ORDER
 function test { argn=${#@};for ((i=$argn;i>0;i--)); do args[$i]=${@: -$i:1};done;};test a b c;declare -p args
 Output --> declare -a args=([1]="c" [2]="b" [3]="a")
 
 
-##ARGS Seperatation depending on first char (i.e dash -)
+##ARGS SEPERATATION DEPENDING ON FIRST CHAR (I.E DASH -)
 ${1:0:1} will return the first char. Then you can compare (if) with == "-"
 
 You can assign all args in an array using "-" as delimiter
@@ -947,7 +952,7 @@ dom="http://unix.stackexchange.com/questions/ask"
 FS=/; set -- $dom; echo "$3" :--->unix.stackexchange.com
 Alternativelly can be done with cut -d/ -f3, or with regex groups (perl) or with tricky sed (i.e sed "y|/|\x00|;s/.*\x00\x00//;s/\x00.*//")
 
-##ARGS null separated
+##ARGS NULL SEPARATED
 You can manipulate args that may contain any character using null byte as a separator.
 arg1="some more";arg2="text here";args=$(echo -e "$arg1\0$arg2\0" |base64) 
 #it is important to have null even at the end to separate the last item
@@ -1032,7 +1037,7 @@ Command $(cat file) can be replaced by the equivalent but faster $(< file).  : e
 if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
 if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 
-##Separate filename from directoryname (emulates basename and dirname)
+##SEPARATE FILENAME FROM DIRECTORYNAME (EMULATES BASENAME AND DIRNAME)
 for f="/home/bash/bash_hackers.txt"
 Get directory name -> ${f%/*} ⇒ /home/bash
 Get directory name -> ${f%%/*} ⇒ /home
@@ -1049,7 +1054,7 @@ mv -v "${dname}${fname}" "${dname}C_${fname}"    #'./gv/anotherfile.txt' -> './g
 
 Remove path and extension at once with extglob (shopt -s extglob): s=/the/path/foo.txt;echo ${s//+(*\/|\.*)} -->foo
 
-##File Extension - for f="/home/bash/bash_hackers.txt"
+##FILE EXTENSION - FOR F="/HOME/BASH/BASH_HACKERS.TXT"
 Get filename without extension -> ${f%.*} ⇒ /home/bash/bash_hackers #deletes everything from end (backwards) up to first dot.
 Get extension -> ${f##*.} ⇒ txt  #deletes everything from start up to longest dot 
 As usuall ## represents the longest (last) match and # represents the shortest (first) match (#=search from beginning - forward)
@@ -1069,7 +1074,7 @@ echo "${tmp%%/*}" : unix.stackexchange.com		#remove everyting from end up to las
 
 a='2.5.2.pl';echo "${a%.*}-${a##*.}" ----> 2.5.2-pl      #Replace last dot with dash:
 
-##Lowercase - UpperCase
+##LOWERCASE - UPPERCASE
 http://stackoverflow.com/questions/2264428/converting-string-to-lower-case-in-bash-shell-scripting
 $ string="A FEW WORDS"
 $ echo "${string,}"  --> a FEW WORDS
@@ -1099,87 +1104,87 @@ echo "$a" | perl -ne 'print lc'
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TIPS AND TRICKS
-##Resources: 
+##RESOURCES: 
 http://www.catonmat.net/blog/another-ten-one-liners-from-commandlinefu-explained/
 http://www.catonmat.net/blog/top-ten-one-liners-from-commandlinefu-explained/
 http://wiki.bash-hackers.org/snipplets/start
 
-##Count occurences of a char within a string (var="text,text,text,text")
+##COUNT OCCURENCES OF A CHAR WITHIN A STRING (VAR="TEXT,TEXT,TEXT,TEXT")
 GREP: reps=$(grep -o "," <<< "$var" | wc -l)
 AWK : awk -F"," '{print NF-1}' <<<"$var" #or {print NF?NF-1:0}
 BASH : reps="${var//[^,]}" && echo "${#reps}"  #removes everything except comma
 
-##Identify the width of the terminal
+##IDENTIFY THE WIDTH OF THE TERMINAL
 tput cols
 
-##Using subshells: 
+##USING SUBSHELLS: 
 $ (cd /tmp && ls) This will call a subshell to perform the commands and will exit. Thus your real shell will not cd to /tmp
 
-##Reverse any word
+##REVERSE ANY WORD
 echo "nixcraft" | rev
 
-##Rename using for and bash parameter expansion
+##RENAME USING FOR AND BASH PARAMETER EXPANSION
 for f in 0[12]/I00[12]0001 ; do mv "$f" "${f}.dcm" ; done # This will go in two folders (01 and 02) and read two files inside each folder (I0010001 and I0020001) and add dcm extension to each of them.
 
-##Remove new line char from strings and replace it with space using trim (tr)
+##REMOVE NEW LINE CHAR FROM STRINGS AND REPLACE IT WITH SPACE USING TRIM (TR)
 echo -e "hello\nyou asshole" |tr "\n" " " ->hello you asshole #If you remove the tr you will see the text to be printed in two different lines. If you apply -d "\n" new lines will be deleted.
 With sed it supposed to be sed -e 's/[\n]//g' but is not working. Texts keeps priting in terminal in two lines.
 
-##Use dnstools to read a wikipedia page in terminal:
+##USE DNSTOOLS TO READ A WIKIPEDIA PAGE IN TERMINAL:
 dig +short txt hacker.wp.dg.cx # searches wikipedia for term hacker.
 I have an alias for that. Alternative : host -t txt hacker.wp.dg.cx
 
-##Quick move and copy 
+##QUICK MOVE AND COPY 
 cp filename{,.bak} #using brace expansion
 mv /path/to/file{,_old} #brace expansion
 
-##Trace root with ping together: 
+##TRACE ROOT WITH PING TOGETHER: 
 $ mtr google.com
 
-##Find the last command that begins with "whatever," but avoid running it : 
+##FIND THE LAST COMMAND THAT BEGINS WITH "WHATEVER," BUT AVOID RUNNING IT : 
 $ !whatever:p
 
-##Change to the previous working directory
+##CHANGE TO THE PREVIOUS WORKING DIRECTORY
 $ cd - (insted of cd $OLDPWD)
 
-##Serve the current directory at http://localhost:8000/
+##SERVE THE CURRENT DIRECTORY AT HTTP://LOCALHOST:8000/
 $ python -m SimpleHTTPServer 8000
 
-##Run the last command as root : 
+##RUN THE LAST COMMAND AS ROOT : 
 $ sudo !! (also simple !! just repeats last command)
 
-##Capture video of a linux desktop : 
+##CAPTURE VIDEO OF A LINUX DESKTOP : 
 $ ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -sameq /tmp/out.mpg
 
-##Read the first line from a file and put it in a variable : 
+##READ THE FIRST LINE FROM A FILE AND PUT IT IN A VARIABLE : 
 $ read -r line < file OR IFS= read -r line < file
 
-##Read a random line from a file and put it in a variable : 
+##READ A RANDOM LINE FROM A FILE AND PUT IT IN A VARIABLE : 
 $ read -r random_line < <(shuf file)
 
-##Extract filename /dirname from the path : 
+##EXTRACT FILENAME /DIRNAME FROM THE PATH : 
 filename=${path##*/} 
 dirname : dirname=${path%/*}
 
-##declare upper/lower case variables 
+##DECLARE UPPER/LOWER CASE VARIABLES 
 uppercase: declare -u foo 
 lowercase: declare -l
 declare -u b;eval {a,b}="george"; echo "$a --- $b" --> b will print GEORGE due to declare -u in the beginning.
 
 PS: Alternative for lower/upper case is ${a^^} and ${a,,}
 
-##Assign same value to multiple commands using bash parameter expansion: 
+##ASSIGN SAME VALUE TO MULTIPLE COMMANDS USING BASH PARAMETER EXPANSION: 
 eval {a,b,c}="some text" # Variables a , b and c will get value some text. Without eval is not operating.
 
-##Identify files/ commands : 
+##IDENTIFY FILES/ COMMANDS : 
 type command (try i.e type grep and type eval)
 file <file> #will print info about the file , like if it is ASCII
 
-##List all kernel modules that are loaded (i.e lsmod)
+##LIST ALL KERNEL MODULES THAT ARE LOADED (I.E LSMOD)
 cat /lib/modules/$(uname -r)/modules.dep
 find /lib/modules/$(uname -r) -type f -name \*.ko
 
-##Working with ASCII values of a string / file 
+##WORKING WITH ASCII VALUES OF A STRING / FILE 
 $ echo 'this is \"something\"' |od -t x1c                                                                                               0000000  74  68  69  73  20  69  73  20  5c  22  73  6f  6d  65  74  68
           t   h   i   s       i   s       \   "   s   o   m   e   t   h
 0000020  69  6e  67  5c  22  0a
@@ -1196,7 +1201,7 @@ BASH:PRINTF
 http://wiki.bash-hackers.org/commands/builtin/printf
 http://www.computerhope.com/unix/uprintf.htm
 
-##PRINTF: Looping over hexadecimal values (hex loop)
+##PRINTF: LOOPING OVER HEXADECIMAL VALUES (HEX LOOP)
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
 The most easy way is to use printf since natively supports hex printing
 
@@ -1214,13 +1219,13 @@ $ h=$(printf "\\\x%x" "60") && echo "$h" && echo -e "$h"   #First echo prints \x
 $ printf '%d\n' "'a" or "'a'" -> prints 97 . For some reason the letter must be enclosed by double quotes and with single quotes!. 
 $ var="a"; printf '%d\n' "'$var'" --> also prints 97
 
-##CHARACTERS ASCII Sum:
+##CHARACTERS ASCII SUM:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
 $ bc <<<"${sumA:0:-1}"    ---->> 1114   #with 0:-1 the trailing + is removed.
 
 
-##PRINTF Effects with Carriage Return
+##PRINTF EFFECTS WITH CARRIAGE RETURN
 printf "hello\ragain\rGeorge" --> Will print George. 
 Every time a \r is read by terminal the cursor is moved back to it's first position.
 You can try with printf "helloooooo\rAgain\rGeorge" --> Will print Georgeoooo
@@ -1298,7 +1303,7 @@ $ foo=10;x=foo;echo ${x} 	--> foo
 
 Also try to use ${a,b}="some" - bash will complain that a="some" command not recognized. If you use eval then goes ok.
 
-##Indirect Expansion Examples
+##INDIRECT EXPANSION EXAMPLES
 
 $ function test { for (( i=1; i<="$#"; i++ )); do   echo "${i}";done; }; test -abcd    ---- > Prints 1 since i is 1 due to for loop
 $ function test { for (( i=1; i<="$#"; i++ )); do   echo "${!i}";done; }; test -abcd   ---- > Prints -abcd since $i becomes $1 
@@ -1323,7 +1328,7 @@ Mind the difference If you don't use the indirect expansion :
 my1var
 my2var
 
-## Indirect Expansion vs Eval
+## INDIRECT EXPANSION VS EVAL
 Eval is possible to execute potential command substitutions. Indirect expansion will not. 
 Test with this: 
 tmpvar='foo`execute nasty command`'; echo "${!tmpvar}"; eval echo "${tmpvar}" -- 
@@ -1348,7 +1353,7 @@ Also:
 name=$'My name is \x3b\x6c\x73'; eval "user=$name" --> will execute ls (hexcode = ;ls --> my name is; ls
 
 
-##Indirect Expansion in arrays
+##INDIRECT EXPANSION IN ARRAYS
 http://unix.stackexchange.com/questions/20171/indirect-return-of-all-elements-in-an-array
 
 One of the most often cases is the need to use eval or indirect expansion in arrays.
@@ -1370,7 +1375,7 @@ a=(one two three) && b="a[@]" && echo "${!b}" && newArr=( "${!b}" ) && declare -
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPITORS AND REDIRECTIONS
-##Sources
+##SOURCES
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
 http://www.tldp.org/LDP/abs/html/io-redirection.html
@@ -1406,7 +1411,7 @@ In a pseudocode format : uservar=$(command) EQUALS to command 1>uservar (instead
 Redirect stderr to file and stdout + stderr to screen :
 exec 3>&1 && foo 2>&1 >&3 | tee stderr.txt (equals to 2>&1 1>&3)
 
-##Tricky redirection from bins missing man pages:
+##TRICKY REDIRECTION FROM BINS MISSING MAN PAGES:
 man -w binaryfile 2>&1 >/dev/null (-w prints man page location)
 In case of a normal bin file (i.e grep) then nothing is printed. In case of a bin that do not have a man page (i.e getweb) then
 the error message is printed.
@@ -1435,7 +1440,7 @@ correspondingly you can exec 2>error-file and any programm that prints anything 
 -----------------------------------------------------------------------------------------------------------------------------------------
 BASH:FILE DESCRIPTORS tricky usage from http://mywiki.wooledge.org/BashFAQ/002
 
-##Basic redirections chain
+##BASIC REDIRECTIONS CHAIN
 The key point to understand redirections is that commands behavior is always the same : 
 normal output goes to /dev/stdout , errors go to /dev/stderr and both of them go to /dev/tty
 
@@ -1471,7 +1476,7 @@ function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/tty; 
 Usage cat file |teee |awk '{...}' Prints the output of cat and pipes the data to awk as well
 
 
-##Manipulate stdout & stderr  
+##MANIPULATE STDOUT & STDERR  
 Well, then first you have to choose a non usefully place for stdout to go: 
 (a)output=$(command 2>&1 >/dev/null)  # Save stderr, send stdout to /dev/null = nowhere
 (b)output=$(command 2>&1 >/dev/tty)   # Save stderr, send stdout to the terminal.
@@ -1583,7 +1588,7 @@ Meaning: detach fd2 from tty0(default) and send it to wherever fd1 goes (=pipe) 
 But this is not portable and this is why is not used at all. 
 You create a tmp fd3 to go at fd1 in the very beginning , saving the pipe internal location/name , then you ask fd1 to go to wherever fd2 goes (screen , maybe tty0, maybe tty1, maybe something else) and finally you detach fd2 from screen and send it to fd1 previous location = fd3 current location , since you can not redirect fd to a place that no longer exists (like fd1 old place) 
 
-## ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (http://mywiki.wooledge.org/BashFAQ/002)
+## ANOTHER TRICKY REDIRECTION FOR SWAPPING STDERR WITH STDOUT (HTTP://MYWIKI.WOOLEDGE.ORG/BASHFAQ/002)
 This also achieves the swap in a different way:
 exec 3>&1			# Save the place that stdout (1) points to . This is the screen because we are in CLI mode.
 output=$(command 2>&1 1>&3)	# Run command.  stderr is captured, and 
@@ -1595,7 +1600,7 @@ exec 3>&1 OUTSIDE script is sent to wherever fd1 goes OUTSIDE script = SCREEN(tt
 1>&3 inside script detaches fd1 from script's pipe and send it to fd3 which has been assigned OUTSIDE the script to go at screen.
 Brilliant! 
 
-## Redirecting output to multiple processes:
+## REDIRECTING OUTPUT TO MULTIPLE PROCESSES:
 $ tr '\n' '\\' <file3 > >(sed 's#a#A#g') > >(sed "s#[\]#\0n#g")
 Apples\norAnges\nbAnAnAs\ncArrots\n
 
@@ -1606,7 +1611,7 @@ http://mywiki.wooledge.org/BashFAQ/106
 exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
 
-## Redirection explained for enginners
+## REDIRECTION EXPLAINED FOR ENGINNERS
 Imagine each device as a lamp and each fd as a wire. If lamp found to be not connected to a wire is destroyed.
 Thus initial state is fd1 --> screen. To remove fd1 wire from screen you need to connect first a helper wire (exec 3&>1)
 Once lamp/screen is connected with wire 3 you can remove wire 1 and attach it in another lamp (i.e file)
@@ -1717,7 +1722,7 @@ BASH:ASSOCIATIVE ARRAYS (declare -A array)
 http://www.artificialworlds.net/blog/2012/10/17/bash-associative-array-examples/
 http://www.artificialworlds.net/blog/2013/09/18/bash-arrays/  #Tips / Examples of Normal Arrays.
 
-##Using Associative Arrays
+##USING ASSOCIATIVE ARRAYS
 Works like dictionaries of advanced programming languages.
 You can assign whatever index you want (i.e array[file])
 declare -A MYMAP=( [foo]=bar [baz]=quux [corge]=grault ); echo ${MYMAP[foo]};echo ${MYMAP[baz]} -> bar \n quux
@@ -1734,13 +1739,13 @@ declare -A MYMAP=( [foo a]=bar [baz b]=quux );for K in "${!MYMAP[@]}"; do echo $
 --> baz b --- quux
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );echo ${#MYMAP[@]}  --> 2 # Number of keys in an associative array
 
-##Number Indexing of Associative Array :
+##NUMBER INDEXING OF ASSOCIATIVE ARRAY :
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );KEYS=("${!MYMAP[@]}");echo "${KEYS[0]} --- ${MYMAP[${KEYS[0]}]}" -> foo a --- bar   # KEYS=(${!MYMAP[@]}) = a normal array containing all the keys of the associative array. You can then refer to associative array with numerical index (0,1,2,etc)
 declare -A MYMAP=( [foo a]=bar [baz b]=quux );for (( I=0; $I < ${#MYMAP[@]}; I+=1 )); do KEY=${KEYS[$I]};  echo $KEY --- ${MYMAP[$KEY]}; done
 --> foo a --- bar
 --> baz b --- quux
 
-##Simulating 2d Arrays
+##SIMULATING 2D ARRAYS
 declare -A arr
 arr[0,0]=0
 arr[0,1]=1
@@ -1749,7 +1754,7 @@ arr[1,1]=3
 echo "${arr[0,0]}" # will print 0  
 echo "${arr[0,1]}" # will print 1
 
-##Associative Arrays over files / globbing
+##ASSOCIATIVE ARRAYS OVER FILES / GLOBBING
 declare -A file_hash;for file in *; do file_hash+=([$file]=1);done
 file_array=(*);declare -A file_hash=( $(echo ${file_array[@]} | sed 's/[^ ]*/[&]=&/g') )  #Not working on bash 4.4
 declare -A filehash; eval $(printf 'filehash+=(["%s"]=1);' *.txt) #Works ok
@@ -1771,7 +1776,7 @@ BASH:HEREDOCS
 Best explained : http://tldp.org/LDP/abs/html/here-docs.html
 Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
 
-##Inside a script: 
+##INSIDE A SCRIPT: 
 when using here-doc format within a script, the input to cat comes from the script.
 Example:
 #! /bin/bash
@@ -1789,12 +1794,12 @@ End-of-message
 when the script finishes above lines are printed in stdout.
 If you apply cat <<-ENDOFMESSAGE (mind the dash) then white space is trimmed (except space)
 
-##Tricky script usage:
+##TRICKY SCRIPT USAGE:
 You can use the here-doc format to comment big blocks of text or code for debugging.
 format is :<<whatever ...... whatever
 if instead of :<< you use cat << , everything bellow tags will be printed on screen or to >file if defined.
 
-##Another trick usage inside script:
+##ANOTHER TRICK USAGE INSIDE SCRIPT:
 GetPersonalData ()
 {
   read firstname
@@ -1823,7 +1828,7 @@ EOF
 You can offcourse use tac instead of cat. But in tac lines of here-doc will be inserted from the last to the first.
 This is what tac does = reverse of cat.
 
-##Create Script from Script
+##CREATE SCRIPT FROM SCRIPT
 Also see http://linuxcommand.org/wss0030.php
 
 #!/bin/bash 
@@ -1845,7 +1850,7 @@ This is a secondary script generated by master script.
 EOT # Secondary script finished
 Rest Code of Master Script Continues
 
-##Source external code inside your script (instead of sourcing the whole script)
+##SOURCE EXTERNAL CODE INSIDE YOUR SCRIPT (INSTEAD OF SOURCING THE WHOLE SCRIPT)
 http://unix.stackexchange.com/questions/160256/can-you-source-a-here-document
 
 source <(sed -n '/function justatest/,/\}/p' .bash_aliases) && justatest
@@ -1861,14 +1866,14 @@ echo $A --> prints 42
 Alternative - Directly eval the code 
 eval "$(sed -n '/function justatest/,/\}/p' .bash_aliases)" && justatest #worked fine
 
-##Here Doc trick to assign strange chars to variable without escaping
+##HERE DOC TRICK TO ASSIGN STRANGE CHARS TO VARIABLE WITHOUT ESCAPING
 $ IFS='' read -r -d '' var <<'EOF'
 j!'^+%&/()=1!'^+%&/()c
 EOF
 $ echo $var --> Output = j!'^+%&/()=1!'^+%&/()c #This is hard to be assigned even with escaping.
 
 
-##Combine array declaration with process substitution and here doc
+##COMBINE ARRAY DECLARATION WITH PROCESS SUBSTITUTION AND HERE DOC
 readarray -t arr < <( del_comments <<EOF
 a       # comm1
 b       # comm2
@@ -1924,7 +1929,7 @@ extdebug       	off
 extglob        	off
 failglob       	off
 
-##Terminal Automatic Resize/Readjust
+##TERMINAL AUTOMATIC RESIZE/READJUST
 To activate: shopt -s checkwinsize
 To deactivate: shopt -u checkwinsiz
 
@@ -1977,7 +1982,7 @@ shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are 
 Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
 see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
 
-##GITIGNORE EXAMPLE - Iterating through files ignoring files/patterns stored in a file (gitignore case)
+##GITIGNORE EXAMPLE - ITERATING THROUGH FILES IGNORING FILES/PATTERNS STORED IN A FILE (GITIGNORE CASE)
 shopt -s globstar
 declare -A filelist=()                                              # Create an associative array where filenames become array keys
 for file in **; do filelist[$file]=1; done                          # Build a list of all files...
@@ -1996,7 +2001,7 @@ awk and grep alternatives to exclude files:
 grep -vF -f exclude <(find . -maxdepth 1 -type f -printf %f\\n)
 Tip: using -printf %f on find returns the basename of each file found , thus you do not have to worry about ./file.txt or /full/path/to/file.txt
 
-##GITIGNORE Alternative with ignore file containing globs:
+##GITIGNORE ALTERNATIVE WITH IGNORE FILE CONTAINING GLOBS:
 set +f
 touch file1 file2 file3 some more file here
 cat <<EOF >ignore
@@ -2019,7 +2024,7 @@ Tip: You can enable extglob and globstar (shopt -s globstar;shopt -s extglob) an
 For extglob negation you need to use !(pattern). Notice that extglob negation returns all files except the one in !(..).
 This is different than git tools negation (usage : !pattern)
 
-##GITIGNORE Using git tools
+##GITIGNORE USING GIT TOOLS
 http://unix.stackexchange.com/questions/358270/find-files-that-are-not-in-gitignore/358279?noredirect=1#comment634339_358279
 https://git-scm.com/docs/gitignore
 
@@ -2037,23 +2042,23 @@ desktop/includes/controllers/web_tools.sh:57:   TODO: check if, at this point, t
 
 ------------------------------------------------------------------------------------------------------------------------
 BASH:FUNCTIONS AND ALIASES
-##Alias
+##ALIAS
 You can use alias some='your alias or your function here'
 You can store all your custom alias in .bashrc file or even better in the .bash_aliases file.
 Usually .bashrc file has a check for existance of .bash_aliases file, and if found , then it sources this file.
 Check the .bash_aliases file for cool aliases.
 To see current alias use "alias". To unset an alias use unalias <name>
 
-##Functions
+##FUNCTIONS
 Can be declared either with function myf { } or directly as myf () {...}
 Function can get arguments ($@, $*, $#,$1,etc) that can be used by function in the same way that a script receives arguments.
 
-##functions in shell - like aliase
+##FUNCTIONS IN SHELL - LIKE ALIASE
 In the same file (.bashrc or .bash_aliases) you can have functions.
 Those functions work directly from command line - can be exposed using set
 Tip: You can not use the bash functions in a script, but you can source them by sourcing the .bash_aliases.
 
-##Functions in scripts
+##FUNCTIONS IN SCRIPTS
 See [: http://mywiki.wooledge.org/BashFAQ/084 :]
 Functions you can have also in your scripts.
 Functions can return as exit status an integer directly from number 1..255 . 
@@ -2082,11 +2087,11 @@ $ function foo { echo "i am inside function. a recevied = $a";a=$(($a*3));};a=10
 Will change the value of a from 1000 to 3000.
 The "childs can not change parrents" rule applies only to subshells (i.e pipes)
 
-##Function Local Variables. 
+##FUNCTION LOCAL VARIABLES. 
 You can have local variables inside a function by assigning local var=value
 If you don't specify local , then the var is considered as global, even if it is not previously defined in the main script.
 
-##Use a function as a pipe
+##USE A FUNCTION AS A PIPE
 To do this all you have to do is to read the /dev/stdin , like for example var=$(</dev/stdin)
 Then var can be used inside the function.
 See this date to epoch function converter that works as a pipe:
@@ -2096,11 +2101,11 @@ function dtoe {
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 }
 
-##How to ignore alias : http://mywiki.wooledge.org/BashFAQ/086
+##HOW TO IGNORE ALIAS : HTTP://MYWIKI.WOOLEDGE.ORG/BASHFAQ/086
 You might need to run a command and not it's alias that you might have set.
 You can do that by unalias, or by $ command ls, or by \ls , etc
 
-##Force Different behavior of functions/aliases if called by command line or script
+##FORCE DIFFERENT BEHAVIOR OF FUNCTIONS/ALIASES IF CALLED BY COMMAND LINE OR SCRIPT
 With function you can have something like:
 ls() { if test -t 1; then command ls -FC "$@"; else command ls "$@";fi;}
 In this way you use the -FC args only if ls runs from a terminal and not from a script ; More generally when the &1 is not redirected to /dev/stdout
@@ -2136,7 +2141,7 @@ Mind also that this format is acceptable for globstar :for ff in tmp/**/*.* or .
 Or you can use ** and filter the results: if [[ -e "$subd" ]];then #do commands for files;fi
 Or you can use **/ to list directories and stepinto directories with CD and execute another for ./* loop.
 
-##DOUBLE QUOTING FAILURES in GLOBING
+##DOUBLE QUOTING FAILURES IN GLOBING
 for ff in ./**/tmp/** ;do echo Type - "$(file "$ff")" ;done  ---> Type - ./tmp/tmp2/file09 99: empty
 for ff in ./**/tmp/** ;do echo Type - "$(file $ff)" ;done    ---> Error - See bellow:
 Type - ./tmp/tmp2/file09: cannot open `./tmp/tmp2/file09' (No such file or directory)

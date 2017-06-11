@@ -33,20 +33,20 @@ But if you apply a different delimiter you can avoid the escaping.
 For example this tricky sed usage replace strange chars like slashes without the need to escape slashes since the delimiter is different.
 a="https://www.google.gr";echo " log <sitepath />/<sitename />/platform_dir/logs/nginxerror.log" | sed -r "s#<sitepath /># $a #"  --> log  https://www.google.gr /<sitename />/platform_dir/logs/nginxerror.log
 
-##info sed notice:
+##INFO SED NOTICE:
 info advises that other chars like % or ; etc when used as delimiters , first delimiter should start with \.
 That means that sed '/word/p' ==> sed '\%word%p'
 
-##SED Use external variable (i.e $line,$text,etc - defined before sed)
+##SED USE EXTERNAL VARIABLE (i.e $line,$text,etc - defined before sed)
 You just need to double quote the whole sed expression instead of single quotes.
 Alternativelly you can use double quotes only at var but you need also to apply single quotes outside the double quotes.
 i.e sed 's/'"$a"'/something/g' file
 
-##Modifiers (see also info sed)
+##MODIFIERS (see also info sed)
 /REGEXP/I : I is for case insestive. Don't confuse with i which is operation insert
 /REGEXP/M : Multiline mode - cause match of regexp including new lines before/after regexp - ^$ not operating - use \` and \' instead
 
-##Non-Greedy / LAZY Regex Operation
+##NON-Greedy / LAZY Regex Operation
 In perl and grep -P we have the use of ? advising "non greedy" operation.
 Sed .* works always in greedy mode = match . as much as possible 
 
@@ -61,7 +61,7 @@ Greedy regex s/^<.*>/FOO/ will catch the whole line up to last > : Whole <h2 id=
 
 In Perl , we would use something like s/^<.*>?/FOO/ and the non-greedy operator ? would instruct Perl to make a lazy match (not up to the last >)
 
-##Commands Overview
+##COMMANDS OVERVIEW
 :  # label
 =  # line_number
 a  # append_text_to_stdout_after_flush
@@ -90,19 +90,19 @@ y  # transform_chars
 {} # group commands. For example sed -n '5000p;q' does not work but sed -n '5000{p;q}' works fine.
 
 SED:CHEAT SHEET TXT 2 MANPAGE FORMATTING
-##Read this cheat file with man pages:
+##READ THIS CHEAT FILE WITH MAN PAGES:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
 man formatting: man 7 man
 groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
 
-##Working Command:
+##WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
 
-##man and groff/troff require special handling.
+##MAN AND GROFF/troff require special handling.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
 Line feeds in man pages can be done by inserting .br between two lines.
 More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
@@ -144,7 +144,7 @@ Man displays the file as it would display in any editor , in the old file classi
 #Line3
 #Line4
 
-##Light Conversions
+##LIGHT CONVERSIONS
 man --nh --nj <(sed 's/^SED:/.SH SED:/g; G' cheatsheets/sed*gv.txt)
 man --nh --nj <(sed 's/^BASH:/.SH BASH:/g; s/^$/---/g;G' cheatsheets/bash*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
 man --nh --nj <(sed 's/^SED:/.SH SED:/g; s/^$/---/g;G' cheatsheets/sed*gv.txt |sed 's/^$/\.br/g; s/^---$//g')
@@ -154,7 +154,7 @@ SED:PRINT
 sed -n '/SED:PRINT.*line.*/,/# -----/p' ./cheatsheets/sed*gv*.txt
 sed -n '/JOIN/,/# ----/p' ./cheatsheets/*
 
-##Print range
+##PRINT RANGE
 sed -n '/regexp/p' #grep emulation - Print lines matching regex
 sed -n '8,12p' #print from line 8 up to 12
 sed -n '16224,16482p;16483q' file #mind the 16483q command (quit). Variables: sed -n "$FL,$LL p" file.txt
@@ -173,7 +173,7 @@ sed -n '/regexp/{g;1!p;};h' #Print line before regex (not including the line wit
 sed -n '/regexp/{n;p;}' 	#Print line after regex (not including the line with regex)
 read -a arr -p "Enter line numbers: " ;sed -n "${arr[*]/%/p;}" infile  #Prints lines acc to user input.Based on bash echo "${arr[*]/%/p;}" -->1p; 3p; 5p; 7p;
 
-##Print in reverse = tac emulation
+##PRINT IN REVERSE = tac emulation
 http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
 sed -n '1!G;h;$p'
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ echo "192.168.1.0/24" | sed  -n 's/0.24/2/p'
 sed -i 's/foo\(.*baz\)/bar\1/' file  ##Replace foo with bar only if there is a baz later on the same line:
 sed -Ei 's/foo|bar|baz/foobar/g' file ##Replace any of foo, bar or baz with foobar
 
-##Replace chars with regex
+##REPLACE CHARS WITH REGEX
 See info sed - Regular Expressions
 echo "abc %-= def." | sed 's/\b/X/g' ---> XabcX %-= XdefX. #\b = word bountary - \B all but not word boundary
 echo "abc %-= def." | sed 's/\b/"/g' ---> "abc" %-= "def". #Insert double quotes with \b word bountary
@@ -195,21 +195,21 @@ echo "abc %-= def." | sed 's/\</X/g' ---> Xabc %-= Xdef. #match beginning of wor
 sed -E -n '/^(.)o\1$/p' ---> matches words starting with any letter , followed by letter o - followed by a letter same as first (\1)
 sed -E -n '/^(.)(.)(.)\3\2\1$/p' --> searches for 6-letter palindromes: first 3 letters are 3 subexpressions, followed by 3 back-references in reverse order
 
-##Replace Multiple replace operations: replace with different strings
+##REPLACE MULTIPLE REPLACE OPERATIONS: replace with different strings
 You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file ##/g means global = all matches in file
 
-##Use Extender Regex Groups to sed replace
+##USE EXTENDER REGEX GROUPS TO SED REPLACE
 $ a="define('DB_NAME', 'wordpress');";b="george"; echo "$a" |sed -E "s/(define.*)(\x27DB_NAME\x27, )(.*)(\)\;)/\1\2\'$b\'\4/g"  ##define('DB_NAME', 'george');
 sed -i "s/define('DB_NAME', '.*');/define('DB_NAME', 'foobar');/" file
 
-##Sed replace a string in a line with pattern: 
+##SED REPLACE A STRING IN A LINE WITH PATTERN: 
 sed -e '/^400/ s/,\{10\}$//' -e '/^300/ s/,\{5\}$//' -e '/^210/ s/,\{2\}$//'
 above sed removes 10chars from end in line starting with 400, removes 5 chars at line starting 300 etc.
 
-##Replace first occurence of a pattern (as) in every line with an increasing number 
+##REPLACE FIRST OCCURENCE OF A PATTERN (as) in every line with an increasing number 
 while read line;do sed 's/as/'"$(( ++count ))"'/1' <<< "$line";done < source_file > target_file
 
-##Replace special chars like backslash and single quotes
+##REPLACE SPECIAL CHARS LIKE BACKSLASH AND SINGLE QUOTES
 Backslash has a special meaning = escape.
 If your file/stream contains backslashes is a kind of pain to correctly match them and replace them.
 More pain if the old text/new text also contain backslashes.
@@ -222,7 +222,7 @@ alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"'
 echo "this is 'something'" ---> this is 'something' #text is containing single quotes.
 echo "this is 'something'" |esc_single_quotes ---> this is \'something\' #replaced text should contain backslash + single quote in order to be sent to other apps with single quotes escaped.
 
-##Text Replace more examples 
+##TEXT REPLACE MORE EXAMPLES 
 Consider file containing:
 ltm node /test/10.90.0.1 {
    address 10.90.0.1
@@ -243,7 +243,7 @@ alternatives
 str="address 10.90.0.1";newstr=$(awk -F"." '{print $1"."$2"."$3".20"}'<<<$str);echo $newstr
 
 
-##Delete text inside multi line file - enclosed by curly brackets
+##DELETE TEXT INSIDE MULTI LINE FILE - enclosed by curly brackets
 This is {
 the multiline
 text file }
@@ -272,7 +272,7 @@ started since line with { and get the next line (N) until substitution ({}) can 
 
 http://unix.stackexchange.com/questions/71670/add-in-begining-to-selected-lines-in-file?rq=1
 
-##Replace dash in string
+##REPLACE DASH IN STRING
 String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
 $ sed 's/..$/-\0/g' <(cut -d- -f1-4 <(cut -d" " -f5- file.txt)) #use >newfile at the end to send the results to a new file
 Output : 2016-05-31-10-03
@@ -282,7 +282,7 @@ $ cut --output-delimiter='-' -c7-19,20-21 file.txt
 $ while IFS= read -r line;do line="${line:6:13}-${line:14:2}";echo $line;done<file.txt
 $ awk '{print substr($3,0,13)"-"substr($3,14,2)}' file.txt
 
-## Replace string after pattern match
+## REPLACE STRING AFTER PATTERN MATCH
 You can combine sed words search (/word1/,/word2/) and then you can continue on the same line to perform replace with usual s/old/new/
 Input Example:
 priority = 0
@@ -298,19 +298,19 @@ Command: sed '/\[shovel\]/,/^$/ s/enabled = 0/enabled = 1/' file
 First part=/\[shovel\]/,/^$/ : from word [shovel] up to the next empty line (empty lines contain just start(^) and end ($) chars)
 Second part=s/enabled = 0/enabled = 1/ : usual sed replace in form s/old/new
 
-## Replace after a range with patterns match :
+## REPLACE AFTER A RANGE WITH PATTERNS MATCH :
 sed '/(/,/)/s/line/newline/g' #replaces line0-1-2-etc with newline0-1-2-etc in a file where first line and last line are in format (line0 ... up to lineX)
 split to understand: the fine part is /(/,/)/ = /(/ , /)/
 insteaf of 'p' at the end we use s/old/new/ for replace.
 
-## Replace text on the next line of pattern match
+## REPLACE TEXT ON THE NEXT LINE OF PATTERN MATCH
 Input:
 client_encryption_options:
     enabled: false
     
 sed '/^client_encryption_options:/,+1s/enabled:.*/enabled: true/' file #Mind the +1s trick to catch next line from patter
 
-## Replace / insert text with multiline text stored in a file/var
+## REPLACE / insert text with multiline text stored in a file/var
 http://stackoverflow.com/questions/42355276/using-multiline-variable-in-sed-command/42356901#42356901
 The whole story for sed to be able to insert multiline text in another file is that this new multiline text must have actually literral \n for line breaks.
 
@@ -321,7 +321,7 @@ $ echo "$a"
 apples\noranges\nbananas\ncarrots  ##Original file3 has apples/oranges/bananas/carrots in seperate lines.
 $ sed "2i $a" file4  ##Insert contents of variable $a before line2
 
-##Insert text in the middle of a file - before pattern match
+##INSERT TEXT IN THE MIDDLE OF A FILE - before pattern match
 http://stackoverflow.com/questions/42381852/sed-append-before-the-last-occurrence-of-a-character/42387699#42387699
 $ sed -n '/class Foo2 {/,/^}$/{s/^}$/Insert here\n\0/};p' file
 Assume a file with various classes in the format
@@ -429,102 +429,102 @@ SED:EXAMPLES BY UNIX SCHOOL
 .B See: http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
 
 SED:DELETE 
-##To remove 1st character in every line:
+##TO REMOVE 1st character in every line:
 sed 's/^.//' file 
 or 
 sed  's/.//' file  #mind the absence of /g modifier (=global replacement)
 
-## To remove last character of every line : 
+## TO REMOVE LAST CHARACTER OF EVERY LINE : 
 $ sed 's/.$//' file
 
-## To remove the 1st and last character of every line in the same command: 
+## TO REMOVE THE 1st and last character of every line in the same command: 
 $ sed 's/.//;s/.$//' file
 
-## To remove first character only if it is a specific character: 
+## TO REMOVE FIRST CHARACTER ONLY IF IT IS A SPECIFIC CHARACTER: 
 $ sed 's/^F//' file #Removes Lines starting with F
 
-## To remove last character only if it is a specific character: 
+## TO REMOVE LAST CHARACTER ONLY IF IT IS A SPECIFIC CHARACTER: 
 $ sed 's/x$//' file #removes last character if is x
 
-## To remove 1st 3 characters of every line: 
+## TO REMOVE 1st 3 characters of every line: 
 $ sed 's/...//' file #OR# $ sed -r 's/.{3}//' file
 
-## To remove last n characters of every line: 
+## TO REMOVE LAST N CHARACTERS OF EVERY LINE: 
 $ sed -r 's/.{3}$//' file
 
-## To remove everything except the 1st n characters in every line: 
+## TO REMOVE EVERYTHING EXCEPT THE 1st n characters in every line: 
 $ sed -r 's/(.{3}).*/\1/' file
 .* -> matches any number of characters.
 first 3 characters matched are grouped using parantheses. 
 In the replacement, by having \1 only the group is retained, leaving out the remaining part.
 
-##  Similarly , to remove everything except the last n characters in a file: 
+##  SIMILARLY , to remove everything except the last n characters in a file: 
 $ sed -r 's/.*(.{3})/\1/' file
 
-## To remove multiple characters present in a file: 
+## TO REMOVE MULTIPLE CHARACTERS PRESENT IN A FILE: 
 $ sed 's/[aoe]//g' file
 
-## To remove a pattern  : 
+## TO REMOVE A PATTERN  : 
 $ sed 's/lari//g' file
 
-## To delete only nth occurrence of a character in every line: 
+## TO DELETE ONLY NTH OCCURRENCE OF A CHARACTER IN EVERY LINE: 
 $ sed 's/u//2' file #replaces two u and stops. /g replaces all . Leave it blank replace only the first u found in line.
 
-## To delete everything in a line followed by a character: 
+## TO DELETE EVERYTHING IN A LINE FOLLOWED BY A CHARACTER: 
 $ sed 's/a.*//' file #In Word RedHat this Returns RedH
 
-## To remove all digits present in every line of a file: 
+## TO REMOVE ALL DIGITS PRESENT IN EVERY LINE OF A FILE: 
 $ sed 's/[0-9]//g' file
 
-## To remove all lower case alphabets present in every line: 
+## TO REMOVE ALL LOWER CASE ALPHABETS PRESENT IN EVERY LINE: 
 $ sed 's/[a-z]//g' file #in word Linux this returns L
 
-## To remove all alpha-numeric characters present in every line: 
+## TO REMOVE ALL ALPHA-numeric characters present in every line: 
 $ sed 's/[a-zA-Z0-9]//g' file
 
-## To remove a character irrespective of the case: 
+## TO REMOVE A CHARACTER IRRESPECTIVE OF THE CASE: 
 $ sed 's/[uU]//g' file
 
-## Delete a particular line : 
+## DELETE A PARTICULAR LINE : 
 $ sed '1d' file OR  $ sed '3d' file OR $ sed '$d' file (last line) OR sed '2,4d' file (range) OR sed '1d;$d' file (first and last line)
 Tip: replace d with !d to invert the action = delete lines other than those with !d.
 
-##Delete all lines beginning with 'L'  /OR/ ending with 'x' character: 
+##DELETE ALL LINES BEGINNING WITH 'L'  /OR/ ending with 'x' character: 
 $ sed '/^L/d' file /OR/ sed '/x$/d' file /OR/ sed '/[xX]$/d' file (both x and X) 
 
-##Delete all blank lines in the file
+##DELETE ALL BLANK LINES IN THE FILE
 $ sed '/^$/d' file
 
-##Delete all lines which are empty or which contains just some blank spaces:
+##DELETE ALL LINES WHICH ARE EMPTY OR WHICH CONTAINS JUST SOME BLANK SPACES:
 $ sed '/^ *$/d' file
 
-##Delete the lines containing the pattern 'Unix'.
+##DELETE THE LINES CONTAINING THE PATTERN 'Unix'.
 $ sed '/Unix/d' file #Use !d to delete line NOT containing the pattern Unix.
 
-##Delete the lines containing the pattern 'Unix' OR 'Linux':
+##DELETE THE LINES CONTAINING THE PATTERN 'Unix' OR 'Linux':
 $ sed '/Unix\|Linux/d' file #In some sed OR | is not working - use two expressions (not a pipe)
 
-##Delete the lines starting from the 1st line till encountering the pattern 'Linux':
+##DELETE THE LINES STARTING FROM THE 1st line till encountering the pattern 'Linux':
 $ sed '1,/Linux/d' file
 
-##Delete the lines starting from the pattern 'Linux' till the last line:
+##DELETE THE LINES STARTING FROM THE PATTERN 'Linux' till the last line:
 $ sed '/Linux/,$d' file
 
-##Delete the last line ONLY if it contains the pattern 'AIX':
+##DELETE THE LAST LINE ONLY IF IT CONTAINS THE PATTERN 'AIX':
 $ sed '${/AIX/d;}' file /OR/ sed '${/AIX\|HPUX/d;}' file (two patterns with or)
 
-##Delete the lines containing the pattern 'Solaris' only if it is present in the lines from 1 to 4.
+##DELETE THE LINES CONTAINING THE PATTERN 'Solaris' only if it is present in the lines from 1 to 4.
 $ sed '1,4{/Solaris/d;}' file
 
-##Delete the line containing the pattern 'Unix' and also the next line:
+##DELETE THE LINE CONTAINING THE PATTERN 'Unix' and also the next line:
 $ sed '/Unix/{N;d;}' file
 N command reads the next line in the pattern space. d deletes the entire pattern space which contains the current and the next line.
 
-##Delete only the next line containing the pattern 'Unix', not the very line:
+##DELETE ONLY THE NEXT LINE CONTAINING THE PATTERN 'Unix', not the very line:
 $ sed '/Unix/{N;s/\n.*//;}' file
 with s/ we delete from the newline character till the end, which effective deletes the next line after the line containing the pattern Unix.
 
-##Delete the line containing the pattern 'Linux', also the line before the pattern:
+##DELETE THE LINE CONTAINING THE PATTERN 'Linux', also the line before the pattern:
 $ sed -n '/Linux/{s/.*//;x;d;};x;p;${x;p;}' file | sed '/^$/d'
 
 In order to delete the line prior to the pattern,we store every line in a buffer called as hold space. 
@@ -536,52 +536,52 @@ When the pattern /Linux/ matches, we empty(s/.*//) the pattern space, and exchan
 And hence, the current and the previous line gets deleted on encountering the pattern Linux. The ${x;p;} is to print the last line which will remain in the hold space if left.
 The second part of sed is to remove the empty lines created by the first sed command
 
-##Delete only the line prior to the line containing the pattern  'Linux', not the very line:
+##DELETE ONLY THE LINE PRIOR TO THE LINE CONTAINING THE PATTERN  'Linux', not the very line:
 $  sed -n '/Linux/{x;d;};1h;1!{x;p;};${x;p;}' file
 
 This is almost same as the last one with few changes. On encountering the pattern /Linux/, we exchange(x) and delete(d). As a result of exchange, the current line remains in hold space, and the previous line which came into pattern space got deleted.
 1h;1!{x;p;} -  1h is to move the current line to hold space only if it first line. Exchange and print for all the other lines. This could easily have been simply: x;p . The drawback is it gives an empty line at the beginning because during the first exchange between the pattern space and hold space, a new line comes to pattern space since hold space is empty.
 
-## Delete only the line prior to the line containing the pattern  'Linux', not the very line:
+## DELETE ONLY THE LINE PRIOR TO THE LINE CONTAINING THE PATTERN  'Linux', not the very line:
 $  sed -n '/Linux/{x;d;};1h;1!{x;p;};${x;p;}' file
 
-## Delete the line containing the pattern 'Linux', the line before, the line after:
+## DELETE THE LINE CONTAINING THE PATTERN 'Linux', the line before, the line after:
 $ sed -n '/Linux/{N;s/.*//;x;d;};x;p;${x;p;}' file | sed '/^$/d'
 
-## To remove the 1st field or column (comma separated text):
+## TO REMOVE THE 1st field or column (comma separated text):
 $ sed 's/[^,]*,//' file
 
-## To delete the 2nd field /OR/ To print only the second field
+## TO DELETE THE 2nd field /OR/ To print only the second field
 $ sed 's/,[^,]*,/,/' file  /OR/  sed 's/[^,]*,\([^,]*\).*/\1/' file
 
-## delete the first line of the file:
+## DELETE THE FIRST LINE OF THE FILE:
 $ sed '1d' file
 ---------------------------------------------------------------------------------------------------------------------------------------
 SED:PRINT 
-##Print first / last line of the file: 
+##PRINT FIRST / last line of the file: 
 $ sed -n '1p' file  / sed -n '$p' file 
 
-## Print lines which does not X / do contain 'ux':
+## PRINT LINES WHICH DOES NOT X / do contain 'ux':
 $ sed -n '/X/!p' file / $ sed -n '/[ux]/p' file
 
-## Print lines which end with 'x' or 'X' / Beginning with 'A' or 'L'
+## PRINT LINES WHICH END WITH 'x' or 'X' / Beginning with 'A' or 'L'
 $ sed -n '/[xX]$/p' file   /   sed -n '/^A\|^L/p' file
 Some sed version does not accept | (or). Use two patterns instead.
 
-## Print every alternate line (skip one line):
+## PRINT EVERY ALTERNATE LINE (skip one line):
 $ sed  'n;d' file
 n command prints the current line, and immediately reads the next line into pattern space. d command deletes the line present in pattern space. In this way, alternate lines get printed.
 
 Similarly sed  'n;n;N;d' file print every two lines
 
-##Print lines ending with 'X' within a range of lines:
+##PRINT LINES ENDING WITH 'X' within a range of lines:
 $ sed -n '/Unix/,${/X$/p;}' file
 
 The range of lines being chosen are starting from the line containing the pattern 'Unix' till the end of the file($). The commands present within the braces are applied only for this range of lines. 
 Within this group, only the lines ending with 'x' are printed. 
 Refer this to know how to print a range of lines using sed from example 5 onwards.
 
-##Print range of lines excluding the starting and ending line of the range:
+##PRINT RANGE OF LINES EXCLUDING THE STARTING AND ENDING LINE OF THE RANGE:
 $ sed -n '/Solaris/,/HPUX/{//!p;}' file
 The range of lines chosen is from 'Solaris' to 'HPUX'. 
 The action within the braces is applied only for this range of lines. 
@@ -589,93 +589,93 @@ If no pattern is provided in pattern matching (//), the last matched pattern is 
 For eg, when the line containing the pattern 'Solaris' matches the range of lines and gets inside the curly braches, since no pattern is present, the last pattern (solaris) is matched. 
 Since this matching is true, it is not printed(!p), and the same becomes true for the last line in the group as well.
 
-## To print only the last field, OR remove all fields except the last field:
+## TO PRINT ONLY THE LAST FIELD, OR remove all fields except the last field:
 $ sed 's/.*,//' file
 
-##To print only the 1st field:
+##TO PRINT ONLY THE 1st field:
 $ sed 's/,.*//' file
 
-## Print /delete only the line containing 'Gmail'. In other words, to simulate the grep or grep -v command:
+## PRINT /delete only the line containing 'Gmail'. In other words, to simulate the grep or grep -v command:
 $ sed '/Gmail/p' file - For delete use /d instead of /p
 
-##Print lines till you encounter a specific pattern, say till 'Yahoo' is encountered.
+##PRINT LINES TILL YOU ENCOUNTER A SPECIFIC PATTERN, say till 'Yahoo' is encountered.
 $ sed  '/Yahoo/q' file  #q = quit if pattern / expression matched. Without -n option in sed, lines up to Yahoo are printed (default action of sed is to print).
 
-## To print the first 3 lines, or from lines 1 through 3:
+## TO PRINT THE FIRST 3 lines, or from lines 1 through 3:
 $ sed -n '1,3p' file #Alternative : sed '3q' file
 
-##Print the first line of the first file ('one.txt') and the last line of the last file ('three.txt').  
+##PRINT THE FIRST LINE OF THE FIRST FILE ('one.txt') and the last line of the last file ('three.txt').  
 Use '-s' to reverse this behavior.
 sed -n  '1p ; $p' one.txt two.txt three.txt
 PS: 'sed' treats multiple input files as one long stream.
 
-##Delete lines 30 to 35:
+##DELETE LINES 30 to 35:
 sed '30,35d' input.txt
 
-##Print lines 30 to 35:
+##PRINT LINES 30 to 35:
 sed -n '30,35p' input.txt
 
-##Print all input until a line starting with the word 'foo' is found.
+##PRINT ALL INPUT UNTIL A LINE STARTING WITH THE WORD 'foo' is found.
 sed '/^foo/q' input.txt
 ---------------------------------------------------------------------------------------------------------------------------------------
 SED:REPLACE 
-##To insert a new column at the end(last column) :
+##TO INSERT A NEW COLUMN AT THE END(last column) :
 $ sed 's/.*/&,A/' file
 The regex (.*) matches the entire line and replacing it with the line itself (& also \0 works) and the new field = letter A
 
-##To insert a new column in the beginning(1st column):
+##TO INSERT A NEW COLUMN IN THE BEGINNING(1st column):
 $ sed 's/.*/A,&/' file
 
-## To print the entire file contents:
+## TO PRINT THE ENTIRE FILE CONTENTS:
 $ sed '' file
 
-## Transileterate - tr simulation. Replace a set of chars with onether set of chars.
+## TRANSILETERATE - tr simulation. Replace a set of chars with onether set of chars.
 echo "All day  and all day" | sed 'y/aA/Bb/'
 >bll dBy  Bnd Bll dBy
 All character of a will replaced with B
 All characters of A will replaced with b
 In file usage makes global substitution by default.
 
-## Replace range of lines 2nd to 9th lines with the word 'hello':
+## REPLACE RANGE OF LINES 2nd to 9th lines with the word 'hello':
 sed '2,9c hello'
 
-##Replace the word 'hello' with 'world' only on line 144:
+##REPLACE THE WORD 'hello' with 'world' only on line 144:
 sed '144s/hello/world/' input.txt 
 
-##Replaces the word 'hello' with 'world' only in lines containing the word 'apple':
+##REPLACES THE WORD 'hello' with 'world' only in lines containing the word 'apple':
 sed '/apple/s/hello/world/' input.txt
 
-##Replaces the word 'hello' with 'world' only in lines NOT containing the word 'apple':
+##REPLACES THE WORD 'hello' with 'world' only in lines NOT containing the word 'apple':
 sed '/apple/!s/hello/world/' input.txt 
 
-##Replaces the word 'hello' with 'world' only in all lines excluding lines 4 to 17:
+##REPLACES THE WORD 'hello' with 'world' only in all lines excluding lines 4 to 17:
 sed '4,17!s/hello/world/' input.txt
 ---------------------------------------------------------------------------------------------------------------------------------------
 SED:INSERT 
-##Insert text to the end of file - after last line
+##INSERT TEXT TO THE END OF FILE - after last line
 sed -i -e "\$aTEXTTOEND" <filename>
 OR
 sed '$s/$/texttoend/'
 Tip: if instead $a you use i.e 4a text will append to 4th line
 
-##Insert text to the start of file - before first line
+##INSERT TEXT TO THE START OF FILE - before first line
 The command inserts a tag to the beginning of a file:
 
 sed -i "1s/^/<?php /" file
 sed "1i YourTextHere" or sed "1i $h" (with text in variable h)
 
-##Insert text after second line:
+##INSERT TEXT AFTER SECOND LINE:
 sed '2a hello' OR sed "2a $var" for text in variable - mind the double quotes
 Leading whitespaces after the 'a' command are ignored.  The text to add is read until the end of the line.
 
-## Insert text before second line:
+## INSERT TEXT BEFORE SECOND LINE:
 sed '2i "George"' a.txt
 
-##Insert text in line before / after pattern
+##INSERT TEXT IN LINE BEFORE / after pattern
 sed '/-----/i "George"' a.txt  OR sed '/-----/a "George"' a.txt
 i : insert text before pattern , a : insert after pattern
 
-## Inseert a pattern after the (same) pattern
+## INSEERT A PATTERN AFTER THE (same) pattern
 sed -i 's/\(Samsung\)/\1\n\1/' input.txt		#The parentheses capture the word, then \1 puts it back twice with a newline in between.
 
 ------------------------------------------------------------------------------------------------------------------------------
@@ -688,39 +688,39 @@ Latest version of this file (in English) is usually at:
    http://www.pement.org/sed/sed1line.txt
 
 SED:ONELINERS:FILE SPACING:
-## double space a file
+## DOUBLE SPACE A FILE
 sed G
 
-## double space a file which already has blank lines in it. Output file should contain no more than one blank line between lines of text.
+## DOUBLE SPACE A FILE WHICH ALREADY HAS BLANK LINES IN IT. Output file should contain no more than one blank line between lines of text.
 sed '/^$/d;G'
 
-## triple space a file
+## TRIPLE SPACE A FILE
 sed 'G;G'
 
-## undo double-spacing (assumes even-numbered lines are always blank)
+## UNDO DOUBLE-spacing (assumes even-numbered lines are always blank)
 sed 'n;d'
 
-## insert a blank line above every line which matches "regex"
+## INSERT A BLANK LINE ABOVE EVERY LINE WHICH MATCHES "regex"
 sed '/regex/{x;p;x;}'
 
-## insert a blank line below every line which matches "regex"
+## INSERT A BLANK LINE BELOW EVERY LINE WHICH MATCHES "regex"
 sed '/regex/G'
 
-## insert a blank line above and below every line which matches "regex"
+## INSERT A BLANK LINE ABOVE AND BELOW EVERY LINE WHICH MATCHES "regex"
 sed '/regex/{x;p;x;G;}'
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:NUMBERING:
 
-## number each line of a file (simple left alignment). Using a tab (see note on '\t' at end of file) instead of space will preserve margins.
+## NUMBER EACH LINE OF A FILE (simple left alignment). Using a tab (see note on '\t' at end of file) instead of space will preserve margins.
 sed = filename | sed 'N;s/\n/\t/'
 
-## number each line of a file (number on left, right-aligned)
+## NUMBER EACH LINE OF A FILE (number on left, right-aligned)
 sed = filename | sed 'N; s/^/     /; s/ *\(.\{6,\}\)\n/\1  /'
 
-## number each line of file, but only print numbers if line is not blank
+## NUMBER EACH LINE OF FILE, but only print numbers if line is not blank
 sed '/./=' filename | sed '/./N; s/\n/ /'
 
-## count lines (emulates "wc -l")
+## COUNT LINES (emulates "wc -l")
 sed -n '$='
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:TEXT CONVERSION AND SUBSTITUTION 
@@ -750,19 +750,19 @@ environment. Use "tr" instead.
 sed "s/\r//" infile >outfile         # UnxUtils sed v4.0.7 or higher
 tr -d \r <infile >outfile            # GNU tr version 1.22 or higher
 
-## delete leading whitespace (spaces, tabs) from front of each line aligns all text flush left
+## DELETE LEADING WHITESPACE (spaces, tabs) from front of each line aligns all text flush left
 sed 's/^[ \t]*//'                    # see note on '\t' at end of file
 
-## delete trailing whitespace (spaces, tabs) from end of each line
+## DELETE TRAILING WHITESPACE (spaces, tabs) from end of each line
 sed 's/[ \t]*$//'                    # see note on '\t' at end of file
 
-## delete BOTH leading and trailing whitespace from each line
+## DELETE BOTH LEADING AND TRAILING WHITESPACE FROM EACH LINE
 sed 's/^[ \t]*//;s/[ \t]*$//'
 
-## insert 5 blank spaces at beginning of each line (make page offset)
+## INSERT 5 blank spaces at beginning of each line (make page offset)
 sed 's/^/     /'
 
-## align all text flush right on a 79-column width
+## ALIGN ALL TEXT FLUSH RIGHT ON A 79-column width
 sed -e :a -e 's/^.\{1,78\}$/ &/;ta'  # set at 78 plus 1 space
 
 center all text in the middle of 79-column width. In method 1, spaces at the beginning of the line are significant, and trailing spaces are appended at the end of the line. 
@@ -770,232 +770,232 @@ In method 2, spaces at the beginning of the line are discarded in centering the 
 sed  -e :a -e 's/^.\{1,77\}$/ & /;ta'                     # method 1
 sed  -e :a -e 's/^.\{1,77\}$/ &/;ta' -e 's/\( *\)\1/\1/'  # method 2
 
-## substitute (find and replace) "foo" with "bar" on each line
+## SUBSTITUTE (find and replace) "foo" with "bar" on each line
 sed 's/foo/bar/'             # replaces only 1st instance in a line
 sed 's/foo/bar/4'            # replaces only 4th instance in a line
 sed 's/foo/bar/g'            # replaces ALL instances in a line
 sed 's/\(.*\)foo\(.*foo\)/\1bar\2/' # replace the next-to-last case
 sed 's/\(.*\)foo/\1bar/'            # replace only the last case
 
-## substitute "foo" with "bar" ONLY for lines which contain "baz"
+## SUBSTITUTE "foo" with "bar" ONLY for lines which contain "baz"
 sed '/baz/s/foo/bar/g'
 
-## substitute "foo" with "bar" EXCEPT for lines which contain "baz"
+## SUBSTITUTE "foo" with "bar" EXCEPT for lines which contain "baz"
 sed '/baz/!s/foo/bar/g'
 
-## change "scarlet" or "ruby" or "puce" to "red"
+## CHANGE "scarlet" or "ruby" or "puce" to "red"
 sed 's/scarlet/red/g;s/ruby/red/g;s/puce/red/g'   # most seds
 gsed 's/scarlet\|ruby\|puce/red/g'                # GNU sed only
 
-## reverse order of lines (emulates "tac")
-## bug/feature in HHsed v1.5 causes blank lines to be deleted
+## REVERSE ORDER OF LINES (emulates "tac")
+## BUG/feature in HHsed v1.5 causes blank lines to be deleted
 sed '1!G;h;$!d'               # method 1
 sed -n '1!G;h;$p'             # method 2
 
-## reverse each character on the line (emulates "rev")
+## REVERSE EACH CHARACTER ON THE LINE (emulates "rev")
 sed '/\n/!G;s/\(.\)\(.*\n\)/&\2\1/;//D;s/.//'
 
-## join pairs of lines side-by-side (like "paste")
+## JOIN PAIRS OF LINES SIDE-by-side (like "paste")
 sed '$!N;s/\n/ /'
 
-## if a line ends with a backslash, append the next line to it
+## IF A LINE ENDS WITH A BACKSLASH, append the next line to it
 sed -e :a -e '/\\$/N; s/\\\n//; ta'
 
-## if a line begins with an equal sign, append it to the previous line and replace the "=" with a single space
+## IF A LINE BEGINS WITH AN EQUAL SIGN, append it to the previous line and replace the "=" with a single space
 sed -e :a -e '$!N;s/\n=/ /;ta' -e 'P;D'
 
-## add commas to numeric strings, changing "1234567" to "1,234,567"
+## ADD COMMAS TO NUMERIC STRINGS, changing "1234567" to "1,234,567"
 gsed ':a;s/\B[0-9]\{3\}\>/,&/;ta'                     # GNU sed
 sed -e :a -e 's/\(.*[0-9]\)\([0-9]\{3\}\)/\1,\2/;ta'  # other seds
 
-## add commas to numbers with decimal points and minus signs (GNU sed)
+## ADD COMMAS TO NUMBERS WITH DECIMAL POINTS AND MINUS SIGNS (GNU sed)
 gsed -r ':a;s/(^|[^0-9.])([0-9]+)([0-9]{3})/\1\2,\3/g;ta'
 
-## add a blank line every 5 lines (after lines 5, 10, 15, 20, etc.)
+## ADD A BLANK LINE EVERY 5 lines (after lines 5, 10, 15, 20, etc.)
 gsed '0~5G'                  # GNU sed only
 sed 'n;n;n;n;G;'             # other seds
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SELECTIVE PRINTING OF CERTAIN LINES:
 
-## print first 10 lines of file (emulates behavior of "head")
+## PRINT FIRST 10 lines of file (emulates behavior of "head")
 sed 10q
 
-## print first line of file (emulates "head -1")
+## PRINT FIRST LINE OF FILE (emulates "head -1")
 sed q
 
-## print the last 10 lines of a file (emulates "tail")
+## PRINT THE LAST 10 lines of a file (emulates "tail")
 sed -e :a -e '$q;N;11,$D;ba'
 
-## print the last 2 lines of a file (emulates "tail -2")
+## PRINT THE LAST 2 lines of a file (emulates "tail -2")
 sed '$!N;$!D'
 
-## print the last line of a file (emulates "tail -1")
+## PRINT THE LAST LINE OF A FILE (emulates "tail -1")
 sed '$!d'                    # method 1
 sed -n '$p'                  # method 2
 
-## print the next-to-the-last line of a file
+## PRINT THE NEXT-to-the-last line of a file
 sed -e '$!{h;d;}' -e x              # for 1-line files, print blank line
 sed -e '1{$q;}' -e '$!{h;d;}' -e x  # for 1-line files, print the line
 sed -e '1{$d;}' -e '$!{h;d;}' -e x  # for 1-line files, print nothing
 
-## print only lines which match regular expression (emulates "grep")
+## PRINT ONLY LINES WHICH MATCH REGULAR EXPRESSION (emulates "grep")
 sed -n '/regexp/p'           # method 1
 sed '/regexp/!d'             # method 2
 
-## print only lines which do NOT match regexp (emulates "grep -v")
+## PRINT ONLY LINES WHICH DO NOT MATCH REGEXP (emulates "grep -v")
 sed -n '/regexp/!p'          # method 1, corresponds to above
 sed '/regexp/d'              # method 2, simpler syntax
 
-## print the line immediately before a regexp, but not the line containing the regexp
+## PRINT THE LINE IMMEDIATELY BEFORE A REGEXP, but not the line containing the regexp
 sed -n '/regexp/{g;1!p;};h'
 
-## print the line immediately after a regexp, but not the line containing the regexp
+## PRINT THE LINE IMMEDIATELY AFTER A REGEXP, but not the line containing the regexp
 sed -n '/regexp/{n;p;}'
 
-## print 1 line of context before and after regexp, with line number indicating where the regexp occurred (similar to "grep -A1 -B1")
+## PRINT 1 line of context before and after regexp, with line number indicating where the regexp occurred (similar to "grep -A1 -B1")
 sed -n -e '/regexp/{=;x;1!p;g;$!N;p;D;}' -e h
 
-## grep for AAA and BBB and CCC (in any order)
+## GREP FOR AAA AND BBB AND CCC (in any order)
 sed '/AAA/!d; /BBB/!d; /CCC/!d'
 
-## grep for AAA and BBB and CCC (in that order)
+## GREP FOR AAA AND BBB AND CCC (in that order)
 sed '/AAA.*BBB.*CCC/!d'
 
-## grep for AAA or BBB or CCC (emulates "egrep")
+## GREP FOR AAA OR BBB OR CCC (emulates "egrep")
 sed -e '/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d    # most seds
 gsed '/AAA\|BBB\|CCC/!d'                        # GNU sed only
 
-## print paragraph if it contains AAA (blank lines separate paragraphs)
+## PRINT PARAGRAPH IF IT CONTAINS AAA (blank lines separate paragraphs)
 HHsed v1.5 must insert a 'G;' after 'x;' in the next 3 scripts below
 sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;'
 
-## print paragraph if it contains AAA and BBB and CCC (in any order)
+## PRINT PARAGRAPH IF IT CONTAINS AAA AND BBB AND CCC (in any order)
 sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;/BBB/!d;/CCC/!d'
 
-## print paragraph if it contains AAA or BBB or CCC
+## PRINT PARAGRAPH IF IT CONTAINS AAA OR BBB OR CCC
 sed -e '/./{H;$!d;}' -e 'x;/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d
 gsed '/./{H;$!d;};x;/AAA\|BBB\|CCC/b;d'         # GNU sed only
 
-## print only lines of 65 characters or longer
+## PRINT ONLY LINES OF 65 characters or longer
 sed -n '/^.\{65\}/p'
 
-## print only lines of less than 65 characters
+## PRINT ONLY LINES OF LESS THAN 65 characters
 sed -n '/^.\{65\}/!p'        # method 1, corresponds to above
 sed '/^.\{65\}/d'            # method 2, simpler syntax
 
-## print section of file from regular expression to end of file
+## PRINT SECTION OF FILE FROM REGULAR EXPRESSION TO END OF FILE
 sed -n '/regexp/,$p'
 
-## print section of file based on line numbers (lines 8-12, inclusive)
+## PRINT SECTION OF FILE BASED ON LINE NUMBERS (lines 8-12, inclusive)
 sed -n '8,12p'               # method 1
 sed '8,12!d'                 # method 2
 
-## print line number 52
+## PRINT LINE NUMBER 52
 sed -n '52p'                 # method 1
 sed '52!d'                   # method 2
 sed '52q;d'                  # method 3, efficient on large files
 
-## beginning at line 3, print every 7th line
+## BEGINNING AT LINE 3, print every 7th line
 gsed -n '3~7p'               # GNU sed only
 sed -n '3,${p;n;n;n;n;n;n;}' # other seds
 
-## print section of file between two regular expressions (inclusive)
+## PRINT SECTION OF FILE BETWEEN TWO REGULAR EXPRESSIONS (inclusive)
 sed -n '/Iowa/,/Montana/p'             # case sensitive
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SELECTIVE DELETION OF CERTAIN LINES:
 
-## print all of file EXCEPT section between 2 regular expressions
+## PRINT ALL OF FILE EXCEPT SECTION BETWEEN 2 regular expressions
 sed '/Iowa/,/Montana/d'
 
-## delete duplicate, consecutive lines from a file (emulates "uniq").
+## DELETE DUPLICATE, consecutive lines from a file (emulates "uniq").
 First line in a set of duplicate lines is kept, rest are deleted.
 sed '$!N; /^\(.*\)\n\1$/!P; D'
 
-## delete duplicate, nonconsecutive lines from a file. Beware not to overflow the buffer size of the hold space, or else use GNU sed.
+## DELETE DUPLICATE, nonconsecutive lines from a file. Beware not to overflow the buffer size of the hold space, or else use GNU sed.
 sed -n 'G; s/\n/&&/; /^\([ -~]*\n\).*\n\1/d; s/\n//; h; P'
 
-## delete all lines except duplicate lines (emulates "uniq -d").
+## DELETE ALL LINES EXCEPT DUPLICATE LINES (emulates "uniq -d").
 sed '$!N; s/^\(.*\)\n\1$/\1/; t; D'
 
-## delete the first 10 lines of a file
+## DELETE THE FIRST 10 lines of a file
 sed '1,10d'
 
-## delete the last line of a file
+## DELETE THE LAST LINE OF A FILE
 sed '$d'
 
-## delete the last 2 lines of a file
+## DELETE THE LAST 2 lines of a file
 sed 'N;$!P;$!D;$d'
 
-## delete the last 10 lines of a file
+## DELETE THE LAST 10 lines of a file
 sed -e :a -e '$d;N;2,10ba' -e 'P;D'   # method 1
 sed -n -e :a -e '1,10!{P;N;D;};N;ba'  # method 2
 
-## delete every 8th line
+## DELETE EVERY 8th line
 gsed '0~8d'                           # GNU sed only
 sed 'n;n;n;n;n;n;n;d;'                # other seds
 
-## delete lines matching pattern
+## DELETE LINES MATCHING PATTERN
 sed '/pattern/d'
 
-## delete ALL blank lines from a file (same as "grep '.' ")
-## removes new lines between lines actually
+## DELETE ALL BLANK LINES FROM A FILE (same as "grep '.' ")
+## REMOVES NEW LINES BETWEEN LINES ACTUALLY
 sed '/^$/d'                           # method 1
 sed '/./!d'                           # method 2
 
-## delete all CONSECUTIVE blank lines from file except the first; also
-## deletes all blank lines from top and end of file (emulates "cat -s")
+## DELETE ALL CONSECUTIVE BLANK LINES FROM FILE EXCEPT THE FIRST; also
+## DELETES ALL BLANK LINES FROM TOP AND END OF FILE (emulates "cat -s")
 sed '/./,/^$/!d'          # method 1, allows 0 blanks at top, 1 at EOF
 sed '/^$/N;/\n$/D'        # method 2, allows 1 blank at top, 0 at EOF
 
-## delete all CONSECUTIVE blank lines from file except the first 2:
+## DELETE ALL CONSECUTIVE BLANK LINES FROM FILE EXCEPT THE FIRST 2:
 sed '/^$/N;/\n$/N;//D'
 
-## delete all leading blank lines at top of file
+## DELETE ALL LEADING BLANK LINES AT TOP OF FILE
 sed '/./,$!d'
 
-## delete all trailing blank lines at end of file
+## DELETE ALL TRAILING BLANK LINES AT END OF FILE
 sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'  # works on all seds
 sed -e :a -e '/^\n*$/N;/\n$/ba'        # ditto, except for gsed 3.02.*
 
-## delete the last line of each paragraph
+## DELETE THE LAST LINE OF EACH PARAGRAPH
 sed -n '/^$/{p;h;};/./{x;/./p;}'
 
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:SPECIAL APPLICATIONS:
-## get Usenet/e-mail message header
+## GET USENET/e-mail message header
 sed '/^$/q'                # deletes everything after first blank line
 
-## get Usenet/e-mail message body
+## GET USENET/e-mail message body
 sed '1,/^$/d'              # deletes everything up to first blank line
 
-## get Subject header, but remove initial "Subject: " portion
+## GET SUBJECT HEADER, but remove initial "Subject: " portion
 sed '/^Subject: */!d; s///;q'
 
-## get return address header
+## GET RETURN ADDRESS HEADER
 sed '/^Reply-To:/q; /^From:/h; /./d;g;q'
 
-## parse out the address proper. Pulls out the e-mail address by itself from the 1-line return address header (see preceding script)
+## PARSE OUT THE ADDRESS PROPER. Pulls out the e-mail address by itself from the 1-line return address header (see preceding script)
 sed 's/ *(.*)//; s/>.*//; s/.*[:<] *//'
 
-## add a leading angle bracket and space to each line (quote a message)
+## ADD A LEADING ANGLE BRACKET AND SPACE TO EACH LINE (quote a message)
 sed 's/^/> /'
 
-## delete leading angle bracket & space from each line (unquote a message)
+## DELETE LEADING ANGLE BRACKET & space from each line (unquote a message)
 sed 's/^> //'
 
-## remove most HTML tags (accommodates multiple-line tags)
+## REMOVE MOST HTML TAGS (accommodates multiple-line tags)
 sed -e :a -e 's/<[^>]*>//g;/</N;//ba'
 
-## extract multi-part uuencoded binaries, removing extraneous header info, so that only the uuencoded portion remains. 
+## EXTRACT MULTI-part uuencoded binaries, removing extraneous header info, so that only the uuencoded portion remains. 
 Files passed to sed must be passed in the proper order. Version 1 can be entered from the command line; version 2 can be made into an executable Unix shell script. (Modified from a script by Rahul Dhesi.)
 sed '/^end/,/^begin/d' file1 file2 ... fileX | uudecode   # vers. 1
 sed '/^end/,/^begin/d' "$@" | uudecode                    # vers. 2
 
-## sort paragraphs of file alphabetically. Paragraphs are separated by blank lines. GNU sed uses \v for vertical tab, or any unique char will do.
+## SORT PARAGRAPHS OF FILE ALPHABETICALLY. Paragraphs are separated by blank lines. GNU sed uses \v for vertical tab, or any unique char will do.
 sed '/./{H;d;};x;s/\n/={NL}=/g' file | sort | sed '1s/={NL}=//;s/={NL}=/\n/g'
 gsed '/./{H;d};x;y/\n/\v/' file | sort | sed '1s/\v//;y/\v/\n/'
 
-## zip up each .TXT file individually, deleting the source file and setting the name of each .ZIP file to the basename of the .TXT file
+## ZIP UP EACH .TXT file individually, deleting the source file and setting the name of each .ZIP file to the basename of the .TXT file
 (under DOS: the "dir /b" switch returns bare filenames in all caps).
 echo @echo off >zipup.bat
 dir /b *.txt | sed "s/^\(.*\)\.TXT/pkzip -mo \1 \1.TXT/" >>zipup.bat
@@ -1067,7 +1067,7 @@ Thus:
 
 If you have any additional scripts to contribute or if you find errors in this document, please send e-mail to the compiler. Indicate the version of sed you used, the operating system it was compiled for, and the nature of the problem. 
 
-## To qualify as a one-liner, the command line must be 65 characters or less. 
+## TO QUALIFY AS A ONE-liner, the command line must be 65 characters or less. 
 
 Various scripts in this file have been written or contributed by:
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -1093,7 +1093,7 @@ Sed regex in second group (.*?), ignores the non-greedy operator '?' and keeps p
 
 Perl on the other hand handles correctly the non-greedy ? operator and second groups matches all chars between 1st and 3rd group.
 
-##Domain Name Extraction with sed - Workarounds
+##DOMAIN NAME EXTRACTION WITH SED - Workarounds
 Since you can not do this sed+regex groups 
 One work around to extract the domain name from sting $a is to use sed transliretate and subsitute.
 Transiletarate the slash '/' to a new line or even to null which is more correct.
@@ -1122,13 +1122,13 @@ echo "$a" |sed "y|/|\x00|;s/.*\x00\x00//;s/\x00.*//" |hexit
 .B Domain Name Extraction Alternative Workaround
 sed "s#.*//##;s#/.*##" 		#Deletes from start up to // and then from first slash / up to end=keeps the middle
 
-##More about perl
+##MORE ABOUT PERL
 Actually the above perl example uses the s/pattern/replace format of sed , which works in exactly the same way as sed.
 
 perl -pe 's#n#N#' <<<"$a" -----> http://uNix.stackexchange.com/questions/ask		#a simple replacement, using a different delimiter
 perl -pe 's#n#N#g' <<<"$a" ----> http://uNix.stackexchaNge.com/questioNs/ask		#g = global replacements,like sed /g
 
-## BSD Replacements exercise
+## BSD REPLACEMENTS EXERCISE
 Each line should be terminated with \r\n , but lines only with \n must be concatenated with previous line
 Made easily with PERL, while non-gnu sed would have million of warnings:
 

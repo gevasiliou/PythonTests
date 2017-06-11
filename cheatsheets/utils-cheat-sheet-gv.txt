@@ -20,12 +20,12 @@ groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
 
-##Working Command:
+##WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
 
-##man and groff/troff require special handling.
+##MAN AND GROFF/troff require special handling.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
 Line feeds in man pages can be done by inserting .br between two lines.
 More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
@@ -98,23 +98,23 @@ $ curl -o- "https://github.com/fhcrc/seqmagick/archive/0.6.1.tar.gz"
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:GREP
-##Exclude from one file entries that exist in another file: grep -Fxvf file2.txt file1.txt
+##EXCLUDE FROM ONE FILE ENTRIES THAT EXIST IN ANOTHER FILE: grep -Fxvf file2.txt file1.txt
 -F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
 -x = line grep to ensure matching whole lines 
 -v = reverse the grep = display not matching lines
 -f = load words/lines from file file2.txt
 file1.txt = the file to be grepped 
 
-##multi grep with reverse operation : grep -v -e "pattern" -e "pattern"
+##MULTI GREP WITH REVERSE OPERATION : grep -v -e "pattern" -e "pattern"
 grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
 
-##GREP all files for two patterns (and operation)
+##GREP ALL FILES FOR TWO PATTERNS (and operation)
 http://stackoverflow.com/questions/41896604/linux-listing-files-that-contain-several-words#41897079
 grep -ERl 'toto' | xargs -r grep 'tata'
 Tip : xargs -r ensures that second grep will not run in null / non matched data.
 Alternative : awk '/pattern1/&&/pattern2/'
 
-##GREP a file for two patterns with AGREP by Chazelas:
+##GREP A FILE FOR TWO PATTERNS WITH AGREP BY CHAZELAS:
 http://unix.stackexchange.com/questions/55359/how-to-run-grep-with-multiple-and-patterns/55391#55391
 agrep 'pattern1;pattern2' file (can also accept pattern3;patternN)
 grep -X '.*pattern1.*&.*pattern2.*'
@@ -134,14 +134,14 @@ instead of grep |cut combination you can use awk
 grep -E 'Label 3 \|Label 5' |cut -d' ' -f3 <==> awk '/Label 3/ { print $3 } /Label 5/ { print $3 }'
 PS: AWK can directly print to a file using { print $3 >>"F3.csv" } 
 
-##Grep an html link from a stream
+##GREP AN HTML LINK FROM A STREAM
 stream=...\f4 HYPERLINK "httjps://archive.org/randomURL1?fref=grp_mmbr_list"}...
 grep -Eo '\"https?:\/\/[^"]+\"' testsample.txt 
 
-##mGrep all character before the first whitespace using grep?
+##MGREP ALL CHARACTER BEFORE THE FIRST WHITESPACE USING GREP?
 grep -oP "^\S+" filename.txt
 
-##Grep using a file with patterns.
+##GREP USING A FILE WITH PATTERNS.
 Generally you can import patterns by a file using the -f switch.
 Also you can feed the -f with process substitution to feed grep with manipulated patters grep -f <(cut -f2 patterns.txt) a.txt
 In more tricky usage you can use the same file as file pattern in order to achieve complex grep results.
@@ -151,13 +151,13 @@ This will search the file a.txt for a second column having a text ok and will ge
 Then these names will be the main pattern to grep and exclude them from the whole,same file
 Obviously this is usefull if on the master file a.txt not all the names have ok , but indirectly even if one ok is present for a user, you want to exclude this user from all the results.
 
-##Grep Combined with find
+##GREP COMBINED WITH FIND
 find . -type f -exec grep pattern {} +
 grep -r pattern /the/dir
 find . -type f -print0 | xargs -r0 grep pattern
 LC_ALL=C grep -r pattern .
 
-##Grep multiple files in parallel:
+##GREP MULTIPLE FILES IN PARALLEL:
 http://unix.stackexchange.com/questions/197352/how-to-start-multi-threaded-grep-in-terminal
 find . -type f -print0  | xargs -0 -P number_of_processes grep mypattern > output #Use find to get the files, invocating xargs in parallel mode.
 find . -type f | parallel -j+1 grep mypattern #use the parallel utility
@@ -165,12 +165,12 @@ find ./appsfiles/ -type f | parallel -k -j200% -n 2000 -m grep -H -n -e "Exec=" 
 PS1: by timing above find |parallel vs a single grep yeld same results on 5000 desktop files.
 PS2: This gives 50% MORE time than single grep : time find ./appsfiles/* -type f -print0 | xargs -r0 -P2 grep -H -n -e "Exec=" -e "Comment" -e "Generic" -e "Name" {}
 
-##grep regex or
+##GREP REGEX OR
 grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
 match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
 can be used as -Eow to match words in a line
 
-##GREP look ahead method:
+##GREP LOOK AHEAD METHOD:
 \K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
 
 $ cat /var/log/messages.1 |grep  'sda:'
@@ -207,7 +207,7 @@ Instead of -f option you can use cut to isolate part of text based on chars with
 cut -c9-10 file ==> gets characters from 9 to 10. similary you can get c1-5 to get only the 5 first chars of EACH file line.
 Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
 
-##Insert dash in string
+##INSERT DASH IN STRING
  String: #  1  2016-05-31-1003-57S._BKSR_003_CM6
  $ cut --output-delimiter='-' -c7-19,20-21 file.txt
  Output : 2016-05-31-10-03
@@ -218,14 +218,14 @@ Also see this:  cut -c1,9-10 a.txt ==> gets 1st char and then gets chars 9-10
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:DIFF
-## Comparing files and variables:
+## COMPARING FILES AND VARIABLES:
 diff can compare two files line by line.
 You can also trick use diff like this to compare two variables line by line : diff <(echo "$a") <(echo "$b") or diff <(cat <<<"$a") <(cat <<<"$b")
 
-##Compare grep result in a nice visual way:
+##COMPARE GREP RESULT IN A NICE VISUAL WAY:
 diff -u  <(cat a.txt) <(grep "tar*" a.txt) #or -y
 
-##Remove the < char from output and keep only the differet items:
+##REMOVE THE < char from output and keep only the differet items:
 diff --changed-group-format='%<' --unchanged-group-format='' c.txt cc.txt
 i.e c.txt 
 1
@@ -235,11 +235,11 @@ cc.txt
 1
 2
 
-##Using diff with process substitution 
+##USING DIFF WITH PROCESS SUBSTITUTION 
 diff -y <(man grep) <(man agrep) #compares man page of grep to manpage of agrep using -y = side by side
 PS: normal usage of diff is diff -y file1 file2.
 
-## DIFF Tricks:
+## DIFF TRICKS:
 If you are in doubt about the results of a command like an extra grep you can compare results of previous command with new command like this:
 diff -w -y <(apt search manpages |grep "/" |cut -d"/" -f1 |grep -E '^[a-zA-Z0-9]') <(apt search manpages |grep "/" |cut -d"/" -f1)
 Differences will be noted with > symbol and then you can manually verify that the results of the new command (extra grep) is as expected.
@@ -260,7 +260,7 @@ join -a1 -o 1.2     - /dev/null # print the second field
 join -a1 -o 1.2,1.1 - /dev/null # reorder the first two fields
 See man join and also info join for better explanation
 
-##interesting options of Join: 
+##INTERESTING OPTIONS OF JOIN: 
 -a1 and/or -a2 : print non matched lines of file 1 and/or 2
 -e EMPTY: replace missing lines EMPTY
 -t char: Use char as delimiter
@@ -270,14 +270,14 @@ See man join and also info join for better explanation
 --header : Treat 1st line as header
 Tip: Combining join with LC_ALL=C in front, speeds up almost 40%.
 
-##Join two Files based on common fields:
+##JOIN TWO FILES BASED ON COMMON FIELDS:
 http://unix.stackexchange.com/questions/342814/combine-two-csv-file-based-on-condition#342839
 join -o 0,1.2,1.3,2.3 <(sort A.csv) <(sort B.csv)
 -o: Obey Format - specify a particular format. 
 -o 0 : Stands for the merged /common field and is different than 1.1 or 2.1 who stand for file 1 field 1 and file 2 field 2.
 If file2 has a line that is not present on file 1, then using -o 1.1 will print an empty space in that field.
 
-##Another join example: 
+##ANOTHER JOIN EXAMPLE: 
 Join file b.txt and bb.txt. Preserve the contents of file b.txt and insert new contents from file bb.txt
 If file bb.txt has similar parameters with different values, preserve the parameters of the original file b.txt - do not update
 
@@ -298,7 +298,7 @@ parameterB=1
 parameterC=0
 parameterD=0
 
-##More Join Examples
+##MORE JOIN EXAMPLES
 File1            |File2
 -----------------|------------
 Category ID      |Purchase ID
@@ -311,7 +311,7 @@ join -j 2 -o 2.1 2.2 1.1 File1 File2
 Join on field 2 of both files (alternatively you can use -1.2 -2.2)
 -o controls the output 
 
-##Join CSV files (combine)
+##JOIN CSV FILES (combine)
 http://unix.stackexchange.com/questions/345051/concatenate-csv-with-some-shared-columns
 $ join --nocheck-order -eNaN -13 -22 -t$'\t' -o 1.1 1.2 1.3 1.4 1.5 2.3 2.4 b.txt c.txt
 
@@ -360,7 +360,7 @@ by bash and a few other shells), you may instead use printf to send the addition
 printf '%s + %s\n' "$a" "$b" | bc
 c="$( printf '%s + %s\n' "$a" "$b" | bc )"
 
-##Tricky printf + bc usage to sum up ascii values:
+##TRICKY PRINTF + bc usage to sum up ascii values:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
 $ bc <<<"${sumA:0:-1}"    ---->> 1114
@@ -456,7 +456,7 @@ drwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/abc
 crwxrwxr-x+  - user1 hive          0 2017-01-31 16:55 /user/anc/xyz
 First sorted with k8 then with k1. abc folders go on top
 
-##Sort Excluding Header Row
+##SORT EXCLUDING HEADER ROW
 This is a common problem, since sort does not have a built switch to exlude header row.
 Workarounds:
 head -n1 file && sort <(tail -n+2 file) or head -n1 && tail -n+2 file |sort
@@ -469,11 +469,11 @@ function body { IFS= read -r header;printf '%s\n' "$header";"$@";};ps -o pid,com
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:DATE
-##Convert Date to Epoch. Date must be in format 14/Feb/2017:11:31:20
+##CONVERT DATE TO EPOCH. Date must be in format 14/Feb/2017:11:31:20
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 I have a smart function in bash profile for this that can work also as a pipe.
 
-##Delete lines from log file older than 30 days 
+##DELETE LINES FROM LOG FILE OLDER THAN 30 days 
 For a file with lines like 
 2017/04/04 15:53:22 [11487] building file list)
 
@@ -483,24 +483,24 @@ grep -v "$(date '+%Y/%m/%d' -d '30 days ago')*" logfile
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GIT
 https://git-scm.com/book/tr/v2/Git-Basics-Viewing-the-Commit-History
-##Basic commands
+##BASIC COMMANDS
 git add .
 git commit -m "message"
 git push
 
 git pull to retrieve new files from git
 
-##git history
+##GIT HISTORY
 git log : all the commits will be shown. Most recent goes on top.
 git log -p -2 : gets only the last 2 commits
 git log --stat : statistics about commits, like file changed . Also can be combined with --name-only.
 
-##git show files in commit
+##GIT SHOW FILES IN COMMIT
 git show : see the last commit in details
 git show --name-only : lists only file names changed
 git show commitid :  Details about a particular commit id. Can be combined with --name-only. Commit id can be retrieved by git log
 
-##git store password
+##GIT STORE PASSWORD
 https://git-scm.com/docs/git-credential-store
 git config credential.helper store
 On the next push , your given user name and password will be stored.

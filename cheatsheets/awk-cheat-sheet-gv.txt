@@ -12,19 +12,19 @@ http://web.mit.edu/gnu/doc/html/gawk_5.html
 awk xml parsing: http://awk.freeshell.org/XMLScraping
 
 AWK:CHEAT SHEET TXT 2 MANPAGE FORMATTING
-##Read this cheat file with man pages:
+##READ THIS CHEAT FILE WITH MAN PAGES:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
 man formatting: man 7 man & man 7 man-pages
 groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
 
-##Working Command:
+##WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
 
-##man and groff/troff require special handling.
+##MAN AND GROFF/troff require special handling.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
 Line feeds in man pages can be done by inserting .br between two lines.
 More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
@@ -48,7 +48,7 @@ Instead you can just once AWK the file and do whatever nanipulation you need ins
 For complicated data manipulation is usual to have a seperate file full with AWK code and then call AWK with -f flag (=from file) to apply the code in your file/input
 Remember the 48H log example that you need to see events logged in any minute of the 48H time frame. The use of loop and grep per minute leads to 3000 greps of the file, while you can do it with one AWK access.
 
-##AWK Reserved Words
+##AWK RESERVED WORDS
 awk '/pattern/ {action}' file 		# Execute action for matched 'pattern' condition 
 $0 									# Reference current record line
 FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
@@ -78,7 +78,7 @@ nextfile					    # Stops the processing of current file1 and goes to file2 , sta
 while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
 do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
 
-##AWK Builtin Functions
+##AWK BUILTIN FUNCTIONS
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 http://awk.freeshell.org/Backreferences   #apply to gensub,etc
 
@@ -195,7 +195,7 @@ Split will split the $0 in pieces according to a customized regex, and will stor
 in a separate "seps" array.
 Most important if you combine split with printf you can rebuild the record accuratelly = identical to Input Record $0
 
-##SPLIT Test:
+##SPLIT TEST:
 
 $ echo "$b"
 alert tcp any any -> any any (msg: "this is a "dummy" rule (to test) the rule"; flow:to server; sid:1233; rev:1; no case; content: "nothing";)
@@ -239,7 +239,7 @@ awk '{print match($0,"-cd",a)}{for (i in a) print i,",",a[i]}' <<<"abc-cde-fgh"
 0Rlength , 3  #print of the array
 0 , -cd       #print of the array.Index 0,value "-cd"
 
-##Advanced match usage as a regexp mapping tool
+##ADVANCED MATCH USAGE AS A REGEXP MAPPING TOOL
 match can return different start,length and array indexes for more matches at once. 
 Also can return in array elements each regex group with a separate index that can be used in whole awk program
 awk 'match($0,/(.*)-...-(.*)/,a){for (i in a) print i,a[i]}' <<<"abc-cde-fgh"  #
@@ -254,11 +254,11 @@ awk 'match($0,/(.*)-...-(.*)/,a){for (i in a) print i,a[i]}' <<<"abc-cde-fgh"  #
 2 fgh			#a[2] : contains the second regex group
 
 
-##Another Match Example with partial regex matching
+##ANOTHER MATCH EXAMPLE WITH PARTIAL REGEX MATCHING
 awk '{print match($0,/-(...)-/,a)}{for (i in a) print i,a[i]}' <<<"abc-cde-fgh"     #a[0]="-cde-" and "a[1]=cde"
 
 
-##REGEX Non greedy operator equivalent by Chazelas:
+##REGEX NON GREEDY OPERATOR EQUIVALENT BY CHAZELAS:
 http://unix.stackexchange.com/questions/49601/how-to-reduce-the-greed-of-a-regular-expression-in-awk
 Perl (.*?)(;) = match everything up to first ;  <===> (.[^;]*)(;)  or (.[^;]*;) if you want ; to be included in the match
 
@@ -300,16 +300,16 @@ echo "Field1|Field2|Field3|Field4|Field5|Field6"  |awk -F"|" '{gsub($1FS$2FS$3FS
 For a fixed known number of columns , you can always do 'print $4,$5,$6'
 For a known/fixed number of columns you can also delete completely a middle column with reconstructuring $0 like : awk '$0=$1FS$2FS$4'
 
-##The correct way to remove columns/field as advised by Ed Morton
+##THE CORRECT WAY TO REMOVE COLUMNS/field as advised by Ed Morton
 http://stackoverflow.com/questions/15361632/delete-a-column-with-awk-or-sed
 echo "Field1|Field2|Field4_1|Field4    |Field5|Field6"  |awk -F"|" '{sub(/([^|]+\|){3}/,"")}1'  #Field4    |Field5|Field6
 
-##Removing Columns from the end:
+##REMOVING COLUMNS FROM THE END:
 awk 'NF--' 		#Removes last column
 awk 'NF-=2'		#Removes last two columns
 awk 'NF=$3'		#Removes all columns after column 3
 
-## Force output to respect OFS when printing of $0
+## FORCE OUTPUT TO RESPECT OFS WHEN PRINTING OF $0
 Normally OFS is not affecting the print of $0. if you just {print} the input line will be printed as it is, ignoring OFS.
 You can workaround this either by awk -F"," 'gensub(FS,OFS,"G",$0)' OFS=: <<<"one,two,three"
 or more cleverly: 
@@ -318,7 +318,7 @@ The statement $1=$1 will reconstruct the $0 according to OFS. If you just print 
 
 PS: printing fields i.e {print $1,$2) will be done by respecting OFS.
 
-##Conditional Expressions Clarification
+##CONDITIONAL EXPRESSIONS CLARIFICATION
 Mind that the compact awk usage allows awk 'condition{action}' without if - then
 Action can be ommited; in this case the default action (print $0) is performed. 
 On the condition side we can have either boolean condition check (true /false) or arithmetical checks (i.e awk 'NR>10')
@@ -351,7 +351,7 @@ It is more challenging to print duplicates along with their NR in which they fou
 
 Another alternative would be in END to print array elements a[$0] with a value >1. But for big files this should be inefficient.
 
-##Transform Header only line to header + field 1 +field2
+##TRANSFORM HEADER ONLY LINE TO HEADER + field 1 +field2
 http://stackoverflow.com/questions/42669125/how-to-convert-heading-of-file-content-into-column-using-awk/42672530#42672530
 
 My way: awk 'BEGIN{FS=OFS="|"}NF==1{h=$0;next}$0=h OFS $0' file1 #Fallpit: No blank line is printed between headers change
@@ -437,25 +437,25 @@ It seems that RS accepts OR in regex in format RS=",|\n" but ORS accepts regex b
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
-##Print lines if specific columns have same value
+##PRINT LINES IF SPECIFIC COLUMNS HAVE SAME VALUE
 awk -F ':' '$3==$4' file.txt -->  Prints only when $3 equals to $4. print can be ommited since it is the default action.
 echo "Geo 123 bg ty 123" |awk -F" " '$2==$5' -> Geo 123 bg ty 123  # Print lines in which field 2 = field 5, otherwise returns nothing.
 echo "Geo 123 bg ty 123 Geo" |awk -F" " '$1==$6' --> Geo 123 bg ty 123 Geo # Print if field1=filed6 , meaning Geo=Geo. Works even with strings!!!
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:EXTERNAL VARIABLES
-##Import variables
+##IMPORT VARIABLES
 You can import a shell variable by awk -v awkvar=$shellvar (i.e awk -v dt=$date).
 Inside awk you need to refer to awkvraible without $.
 Each external var requires it's own -v declaration.
 
-##Export AWK variables
+##EXPORT AWK VARIABLES
 $ mkfifo fifo
 $ echo MYSCRIPT_RESULT=1 | awk '{ print > "fifo" }' &
 $ IFS== read var value < fifo
 $ eval export $var=$value
 
-##Export Alternatives
+##EXPORT ALTERNATIVES
 If you need to catch let's say one var you can also do it like shellvar=$(awk...). Whatever awk prints will be stored in $() pipe buffer.
 For more vars, you could also use a temp file , printing inside va="value"\n and then you could source the file in shell scripts.
 
@@ -472,7 +472,7 @@ Print up to EOF after a matched string: awk '/matched string/,0' a.txt
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH MULTIPLE DELIMITERS
 
-##Basic Test
+##BASIC TEST
 Input: --- 22:16050075:A:G 16050075 A G
 $ awk -F"[ :]" 'BEGIN{OFS="\t";print "$1","$2","$3","$4","$5","$6","$7","$8"}{print $1,$2,$3,$4,$5,$6,$7,$8}' file
 $1      $2      $3              $4      $5      $6              $7       $8
@@ -482,7 +482,7 @@ $1      $2      $3              $4      $5      $6              $7       $8
 $1        $2         $3  $4     
 --- 22    16050075   A   G 16050075 A G 
 
-##Examples
+##EXAMPLES
 $ awk -F"name=|ear=|xml=|/>" '{print $2} {print $4}' a.txt >b.txt
 Input: <app name="UAT/ECC/Global/MES/1206/MRP-S23"   ear="UAT/ECC/Global/MES/1206/MRP-S23.ear" xml="UAT/ECC/Glal/ME/120/MRP-  S23.xml"/>
 Output: 
@@ -491,7 +491,7 @@ UAT/ECC/Glal/ME/120/MRP-  S23.xml
 Test: awk -F"name=|ear=|xml=|/>" '{print "Field1="$1} {print "Field2="$2} {print "Field3="$3} {print "Field4="$4}' a.txt
 Mind that separate {} create a newline to out file.
 
-##Another example of using as field seperator (F) anything (a char, a word, two delimiters, etc).
+##ANOTHER EXAMPLE OF USING AS FIELD SEPERATOR (F) anything (a char, a word, two delimiters, etc).
 Compared to cut : with cut you allowed to use only one delimiter (-d), or to define a chars range using -c (i.e -c1-10 : seperate file in character 1-10 , whatever this char is).
 echo "This is something new for us" |cut -c1-12 --> This is some # You can not combine -c with -f or with another -c, but you can print a range -c1-10, or particular chars using -c1,10,12
 
@@ -803,19 +803,19 @@ $ sed -f <(echo "${a[@]}") a.txt
 AWK:ARRAY CREATION:
 https://www.gnu.org/software/gawk/manual/html_node/Reference-to-Elements.html#Reference-to-Elements
 
-## These next 2 entries are not one-line scripts, but the technique is so handy that it merits inclusion here.
+## THESE NEXT 2 entries are not one-line scripts, but the technique is so handy that it merits inclusion here.
 
-## create an array named "month", indexed by numbers, so that month[1] is 'Jan', month[2] is 'Feb', month[3] is 'Mar' and so on.
+## CREATE AN ARRAY NAMED "month", indexed by numbers, so that month[1] is 'Jan', month[2] is 'Feb', month[3] is 'Mar' and so on.
 split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", month, " ")
 
-## create an array named "mdigit", indexed by strings, so that mdigit["Jan"] is 1, mdigit["Feb"] is 2, etc. Requires "month" array
+## CREATE AN ARRAY NAMED "mdigit", indexed by strings, so that mdigit["Jan"] is 1, mdigit["Feb"] is 2, etc. Requires "month" array
 for (i=1; i<=12; i++) mdigit[month[i]] = i
 
-##Check if a var belongs in array with IN operator
+##CHECK IF A VAR BELONGS IN ARRAY WITH IN OPERATOR
 $ awk -F'|' 'NR==FNR{check[$0];next} $2 in check' file2 file1
 Mind that IN operator actually looks in array indexes and not values.
 
-##Array Testing
+##ARRAY TESTING
 awk 'BEGIN{a["one"]=1;a["two"]=2;a["two"]++;a["three"]="tria";!a["three"]++;a["four"]++;!a["three"]++;a["three"]++; \
 for (i in a) print i,a[i]; if (2 in a) {print "2 found"} else {print "2 not found"}; \
 if ("two" in a) print "two found";print a["one"],a["two"],a["three"],a["four"];print !a["one"],!a["two"],!a["three"],!a["four"]}'
@@ -831,7 +831,7 @@ two found
 
 Mind that the declaration a["three"]="tria" has been overwritten by a["three"]++ which assigns a new numeric value
 
-##Array Chalenge : Identify how 'a[$0]++ or '!a[$0]++' works 
+##ARRAY CHALENGE : Identify how 'a[$0]++ or '!a[$0]++' works 
 'a[$0]++' prints only duplicate lines (up to two-not more) anywhere in file (no sorting required)
 '!a[$0]++' prints only unique lines, anywhere in file (no sorting required)
 There is a kind of explanation here: https://unix.stackexchange.com/questions/159695/how-does-awk-a0-work/159697
@@ -946,7 +946,7 @@ To understand how awk boolean evaluation works in above codes, you can also appl
 Only first time a[$0] will be zero = > reverted => true = print. All the next times will be -1,-2 but since it is not zero is evaluated as true / valid by awk = no print due to negation mark
 
 
-##More tricky usages
+##MORE TRICKY USAGES
 .B awk '!a[$0]++' <==> '(a[$0]++ == 0)'  # Bothe emulate uniq
 Prints also unique lines. In this alt syntax, it seems that parenthesis is evaluated arithmetically.
 For every line that a[$0]++ is evaluated as null=zero then print it because the whole parenthesis will return true.
@@ -976,7 +976,7 @@ This will print all lines that they do repeat more than two times. First occuren
 https://stackoverflow.com/questions/42239179/fastest-way-to-find-lines-of-a-text-file-from-another-larger-text-file-in-bash
 (grep -F -f file1 file2 but restricted to field2 of file2)
 
-##Inian Method with classic check of field in hash
+##INIAN METHOD WITH CLASSIC CHECK OF FIELD IN HASH
 .B awk 'FNR==NR{hash[$1]; next}$2 in hash' file1.txt FS='|' file2.txt
 
 file1 has patterns only. file2 has three fields in format field1|field2|field3. 
@@ -988,12 +988,12 @@ When next finishes the file1, we go to file2. We check if field 2 ($2) bellongs 
 If this condition returns true, awk default action is performed (print $0 of file2)
 This is equivalent to if ($2 in hash) {print $0}, but written in a smart compact way.
 
-##Alternative grep method by GV
+##ALTERNATIVE GREP METHOD BY GV
 awk 'NR==FNR{a[$0]=1;next}a[$0]' patterns bigfile #replace $0 with $2
 This will print all the lines of big file that a[$0] of big file has a regular -different than zero - value
 If a[$0] of bigfile is null that means that a[$0] was not found in patterns = array element not created
 
-##grep -v method by GV
+##GREP -v method by GV
 awk 'NR==FNR{a[$0]=1;next}!a[$0]' patterns bigfile #replace $0 with $2
 All lines in bigfile not found in patterns file will return false which will be reverted to true & printed
 
@@ -1011,7 +1011,7 @@ But if you delete a[$2] after print, the second time that same pattern is found 
 Unless is to be done something like this (not tested)
 awk 'NR==FNR{a[$0]=1;next}a[$0]?print:delete a[$0]' patterns bigfile #If a[$0] returns true print $0, else delete a[$0]
 
-##Alternative classic grep not restricted to checking field 2:
+##ALTERNATIVE CLASSIC GREP NOT RESTRICTED TO CHECKING FIELD 2:
 awk 'FNR==NR{hash[$1]; next}{for (i in hash) if (index($0,i)) {print; break}}' file1.txt FS='|' file2.txt
 Same logic as before (file1 loaded in hash array) but the whole line of file2 ($0) is compared to hash array indexes
 This will allow matches even if pattern of file1 has been found at any field of file2 (1-2-3), not only in field 2 as before.
@@ -1121,7 +1121,7 @@ NaN 1   2   NaN 1   2   1
 AWK:UNDERLINE HEADERS by Gilles
 http://unix.stackexchange.com/questions/349790/how-to-insert-a-new-line-after-the-first-line-in-a-file-that-is-similar-to-it/349885?noredirect=1#comment619305_349885
 
-##Add dashes bellow each field of 1st line (not space nor tab) 
+##ADD DASHES BELLOW EACH FIELD OF 1st line (not space nor tab) 
 awk '{print} NR==1 {gsub(/[^\t ]/, "-"); print}'	
 Incredibly smart: 
 The initial {print} prints whatever record comes in awk <==> print $0.
@@ -1129,7 +1129,7 @@ If NR==1 = 1st line, global replacement of all chars that is not a tab nor a spa
 You don't need to calculate any lenght etc. You just replace the whole $0 with dashes , excluding tabs and spaces (delimiters)
 When the second line comes in, initial {print} will print $0, but the replacement gsub will be skipped since NR >1
 
-##Variations
+##VARIATIONS
 awk '{print} NR==1 {gsub(/[^ \t]/, "-"); while (sub(/- -/, "---")) {}; print}'  #Tricky:WIll insert a long dashed line bellow 1st line.
 awk '{print} NR==1 {gsub(/[^\t]/, "-"); print}'			#Add a dash bellow every non tab char of line1.
 
@@ -1307,7 +1307,7 @@ echo 1 | awk '{ printf("%02d\n", $1) }' 		# Prints numbers with leading zero. If
 -------------------------------------------------------------------------------------------------------------------------------------
 
 AWK:READ FROM 2 FILES
-##Basics
+##BASICS
 Consider the following two files:
 
 # cat file1
@@ -1334,7 +1334,7 @@ NR: 6 FNR: 3 fname: file2 Field1: f2d9
 
 This is why this usage is frequent: awk 'NR==FNR {file1[$1]=$0; next} {$1=file[$1]; print}' file1 file2
 
-##Combine files with no common keys:
+##COMBINE FILES WITH NO COMMON KEYS:
 You just need a way to store the records/lines from first file to memory, in order to be printed later during processing of file2..
 
 awk 'NR==FNR {c++;a[c]=$1;next}{d++;print $1,a[d]}' file2 file1
@@ -1365,7 +1365,7 @@ The trick is that when first file2 finishes and second file in the row (file1) i
 This will break if file1 and file2 have a different number of rows.
 Break means that an invalid call to a[] will print nothing - no error is given (i.e try {print $0,a[500]})
 
-##Combine Files with a common key
+##COMBINE FILES WITH A COMMON KEY
 This is the same , but in a smarter way you store first file in array with key that equals to the common entry:
 Join of bellow files in common field (5 of file 1 - 1 of file 2)
 # cat file1
@@ -1388,7 +1388,7 @@ So when the second file1 is read, the call to a[$5] = a[f2d1] = the stored value
 ----------------------------------------------------------------------------------------------------------------------------------
 AWK:REGEX MATCH AND REPLACE on XML Files
 
-##XML Replace No1
+##XML REPLACE NO1
 http://stackoverflow.com/questions/42307534/get-attributes-of-a-parent-tag-in-xml/42322481#42322481
 Consider a file with various xml entries like:
 <tile x="765" y="491" z="7">
@@ -1412,7 +1412,7 @@ This is divided in four groups:
 
 By using parenthesis you can group your regex; You can later select which part of regex you need to call (we call 3rd group = id="2114")
 
-##XML Replace No2 - https://goo.gl/DL2hBl
+##XML REPLACE NO2 - https://goo.gl/DL2hBl
 $ cat file
 <word key="ACTIVE" group="Service application" value="testvalue1"/>
 <word key="ACTIVE" group="Service application" value="testvalue2"/>
@@ -1481,7 +1481,7 @@ awk -v file1="20161201.csv" 'function incfile(file,days) {match(file,/(....)(..)
 
 awk '{max=($2>max)?$2:max};END{print max}' 20161203.csv 		#Prints the max value of $2 inside csv file
 
-##Compare two consecutives files respecting that second file must be no more than +1 day of the first file
+##COMPARE TWO CONSECUTIVES FILES RESPECTING THAT SECOND FILE MUST BE NO MORE THAN +1 day of the first file
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42450786#42450786
 
     awk -v file1="20161201.csv" \
@@ -1527,7 +1527,7 @@ http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-diff
     }'                                                                  #Finished
 
 
-##Alternatives: The last valid file is kept to be compared with the next consecutive file even if it is >1 day long.
+##ALTERNATIVES: The last valid file is kept to be compared with the next consecutive file even if it is >1 day long.
 
 awk -v file1="20161201.csv" \
 'BEGIN{days=1;nextday=1;while (days<15){{split(file1,fn,"");year=fn[1]fn[2]fn[3]fn[4]; \

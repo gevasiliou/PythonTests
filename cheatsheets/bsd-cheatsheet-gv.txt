@@ -7,10 +7,10 @@ https://www.freebsd.org/doc/handbook/x11-wm.html
 https://forums.freebsd.org/threads/7634/
 https://wiki.lxde.org/en/FreeBSD
 
-##Installation of BSD 
+##INSTALLATION OF BSD 
 Get the appropriate ISO image. I used netinstall image.
 
-##Updating repositories
+##UPDATING REPOSITORIES
 The very first time:
 portsnap fetch
 portsnap extract
@@ -18,11 +18,11 @@ portsnap update
 
 All the other times , skip the "extract" step.
 
-##Install a FreeBSD pkg
+##INSTALL A FREEBSD PKG
 pkg install XXX
 pkg info -q XXX 					#Get info about package
 
-##Installation of XFCE 4.12 or LXDE
+##INSTALLATION OF XFCE 4.12 or LXDE
 
 .B 1. pkg install xinit xorg xdm nano
 pkg install xfce xfce4-goodies
@@ -51,7 +51,7 @@ In XFCE installation login remains in terminal, and after login xfce is not auto
 
 .B 5. Reboot
  
-##Install virtual box guest additions
+##INSTALL VIRTUAL BOX GUEST ADDITIONS
 https://www.freebsd.org/doc/handbook/virtualization-guest-virtualbox.html
 
 .B pkg install virtualbox-ose-additions
@@ -61,7 +61,7 @@ vboxguest_enable="YES"
 vboxservice_enable="YES"
  
 
-## Enable VT-x Intel Virtualization Technology.
+## ENABLE VT-x Intel Virtualization Technology.
 In order to use 64bit OS under VBox, you need to enable virtualization technology in bios.
 In some cases , VBox does not show options for 64bit OS but only 32bit OS are available on the list.
 In some other cases VBOX displays both 32 and 64bit OSes, but complains about bios disabled VT-x , and VM is not starting at all.
@@ -80,7 +80,7 @@ After power off / power on i was ok in HP620.
 
 Important : When installing on Virtual Box, make sure that you have enabled serial ports since by default serial ports are disabled
 
-##FREE BSD Shell
+##FREE BSD SHELL
 The default login shell is csh.
 By installing xfce , bash will also be installed.
 If not you can install it manually using pkg install bash
@@ -92,10 +92,10 @@ Remember that you need to type bash in order to load bash, since by default csh 
 
 BSD:OPENBSD 6
 
-##Instalation
+##INSTALATION
 I succeed to complete the installation on virtual box using iso image install60.iso
 
-##Installing XFCE4 in OpenBSD
+##INSTALLING XFCE4 in OpenBSD
 http://www.gabsoftware.com/tips/tutorial-installing-xfce-on-openbsd-4-8/ (quite outdated)
 
 I just run pkg_add nano xfce and it kind of worked.
@@ -109,12 +109,12 @@ After this , xfce was working (manually) fine.
 
 I also tried xfwm4 --replace , but xfwm4 was still not auto loading.
 
-##Package Manager
+##PACKAGE MANAGER
 http://www.openbsd.org/faq/faq15.html
 
 Get info about packages
 pkg_info -Q xfce
 Will give you a list of all xfce packages in repos , with "installed" marking where appropriate.
 
-##ManPages
+##MANPAGES
 http://man.openbsd.org/
