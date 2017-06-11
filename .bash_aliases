@@ -11,6 +11,7 @@
 
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
+alias cd-='cd $OLDPWD'
 alias cls='clear'
 alias cp='cp -i'
 alias mv='mv -i'
@@ -18,7 +19,7 @@ alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap'
 #alias lsdir='ls -l -d */'
-alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs
+alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade'
@@ -28,7 +29,7 @@ alias printfunctions='set |grep -A2 -e "()"'
 
 alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w40 -An -t x1c -v'
-alias man="LESS='+Gg' man"
+alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
