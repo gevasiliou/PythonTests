@@ -49,6 +49,15 @@ function teee {
 	echo "$v"; 
 	}
 
+deepest () { 
+#This one goes to the deepest directory starting from current directory - cwd
+cd "$(find $PWD -type d -printf '%d:%p\0' |sort -z -t: -r |awk -F: -v RS='\0' -v ORS='\n' 'NR==1{print $2}')"; 
+# You can print the top 3 of deepest dirs using something like
+# find $PWD -type d -printf '%d:%p\0' |sort -z -t: -r |awk -F: -v RS='\0' -v ORS='\n' 'NR<=3' 
+# %d represents the depth of each dir found (starting from pwd)
+# %p prints the name of the result
+# You can go back to cwd using cd $OLDPWD
+	}
 
 
 function lsnum { 
