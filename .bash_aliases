@@ -27,6 +27,10 @@ alias printfunctions='set |grep -A2 -e "()"'
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
 #lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
 
+alias lsm='ls -l $@ && cd' #Strange, but cd keeps the $@ and it works.
+#Tricks : ls -l /dir && cd $_ does the same job
+
+
 alias weather='curl wttr.in/Μαρούσι'
 alias hexit='od -w40 -An -t x1c -v'
 alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
