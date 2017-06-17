@@ -1957,7 +1957,8 @@ Also mind that control + L in some terminals is capable to achieve "redraw"
 Other people claim that solve the "terminal auto resize" problem by using export PROMPT_COMMAND="resize &>/dev/null" at .bashrc
 
 ------------------------------------------------------------------------------------------------------------------------
-BASH:SHELL OPTIONS - GLOB SPECIFIC OPTIONS
+BASH:SHELL OPTIONS - GLOB OPTIONS
+http://mywiki.wooledge.org/glob
 http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
 https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
 http://stackoverflow.com/questions/42969978/how-to-preserve-directory-structure-but-delete-some-of-its-contents-using-bas#comment73036677_42969978
@@ -1968,11 +1969,12 @@ When we need to iterate through folders, we can enable bash globstar option usin
 Also BASH has some more options that affect globbing:
 
 According to man bash:
+.B pathname expansion : usually enabled by default and expands * to files i.e echo f* . Enabling: set +f / Disabling: set -f
 .B globstar
    If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories.
    If the pattern is followed by a ‘/’, only directories and subdirectories match.
 .B dotglob
-   If set, Bash includes filenames beginning with a ‘.’ in the results of filename expansion.
+   If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
 .B extglob
    If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
    Extended globbing Pattern Matching as described by the bash man page:
@@ -1991,6 +1993,8 @@ According to man bash:
      $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
      $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead using ! -name)
 
+
+.B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
 .B Using extglob with parameter expansion:
 shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
 
