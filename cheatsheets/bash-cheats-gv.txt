@@ -66,6 +66,21 @@ See the difference:
 
 $ LC_ALL=en_US sort <<< $'a\nb\nA\nB'  --> a A b B   #printed in separated lines - concatanated here for space saving
 $ LC_ALL=C sort <<< $'a\nb\nA\nB'      --> A B a b   #printed in separated lines - concatanated here for space saving
+
+##LOCALE AND GLOBING
+The temp use of locale like 
+LC_ALL=C echo [A-Z]*
+is not working.
+
+In locales different than C or POSIX , the glob [A-Z] includes also small letters (AaBbCc, etc)
+As a result a simple echo [A-Z]* will include also files starting from small letters a,b,c etc
+
+Workarounds to limit glob results in capital letters only:
+
+Workaround1 : Change Locale in a sub shell to avoid changing locale in main shell : $ ( LC_ALL=C;echo [A-Z]*; ) #main shell locale remains intact
+Workaround2 : Enable globasciiranges bash option using shopt -s globasciiranges which applies C locale to globbing.
+Workaround3 : use [ABCDEGHIJKLMNOPQRSTUVWXYZ]*
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:TERMINAL COLORS
 https://github.com/aureliojargas/txt2regex/blob/master/txt2regex.sh
