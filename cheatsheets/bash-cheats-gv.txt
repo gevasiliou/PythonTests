@@ -1958,8 +1958,6 @@ shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are 
 Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
 see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
 
-
-
 ##BASH DEBUGGING
 Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
 
