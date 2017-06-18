@@ -1844,7 +1844,7 @@ You can offcourse use tac instead of cat. But in tac lines of here-doc will be i
 This is what tac does = reverse of cat.
 
 ##CREATE SCRIPT FROM SCRIPT
-Also see http://linuxcommand.org/wss0030.php
+http://linuxcommand.org/wss0030.php
 
 #!/bin/bash 
 This is master script
@@ -1898,14 +1898,19 @@ EOF
 )
 
 ------------------------------------------------------------------------------------------------------------------------
-BASH:OPTIONS  
-Globbing ,bash filename expansion, bash options ans shopt options
+BASH:OPTIONS  (Globbing ,bash filename expansion, bash options ans shopt options)
 Bash Debugging: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_02_03.html#sect_02_03_02
 The Set Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 The Shopt Builtin: https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html#The-Shopt-Builtin
 Shell Expansion: http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_03_04.html
-Globbing: http://www.tldp.org/LDP/abs/html/globbingref.html
 
+http://mywiki.wooledge.org/glob
+http://www.tldp.org/LDP/abs/html/globbingref.html
+http://www.linuxjournal.com/content/bash-extended-globbing
+http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
+http://stackoverflow.com/questions/42969978/how-to-preserve-directory-structure-but-delete-some-of-its-contents-using-bas#comment73036677_42969978
+
+##PATHNAME EXPANSION
 Bash has by default enabled filename expansion.
 This means that a simple echo a* will print all the files starting with a (if any).
 
@@ -1920,8 +1925,45 @@ You can disable this behavior using "set -f" , but this command will also disabl
 
 Or you can just run apt list "a*" and this will work fine.
 
+##MORE GLOB OPTIONS
+.B globstar
+   If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories in full depth
+   If the pattern is followed by a ‘/’, only directories and subdirectories match.
+.B dotglob
+   If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
+.B extglob
+   If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
+   Extended globbing Pattern Matching as described by the bash man page:
+     ?(pattern-list)   Matches zero or one occurrence of the given patterns
+     *(pattern-list)   Matches zero or more occurrences of the given patterns
+     +(pattern-list)   Matches one or more occurrences of the given patterns
+     @(pattern-list)   Matches one of the given patterns
+     !(pattern-list)   Matches anything except one of the given patterns
+   Most common use of extglob is using rm !(file1|file2|file*) in which rm will ignore the files given in the ( ) list.
+   
+   To use extglob you have to always use parenthesis : i.e array=(!(file*)) will fill the array with all the files but not file1,file2, etc
+   
+   You can echo the rm command first, and if extglob is enabled and working even with echo the files to be deleted will be printed.
+   More extglob examples:
+     $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
+     $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
+     $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead using ! -name)
+
+
+.B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
+
+.B Using extglob with parameter expansion:
+shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
+
+Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
+see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
+
+
+
+##BASH DEBUGGING
 Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
 
+##PRINTING / IDENTIFYING OPTIONS STATE
 To print all bash set parameters run #echo $SHELLOPTS && echo $-
 Typical Output: 
 braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
@@ -1955,51 +1997,6 @@ For permanent activation apply shopt -s checkwinsize in your ~/.bashrc.
 
 Also mind that control + L in some terminals is capable to achieve "redraw" 
 Other people claim that solve the "terminal auto resize" problem by using export PROMPT_COMMAND="resize &>/dev/null" at .bashrc
-
-------------------------------------------------------------------------------------------------------------------------
-BASH:SHELL OPTIONS - GLOB OPTIONS
-http://mywiki.wooledge.org/glob
-http://stackoverflow.com/questions/42835962/deleting-all-files-except-ones-mentioned-in-config-file/42839794#42839794
-https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
-http://stackoverflow.com/questions/42969978/how-to-preserve-directory-structure-but-delete-some-of-its-contents-using-bas#comment73036677_42969978
-
-.B extglob usage: http://www.linuxjournal.com/content/bash-extended-globbing
-
-When we need to iterate through folders, we can enable bash globstar option using shopt -s globstar
-Also BASH has some more options that affect globbing:
-
-According to man bash:
-.B pathname expansion : usually enabled by default and expands * to files i.e echo f* . Enabling: set +f / Disabling: set -f
-.B globstar
-   If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories.
-   If the pattern is followed by a ‘/’, only directories and subdirectories match.
-.B dotglob
-   If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
-.B extglob
-   If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
-   Extended globbing Pattern Matching as described by the bash man page:
-     ?(pattern-list)   Matches zero or one occurrence of the given patterns
-     *(pattern-list)   Matches zero or more occurrences of the given patterns
-     +(pattern-list)   Matches one or more occurrences of the given patterns
-     @(pattern-list)   Matches one of the given patterns
-     !(pattern-list)   Matches anything except one of the given patterns
-   Most common use of extglob is using rm !(file1|file2|file*) in which rm will ignore the files given in the ( ) list.
-   
-   To use extglob you have to always use parenthesis : i.e array=(!(file*)) will fill the array with all the files but not file1,file2, etc
-   
-   You can echo the rm command first, and if extglob is enabled and working even with echo the files to be deleted will be printed.
-   More extglob examples:
-     $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
-     $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
-     $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead using ! -name)
-
-
-.B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
-.B Using extglob with parameter expansion:
-shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
-
-Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
-see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
 
 ##GITIGNORE EXAMPLE - ITERATING THROUGH FILES IGNORING FILES/PATTERNS STORED IN A FILE (GITIGNORE CASE)
 shopt -s globstar
