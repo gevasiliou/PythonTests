@@ -1955,7 +1955,28 @@ Or you can just run apt list "a*" and this will work fine.
 
 .B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
   $ GLOBIGNORE=*.zip:*.iso
-  $ rm -v *  ==> Removes all files except ones defined in GLOBIGNORE
+  $ rm -iv *  ==> Removes all files except patterns / files defined in GLOBIGNORE
+
+  $ cat file2
+  10.jpg
+  11.jpg
+  12.jpg
+
+  $ ls *.jpg
+  10.jpg  11.jpg  12.jpg  13.jpg
+
+  $ echo $GLOBIGNORE #==> prints nothing = unset
+
+  $ GLOBIGNORE=$(tr '\n' ':' <file2 )
+  $ echo $GLOBIGNORE
+  10.jpg:11.jpg:12.jpg:
+
+  $ ls *.jpg #Similarilly , rm *.jpg will remove only 13.jpg - whatever is included in GLOBIGNORE is ignored.
+  13.jpg
+
+  Tip: You can also apply patterns in GLOBIGNORE like *.jpg or a*.jpg, etc
+
+.B GLOBIGNORE ALTERNATIVE WITH FIND: find /dir/ -type f -not -name 'PATTERN' -delete
 
 .B Using extglob with parameter expansion:
 shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//

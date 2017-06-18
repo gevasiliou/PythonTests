@@ -568,8 +568,8 @@ Options:
 -t = verbose . Print each command before execution
 -p = prompt for user confirmation before running each command. Requires -t.
 -r = no run if empty args. Usefull in double greps
--d'\n' = delimiter
-
+-d'\n' = args delimiter
+-a = read arguments from file instead of stdin
 
 Various usage examples:
 
@@ -577,11 +577,11 @@ tr '\n' '\0' < file | xargs -0 mkdir
 xargs -d '\n' mkdir -p < file        #GNU Xargs with -d (delimiter) set to \n. Usefull if the file contains dirname with spaces.
 grep -r 'someword' |xargs -r grep otherword   #chained greps - xargs -r filters out empty data (second grep does not called if empty result is passed by first grep)
 find . -type f -name '*.txt' -print0 |xargs -0 somecommand_here
-
+xargs -a list.txt -d'\n' rm    --> removes all the files in a list.txt file. Alternative : rm $(<list.txt)
 
 echo -e "foo bar\ndoo dar" | xargs -n 2 mv  --> -n = max number of args per command. This results to mv foo bar and mv doo dar - tested and working ok
 echo "mbar bar\nmbaz baz" | xargs mv  --> This is wrong usage. It is translated by xargs like mv mbar bar mbaz baz
-echo "mbar bar\nmbaz baz" | xargs -l -t mv  -->  Not tested by me but by other. Results to mv mbar bar and mv mbaz baz
+echo "mbar bar\nmbaz baz" | xargs -l -t mv  -->  Not tested by me but by others. Results to mv mbar bar and mv mbaz baz
 
 using xargs to operate over files is not suggested.
 For example in above xargs mv, we need to provide the files in a special way (i.e quoted) to handle files with special chars 
