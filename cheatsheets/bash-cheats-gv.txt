@@ -1932,6 +1932,7 @@ Or you can just run apt list "a*" and this will work fine.
 .B dotglob
    If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
 .B extglob
+   https://www.cyberciti.biz/faq/linux-bash-delete-all-files-in-directory-except-few/
    If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
    Extended globbing Pattern Matching as described by the bash man page:
      ?(pattern-list)   Matches zero or one occurrence of the given patterns
@@ -1948,9 +1949,13 @@ Or you can just run apt list "a*" and this will work fine.
      $ ls +(ab|def)*+(.jpg|.gif)   ==> equivalent to ls ab*.jpg ab*.gif def*.jpg def*.gif
      $ ls ab+(2|3).jpg             ==> This can not be done with regular globbing. Matches ab2.jpg, ab3.jpg, ab2222.jpg, ab333.jpg, etc.
      $ ls !(*.jpg|*.gif)           ==> list all files except those ending in jpg and gif. Impossible with normal globbing (we would use find intead using ! -name)
-
+     $ rm  !(*.zip|*.iso)          ==> Remove all files except .zip and .iso extension
+     $ rm  !(file1|file2)          ==> Similarilly
+     $ rm /Users/vivek/!(*.zip|*.iso|*.mp3)    ==> Similarilly
 
 .B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
+  $ GLOBIGNORE=*.zip:*.iso
+  $ rm -v *  ==> Removes all files except ones defined in GLOBIGNORE
 
 .B Using extglob with parameter expansion:
 shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
