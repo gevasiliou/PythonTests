@@ -129,6 +129,25 @@ PS2: readarray can also be used like <<<"$var"
 
 This also works: IFS=$'\n' read -d '' -r -a lines < file
 
+Tip: IFS can accept multiple separators using [..] --> IFS=[$'\n'","] for new line and comma separator
+
+.B READ CSV FILE TO ARRAY
+$ cat file6
+Dog,cat
+shark,rabbit
+mouse,bird
+whale,dolphin
+$ IFS=$'\n,' arr=( $(<file6) );declare -p arr
+declare -a arr=([0]="Dog" [1]="cat" [2]="shark" [3]="rabbit" [4]="mouse" [5]="bird" [6]="whale" [7]="dolphin")
+
+Alternative:
+IFS=$'\n,' read -d '' -ra array < file
+IFS=[$'\n'","] arr=( $(<file6) );declare -p arr
+
+The trick is to use IFS to work for two delimiters (new line and comma). With only comma you get a not correct output:
+$ IFS=$',' arr=( $(<file6) );declare -p arr
+declare -a arr=([0]="Dog" [1]=$'cat\nshark' [2]=$'rabbit\nmouse' [3]=$'bird\nwhale' [4]="dolphin")
+
 ------------------------------------------------------------------------------------------------------------------------
 ##READ LINES FROM FILE NULL SEPARATED (AND NOT NEW LINES)
 http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
@@ -364,7 +383,7 @@ Zawinski, Jamie, 204
 
 $ IFS=$'\n' read -d '' -a arr1 <file11; declare -p arr1   
 #Above Works even in bash 4.3! Strange to see that - i was expecting to break in -d '' option of read
-#Without -d '' onyle the first line of the file is read
+#Without -d '' only the first line of the file is read
 [0]="Ubuntu, 120, 143, 154" 
 [1]="Yggdrasil, 144, 170-171" 
 [2]="Yood, Charles, 6" 
