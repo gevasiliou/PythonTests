@@ -1929,8 +1929,10 @@ Or you can just run apt list "a*" and this will work fine.
 .B globstar
    If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories in full depth
    If the pattern is followed by a ‘/’, only directories and subdirectories match.
+
 .B dotglob
    If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
+
 .B extglob
    https://www.cyberciti.biz/faq/linux-bash-delete-all-files-in-directory-except-few/
    If set, the extended pattern matching features described above (see Pattern Matching) are enabled.
@@ -1953,6 +1955,28 @@ Or you can just run apt list "a*" and this will work fine.
      $ rm  !(file1|file2)          ==> Similarilly
      $ rm /Users/vivek/!(*.zip|*.iso|*.mp3)    ==> Similarilly
 
+.B extglob: Remove all files except/ignore ones defined in a file
+https://stackoverflow.com/questions/44620045/shell-script-to-delete-whose-files-names-are-not-in-a-text-file/44620431#44620431
+$ ls                            --> 10.jpg  11.jpg  12.jpeg  13.jpg  14.jpg  15.jpg  16.jpg  a.txt
+$ shopt -s extglob
+$ cat a.txt
+10.jpg
+11.jpg
+12.jpeg
+$ tr '\n' '|' < a.txt           --> 10.jpg|11.jpg|12.jpeg| - Mind the trailing | - it does not create problems though.
+$ ls !(`tr '\n' '|' < a.txt`)   --> 13.jpg  14.jpg  15.jpg  16.jpg  a.txt
+In last ls , the files present in a.txt are missing (10-11-12.jpg) . 
+Similarilly you can remove all the files excluding ones inside !(...) using 
+rm -iv !(`tr '\n' '|' < a.txt`)  # rm -i = interactive - ask for confirmation , rm -v = verborse - print command executed
+
+.B extglob with parameter expansion:
+shopt -s extglob
+a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o or e are replaced by 1) - applies to all matches due to ${a//
+
+Bug: extglob parameter expansion with negation !( )
+Using !(patt1|patt2) is not operating in parameter expansion; needs to be !(*patt1*|*patt2*) which still misworks. 
+See: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
+
 .B GLOBIGNORE variable (not shopt): allows you to specify patterns a glob should not match. For example $ GLOBIGNORE=.:.. will not match . and .. in echo .*
   $ GLOBIGNORE=*.zip:*.iso
   $ rm -iv *  ==> Removes all files except patterns / files defined in GLOBIGNORE
@@ -1962,27 +1986,16 @@ Or you can just run apt list "a*" and this will work fine.
   11.jpg
   12.jpg
 
-  $ ls *.jpg
-  10.jpg  11.jpg  12.jpg  13.jpg
-
-  $ echo $GLOBIGNORE #==> prints nothing = unset
-
+  $ ls *.jpg             #==>  10.jpg  11.jpg  12.jpg  13.jpg
+  $ echo $GLOBIGNORE     #==> prints nothing = unset
   $ GLOBIGNORE=$(tr '\n' ':' <file2 )
-  $ echo $GLOBIGNORE
-  10.jpg:11.jpg:12.jpg:
+  $ echo $GLOBIGNORE     #==> 10.jpg:11.jpg:12.jpg:
+  $ ls *.jpg             #==> 13.jpg
+  
+  Similarilly , rm *.jpg will remove only 13.jpg - whatever is included in GLOBIGNORE is ignored.
+  You can also apply patterns in GLOBIGNORE like *.jpg or a*.jpg, etc
 
-  $ ls *.jpg #Similarilly , rm *.jpg will remove only 13.jpg - whatever is included in GLOBIGNORE is ignored.
-  13.jpg
-
-  Tip: You can also apply patterns in GLOBIGNORE like *.jpg or a*.jpg, etc
-
-.B GLOBIGNORE ALTERNATIVE WITH FIND: find /dir/ -type f -not -name 'PATTERN' -delete
-
-.B Using extglob with parameter expansion:
-shopt -s extglob;a="some text";echo "${a//+(o|e)/1}" --> s1m1 t1xt (o and e are replaced by 1) - applies to all matches due to ${a//
-
-Bug: The use of !(patt1|patt2) is not operating in parameter expansion , but needs to be !(*patt1*|*patt2*) which still misworks. 
-see: https://stackoverflow.com/questions/44242049/how-does-negative-matching-work-in-extglob-in-parameter-expansion
+.B GLOBIGNORE PATTERNS ALTERNATIVE WITH FIND: find /dir/ -type f -not -name 'PATTERN' -delete
 
 ##BASH DEBUGGING
 Most used debuging commands: set -fvx (f for filename expansion disable, v for verbose, x for xtrace
