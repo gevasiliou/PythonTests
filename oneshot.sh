@@ -1,13 +1,14 @@
 #!/bin/bash
-echo "Shell Level=$SHLVL- Parameter par=$par"
+echo "SHLVL=$SHLVL";echo "BASH_SUBSHELL=$BASH_SUBSHELL";echo "Parameter par=$par"
 echo "Just an echo - nothing more to be done here"
 
 echo "You run this script as USER=$USER"
 echo "Your HOME dir is $HOME"
 echo "Your PATH is $PATH"
 echo "Parameter received="$#
-[[ -z $1 ]] && echo "parameter 1 is emty"
-echo "parameter 2 is $2"
+[[ -z $1 ]] && echo "parameter 1 is empty" ||  echo "Parameter 1 is: $1"
+echo "parameter 2 is: $2"
+echo "Parameter 3 is: $3"
 printf "%d args:" $# && printf " <%s>" "$@"  && echo
 #demonstrating word splitting - Test with ./oneshot.sh hello world "how are you?"  --> <hello> <world> <how are you?>
 #More word splitting examples:
