@@ -1046,6 +1046,38 @@ awk '{sub(/www/,"foo")}1' or awk 'sub(/www/,"foo");1' --> Output will be all the
 awk '{sub(/1/,"foo")}1' or awk 'sub(/1/,"foo");1' --> Output will be all the lines; replaced (like line1 = linefoo) or not. 
 .B Thus this command with the use of ;1 is directly equivalent to sed 's/pattern/replacement' 
 
+##AWK:MULTIDIMENSIONAL 2D ARRAY
+https://www.gnu.org/software/gawk/manual/html_node/Arrays-of-Arrays.html
+
+$ cat file1.txt
+denovo23    HNS.2_9729  HNS.2_20867
+denovo28    HNS.6_14948 HNS.6_148211    HNS.11_327521
+denovo62    HNS.7_468475    HNS.7_631780
+denovo897   WNA.2_58410 WNA.1_175071
+denovo621   WNA.2_20180 WNA.2_294219
+denovo622   CES.1_24310 HNS.6_26786
+
+$ awk '{a[$1][$2]=$3}END{for (i in a) {for (k in a[i]) print i,"-",k,":",a[i][k]}}' file1.txt
+denovo28 - HNS.6_14948 : HNS.6_148211
+denovo897 - WNA.2_58410 : WNA.1_175071
+denovo23 - HNS.2_9729 : HNS.2_20867
+denovo621 - WNA.2_20180 : WNA.2_294219
+denovo622 - CES.1_24310 : HNS.6_26786
+denovo62 - HNS.7_468475 : HNS.7_631780
+
+$ awk '{a[$1][$2]=$3}END{for (i in a) print i}' file1.txt
+denovo28
+denovo897
+denovo23
+denovo621
+denovo622
+denovo62
+
+$ awk '{a[$1][$2]=$3}END{for (i in a) print i,a[i]}' file1.txt
+awk: cmd. line:1: (FILENAME=file1.txt FNR=6) fatal: attempt to use array `a["denovo28"]' in a scalar context
+
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 AWK:PRINT/SPLIT A FILE BASED ON PATTERN
