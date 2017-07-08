@@ -12,6 +12,7 @@
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
+alias nano='nano -lm' #-l enables line numbers and -m enables mouse support
 alias cls='clear'
 alias cp='cp -i'
 alias mv='mv -i'
