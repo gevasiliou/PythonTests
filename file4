@@ -1,7 +1,12 @@
-First line NC1.c   
-/* comments        
-second line nc1.c
-  */               
-*/
-adsf
-asfd 
+##.....
+##.....
+#ID	Name	Func	List
+1	1	REF 
+2	2	SNV 
+3	3	SNV AMAF=0.0041:EMAF=0.0:GMAF=0.0014
+4	4	RNV AMAF=0.0041:EMAF=0.0:GMAF=0.0014
+5	5	SNV AMAF=0.0041:EMAF=0.0:GMAF=0.14
+6	6	INDEL
+7	7	RNV
+8	8	SNV GMAF=0.0041:EMAF=0.0:AMAF=0.0014
+9	9	SNV EMAF=0.0041:GMAF=0.1:AMAF=0.0014

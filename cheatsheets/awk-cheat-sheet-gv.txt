@@ -107,7 +107,7 @@ advanced conditions checks     # {if (expression) {commands for true} else {comm
 expr?true:false                # Conditional Expression - ternary operator. expression is evaluated and true command is run if expression=true
 Directories on the command line are fatal for standard awk; gawk ignores them if not in POSIX mode.
 
-AWK:BASIC FUNCTIONS EXAMPLES
+AWK:FUNCTIONS EXAMPLES
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2                   #Both files will be printed in series
 
 awk 'BEGIN{a[1]="g";a[1]="v" FS a[1];print a[1]}'	        # prints "v g" . Value of a[1] is replaced by a new value and the old value of a[1]. Mind the gap between new oldvalue that means concatenate.
@@ -140,6 +140,39 @@ while ((getline < "/dev/stdin") > 0) print $0               # Read user input wi
 awk 'BEGIN{system("echo 1 > f")}'
 
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4					# Double space a file. ORS=Output Record Separator
+
+##SHORTHAND NUMERIC ASSIGNMENTS
+https://www.tutorialspoint.com/awk/awk_assignment_operators.htm
+$ echo "1 2 3" |awk '{$NF *=10;print}' # Equivalent to $NF=$NF*10   ----> 1 2 30
+$ echo "1 2 3" |awk '{$NF +=10;print}' # Equivalent to $NF=$NF+10   ----> 1 2 13
+$ echo "1 2 3" |awk '{$NF -=10;print}' # Equivalent to $NF=$NF-10   ----> 1 2 -7
+$ echo "1 2 3" |awk '{$NF /=10;print}' # Equivalent to $NF=$NF/10   ----> 1 2 0.3
+# echo "1 2 3" |awk '{$NF ^=2;print}'  # Equivalent to $NF=$NF^2    ----> 1 2 9
+# echo "1 2 19" |awk '{$NF %=10;print}'# Equivalent to $NF=$NF%10    ----> 1 2 9
+Modulo: Divide 19 by 10 and return the remaining decimal part. 19/10 = 1.9 --> returns 9
+Modulo can be used to automate the case "every Nth line". For example every 2nd line print the line
+$ awk 'NR%2==0{print NR,$0}' file9
+2 aaaaaaaaa
+4 > Charles Darwin
+6 bbbbbbb
+8 > Charles Chaplin
+
+Or even "do not print every 2nd line":
+$ awk 'NR%2!=0{print NR,$0}' file9
+1 > Rosa Luxemburg
+3 aaaaaaaaaa
+5 bbbbb
+7 bb
+9 cccc
+
+Alternative: awk 'NR%2{print NR,$0}' file9
+This will skip by default the lines where the division NR/2 leaves 0 remainders since in awk when an arithmetic
+expression equals to zero (or not set) is evaluated as FALSE and thus does not perform the coming action.
+
+.B More shorthand assignments:
+$ echo "1 2 3" |awk '{$NF++;print}'    # Equivalent to $NF=$NF+1    ----> 1 2 4
+$ echo "1 2 3" |awk '{$NF--;print}'    # Equivalent to $NF=$NF-1    ----> 1 2 2
+
 
 ##FIELD SEPARATOR - SPECIAL USE OF WHITESPACE
 awk 'BEGIN{FS=" ";OFS="_"}{$1=$1}1' <<<"xxx ccc vvv bbb        333  444  555"    ---> xxx_ccc_vvv_bbb_333_444_555
