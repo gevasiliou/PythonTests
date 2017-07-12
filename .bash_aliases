@@ -9,6 +9,7 @@
 #Install it using cp .bash_aliases /home/gv/ and cp .bash_aliases /root/ or cp .bash_aliases $HOME/ (under root terminal)
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
+alias words='/usr/share/dict/words'
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
