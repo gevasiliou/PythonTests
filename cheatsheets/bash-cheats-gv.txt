@@ -1294,6 +1294,12 @@ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -   ---> Prints A dashed l
 printf '%.0s-' {1..20}; echo  #will print just 20 dashes
 eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
 
+##PRINT A TEXT CHAR BY CHAR
+$ a="Athens 35oC"; IFS=$'\n' t=( $(grep -o '.' <<<"$a") );declare -p t #If you left IFS to default value, space of word will be removed
+declare -a t=([0]="A" [1]="t" [2]="h" [3]="e" [4]="n" [5]="s" [6]=" " [7]="3" [8]="5" [9]="o" [10]="C")
+$ for ((i=0;i<=${#t[@]};i++)); do printf '%s' "${t[i]}";sleep 0.11;done;echo  #Print Athens 35oC char by char like a typewritter
+
+
 --------------------------------------------------------------------------------------------------------------------------------------
 BASH:UNICODE CHARS
 http://stackoverflow.com/questions/43458809/escaping-double-quotation-marks-in-sed/43461815#43461815
