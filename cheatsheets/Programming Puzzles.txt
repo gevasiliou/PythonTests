@@ -98,4 +98,3 @@ $ while read -r string;do if [[ $(rev <<< $string) == "$string" ]]; then echo "$
 886688
 888888
 906609
-
