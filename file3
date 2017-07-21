@@ -1,6 +1,6 @@
-denovo23    HNS.2_9729  HNS.2_20867
-denovo28    HNS.6_14948 HNS.6_148211    HNS.11_327521
-denovo62    HNS.7_468475    HNS.7_631780
-denovo897   WNA.2_58410 WNA.1_175071
-denovo621   WNA.2_20180 WNA.2_294219
-denovo622   CES.1_24310 HNS.6_26786
+col1,col2$
+fakenode1,1.1.1.1$
+fakenode2,1.1.1.2$
+fakenode3,1.1.1.3$
+fakenode4,1.1.1.4$
+fakenode5,1.1.1.5$
