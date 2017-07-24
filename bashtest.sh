@@ -787,29 +787,34 @@ done
 }
 
 
-date=$(date +%s) #make an own variabel for seconds since 1970 1/1
-echo "current date: $date"
-case $1 in
-    start)
-      echo "Script started"
-      echo $date > oldTime.txt #add the current time to oldTime.txt
-      ;;
-
-    status)
-      echo "Script has been running:"
-      if [ -e ./oldTime.txt ];then #check to see if the file exists
-      difference=$(( $(date +%s) - $(cat oldTime.txt) )) #calculate the time the script has been running
-      printf "%s\n" "${difference#-}" #print out the time
-      fi #dont know? stop script maybe?
-      ;;
-
-    stop)
-      echo "Script will not stop and has been running:"
-      if [ -e ./oldTime.txt ];then
-      difference=$(( $(date +%s) - $(cat oldTime.txt) ))
-      printf "%s\n" "${difference#-}"
-      rm oldTime.txt #remove the file so when i start the script again it starts from 0
-      fi
-      exit 1 #stops script?
-      ;;
-esac
+while [[ $answer -ne '3' ]];do
+echo "Choose option:"
+echo "1 - Begin"
+echo "2 - Load"
+echo "3 - Exit"
+read -p "Enter Answer [1-2-3]:" answer
+case "$answer" in
+    1) while [[ "$nm" == '' ]];do read -p "What is your Name:" nm;done        # Keep asking for a name if the name is empty == ''       
+       if [[ $nm == "prev" ]];then 
+                                  nm=""; 
+                              else 
+                                  read -p "What is your favourite colour?" cr
+                                  if [[ $cr == "prev" ]];then cr="" && nm=""; # And return to "What is your name"
+                                                         else echo "$cr is my favourite, too!" && nm="";
+                                  fi
+                                  echo "Hello $nm" ; ##&& break; 
+       fi  # break command breaks the while wrapper loop
+ 
+##Begin my custom code:
+#       read -p "What is your favourite colour?" cr
+#       if [[ $cr == "prev" ]];then cr="" ;fi # And return to "What is your name"
+#       echo "$cr is my favourite, too!"
+# And keep going on and on, utilizing the "prev" command to go back to the previous question.
+#End my custom code. 
+       ;;
+    2) echo 'Load' ;;
+    3) echo 'exiting...' ;;                                          # Number 3 causes while to quit.
+    *) echo "invalid selection - try again";;                        # Selection out of 1-2-3 , menu reloaded
+esac                                                                 # case closing
+done                                                                 # while closing
+echo "Bye Bye!"
