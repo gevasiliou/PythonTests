@@ -102,6 +102,14 @@ if [[ $2 == "--online" || $2 == "--online-nogui" ]]; then
 		yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
 	fi
 fi
+# You can also try the official man pages project:
+# https://www.kernel.org/doc/man-pages/
+# http://man7.org/linux/man-pages/index.html
+# http://man7.org/linux/man-pages/man1/grep.1.html
+# http://man7.org/linux/man-pages/dir_all_alphabetic.html
+# curl --silent http://man7.org/linux/man-pages/dir_all_alphabetic.html |grep -w 'ln' |grep -o '"[^"]*"'
+# "./man1/ln.1.html"
+# "./man1/ln.1p.html"
 
 if [[ $2 == "--apt" ]]; then
 	loop=1

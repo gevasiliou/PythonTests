@@ -66,6 +66,7 @@ See the difference:
 
 $ LC_ALL=en_US sort <<< $'a\nb\nA\nB'  --> a A b B   #printed in separated lines - concatanated here for space saving
 $ LC_ALL=C sort <<< $'a\nb\nA\nB'      --> A B a b   #printed in separated lines - concatanated here for space saving
+Tip: Instead of LC_ALL you can use LC_COLLATE=C
 
 ##LOCALE AND GLOBING
 The temp use of locale like 
