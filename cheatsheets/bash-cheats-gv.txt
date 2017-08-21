@@ -2225,3 +2225,19 @@ for ff in ./**/tmp/** ;do echo Type - "$(file "$ff")" ;done  ---> Type - ./tmp/t
 for ff in ./**/tmp/** ;do echo Type - "$(file $ff)" ;done    ---> Error - See bellow:
 Type - ./tmp/tmp2/file09: cannot open `./tmp/tmp2/file09' (No such file or directory)
 99:                cannot open `99' (No such file or directory)
+
+##BASH BACKTICKS VS $()
+See Why is $(...) preferred over `...` (backticks)? : http://mywiki.wooledge.org/BashFAQ/082
+Backslashes (\) inside backticks are handled in a non-obvious manner:
+  $ echo "`echo \\a`" "$(echo \\a)"
+  a \a
+  $ echo "`echo \\\\a`" "$(echo \\\\a)"
+  \a \\a
+
+Note that this is true for *single quotes* too!
+  $ foo=`echo '\\'` 
+  $ bar=$(echo '\\')
+  $ echo "foo is $foo, bar is $bar" 
+  foo is \, bar is \\
+
+As a general idea, backticks do not handle correctly backslashes and this makes nesting much more difficult compared to $( ) syntax.
