@@ -3,13 +3,19 @@ http://awk.freeshell.org/ #also check freenod irc - channel awk
 http://awk.freeshell.org/AwkTips
 https://www.gnu.org/software/gawk/manual/gawk.html
 https://www.tutorialspoint.com/awk/awk_arithmetic_functions.htm
-http://www.pement.org/awk/awk1line.txt
+http://www.pement.org/awk.htm
 http://www.theunixschool.com/2012/09/grep-vs-awk-examples-for-pattern-search.html
 https://www.yumpu.com/en/document/view/25827537/sed-and-awk-101-hacks#
+https://stackoverflow.com/tags/awk/info
+
 AWK reserved variables :http://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/?ref=binfind.com/web
+
 https://www.shortcutfoo.com/app/dojos/awk/cheatsheet
 http://web.mit.edu/gnu/doc/html/gawk_5.html
-awk xml parsing: http://awk.freeshell.org/XMLScraping
+
+AWK XML parsing: http://awk.freeshell.org/XMLScraping
+
+Idiomatic AWK: http://backreference.org/2010/02/10/idiomatic-awk/
 
 AWK:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##READ THIS CHEAT FILE WITH MAN PAGES:
@@ -1213,10 +1219,12 @@ awk '{print} NR==1 {gsub(/[^\t]/, "-"); print}'			#Add a dash bellow every non t
 #-----------------------------------------------------------------------------------------------------------------------
 AWK:ONELINERS
 http://www.pement.org/awk/awk1line.txt
+	http://www.catonmat.net/series/awk-one-liners-explained
 http://www.pement.org/awk/
 http://awk.freeshell.org/AwkTips
 
-Tip: print is the default action of awk, so even if ommited print will be performed.
+
+Tip: print is the default action of awk, so even if ommited, print will be performed.
 Tip: In condition checks it is usuall that /string/ refers to patterns . For fixed checks do not ude /../ but simmply =="..."
 
 sort -u file | awk 'NR==FNR{seen[$1]++;next}seen[$1]==1' - file 	
@@ -1523,7 +1531,60 @@ $ awk 'FNR==NR{a[FNR]=$0;next}{$NF=gensub(/value=".*"\/>/,"value=\""a[FNR]"\"\/>
 This code assumes (acc to OP) that new values are loaded in a new file2 with so many lines as original xml file.
 Since we modify the NF valuer, this code will work only if "value" is the last field of each line = awk $NF
 
+-------------------------------------------------------------------------------------------------------------------
+AWK:IDIOMATIC CODE EXAMPLES
+http://backreference.org/2010/02/10/idiomatic-awk/
 
+##ASSIGNMENT AND EVALUATION OF THE ASSIGNMENT RESULT - ALL AT THE SAME TIME
+One of the best idiomatic usage is this one, demonstrating assignment and evaluation on the same time:
+$ printf '%s\n' line{1..10} |awk ' ORS = NR%5 ? FS : RS '
+line1 line2 line3 line4 line5
+line6 line7 line8 line9 line10
+
+Output Record Separator = Every Fifth Line NR%5 (warning - this is an assignment , not a condition check) 
+
+So if NR%5 is zero (ie, we are at line 5, 10, 15, etc.), ORS gets the value of RS (which by default contains "\n"); otherwise ORS gets the value of FS (by default, a space). 
+If RS and FS have their standard values, it can be rewritten like this: awk 'ORS=NR%5?" ":"\n"'
+
+If NR%5 is zero , then ORS=NR%5 ==> ORS=0 (assignment)  ==> on the same time, assignment is evaluated as false ==> : section is printed (RS)
+if NR%5 <> zero , then ORS=NR%5 ==> ORS<>0 (assignment) ==> on the same time, assignment is evaluated as true  ==> ? section is printed (FS)
+Remember that for awk, whatever is not null or zero is evaluated as "true", no matter if real value is 10 or -10.
+
+##INITIAL VALUES
+
+$ cat matrix.txt
+a1;a2;a3;a4;a5
+b1;b2;b3;b4;b5
+c1;c2;c3;c4;c5
+d1;d2;d3;d4;d5
+
+$ awk -F\; '{for(i=1;i<=NF;i++)r[i]=r[i] sep $i;sep=FS}END{for(i=1;i<=NF;i++)print r[i]}' matrix.txt
+a1;b1;c1;d1
+a2;b2;c2;d2
+a3;b3;c3;d3
+a4;b4;c4;d4
+a5;b5;c5;d5
+
+For the very first time that for loop is executed, sep has null value and so has r[i]. 
+As a result, the very first time this one 
+r[i]=r[i] sep $i equals to r[i]=$i
+The second time (second line) r[i] and sep have a value set previously - on the first record.
+
+##SELF ASSIGNMENT - CHANGING OUTPUT FORMAT 
+This uses the $1=$1 trick, which fools awk to reconstruct the $0 using the OFS separator:
+$ echo 'foo;bar' | awk -v FS=';' -v OFS=',' '/foo/'               ---> foo;bar (OFS ignored)
+$ echo 'foo;bar' | awk -v FS=';' -v OFS=',' '/foo/{$1=$1}1'       ---> foo,bar ($0 rebuilt using the OFS)
+
+Combining the simultaneous assignment and evaluation, also this works fine:
+# echo 'foo;bar' | awk -v FS=';' -v OFS=',' '$1=$1'               ---> foo,bar
+
+##AWK vs SED
+http://www.pement.org/awk/awk_sed.txt
+sed "s/from/to/3"       awk '{$0=gensub("from","to",3); print}'
+sed "s/reg[ex]/ZZ/4"    awk '{$0=gensub(/reg[ex]/, "ZZ", 4); print}'
+sed "s/.*=/equ/5"       awk -v var=".*=" '{$0=gensub(var,"equ",5);print}'
+
+-------------------------------------------------------------------------------------------------------------------
 AWK:GREP EMULATION MULTIPLE FILES
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42419795#42419795
 bash while loop and awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2 per pair of files = 30 awks

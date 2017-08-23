@@ -27,6 +27,10 @@ int main()
     
     f = 70.0/3.0;
 	printf("value of f : %f \n", f);
+
+    return 0;
+}
+
 	/*http://stackoverflow.com/documentation/c/507/files-and-i-o-streams#t=201704101223569451915 */
     /* Attempt to open a file, put file contents in an array , print the array and close the file
     FILE *myfile;
@@ -35,5 +39,29 @@ int main()
     fclose(myfile); 
     */ 
 
-    return 0;
+/* http://www.catonmat.net/blog/awk-book/
+
+C euivalent of awk -F: '{ print $1 }' /etc/passwd
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE_LEN 1024
+
+int main () {
+    char line [MAX_LINE_LEN];
+    FILE *in = fopen ("/etc/passwd", "r");
+    if (!in) exit (EXIT_FAILURE);
+    while (fgets(line, MAX_LINE_LEN, in) != NULL) {
+        char *sep = strchr(line , ':');
+        if (!sep) exit (EXIT_FAILURE);
+        *sep = '\0';
+        printf("%s\n", line);
+    }
+    fclose(in);
+    return EXIT_SUCCESS ;
 }
+The strchr function searches string for the first occurrence of a given char. The null character terminating string is included in the search.
+*/
+
