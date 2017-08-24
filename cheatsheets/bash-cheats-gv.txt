@@ -696,22 +696,11 @@ top -bn1 -u gv |grep 'whatever' or awk or sed or > file , etc
 BASH:PARAMETERS EXPANSION
 http://wiki.bash-hackers.org/syntax/pe#use_a_default_value
 
-a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
-a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
-a="this is some TEXT"; echo ${a: 5:7} 	-> is some
-a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char - OR - get from char 1 up to lst char-1
+##STRING REPLACEMENT 
+bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
 
-a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
-a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
-a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
-basename c.jpg .jpg -> c
-basename c.jpg pg -> c.j #basename can be used as a tricky tool to remove chars from the end of ANY string but requires exact match
-a="logfiletxt";basename $a txt -> logfile
-a="logfile.txt";echo ${a/.txt} -> logfile #similar to basename but match starts from 1st char to the last. 1st occurence to be removed.
-a="logfile.txt";echo ${a/fil} -> loge.txt #remove fil - exact match
-a="logfilefilo.txt";echo ${a/lo} -> gfilefilo.txt #only first occurence of exact pattern removed
-a="logfilelofi.txt";echo ${a/lo} -> gfilelofi.txt #only first occurence of exact pattern removed
-a="logfilelofi.txt";echo ${a//lo} -> gfilefi.txt #all occurences of exact pattern removed.
+a="logfilefilo.txt";echo ${a/lo} -> gfilefilo.txt #only first occurence of 'lo' pattern removed
+a="logfilelofi.txt";echo ${a//lo} -> gfilefi.txt #all occurences of 'lo' pattern removed.
 a="logfilelofi.txt";echo ${a/lf/_} -> logfilelofi.txt #no replacement made since lf is not present in $a (exact match)
 a="logfilelofi.txt";echo ${a//[lf]/_} -> _og_i_e_o_i.txt #all occurences of l and f - not exact match due to [] regex synthax
 a="logfilelofi.txt";echo ${a/*l/_} -> _ofi.txt #from start up and including last l
@@ -723,11 +712,35 @@ a="logfilelofi.txt";echo ${a/.txt/_} -> logfilelofi_ #replace .txt with undersco
 a="logfilelofi.txt";echo ${a/.txt} -> logfilelofi #delete .txt
 MYSTRING=xxxxxxxxxx;echo ${MYSTRING/#x/y}  # RESULT: yxxxxxxxxx # Here the sign # is like an anchor to beginning
 MYSTRING=xxxxxxxxxx;echo ${MYSTRING/%x/y}  # RESULT: xxxxxxxxxy # Here symbol % is an anchor to the end of string
-a="logfilelofi.mp3";echo ${a/.[a-z0-9A-Z]*/} -> logfilelofi #delete any extension with a dot and any of a-z,0-9 and A-Z range
-CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip ->http://abc.xy.com #mind the special var declaration of CLIP.
-for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done -> finds files with JPG extension and renames them to .jpg
-a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	-> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
-bash manual: ${parameter/pattern/string} . If pattern begins with ‘/’, all matches of pattern are replaced with string. Normally only the first match is replaced. If pattern begins with ‘#’, it must match at the beginning of the expanded value of parameter. If pattern begins with ‘%’, it must match at the end of the expanded value of parameter.
+
+a=( hello world );echo "${a[@]/#/R}"          ---> Rhello Rworld  #Add R in front of all array items.
+array=(This is a text);echo "${array[@]/t/d}" ⇒ This is a dext #first found t replaced with d. Capital T is intact.
+array=(This is a text);echo "${array[@]//t/d}" ⇒ This is a dexd #all t replaced with d
+array=(This is a text);echo "${array[@]/[tT]/d}" -> dhis is a dext #First found small and first found capital T replaced using regex
+
+a="logfilelofi.mp3";echo ${a/.[a-z0-9A-Z]*/} ---> logfilelofi #delete any extension with a dot and any of a-z,0-9 and A-Z range
+
+CLIP=$'http://abc\".x\'y`.com';cleanclip=$(echo ${CLIP//[\'\`\"]});echo $cleanclip --->http://abc.xy.com #mind the special var declaration of CLIP.
+
+for i in *.JPG; do mv "$i" "${i/.JPG}".jpg; done ---> finds files with JPG extension and renames them to .jpg
+
+a="/home/gv/Desktop/PythonTests/a?<>rt*eew?.zip";echo $(basename ${a//[\/<>:\\|*\'\"?]/_}) 	---> _home_gv_Desktop_PythonTests_a___rt_eew_.zip
+
+##SUBSTRINGS
+a="this is some TEXT"; echo ${a: -10} 	-> some TEXT
+a="this is some TEXT"; echo ${a: 10} 		-> me TEXT
+a="this is some TEXT"; echo ${a: 5:7} 	-> is some
+a="this is some TEXT"; echo ${a: 1:-1}    -> his is some TEX  #remove first and last char - OR - get from char 1 up to lst char-1
+
+a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo $(basename ${a/<>/_}) 	->a_rte.zip
+a="/home/gv/Desktop/PythonTests/a<>rte.zip";echo ${a#/} 					-> removes only the first / 
+a="/home/gv/Desktop/PythonTests/azip<>rte.zip";echo ${a%.zip} 			->removes the last .zip (but not middle zip) 
+basename c.jpg .jpg -> c
+basename c.jpg pg -> c.j #basename can be used as a tricky tool to remove chars from the end of ANY string but requires exact match
+
+a="logfiletxt";basename $a txt -> logfile
+a="logfile.txt";echo ${a/.txt} -> logfile #similar to basename but match starts from 1st char to the last. 1st occurence to be removed.
+a="logfile.txt";echo ${a/fil} -> loge.txt #remove fil - exact match
 
 a="somefile.txt";echo ${a%%.txt} -> somefile #delete from end exact match
 a="somefile.txt";echo ${a%.txt} -->somefile
@@ -736,7 +749,7 @@ a="sometxtfile.txt";echo ${a##txt} --> sometxtfile.txt #no valid -no effect
 a="sometxtfile.txt";echo ${a##some} --> txtfile.txt #delete pattern (xact match) from the beginning
 a="sometxtfile.txt";echo ${a#some} --> txtfile.txt
 a="sometxtfile.txt";echo ${a#txt} --> sometxtfile.txt #no effect . there is no "txt" in the beginning.
-a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes the first word from beginning)
+a="Be conservative in what you send";echo ${a#* } --> conservative in what you send ("Be" is deleted. Single # removes all chars (*) from beginning up to first space = first word)
 a="Be conservative in what you send";echo ${a##* } --> send #All text deleted except "send" Double ## removes all words from beginning except last
 a="this.is.a.file.gz";echo ${a##*.} -->gz #all text deleted except last part (DOT separated) or delete from begining until the last dot found
 a="apt";echo ${a:0:1} --> a #prints the first character of a variable (from zero give me 1)
@@ -758,22 +771,22 @@ array=(This is some Text);echo "${array[@],}" --> this is some text
 array=(This is some Text);echo "${array[@],,}" --> this is some text #all chars in lower case
 array=(This is some Text);echo "${array[@]^}" --> This Is Some Text
 array=(This is a text);echo "${array[@]%is}" --> Th a text ("is" is deleted from all elements of array : array=([0]="This" [1]="is" [2]="a" [3]="text"))
+
 http://wiki.bash-hackers.org/syntax/pe : "As for most parameter expansion features, working on arrays will handle each expanded element, for individual expansion and also for mass expansion."
-array=(This is a text);echo "${array[@]/t/d}" ⇒ This is a dext #first found t replaced with d. Capital T is intact.
-array=(This is a text);echo "${array[@]//t/d}" ⇒ This is a dexd #all t replaced with d
-array=(This is a text);echo "${array[@]/[tT]/d}" -> dhis is a dext #First found small and first found capital T replaced using regex
 
 a="logfilelofi.mp3";av="anotherfile";echo ${!a@} -> a av #lists all active/stored parameters starting with letter a
+
 echo ${!BASH*} -> BASH BASH_ARGC BASH_ARGV BASH_COMMAND BASH_LINENO BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION
+
 #mv path/you/do/not/want/to/type/twice/oldname !#$:h/newname #!$ returns the argument of last command /history
-#Similarry to !$ there is alsos !! which prints last commad (full) and last result
+#Similarry to !$ there is also !! which prints last commad (full) and last result
 path/you/do/not/want/to/type/twice/oldname !#$:h/newname -> path/you/do/not/want/to/type/twice/oldname path/you/do/not/want/to/type/twice/newname
 
 expr 40 - 3 ->37 #expr is available in GNU Bash. 
 expr substr "the is a kind of test" 5 10 -> is a kind  
 a="the is a kind of test";echo ${a: 5:10} -> s a kind o
 export -p -> gives infor about global vars : declare -x USER="root" , declare -x XDG_CURRENT_DESKTOP="XFCE"
-IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements by IFS 
+IFS=:;a[0]="some text";a[1]="more text";echo "${a[*]}" -> some text:more text #the use of * instead of @ seperates array elements using IFS 
 
 Print / Refer to array elements in a different way using parameters expansion / string manipulation
 array=(0 1 2 3 4 5 6 7 8 9 0 a b c d e f g h)
