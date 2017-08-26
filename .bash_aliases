@@ -43,8 +43,11 @@ alias man="LESS='+Gg' man" #This one goes to end of man page and then back to be
 # ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
 # Uses octal to build the whole ascii table
 
-#function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
+alias tabit="perl -pe 's/\x20{1,4}/\t/g'"  #alternative : sed -r or sed -E - extended regex for {1,4} to work
+
+
 function teee { 
+#function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
 	v="$(</dev/stdin)"; 
 	echo '----------------pipe in-------------' >/dev/tty;
 	i=1;
