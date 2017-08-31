@@ -352,7 +352,7 @@ echo "$sumA"  ---> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+
 ##MORE READ EXAMPLES (DELIMITERS, WORD SPLIT, ARRAYS)
 Read supports -a option for array. 
 read builtin default separator is new line. If read founds a new line then exits.
-Word Splitting can be done by adjusting IFS
+Word Splitting can be done by adjusting IFS and disable read delimiter using read -d option.
 
 Example:
 IFS="[;]" read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one" [1]="two" [2]="three" [3]="no more"
@@ -369,7 +369,7 @@ three;no more;
 $ IFS=[$'\n'";"] read -d '' -a arr1 <<<"$a"; declare -p arr1   #Luckilly enough IFS accepts regex [newline or ;] in bash 4.4
 declare -a arr1=([0]="one" [1]="two" [2]="three" [3]="no more")
 This method works even in bash 4.3
-I had the feeling that does not work because command declare was joined with && and not ; - ALWAYS USE ;
+I had been fooled to believe that above method does not work because declare -p was joined with read command using && and not ;
 
 In Bash 4.4 and 4.3 you can also force splitting only by new lines:
 $ IFS=$'\n' read -d '' -a arr1 <<<"$a"; declare -p arr1   ---> [0]="one;two;" [1]="three;no more;"
@@ -407,6 +407,16 @@ About word splitting, setting temporary value to IFS affects the word splitting 
 IFS= read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no more"   #No split at space
 read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one;two;three;no" [1]="more"  #Split at space
 
+See the different read behavior in bellow situations
+$ cat file7
+abc def ghi nop
+klm one two three
+four five six nine
+$ readarray -t myarr <file7;declare -p myarr                ---> myarr=([0]="abc def ghi nop" [1]="klm one two three" [2]="four five six nine")
+$ IFS=$'\n' read -d '' -a myarr2 <file7;declare -p myarr2   ---> myarr2=([0]="abc def ghi nop" [1]="klm one two three" [2]="four five six nine")
+$ read -d '' -a myarr2 <file7;declare -p myarr2             ---> myarr2=([0]="abc" [1]="def" [2]="ghi" [3]="nop" [4]="klm" [5]="one" [6]="two" [7]="three" [8]="four" [9]="five" [10]="six" [11]="nine")
+$ read -a myarr2 <file7;declare -p myarr2                   ---> myarr2=([0]="abc" [1]="def" [2]="ghi" [3]="nop")  #first line only
+$ IFS= read -d '' -a myarr2 <file7;declare -p myarr2        ---> myarr2=([0]=$'abc def ghi nop\nklm one two three\nfour five six nine\n')
 
 ##TRICK WITH IFS AND VALUES IN ONE LINE - ONE VARIABLE:
 
@@ -438,6 +448,7 @@ Even when we use arrays with read -a , the first method also works fine:
 IFS=[$'\n'"|"] read -d '' -a var <<<"$a"; declare -p var --> declare -a var='([0]="a" [1]="b" [2]="c" [3]="d" [4]="e" [5]="f")'
 
 PS: Sometimes the use of -r yelds only to the first value [0]="a" and rest values were ignored.
+
 
 ------------------------------------------------------------------------------------------------------------------------
 
