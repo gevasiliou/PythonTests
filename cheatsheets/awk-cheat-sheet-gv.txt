@@ -1307,7 +1307,7 @@ awk '/regex/{print x};{x=$0}' 			#print the line immediately before a regex, but
 awk '/regex/{getline;print}' 			#print the line immediately after a regex, but not the line containing the regex
 awk '/AAA/ && /BBB/ && /CCC/' 			#grep for AAA and BBB and CCC (in any order on the same line). Works even with ||
 awk '/AAA.*BBB.*CCC/' 				#grep for AAA and BBB and CCC (in that order)
-awk '/regex/,0' OR awk '/regex/,EOF'		#print section of file from regular expression to end of file - alternative awk '/regex/,EOF'
+awk '/regex/,0' OR awk '/regex/,EOF'		#print section - range of file from regular expression to end of file EOF
 awk 'NR==8,NR==12' 				#print section of file based on line numbers (lines 8-12, inclusive)
 awk 'NR==52 {print;exit}'  			#print line number 52 - efficient on large files. Alternative awk 'NR==52'
 awk '/Iowa/,/Montana/' 				#print section of file between two regular expressions (inclusive-case sensitive)
