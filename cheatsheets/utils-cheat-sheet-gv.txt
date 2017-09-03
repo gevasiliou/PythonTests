@@ -400,6 +400,12 @@ Mind the options -u and -k for defininig the sort field (i.e -k2) and -t for set
 
 Moreover with -k you can define except from the column (-k1) also the letters range to make the sort (i.e -k1,5 = 1st Col, chars 1 to 5)
 
+More about -k : 
+Syntax of -k is -k pos1,pos2 : from position1 to position2. If position 2 is ommited then is up to end of line.
+Another syntax is k2.4,2.5   : The use of dot defines in which char of field 2 the key starts (here 4th char).
+So the dot denotes starting point for key, while the comma denotes ending point of key. 
+As a result -k2.4,2.5 defines a key starting on field2-char4 up to key2 char5
+
 Tip: To be sure that your -k selection works ok , you can apply for testing i.e -k3r (reverse). This means sort by 3rd column in reverse order.
 
 Example:
