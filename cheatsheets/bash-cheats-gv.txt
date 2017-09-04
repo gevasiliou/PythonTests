@@ -1839,7 +1839,29 @@ mind xargs. Without xargs is not operating.
 ------------------------------------------------------------------------------------------------------------------------
 BASH:HEREDOCS
 Best explained : http://tldp.org/LDP/abs/html/here-docs.html
-Basic format : cat <<EOF >file or >/dev/stdout or nothing=stdout
+
+##TYPICAL USAGE
+.B With cat
+cat <<EOF >file or >/dev/stdout or nothing=stdout
+Line 1
+Line 2
+EOF
+
+.B With any command
+sort <<EOF
+A
+C
+D
+B
+EOF
+Output : A B C D
+
+Some claim that this also works:
+<<EOF | tr a-z A-Z
+This is some text. Yes.
+EOF
+
+But is not working on my bash 4.4. I have to use tr a-z A-Z <<EOF instead.
 
 ##INSIDE A SCRIPT: 
 when using here-doc format within a script, the input to cat comes from the script.
