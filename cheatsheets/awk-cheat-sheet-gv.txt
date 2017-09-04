@@ -1388,7 +1388,17 @@ awk '{ $6 = ($5 + $4 + $3 + $2) ; print $6 }' inventory-shipped   # Assign conte
 
 echo 1 | awk '{ printf("%02d\n", $1) }' 		# Prints numbers with leading zero. If number is >10 then no leading zero is added.
 
+.B Concatenate / Join Lines
 
+$ cat file1
+Now is the time for
+all good men
+The quick brown fox
+jumped over
+
+$ awk '{printf "%s%s", $0, (/^[[:upper:]]/?OFS:ORS)}' file1
+Now is the time for all good men
+The quick brown fox jumped over
 -------------------------------------------------------------------------------------------------------------------------------------
 
 AWK:READ FROM 2 FILES
