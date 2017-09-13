@@ -360,6 +360,16 @@ by bash and a few other shells), you may instead use printf to send the addition
 printf '%s + %s\n' "$a" "$b" | bc
 c="$( printf '%s + %s\n' "$a" "$b" | bc )"
 
+##BC AND SCALE
+scale can be used to adjust the number of decimal digits, but is not making any math rounding (printf does this job instead).
+Moreover , in order scale to be "activated" bc expects to receive a division. scale is ignored in addition / subtraction
+
+$ a="17.928671"; a=$(bc -l <<<"scale=3; $a");echo "$a"     ---> 17.928671  #scale ignored
+$ a="17.928671"; a=$(bc <<<"$a/1");echo "$a"               ---> 17         #using bc without -l decimals are ignored
+$ a="17.928671"; a=$(bc -l <<<"$a/1");echo "$a"            ---> 17.92867100000000000000  #scale active - max dec digits
+$ a="17.928671"; a=$(bc -l <<<"scale=3; $a/1");echo "$a"   ---> 17.928                   #scale in effect
+$ a="17.928671"; a=$(printf '%.3f\n' "$a");echo "$a"       ---> 17.929                   #rounding in effect
+
 ##TRICKY PRINTF + bc usage to sum up ascii values:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +

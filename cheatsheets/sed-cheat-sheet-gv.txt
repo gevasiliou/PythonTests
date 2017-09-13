@@ -87,7 +87,10 @@ w  # append_pattern_to_file_now
 x  # swap_pattern_and_hold             
 y  # transform_chars 
 ~  # In range denotes "every XX lines" i.e sed '1~4d' list : "starting from line 1, taking every 4th".
-{} # group commands. For example sed -n '5000p;q' does not work but sed -n '5000{p;q}' works fine.
+{} # group commands. For example sed -n '5000p;q' (print and quit) does not work but sed -n '5000{p;q}' works fine.
+
+/regex/! # negates regex = NOT Operation i.e sed '/abc/!d' : delete all lines that DO NOT contain /abc/ regex = keep only /abc/ lines = sed -n '/abc/p'
+/regex/I # case insensitive regex match (gnu)
 
 SED:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##READ THIS CHEAT FILE WITH MAN PAGES:

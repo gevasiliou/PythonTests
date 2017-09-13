@@ -1442,7 +1442,9 @@ a=(one two three) && b="a[@]" && echo "${!b}" && newArr=( "${!b}" ) && declare -
 BASH:FILE DESCRIPITORS AND REDIRECTIONS
 ##SOURCES
 Check this FAQ http://mywiki.wooledge.org/BashFAQ/002 for a nice table explaining redirections with file descriptos
+
 Redirections explained with graphics: http://www.catonmat.net/blog/bash-one-liners-explained-part-three/
+
 http://www.tldp.org/LDP/abs/html/io-redirection.html
 http://stackoverflow.com/questions/4102475/bash-redirection-with-file-descriptor-or-filename-in-variable
 http://unix.stackexchange.com/questions/13724/file-descriptors-shell-scripting
