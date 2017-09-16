@@ -711,6 +711,9 @@ sed '/regex/G'
 
 ## INSERT A BLANK LINE ABOVE AND BELOW EVERY LINE WHICH MATCHES "regex"
 sed '/regex/{x;p;x;G;}'
+
+## INSERT AN EMPTY LINE EVERY TWO FULL TEXT LINES
+sed 'n;G'
 --------------------------------------------------------------------------------------------------------------------------------------
 SED:ONELINERS:NUMBERING:
 
