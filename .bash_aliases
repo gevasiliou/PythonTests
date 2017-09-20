@@ -250,6 +250,7 @@ echo "Directory to Examine=$dn"
 while IFS= read -r -d '' res;do local fn+=( "$res" );done < <(find "$dn" -print0)
 dupes=$(LC_ALL=C sort <(printf '\<%s\>$\n' "${fn[@]##*/}") |uniq -d)
 grep -e "$dupes" <(printf '%s\n' "${fn[@]}")  |awk -F/ '{print $NF,"==>",$0}' |LC_ALL=C sort
+
 #In bash 4.4 You can also use IFS= readarray -t -d '' fn< <(find . -print0)
 #Before bash 4.4 , readarray does not accept -d (delimiter) option
 #You can also allow a $2 for filename pattern , and thus convert fine to find "$dn" -name $2 -print0
@@ -260,6 +261,20 @@ grep -e "$dupes" <(printf '%s\n' "${fn[@]}")  |awk -F/ '{print $NF,"==>",$0}' |L
 # b.txt : --/home/gv/Desktop/PythonTests/tmp--/home/gv/Desktop/PythonTests/tmp2
 # file1.txt : --/home/gv/Desktop/PythonTests--/home/gv/Desktop/PythonTests/tmp2
 }
+
+function lsadv {
+#lsadv = ls advanced using find - similar output to ls -all. Includes octal file permissions.
+#local p
+#echo "$@"
+[[ -z $1 ]] && p="./" || p=( "$@" )
+#echo "${p[@]}"
+echo -e "Permissions\t| group\t| user\t| size\t| Change Time\t\t\t| Name"
+printf '%.s-' {1..130} 
+echo
+find "${p[@]}" -maxdepth 1 -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n'
+}
+
+
 
 #TODO
 # make a function manit to work as pipe : contents=$(</dev/stdin) && man <(contents after man formatting) or man /dev/stdin

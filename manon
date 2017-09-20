@@ -220,7 +220,7 @@ if [[ $2 == "--down" ]]; then
 			fi
 		fi
 	done
-	rm -f $debname
+	[[ $3 != "--nodelete" ]] &&  rm -vf $debname || echo -e "$debname preserved :\n $(ls -all $debname)"
 fi
 
 if [[ $2 == "--debian" ]]; then
