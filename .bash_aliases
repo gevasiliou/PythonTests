@@ -271,7 +271,9 @@ function lsadv {
 echo -e "Permissions\t| group\t| user\t| size\t| Change Time\t\t\t| Name"
 printf '%.s-' {1..130} 
 echo
-find "${p[@]}" -maxdepth 1 -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n'
+find "${p[@]}" -maxdepth 1 -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n' | LC_ALL=C sort -t '|' -k1.1,1.2r -k6.1
+#sort k1.1,1.2r : sort directories first
+#sort k6 : then sort by last column = filename
 }
 
 
