@@ -45,19 +45,36 @@ alias man="LESS='+Gg' man" #This one goes to end of man page and then back to be
 
 alias tabit="perl -pe 's/\x20{1,4}/\t/g'"  #alternative : sed -r or sed -E - extended regex for {1,4} to work
 
-alias batery="upower -i $(upower -e |grep -e 'BAT')"
+alias battery="upower -i $(upower -e |grep -e 'BAT')"
+
+alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf FNR \":  \" }1'" #cat with details
 
 function teee { 
+#This can be used between pipes toprint on screen what is coming in from the left comman and what comes out of the last command in pipe
+#without affecting the data transferred throught the pipe. Example cat file |teee |grep 'pattern1' |grep 'pattern2' 
+
 #function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
 	v="$(</dev/stdin)"; 
-	echo '----------------pipe in-------------' >/dev/tty;
+	echo '----------------left pipe in-------------' >/dev/tty;
 	i=1;
 	while read -r l;do 
 	  echo "$i>$l" >/dev/tty;
 	  let i++;
 	done <<<"$v";
-	echo '----------------pipe out-------------' >/dev/tty;
+	echo '----------------last pipe out-------------' >/dev/tty;
 	echo "$v"; 
+#Usage example:
+#$ cat file1.txt |teee |grep 'WNA' |grep '621'
+#----------------left pipe in-------------
+#1>denovo23    HNS.2_9729  HNS.2_20867
+#2>denovo28    HNS.6_14948 HNS.6_148211    HNS.11_327521
+#3>denovo62    HNS.7_468475    HNS.7_631780
+#4>denovo897   WNA.2_58410 WNA.1_175071
+#5>denovo621   WNA.2_20180 WNA.2_294219
+#6>denovo622   CES.1_24310 HNS.6_26786
+#----------------last pipe out-------------
+#denovo621   WNA.2_20180 WNA.2_294219
+
 	}
 
 deepest () { 
@@ -155,7 +172,7 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 # better to use $@ that parses all args together ; Otherwise the arg red hat is passed as $1=red and $2=hat (or it has to be quoted)
 }
 
-function dcat() { 
+function dircat() { 
 echo "dcat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return
 local d="$1"
