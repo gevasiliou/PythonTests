@@ -938,10 +938,18 @@ IFS="[, ]" for i in $variable;do #actions;done
 
 BASH:ARGS - POSITIONAL PARAMETERS 
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
+https://stackoverflow.com/questions/7529856/retrieving-multiple-arguments-for-a-single-option-using-getopts-in-bash
 
 ##ITERATE THROUGH ARGS
 function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
 function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
+function test { IFS=[$'\n'"-"] read -d '' -a arr <<<"$@"; declare -p arr;};test -f one two -s three  --> declare -a arr=([0]="" [1]="f one two " [2]="s three")
+
+function test { OPTIND=1;while getopts "f:f1" opt;do echo $opt"--"$OPTARG;done;};test -f one   ---> f--one
+function test { OPTIND=1;while getopts "f:f1" opt;do echo $opt"--"$OPTARG;done;};test -s one   ---> bash: illegal option -- s
+function test { OPTIND=1;while getopts "f:f1" opt;do echo $opt"--"$OPTARG;done;};test -f       ---> bash: option requires an argument -- f
+function test { OPTIND=1;while getopts "f:f1:s:s1" opt;do echo $opt"--"$OPTARG;done;};test -f one -s   ---> f--one - bash: option requires an argument -- s
+
 
 START at the last positional parameter: echo "${@: -1}" or -1:1 to get one char from end.
 
@@ -958,6 +966,10 @@ Function test { local args=$@;declare -a params;readarray -d"-" -t -O1 params <<
 
 Thus you can send an argument like "one two", which will be normally considered as two args ($1=one , $2=two)
 But in case of readarray will be considered as $1 since there is not dash - to separate the args.
+
+Alternative with read builtin:
+# function test { IFS=[$'\n'"-"] read -d '' -a arr <<<"$@"; declare -p arr;};test -f one two -s three
+declare -a arr=([0]="" [1]="f one two " [2]="s three")
 
 Another Option is to use case with loop to iterate through args separated by dash -:
 for arg in $@;do
