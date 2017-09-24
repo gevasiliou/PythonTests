@@ -1015,6 +1015,24 @@ Third and more times, a[$0]++ will have a value greater than 1 and will not prin
 This is different to awk 'a[$0]++' since in this awk, the a[$0] is evaluated with true or false and not arithmetically.
 With 'a[$0]++' we have a print for every line that is not null/0 . So if line1 exists three times will be printed two times.
 
+.B uniq -u emulation - Prints line found only once time = true unique lines
+$ { seq 1 3 && seq 2 4;} |sort 
+1
+2
+2
+3
+3
+4
+
+$ { seq 1 3 && seq 2 4;} |sort |uniq -u
+1
+4
+
+$ { seq 1 3 && seq 2 4;} |awk '{seen[$0]++}END{for (i in seen) printf (seen[i]==1)?i ORS:""}' #sort is not required
+1
+4
+
+
 .B awk 'a[$0]++' <==> awk '(a[$0]++ > 0)'
 In alt syntax with arithmetic evaluation the whole parenthesis will be true if a[$0} is greater than zero before increment. 
 Zero will be only the first time found thus will return arithmetically false.
