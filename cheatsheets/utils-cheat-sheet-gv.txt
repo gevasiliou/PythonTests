@@ -63,6 +63,19 @@ ar -t "$(ls *.deb)"  --> Lists the main packages of the deb wrapper (data.tar.gz
 ar -p "$(ls *.deb)" data.tar.gz |tar -zt  --> Listing files . data.tar coule be gz (like agrep) or .xz (in this case we need tar -Jt)
 ar -p "$(ls *.deb)" data.tar.gz |tar -xzO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin   --> works ok
 
+##MAN PAGES FOR INTERNAL BASH BUILTIN COMMANDS
+if you try man readarray you get nothing.
+man is used to display help pages of external (out of bash) tools, like man grep
+To display a short man page of a builtin command you need to run help -m readarray.
+
+To identify if a command is internal or external , use type:
+$ type readarray
+readarray is a shell builtin
+
+$ type grep
+grep is /bin/grep
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:DEB - TAR FILES
 Extract any compressed text file from downloaded deb:

@@ -113,6 +113,7 @@ http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
 Check man bash for :
 readarray /  mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array] #man bash line 2981
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] #man bash line 3056
+#or help -m readarray 
 
 Important: 
 read is a bash builtin command and though it has a -d (delimiter) option it obeys word splitting acc to IFS. Usefull for null separated data (IFS= and read -d '')
