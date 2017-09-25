@@ -173,18 +173,18 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 }
 
 function dircat() { 
-echo "dcat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
+echo "dircat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return
-local d="$1"
-[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return
+[[ -d $d ]] && local d="$1" || local d=( "$@" ) #If files provided , store them in a array
+#[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return #disabled 24 Sep evening to allow single files
+echo "${d[@]}"
+[[ -d $d ]] && [[ "${d: -1}" != "/" ]] && d="${d}/" #if a directory was given and if last char is not a dash then add a trailing dash
+[[ -d $d ]] && echo "directory to scan and print= $d"
 
-[[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-echo "directory to scan and print= $d"
-
-if [[ "$2" == "--full" ]];then 
+if [[ -d $d ]] && [[ "$2" == "--full" ]];then 
   echo "Will go inside subdirs! Maybe gonna be long time to finish this..." 
   local depth=""
-elif [[ "$2" == "--two" ]];then 
+elif [[ -d $d ]] && [[ "$2" == "--two" ]];then 
   echo "Will go inside subdirs level2! Maybe gonna be long time to finish this..." 
   local depth=" -maxdepth 2"
 else
@@ -195,10 +195,11 @@ fi
 	#for f in /sys/class/power_supply/BAT0/*;do echo "$f";cat "$f";done #this works but it does not go inside sub dirs
 	#find "$d" -type f -exec bash -c 'echo "File: $0";cat "$0"' {} \; #this one worked somehow ok
 	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
-	find "$d" $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
-	    && [[ $(file $0) == *"ASCII"* || $(file $0) == *"empty"* ]] && \
-	    echo "$0" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
-	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics 
+	find "${d[@]}" $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
+	                                          && [[ $(file "$0") == *"ASCII"* || $(file "$0") == *"empty"* ]] \
+	                                          && echo "$0 --> /tmp/.__tmpconf" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
+	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics
+	# using find ${d[@]} will work with globbing like file* and also with one entry like a simple directory
 	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#-!#/\.SH /g;G" /tmp/.__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
 	rm -f /tmp/.__tmpcont
 	#Call the man as pager to display files contents. Man formatting is necessary: 
