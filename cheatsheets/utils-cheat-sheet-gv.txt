@@ -654,3 +654,35 @@ $ timeout command
 Start COMMAND, and kill it if still running after DURATION.
 For example : timeout 2 yes
 timeout --foreground 12s tail -f access.log
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:youtube-dl
+.B List Codecs
+$ youtube-dl -F url : displays available video and audio formats (selectable by format code)
+
+.B Get the video with audio
+$ youtube-dl -f 134+251 url : gets youtube video with video format 135 and audio format 125 and merges those two in a single file - local video
+
+If unsure which format codes to select use this global syntax:
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://www.youtube.com/watch?v=FoTsbrPxP8I
+
+.B Extract Audio:
+$ youtube-dl --extract-audio --audio-format mp3 https://www.youtube.com/watch?v=FoTsbrPxP8I  #extracts audio in mp3. Requires ffmpeg to be installed.
+
+.B Get real video urls :
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I
+https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=135&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=video/mp4&gir=yes&clen=22267226&lmt=1480146626325700&dur=189.760&mt=1506376513&key=dg_yt0&signature=7B349CE08E2AB0D2154B30B864EF9C9B96F60E4E.4DC031B2476260349DCE899E5794B469FA8CF95C&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
+https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=140&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=audio/mp4&gir=yes&clen=3015473&lmt=1480133239302273&dur=189.823&mt=1506376513&key=dg_yt0&signature=4D01849E5C21A0BB8D9189D949F7D4C2B50DA676.1A23DA1855CEA7D4EE7E0CC913C5ADAA9CBBC232&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
+
+First url is video only , second url is audio only. Both urls can be opened in browser and contain a download button.
+
+.B Download a portion (crop) of a video:
+ffmpeg -ss 10 -i $(youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I) -t 10 -c:v copy -c:a copy testvid.mp4
+-ss  : starting point
+-i   : input file
+-t   : duration before to close output
+-c:v copy: just copy the existed video codec - no re-coding
+-c:a copy: just copy present audio codec - no re-coding
+
+This should work according to https://nicktux.com/2017/09/24/youtubedl-ffmpeg-download-specific-timing/ but is not working in my Debian.
+youtube-dl --get-url returns two urls: one for video which is recognized and one for audio which is not recognized and ffmpeg fails.
