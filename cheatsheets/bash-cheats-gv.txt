@@ -2193,7 +2193,7 @@ To see current alias use "alias". To unset an alias use unalias <name>
 Can be declared either with function myf { } or directly as myf () {...}
 Function can get arguments ($@, $*, $#,$1,etc) that can be used by function in the same way that a script receives arguments.
 
-##FUNCTIONS IN SHELL - LIKE ALIASE
+##FUNCTIONS IN SHELL - LIKE ALIAS
 In the same file (.bashrc or .bash_aliases) you can have functions.
 Those functions work directly from command line - can be exposed using set
 Tip: You can not use the bash functions in a script, but you can source them by sourcing the .bash_aliases.
@@ -2302,3 +2302,18 @@ Note that this is true for *single quotes* too!
   foo is \, bar is \\
 
 As a general idea, backticks do not handle correctly backslashes and this makes nesting much more difficult compared to $( ) syntax.
+------------------------------------------------------------------------------------------------------------------------------------
+BASH:BIND
+
+##BINDING A KEY COMBINATION TO A COMMAND
+$ bind -x '"\C-t": "echo testing"'
+<I press ctrl+t>
+testing
+
+$ bind '"\e[24~":"pwd\n"'
+Now when you press F12, you'll get the current directory displayed without having to press Enter
+
+You can determine the character sequence emitted by a key by pressing Ctrl-v at the command line, then pressing the key you're interested in. 
+On my system for F12, I get ^[[24~. 
+The ^[ represents Esc. Different types of terminals or terminal emulators can emit different codes for the same key.
+Once you've gotten the macro working the way you want, you can make it persistent by adding it to your ~/.inputrc file. 
