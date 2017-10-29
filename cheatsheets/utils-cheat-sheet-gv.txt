@@ -692,8 +692,15 @@ UTILS:XDOTOOL
 http://tuxradar.com/content/xdotool-script-your-mouse
 
 Is actually an X utility in which you can script the mouse moves = programmatically emmit a click or make a mouse move
-Try this one: xdotool mousemove 0 0 click 1 (or click 3)
+Try this one: 
+# xdotool mousemove 0 0 click 1 (or click 3)
 You can make automation scripts either on fixed windows using absolute coords, or in particular windows using relative coords.
 
+More examples: 
+# xdotool search "Notes" windowactivate --sync type "hello George, how are you?"  #Assuming that a notes window is present
+# xdotool key ctrl+c
+# xdotool key F1
 
-
+Open a new LibreOffice Draw document, select the line tool and run on terminal this one:
+# xdotool search "Untitled" windowactivate --sync mousemove --window %1 300 300  && sleep 0.5 && xdotool mousedown 1 && sleep 0.5 && xdotool mousemove_relative --sync 400 400 && sleep 0.5 && xdotool mouseup 1
+You should see an automatically draw straight line 
