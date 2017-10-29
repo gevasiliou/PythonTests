@@ -656,7 +656,7 @@ For example : timeout 2 yes
 timeout --foreground 12s tail -f access.log
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:youtube-dl
+UTILS:YOUTUBE-DL
 .B List Codecs
 $ youtube-dl -F url : displays available video and audio formats (selectable by format code)
 
@@ -686,3 +686,14 @@ ffmpeg -ss 10 -i $(youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --g
 
 This should work according to https://nicktux.com/2017/09/24/youtubedl-ffmpeg-download-specific-timing/ but is not working in my Debian.
 youtube-dl --get-url returns two urls: one for video which is recognized and one for audio which is not recognized and ffmpeg fails.
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:XDOTOOL
+http://tuxradar.com/content/xdotool-script-your-mouse
+
+Is actually an X utility in which you can script the mouse moves = programmatically emmit a click or make a mouse move
+Try this one: xdotool mousemove 0 0 click 1 (or click 3)
+You can make automation scripts either on fixed windows using absolute coords, or in particular windows using relative coords.
+
+
+

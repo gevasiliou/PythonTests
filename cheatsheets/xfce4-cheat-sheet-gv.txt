@@ -1,0 +1,81 @@
+XFCE4:CHEAT SHEET by GV
+https://xfce.org/
+https://wiki.archlinux.org/index.php/xfce
+
+------------------------------------------------------------------------------------------------------------------------
+XFCE4:XFCONF-QUERY 
+https://wiki.archlinux.org/index.php/xfce
+
+Used to display or set properties for the various xfce subprogramms (called chanels):
+
+Supports various CLI options like :
+  -c, --channel         The channel to query/modify
+  -p, --property        The property to query/modify
+  -s, --set             The new value to set for the property
+  -l, --list            List properties (or channels if -c is not specified)
+  -v, --verbose         Verbose output
+  -n, --create          Create a new property if it does not already exist
+  -t, --type            Specify the property value type
+  -r, --reset           Reset property
+  -R, --recursive       Recursive (use with -r)
+  -a, --force-array     Force array even if only one element
+  -T, --toggle          Invert an existing boolean property
+  -m, --monitor         Monitor a channel for property changes
+
+Listing all chanels
+$ xfconf-query -l
+Channels:
+  xfce4-settings-manager
+  pointers
+  xfce4-session
+  .............
+
+Listing properties of a specific chanell
+$ xfconf-query -c xfce4-session -vl
+/general/FailsafeSessionName          Failsafe
+/general/SaveOnExit                   true
+/general/SessionName                  Default
+..........................................................
+
+$ xfconf-query -c xfce4-power-manager -vl
+/xfce4-power-manager/blank-on-ac                        10
+/xfce4-power-manager/blank-on-battery                   10
+/xfce4-power-manager/brightness-level-on-ac             20
+..........................................................
+
+By default xfce4-session tries to start the gpg- or ssh-agent. To disable this run the following commands:
+
+xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled -n -t bool -s false
+xfconf-query -c xfce4-session -p /startup/gpg-agent/enabled -n -t bool -s false
+
+Above commands create (-n) a property (-p /startup/....) for chanel xfce4-session (-c) of type (-t) boolean (bool) and value (-s) false.
+
+It seems that all settings are stored in xml files here:
+ls -all ~/.config/xfce4/xfconf/xfce-perchannel-xml
+
+------------------------------------------------------------------------------------------------------------------------
+XFCE4:SESSION CONFIGURATION 
+https://docs.xfce.org/xfce/xfce4-session/start
+https://docs.xfce.org/xfce/xfce4-session/preferences
+https://docs.xfce.org/xfce/xfce4-session/advanced
+man xfce4-session
+https://stackoverflow.com/questions/7579438/how-to-execute-a-script-when-xfce-session-ends
+https://helpmanual.io/packages/apt/xfce4-session/
+
+XFCE can use a standard/default session to boot or you can save the session you are working and next boot will use the saved data.
+
+You can call the gtk session manager using xfce4-session-settings (installed by xfce4-session which is the main wrapper)
+
+.B xfce4-session-logout
+The xfce4-session-logout command allows you to programmatically logout from your Xfce session. 
+It requests the session manager to display the logout confirmation screen, or, if given one of the command-line options below, causes the session manager to take the requested action immediately. 
+
+OPTIONS
+--logout    : Log out without displaying the logout dialog.
+--halt      : Halt without displaing the logout dialog.
+--reboot    : Reboot without displaying the logout dialog.
+--suspend   : Suspend without displaying the logout dialog.
+--hibernate : Hibernate without displaying the logout dialog.
+--fast      : Do a fast shutdown. This instructs the session manager not to save the session, but instead to quit everything quickly.
+--help      : Print a help screen and exit.
+--version   : Output version information and exit. 
