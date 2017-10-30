@@ -66,7 +66,7 @@ XFCE can use a standard/default session to boot or you can save the session you 
 
 You can call the gtk session manager using xfce4-session-settings (installed by xfce4-session which is the main wrapper)
 
-.B xfce4-session-logout
+## xfce4-session-logout
 The xfce4-session-logout command allows you to programmatically logout from your Xfce session. 
 It requests the session manager to display the logout confirmation screen, or, if given one of the command-line options below, causes the session manager to take the requested action immediately. 
 
@@ -79,3 +79,17 @@ OPTIONS
 --fast      : Do a fast shutdown. This instructs the session manager not to save the session, but instead to quit everything quickly.
 --help      : Print a help screen and exit.
 --version   : Output version information and exit. 
+
+xfce4-session comunicates with the rest of the system using dbus
+For example you can ask xfce4 to save the session using dbus like this (untested):
+
+## Ask the session manager to save the session as-is without quitting, giving a new session name.
+dbus-send --session --dest=org.xfce.SessionManager --print-reply /org/xfce/SessionManager org.xfce.Session.Manager.Checkpoint string:"NewSession"
+method return sender=:1.64 -> dest=:1.75 reply_serial=2
+
+
+## Ask the session manager to save the session, using the current session name.
+$ dbus-send --session --dest=org.xfce.SessionManager --print-reply /org/xfce/SessionManager org.xfce.Session.Manager.Checkpoint string:""
+method return sender=:1.76 -> dest=:1.83 reply_serial=2
+
+For more dbus examples see here : http://users.xfce.org/~kelnos/testing/xfsm-dbus-examples.txt
