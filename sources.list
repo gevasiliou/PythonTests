@@ -8,7 +8,7 @@
 
 deb http://ftp.gr.debian.org/debian/ stable main non-free contrib
 deb http://ftp.gr.debian.org/debian/ testing main non-free contrib
-deb http://ftp.gr.debian.org/debian/ sid main non-free contrib
+deb http://ftp.gr.debian.org/debian/ unstable main non-free contrib
 deb http://ftp.gr.debian.org/debian/ experimental main non-free contrib
 
 deb http://ftp.gr.debian.org/debian/ stable-updates main contrib non-free
@@ -18,7 +18,7 @@ deb http://security.debian.org/ testing/updates main contrib non-free
 
 deb-src http://ftp.gr.debian.org/debian/ stable main non-free contrib
 deb-src http://ftp.gr.debian.org/debian/ testing main non-free contrib
-deb-src http://ftp.gr.debian.org/debian/ sid main non-free contrib
+deb-src http://ftp.gr.debian.org/debian/ unstable main non-free contrib
 deb-src http://ftp.gr.debian.org/debian/ experimental main non-free contrib
 
 deb-src http://ftp.gr.debian.org/debian/ stable-updates main contrib non-free
