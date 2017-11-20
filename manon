@@ -117,8 +117,8 @@ if [[ $2 == "--apt" ]]; then
 	aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
 	echo "Package: $aptpkg"
 	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
-	#initially i did it with --print-uris install but in case of yade, there are three deb files returned.
-	#on the other hand , the download option returns only the required yade package.
+	#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
+	#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
 	if [[ "$aptresp" == *"Unable to locate package"* ]];then
 		echo "Error. Either wrong package name or other error. Raw output of apt:"
 		apt-get --print-uris install $aptpkg
@@ -127,7 +127,7 @@ if [[ $2 == "--apt" ]]; then
 
 	deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
-	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
 
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
@@ -153,7 +153,14 @@ if [[ $2 == "--apt" ]]; then
 				loop=0
 			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
 				echo "Display ${manpage[$ms]}"
-				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+				if [[ ${manpage[$ms]} =~ "changelog" ]]; then
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less  #Nov17: Different handling of changelogs - regular txt files
+				elif [[ ${manpage[$ms]} =~ "README" ]]; then
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less #Nov17: Different handling of README since it is not compressed
+				else
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+				fi
 			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
 				echo "out of range - try again"
 			else
@@ -177,14 +184,16 @@ if [[ $2 == "--down" ]]; then
 	echo "data.tar = $datatar"
 
 	if [[ ${datatar##*.} == "gz" ]];then 
-		options="z"   #Case of agrep
+		options="z"   #Case of package agrep
 	elif [[ ${datatar##*.} == "xz" ]];then
 		options="J"  # the most common case for data.tar
 	else
 		echo "data.tar is not a gz or xz archive. Exiting"
 		exit 1
 	fi
-	manpage+=($(ar p $debname $datatar | tar t"$options" |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+	#manpage+=($(ar p $debname $datatar | tar t"$options" |grep -v -e '^l' |grep -e "man/man" -e "changelog" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: Changelog option added
+	manpage+=($(dpkg -c $debname |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" |grep -vE "\/$" |awk '{print $NF}')) 
+	#Nov17: Changelog option added and deb contents listing changed from 'ar -p' to 'dpkg -c' since the latest one seems more reliable and robust and also provides an ls similar output thus grep -v '^l' works fine = skip sym links	
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package - These are the contents of the $debname:"
@@ -211,7 +220,14 @@ if [[ $2 == "--down" ]]; then
 				loop=0
 			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
 				echo "Display ${manpage[$ms]}"
-				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
+				#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
+				if [[ ${manpage[$ms]} =~ "changelog" ]]; then
+				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |gunzip -c |less  #Nov17: Different handling of changelogs - regular txt files
+                elif [[ ${manpage[$ms]} =~ "README" ]]; then
+                   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |less  #Nov17: Different handling of README since it is not compressed
+				else 
+				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin
+				fi
 	#			loop=0
 			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
 				echo "out of range - try again"
@@ -264,6 +280,7 @@ fi
 # https://debmans.readthedocs.io/en/latest/usage.html
 fi
 
+# Bellow Options have been made for testing only. Not working correctly, especially with new debian man pages web site.
 if [[ $2 == "--debcheck" ]]; then
 echo "This is debian online manpages checker"
 unset pk
@@ -300,7 +317,7 @@ done
 
 fi
 
-
+#Bellow is also for testing 
 if [[ $2 == "--aptvsdeb" ]]; then
 	while IFS=" " read -r _ _ _ _ _ _ _ _ _ pkg;do
 		unset manpage
@@ -443,6 +460,7 @@ diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-
 # or
 # ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |man /dev/stdin
 # man can operate as gunzip and cat on the same time, even if the file is a typical text file and not a man page.
+#
 # for some reason tar fails to unzip the last gz file (but gunzip works ok):
 # ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/netcat/changelog.Debian.gz |tar -xzO |cat
 # if the file is not compressed you can just run tar -O (output to stdout = screen)
@@ -454,16 +472,17 @@ diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-
 # apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g #this will isolate the full deb link
 # dpkg -c <(curl -sL -o- $(apt-get --print-uris download apt-spy 2>&1 |cut -d" " -f1 |sed s/\'//g)) #this does the job
 # though this fails to be registered an a alias due to the sed that tries to remove ' character from start/end.
+# 
 # Alternative ${var: 1:-1} removes first and last char and now it works!
 # alias lsaptonline='function __aso (){ tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1); tmpdeb=$(echo "${tmpdeb: 1:-1}");dpkg -c <(curl -sL -o- $tmpdeb); } ;__aso'
-
+#
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -tz --wildcards --no-anchored '*.h'   #archive file listing with wildcards - avoiding grep
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -zt |grep '/src/.*\.h$'               #classic tar archive file listing
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzO --wildcards --no-anchored '*.h'    #extract and dump contents on screen
 # curl -sL -o- "http://ftp.gnu.org/gnu/tar/tar-latest.tar.gz" |tar -xzf - --wildcards --no-anchored '*.h'  #extract and save files locally in a new directory tar-1.29 (goes into CWD)
-
+#
 # curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb |dpkg-deb --fsys-tarfile /dev/stdin|tar -t # Displays files in deb archive, identical to dpkg -c
-
+#
 
 # 5. Resources:
 # http://www.howtogeek.com/howto/uncategorized/linux-quicktip-downloading-and-un-tarring-in-one-step/

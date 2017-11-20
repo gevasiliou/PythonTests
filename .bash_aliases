@@ -133,10 +133,11 @@ diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s 
 }
 
 function lsdeb () { 
-echo "lsdeb: Displays contents of the .deb file corresponding to an apt-get install package $1"
+echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1"
 [[ -z $1 ]] && echo "apt pkg file missing " && return
 local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 tmpdeb=$(echo "${tmpdeb: 1:-1}")
+echo "$tmpdeb"
 dpkg -c <(curl -sL -o- $tmpdeb)
 }
 
