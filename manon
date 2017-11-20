@@ -115,6 +115,8 @@ fi
 if [[ $2 == "--apt" ]]; then
 	loop=1
 	pkg="$1"
+    #Does not work with pkg/experimental or pkg/repo in general due to apt list failure
+	#echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
 	aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
 	echo "Package: $aptpkg"
 	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
