@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copy this file to /usr/bin or /bin or to any of the paths provided by $PATH. Ensure executable rights for all users and then you can then call it directly avoiding the ./manon syntax
 helpme() {
 	    cat <<EOF
 This script search online man pages in various ways.
