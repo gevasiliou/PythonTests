@@ -114,14 +114,20 @@ fi
 
 if [[ $2 == "--apt" ]]; then
 	loop=1
-	pkg="$1"
-    #Does not work with pkg/experimental or pkg/repo in general due to apt list failure
-	#echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
-	aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
-	echo "Package: $aptpkg"
-	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
-	#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
-	#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
+	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
+
+    if [[ $1 =~ "/" ]];then 
+        aptresp=$(apt-get --print-uris download $1 2>&1)
+        echo "apt response=$aptresp"
+    else
+		pkg="$1"
+		aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
+		echo "Package: $aptpkg"
+		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
+		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+	fi
 	if [[ "$aptresp" == *"Unable to locate package"* ]];then
 		echo "Error. Either wrong package name or other error. Raw output of apt:"
 		apt-get --print-uris install $aptpkg
@@ -175,16 +181,36 @@ if [[ $2 == "--apt" ]]; then
 fi
 
 if [[ $2 == "--down" ]]; then
-	pkg="$1"
 	loop=1
-	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
-	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1
-	echo "Package: $aptpkg"
+	rawpkg="$1"
+    if [[ $rawpkg =~ "/" ]];then 
+        aptresp=$(apt-get --print-uris download $rawpkg 2>&1)
+        echo "apt response=$aptresp"
+    else
+		aptpkg=$(apt list $pkg 2>/dev/null |grep $rawpkg |cut -d" " -f1 |cut -d"," -f1)
+		echo "Package: $aptpkg"
+		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
+		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+	fi
+
+	if [[ "$aptresp" == *"Unable to locate package"* ]];then
+		echo "Error. Either wrong package name or other error. Raw output of apt:"
+		apt-get --print-uris install $aptpkg
+		exit 1
+	else
+	    aptpkg=$1
+	fi
+
+#	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1) #Prior to Nov17
+#	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1 || echo "Package: $aptpkg" #prior to Nov17
 	apt-get download "$aptpkg" 2>/dev/null
-	debname=$(find . -name "$pkg*.deb")
+	pkg="${rawpkg%%/*}" #Nov17: remove the /repository i.e /experimental if exists
+	debname=$(find . -maxdepth 1 -name "$pkg*.deb")
 	echo "Deb Name = $debname"
 	datatar=$(ar t "$debname" |grep "data.tar")
 	echo "data.tar = $datatar"
+
 
 	if [[ ${datatar##*.} == "gz" ]];then 
 		options="z"   #Case of package agrep
