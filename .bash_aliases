@@ -133,12 +133,34 @@ diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s 
 }
 
 function lsdeb () { 
-echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1"
-[[ -z $1 ]] && echo "apt pkg file missing " && return
-local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-tmpdeb=$(echo "${tmpdeb: 1:-1}")
-echo "$tmpdeb"
-dpkg -c <(curl -sL -o- $tmpdeb)
+	echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --nd to exclude directories"
+	[[ -z $1 ]] && echo "apt pkg file missing " && return
+	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
+	tmpdeb=$(echo "${tmpdeb: 1:-1}")
+	echo "$tmpdeb"
+	if [[ $2 == "--nd" ]];then
+	dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d'
+	else
+	dpkg -c <(curl -sL -o- $tmpdeb)
+	fi
+}
+
+function debcat () {
+	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1"
+	[[ -z $1 ]] && echo "apt pkg file missing " && return
+	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
+	local debfile="$2"
+	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
+    tmpdeb=$(echo "${tmpdeb: 1:-1}")
+    echo "deb package: $tmpdeb"
+    echo "deb file to display:  $debfile"
+    if [[ "$debfile" =~ "man/man" ]];then
+	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |man /dev/stdin
+	elif [[ "${debfile: -3}" == ".gz" ]];then
+	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |gunzip -c |less
+	else
+	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |less
+	fi
 }
 
 function aptshowlight() { 
