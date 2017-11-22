@@ -146,9 +146,10 @@ function lsdeb () {
 }
 
 function debcat () {
-	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1"
+	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1. Use --list switch to force a deb listing of all files"
 	[[ -z $1 ]] && echo "apt pkg file missing " && return
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
+	[[ $2 == "--list" ]] && lsdeb "$1" && return
 	local debfile="$2"
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
     tmpdeb=$(echo "${tmpdeb: 1:-1}")
