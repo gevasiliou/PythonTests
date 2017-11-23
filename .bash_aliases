@@ -152,12 +152,12 @@ function debcat () {
 	[[ $2 == "--list" ]] && lsdeb "$1" && return
 	local debfile="$2"
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-    tmpdeb=$(echo "${tmpdeb: 1:-1}")
+    tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char (a single quote)
     echo "deb package: $tmpdeb"
     echo "deb file to display:  $debfile"
     if [[ "$debfile" =~ "man/man" ]];then
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |man /dev/stdin
-	elif [[ "${debfile: -3}" == ".gz" ]];then
+	elif [[ "${debfile: -3}" == ".gz" ]];then #last three chars
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |gunzip -c |less
 	else
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |less
