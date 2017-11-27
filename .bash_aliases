@@ -139,29 +139,80 @@ function lsdeb () {
 	tmpdeb=$(echo "${tmpdeb: 1:-1}")
 	echo "$tmpdeb"
 	if [[ $2 == "--nd" ]];then
-	dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d'
+	    dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
 	else
-	dpkg -c <(curl -sL -o- $tmpdeb)
+	    dpkg -c <(curl -sL -o- $tmpdeb)
 	fi
+
+
 }
 
 function debcat () {
-	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1. Use --list switch to force a deb listing of all files"
+	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
+	echo "Use --list switch to force a deb listing of all files"
+	echo "Use --ind switch to be prompted will all files found excluding directories and links"
+	echo "Combine --readable after --ind to force index to exlude links,dirs and binary files"
+
 	[[ -z $1 ]] && echo "apt pkg file missing " && return
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
 	[[ $2 == "--list" ]] && lsdeb "$1" && return
-	local debfile="$2"
+
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-    tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char (a single quote)
+    tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote
     echo "deb package: $tmpdeb"
+
+
+	if [[ $2 == "--ind" ]];then
+	    unset flist ms loop
+        loop=1
+	    if [[ "$3" == "--readable" ]];then
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/bin\/' -e '\/$' |awk '{print $NF}')) 
+	    else
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
+	    fi
+	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
+	    while [[ $loop -eq 1 ]]; do
+			read -p "Select file to display by id or  q to quit : " ms
+			[[ "$ms" == "q" ]] && echo "exiting...." && return
+			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]} =~ "/bin/" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then 
+				echo "We Cannot Display ${flist[$ms]} since it is a binary file"
+				key="q"
+			elif [[ $ms -gt $((${#flist[@]}-1)) ]]; then
+				echo "out of range - try again"
+				key="q"
+			else
+				read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
+			fi
+			
+			if [[ "$key" == "q" ]]; then
+				echo "returning..."
+				declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'				
+			else 
+				if [[ ${flist[$ms]} =~ "man/man" ]]; then 
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
+				elif [[ ${flist[$ms]: -3} == ".gz" ]]; then
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |gunzip -c |sed "1i ${flist[$ms]}" |less
+				else 
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |sed "1i ${flist[$ms]}" |less
+				fi
+			fi
+		done
+        return
+	fi	
+
+
+	local debfile="$2"
     echo "deb file to display:  $debfile"
     if [[ "$debfile" =~ "man/man" ]];then
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |man /dev/stdin
 	elif [[ "${debfile: -3}" == ".gz" ]];then #last three chars
-	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |gunzip -c |less
+	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |gunzip -c |sed "1i $2" |less
+	elif [[ ${debfile: -3} == ".so" ]] || [[ ${debfile: -3} == ".mo" ]] || [[ ${debfile} =~ "/bin/" ]];then 
+		echo "We Cannot Display ${debfile} since it is a binary file"
 	else
-	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |less
+	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |sed "1i $2" |less
 	fi
+
 }
 
 function aptshowlight() { 
