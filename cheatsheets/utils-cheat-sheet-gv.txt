@@ -138,8 +138,16 @@ awk '/pattern1/ && /pattern2/'
 awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
 
 ##GREP COLORIZE 
-grep --color 'pattern' or grep --color -E 'pattern|$'
-Or in a function/alias : function highlight () { grep --color -E "$1|$" "${@:1}" }
+.B grep --color 'pattern' file
+This will return and colorize ONLY the matching lines. 
+Colorize will be applied only to 'pattern' and not to the whole line, unless we use 'pattern.*' or '.*pattern.*'
+
+.B grep --color -E 'pattern.*|$' file
+This will print ALL lines of the file but will colorize only the lines matching pattern
+This works because |$ (or |^) matches and colorize invisibly the null byte at the end of the line (or at the beginning in case of |^)
+
+.B In a function: 
+function highlight () { grep --color -E "$1|$" "${@:1}" }
 
 ##GREP MULTIPLE PATTERNS AND PRINT
 Combine grep with cut and multipatterns: 
