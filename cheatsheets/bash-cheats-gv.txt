@@ -102,6 +102,10 @@ R="\033[31m"
 Y="\033[33m"
 printf "${Y}MCS${N} Service Status is\t\t |${G}UP${N}\n"
 
+You can have an overview of all available colors using something like this in bash:
+$ t=$(for code in {1..258}; do echo -e "\e[38;05;${code}m $code: Text in Color"; done ; echo "")
+$ echo "$t" |awk 'FNR%6?ORS=",":ORS="\n"' |column -t
+
 ------------------------------------------------------------------------------------------------------------------------
 BASH:READ - BASICS
 ##READING FILES (MAPFILE, READARRAY, READ -R , ETC)
