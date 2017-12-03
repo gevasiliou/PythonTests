@@ -181,7 +181,8 @@ function debcat () {
 				echo "out of range - try again"
 				key="q"
 			else
-				read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
+				#read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
+				echo "proceeding with ${flist[$ms]} "
 			fi
 			
 			if [[ "$key" == "q" ]]; then
