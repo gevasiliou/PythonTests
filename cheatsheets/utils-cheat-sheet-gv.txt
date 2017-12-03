@@ -665,14 +665,28 @@ timeout --foreground 12s tail -f access.log
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:YOUTUBE-DL
+.B Default Usage
+$ youtube-dl https://www.youtube.com/watch?v=o0yimq6W5Y8
+By default , youtube-dl downloads video file and audio file separately in a two steps process and then it merges and synchronizes those two files.
+Temp Files are deleted by default unless -k (keep) option is given.
+
 .B List Codecs
 $ youtube-dl -F url : displays available video and audio formats (selectable by format code)
 
+.B Get only the video without audio
+Can be done by specifying a particular format, like -f best or -f 133 etc:
+$ youtube-dl -f 134 http://youtubturl 
+
+Mind that -f best will download both video and audio
+
 .B Get the video with audio
 $ youtube-dl -f 134+251 url : gets youtube video with video format 135 and audio format 125 and merges those two in a single file - local video
+Mind that video format is given first and audio format is given second -f XXX+YYY (XXX is video and YYY is audio codec)
 
 If unsure which format codes to select use this global syntax:
 $ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://www.youtube.com/watch?v=FoTsbrPxP8I
+
+You can also work with just -f best - this seems to download the best video + best audio at once.
 
 .B Extract Audio:
 $ youtube-dl --extract-audio --audio-format mp3 https://www.youtube.com/watch?v=FoTsbrPxP8I  #extracts audio in mp3. Requires ffmpeg to be installed.
