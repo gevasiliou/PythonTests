@@ -158,7 +158,7 @@ function debcat () {
 	[[ $2 == "--list" ]] && lsdeb "$1" && return
 
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-    tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote
+    tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
     echo "deb package: $tmpdeb"
 
 
@@ -166,7 +166,7 @@ function debcat () {
 	    unset flist ms loop
         loop=1
 	    if [[ "$3" == "--readable" ]];then
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/bin\/' -e '\/$' |awk '{print $NF}')) 
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
 	    else
 			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
 	    fi
@@ -174,7 +174,7 @@ function debcat () {
 	    while [[ $loop -eq 1 ]]; do
 			read -p "Select file to display by id or  q to quit : " ms
 			[[ "$ms" == "q" ]] && echo "exiting...." && return
-			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]} =~ "/bin/" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then 
+			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then #|| [[ ${flist[$ms]} =~ "/bin/" ]]
 				echo "We Cannot Display ${flist[$ms]} since it is a binary file"
 				key="q"
 			elif [[ $ms -gt $((${#flist[@]}-1)) ]]; then
@@ -207,7 +207,7 @@ function debcat () {
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |man /dev/stdin
 	elif [[ "${debfile: -3}" == ".gz" ]];then #last three chars
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |gunzip -c |sed "1i $2" |less
-	elif [[ ${debfile: -3} == ".so" ]] || [[ ${debfile: -3} == ".mo" ]] || [[ ${debfile} =~ "/bin/" ]];then 
+	elif [[ ${debfile: -3} == ".so" ]] || [[ ${debfile: -3} == ".mo" ]];then #|| [[ ${debfile} =~ "/bin/" ]];then 
 		echo "We Cannot Display ${debfile} since it is a binary file"
 	else
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |sed "1i $2" |less
