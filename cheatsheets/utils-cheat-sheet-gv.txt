@@ -716,7 +716,7 @@ UTILS:XDOTOOL
 http://tuxradar.com/content/xdotool-script-your-mouse
 
 Is actually an X utility in which you can script the mouse moves = programmatically emmit a click or make a mouse move
-Consider that upper left corner is 0x0 and bottom right corner is 1366x768 (as reported by xrandr - current / active setting)
+Consider that upper left corner is 0x0 and bottom right corner is 1366x768 (XxY as reported by xrandr - current / active setting)
 
 Try those ones: 
 # xdotool mousemove 1300 500 - mouse moves 1300 to the left and 500 down, 
