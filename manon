@@ -4,30 +4,111 @@ helpme() {
 	    cat <<EOF
 This script search online man pages in various ways.
 Usage: manon [packagename] [option1] [option2]
-  Option1:
-    --help				This usage screen.
-    --online [option2]			Use online services to retrieve requested man page (die.net, mankier.com and man.he.net)
-					If option2 is ommited , starting from die.net
-    --apt				Extract and display the man page from the deb package without downloading it. 
-    --down				Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
-    --debian			Search particulary in debian manpages online platform 
-  
-  Option 2:
-	--mankier			Skip die.net look at mankier.com
-	--manhenet			Skip die.net and mankier.com and look directly in man.he.net
-	--browser			When used with --debian instead of displaying man page in terminal opens the default browser.
-	--nodelete			When used with --down the deb package will not be deleted.
+Option1:
+    --help          This usage screen.
 
+    --online        Use online services to retrieve requested man page (die.net, mankier.com and man.he.net).
+    --online-gui    Force man page to be displayed in GUI (yad) 
+                    Option2:
+                           --mankier     Skip die.net look at mankier.com
+                           --manhenet    Skip die.net and mankier.com and look directly in man.he.net
+                           * If option2 is ommited , default is die.net service
 
+    --apt           Extract and display the man page from the deb package without downloading it. 
+
+    --down          Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
+                    Option 2:
+                             --nodelete     When used with --down the deb package will not be deleted.
+
+    --debian        Search particulary in debian manpages online platform 
+                    Option 2:
+                             --browser     When used with --debian instead of displaying man page in terminal opens the default browser.
+
+    --bsd           Display the FreeBSD man pages (i.e https://man.freebsd.org/grep)
+    
+    --openbsd       Display OpenBSD man pages (i.e https://man.openbsd.org/grep)
+    
+    --ubuntu        Display the man page from Ubuntu (i.e http://manpages.ubuntu.com/grep) 
+    
+    --ubuntulist    Display a list of available man pages at http://manpages.ubuntu.com (i.e posix man, plan9, regular man pages, etc)
+    
 EOF
+#Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tab not)
 }	
 
-#[[ -z $1 || -z $2 ]] && helpme && exit
-[[ -z $1 ]] && helpme && exit
-[[ -z $2 ]] && mode="--apt" || mode="$2"
+[[ -z $1 ]] && helpme && exit #if no man page is requested print help and exit
+[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
 
-if [[ "$mode" == "--online" || "$mode" == "--online-nogui" ]]; then
+#---------------------------------------------------------------------------------------------------------------------------------------
+if [[ "$mode" == "--bsd" ]]; then
+  bsdpage="$1"
+  bsddata="$(links -dump https://man.freebsd.org/$bsdpage |sed '1,/home | help/d' )"
+  [[ "$bsddata" =~ "Sorry, no data found" ]] && echo "No man page found at \"https://man.freebsd.org/$bsdpage\"" || echo "$bsddata" |less
+fi
+#---------------------------------------------------------------------------------------------------------------------------------------
+#links -dump https://man.openbsd.org/grep |sed '1,/GREP/d' |less
+if [[ "$mode" == "--openbsd" ]]; then
+  bsdpage="$1"
+  bsdpagecap="${bsdpage^^}" #Capitalize the man page title
+  bsddata="$(links -dump https://man.openbsd.org/$bsdpage |sed "1,/$bsdpagecap/d")"
+  [[ -z "$bsddata" ]] && echo "No man page found at \"https://man.openbsd.org/$bsdpage\"" || echo "$bsddata" |less
+fi
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+# Ubuntu Online Man pages
+# Global Address : http://manpages.ubuntu.com
+# Quick jump : http://manpages.ubuntu.com/grep . Includes jscript redirection and thus works on browser but not on terminal (links or curl -L)
+# Work around: http://manpages.ubuntu.com/cgi-bin/search.py?q=grep  --> provides a list will all man pages / various releases
+# Using curl you can get this list in terminal: 
+# curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=dman |perl -pe 's/>/>\n/g' |grep -o '/manpages.*man.*html'
+# /manpages/artful/en/man1/dman.1.html
+# /manpages/precise/en/man1/dman.1.html
+# /manpages/trusty/en/man1/dman.1.html
+# /manpages/xenial/en/man1/dman.1.html
+# /manpages/zesty/en/man1/dman.1.html
+# You can keep the most recent one (zesty) - this is also the auto-forwarding man pages if you use http://manpages.ubuntu.com/grep
+# or you can provide an indexed array to select the man page you want
+# To use zesty you just need to dump http://manpages.ubuntu.com/manpages/zesty/en/man1/dman.1.html
+
+if [[ "$mode" == "--ubuntu" ]]; then
+  page="$1"
+  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' -e 'plan9' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
+  [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
+  [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
+  [[ -z "$address" ]] && echo "no man pages returned : curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
+  read -p "$address - press any key to continue" 
+  links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less
+fi
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+if [[ "$mode" == "--ubuntulist" ]]; then
+  page="$1"
+  loop=1
+	manpage+=($(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o '/manpages/.*man.*html') ) 
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No results. "
+			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
+		else
+			clear
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+    	read -p "Select man pages to display by id or q to quit : " ms
+        if [[ $ms == "q" ]]; then
+			echo "exiting" && loop=0
+		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+			echo "Display ${manpage[$ms]}"
+			links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less
+		else
+			echo "Invalid Selection - Try Again"
+		fi
+	done
+fi
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 	title=$1
 	unset dt0 dt data mson loopon
 	loopon=1
@@ -100,10 +181,10 @@ if [[ "$mode" == "--online" || "$mode" == "--online-nogui" ]]; then
 		echo "No manual found either at die.net, mankier.com or man.he.net. Exiting"
 		exit
 	fi
-	if [[ "$mode" == "--online-nogui" ]];then
-		echo "$data" |less #display in terminal rather than yad
-	else
+	if [[ "$mode" == "--online-gui" ]];then
 		yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
+	else
+		echo "$data" |less #display in terminal rather than yad
 	fi
 fi
 # You can also try the official man pages project:
@@ -115,6 +196,8 @@ fi
 # "./man1/ln.1.html"
 # "./man1/ln.1p.html"
 
+
+#---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--apt" ]]; then
 	loop=1
 	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
@@ -183,7 +266,7 @@ if [[ "$mode" == "--apt" ]]; then
 	done
 
 fi
-
+#---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--down" ]]; then
 	loop=1
 	rawpkg="$1"
@@ -271,7 +354,7 @@ if [[ "$mode" == "--down" ]]; then
 	done
 	[[ $3 != "--nodelete" ]] &&  rm -vf $debname || echo -e "$debname preserved :\n $(ls -all $debname)"
 fi
-
+#---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--debian" ]]; then
 echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
 pkg="$1"
@@ -299,6 +382,9 @@ fi
 # combine with awk to remove the first lines : 
 # links -dump https://manpages.debian.org/jump?q=ngrep |awk "/Scroll to navigation/,0"
 # See alias functions.
+# Also you can use the similar to bsd command: 
+# links -dump https://manpages.debian.org/grep 
+# You just need to delete the first lines.
 
 if [[ "$mode" == "--debian" && $3 == "--browser" ]]; then
 (gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &)
@@ -313,6 +399,7 @@ fi
 # https://debmans.readthedocs.io/en/latest/usage.html
 fi
 
+#---------------------------------------------------------------------------------------------------------------------------------------
 # Bellow Options have been made for testing only. Not working correctly, especially with new debian man pages web site.
 if [[ "$mode" == "--debcheck" ]]; then
 echo "This is debian online manpages checker"
@@ -349,7 +436,7 @@ fi
 done
 
 fi
-
+#---------------------------------------------------------------------------------------------------------------------------------------
 #Bellow is also for testing 
 if [[ "$mode" == "--aptvsdeb" ]]; then
 	while IFS=" " read -r _ _ _ _ _ _ _ _ _ pkg;do
