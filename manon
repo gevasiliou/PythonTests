@@ -90,7 +90,7 @@ if [[ "$mode" == "--ubuntulist" ]]; then
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
 			echo "No results. "
-			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
+			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit 1
 		else
 			clear
 			echo "man page found: ${#manpage[@]}"
@@ -139,18 +139,10 @@ if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 					echo "Invalid Selection - Try Again"
 				fi
 			done
-
-
-#			for i in ${dt0[@]};do 
-#				if [[ $(awk -F"\(" '{print $1}'<<<$i |tr -d " ") == "$1" ]];then
-#					dt=$i
-#					echo "found $i == $dt"
-#				fi
-#			done
 		else
 			dt=$dt0
 		fi
-#		exit
+
 		if [[ -z $dt ]]; then 
 			echo "$1 not available in die.net"
 			data="Man page Not Found in die.net"
