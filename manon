@@ -51,8 +51,9 @@ fi
 if [[ "$mode" == "--openbsd" ]]; then
   bsdpage="$1"
   bsdpagecap="${bsdpage^^}" #Capitalize the man page title
-  bsddata="$(links -dump https://man.openbsd.org/$bsdpage |sed "1,/$bsdpagecap/d")"
-  [[ -z "$bsddata" ]] && echo "No man page found at \"https://man.openbsd.org/$bsdpage\"" || echo "$bsddata" |less
+  bsddata="$(links -dump https://man.openbsd.org/$bsdpage |awk "/$bsdpagecap/,0")"
+  [[ -z "$bsddata" ]] && echo "No man page found at \"https://man.openbsd.org/$bsdpage\"" && exit 1
+  echo "$bsddata" |less
 fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
