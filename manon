@@ -20,17 +20,15 @@ Option1:
                     Option 2:
                              --nodelete     When used with --down the deb package will not be deleted.
 
-    --debian        Search particulary in debian manpages online platform 
-                    Option 2:
-                             --browser     When used with --debian instead of displaying man page in terminal opens the default browser.
+    --debian        Search particulary in debian manpages online platform. Combine with --browser to display man page at browser
 
-    --bsd           Display the FreeBSD man pages (i.e https://man.freebsd.org/grep)
+    --bsd           Display the FreeBSD man pages (i.e https://man.freebsd.org/grep). Combine with --browser to display man page at browser
     
-    --openbsd       Display OpenBSD man pages (i.e https://man.openbsd.org/grep)
+    --openbsd       Display OpenBSD man pages (i.e https://man.openbsd.org/grep). Combine with --browser to display man page at browser
     
-    --ubuntu        Display the man page from Ubuntu (i.e http://manpages.ubuntu.com/grep) 
+    --ubuntu        Display the man page from Ubuntu (i.e http://manpages.ubuntu.com/grep). Combine with --browser to display man page at browser 
     
-    --ubuntulist    Display a list of available man pages at http://manpages.ubuntu.com (i.e posix man, plan9, regular man pages, etc)
+    --ubuntulist    Display a list of available man pages at http://manpages.ubuntu.com (i.e posix man, plan9, regular man pages, etc). Combine with --browser to display man page at browser
     
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tab not)
@@ -39,21 +37,34 @@ EOF
 [[ -z $1 ]] && helpme && exit #if no man page is requested print help and exit
 [[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
-
+normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)"
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--bsd" ]]; then
+  validmode=1
   bsdpage="$1"
   bsddata="$(links -dump https://man.freebsd.org/$bsdpage |sed '1,/home | help/d' )"
-  [[ "$bsddata" =~ "Sorry, no data found" ]] && echo "No man page found at \"https://man.freebsd.org/$bsdpage\"" || echo "$bsddata" |less
+  [[ "$bsddata" =~ "Sorry, no data found" ]] && echo "No man page found at \"https://man.freebsd.org/$bsdpage\"" && exit 1
+  
+  if [[ "$mode" == "--bsd" && $3 == "--browser" ]]; then
+     gksu -u "$normaluser" xdg-open "https://man.freebsd.org/$bsdpage" 2>/dev/null &
+  else
+     echo "$bsddata" |less
+  fi  
 fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 #links -dump https://man.openbsd.org/grep |sed '1,/GREP/d' |less
 if [[ "$mode" == "--openbsd" ]]; then
+  validmode=1  
   bsdpage="$1"
   bsdpagecap="${bsdpage^^}" #Capitalize the man page title
   bsddata="$(links -dump https://man.openbsd.org/$bsdpage |awk "/$bsdpagecap/,0")"
   [[ -z "$bsddata" ]] && echo "No man page found at \"https://man.openbsd.org/$bsdpage\"" && exit 1
-  echo "$bsddata" |less
+
+  if [[ "$mode" == "--openbsd" && $3 == "--browser" ]]; then
+     gksu -u "$normaluser" xdg-open "https://man.openbsd.org/$bsdpage" 2>/dev/null &
+  else
+     echo "$bsddata" |less
+  fi  
 fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
@@ -73,17 +84,23 @@ fi
 # To use zesty you just need to dump http://manpages.ubuntu.com/manpages/zesty/en/man1/dman.1.html
 
 if [[ "$mode" == "--ubuntu" ]]; then
+  validmode=1
   page="$1"
   address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' -e 'plan9' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
   [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
   [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
   [[ -z "$address" ]] && echo "no man pages returned : curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
-  read -p "$address - press any key to continue" 
-  links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less
+  read -p "$address - press any key to continue"
+  if [[ "$mode" == "--ubuntu" && $3 == "--browser" ]]; then
+     gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com$address" 2>/dev/null &
+  else 
+     links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less
+  fi
 fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--ubuntulist" ]]; then
+  validmode=1
   page="$1"
   loop=1
 	manpage+=($(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o '/manpages/.*man.*html') ) 
@@ -101,7 +118,11 @@ if [[ "$mode" == "--ubuntulist" ]]; then
 			echo "exiting" && loop=0
 		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
 			echo "Display ${manpage[$ms]}"
-			links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less
+			if [[ "$mode" == "--ubuntulist" && $3 == "--browser" ]]; then
+               gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com${manpage[$ms]}" 2>/dev/null &
+			else
+			   links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less
+			fi
 		else
 			echo "Invalid Selection - Try Again"
 		fi
@@ -110,6 +131,7 @@ fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
+	validmode=1
 	title=$1
 	unset dt0 dt data mson loopon
 	loopon=1
@@ -192,6 +214,7 @@ fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--apt" ]]; then
+	validmode=1
 	loop=1
 	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
 	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
@@ -261,6 +284,7 @@ if [[ "$mode" == "--apt" ]]; then
 fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--down" ]]; then
+	validmode=1
 	loop=1
 	rawpkg="$1"
     if [[ $rawpkg =~ "/" ]];then 
@@ -347,30 +371,33 @@ if [[ "$mode" == "--down" ]]; then
 	done
 	[[ $3 != "--nodelete" ]] &&  rm -vf $debname || echo -e "$debname preserved :\n $(ls -all $debname)"
 fi
+
 #---------------------------------------------------------------------------------------------------------------------------------------
+
 if [[ "$mode" == "--debian" ]]; then
-echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
-pkg="$1"
-manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
-found="Debian+8+jessie"
-if [[ $manpage == *"no data found"* ]];then
-	unset manpage
-	echo "stable failed"
-	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
-	found="Debian+testing+stretch"
+	validmode=1
+	echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
+	pkg="$1"
+	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
+	found="Debian+8+jessie"
 	if [[ $manpage == *"no data found"* ]];then
 		unset manpage
-		echo "testing failed"
-		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
-		found="Debian+unstable+sid"
+		echo "stable failed"
+		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
+		found="Debian+testing+stretch"
 		if [[ $manpage == *"no data found"* ]];then
-			echo "unstable failed"
-			echo "no man page available in debian online for package $pkg"
-			found=""
-			exit 1
+			unset manpage
+			echo "testing failed"
+			manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+			found="Debian+unstable+sid"
+			if [[ $manpage == *"no data found"* ]];then
+				echo "unstable failed"
+				echo "no man page available in debian online for package $pkg"
+				found=""
+				exit 1
+			fi
 		fi
 	fi
-fi
 # As of January 2017 you can use the global page https://manpages.debian.org/jump?q=$1 which will jump you directly to corect section
 # combine with awk to remove the first lines : 
 # links -dump https://manpages.debian.org/jump?q=ngrep |awk "/Scroll to navigation/,0"
@@ -379,13 +406,12 @@ fi
 # links -dump https://manpages.debian.org/grep 
 # You just need to delete the first lines.
 
-if [[ "$mode" == "--debian" && $3 == "--browser" ]]; then
-(gksu -u gv xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" &)
-else
-#awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
-awk "/Scroll to navigation/,0" <<<"$manpage"|less
-
-fi
+	if [[ "$mode" == "--debian" && $3 == "--browser" ]]; then
+		gksu -u "$normaluser" xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" 2>/dev/null &
+	else
+		#awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
+		awk "/Scroll to navigation/,0" <<<"$manpage"|less
+	fi
 # Also check http://manpages.ubuntu.com/manpages/xenial/en/man1/dman.1.html
 # Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
 # Another great tool to investigate seems to be python debmans: https://pypi.python.org/pypi/debmans/1.0.0 
@@ -395,43 +421,45 @@ fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 # Bellow Options have been made for testing only. Not working correctly, especially with new debian man pages web site.
 if [[ "$mode" == "--debcheck" ]]; then
-echo "This is debian online manpages checker"
-unset pk
-unset pk1
-#pk+=($(apt list "$1" |cut -d" " -f1 |cut -d"/" -f1))
-pk1+=($(apt list "$1" |cut -d" " -f1 ))
-for i in ${pk1[@]};do
-	if [[ $(cut -d"/" -f2<<<"$i") == "experimental" ]];then
-		echo "Package $i is experimental - test skipped since debian man pages online does not hold experimental man pages"
-	else
-		pk+=($(cut -d"/" -f1 <<<"$i"))
-	fi
-done
-declare -p pk |sed 's/declare -a pk=(//g' |tr ' ' '\n' |sed 's/)$//g'
-#sleep 5 && exit
-for pkg in ${pk[@]};do
-manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
-if [[ $manpage == *"no data found"* ]];then
-	unset manpage
-#	echo "stable failed"
-	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
+	validmode=1
+	echo "This is debian online manpages checker"
+	unset pk
+	unset pk1
+	#pk+=($(apt list "$1" |cut -d" " -f1 |cut -d"/" -f1))
+	pk1+=($(apt list "$1" |cut -d" " -f1 ))
+	for i in ${pk1[@]};do
+		if [[ $(cut -d"/" -f2<<<"$i") == "experimental" ]];then
+			echo "Package $i is experimental - test skipped since debian man pages online does not hold experimental man pages"
+		else
+			pk+=($(cut -d"/" -f1 <<<"$i"))
+		fi
+	done
+	declare -p pk |sed 's/declare -a pk=(//g' |tr ' ' '\n' |sed 's/)$//g'
+	#sleep 5 && exit
+	for pkg in ${pk[@]};do
+	manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+8+jessie&format=html&locale=en")
 	if [[ $manpage == *"no data found"* ]];then
 		unset manpage
-#		echo "testing failed"
-		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+	#	echo "stable failed"
+		manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+testing+stretch&format=html&locale=en")
 		if [[ $manpage == *"no data found"* ]];then
-#			echo "unstable failed"
-			echo "no man page available in debian online for package $pkg" | tee -a debmanonline.log
-#			exit 1
+			unset manpage
+	#		echo "testing failed"
+			manpage=$(links -dump "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=Debian+unstable+sid&format=html&locale=en")
+			if [[ $manpage == *"no data found"* ]];then
+	#			echo "unstable failed"
+				echo "no man page available in debian online for package $pkg" | tee -a debmanonline.log
+	#			exit 1
+			fi
 		fi
 	fi
-fi
-done
+	done
 
-fi
+	fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 #Bellow is also for testing 
 if [[ "$mode" == "--aptvsdeb" ]]; then
+	validmode=1
 	while IFS=" " read -r _ _ _ _ _ _ _ _ _ pkg;do
 		unset manpage
 		unset aptresp aptpkg
@@ -461,8 +489,11 @@ if [[ "$mode" == "--aptvsdeb" ]]; then
 		fi
 	done <debmanonline.log
 fi
+#---------------------------------------------------------------------------------------------------------------------------------------
+#Bellow is also for testing 
 
 if [[ "$mode" == "--aptcheck" ]]; then
+		validmode=1
 		unset manpage aptresp aptpkg
 		pkg="$1"
 		aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
@@ -489,8 +520,8 @@ if [[ "$mode" == "--aptcheck" ]]; then
 fi
 
 
-
-exit
+[[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
+echo "invalid options - exit with code 1" && helpme && exit 1
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
