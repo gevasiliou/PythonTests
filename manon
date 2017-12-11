@@ -33,11 +33,11 @@ Option1:
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tab not)
 }	
-
-[[ -z $1 ]] && helpme && exit #if no man page is requested print help and exit
+[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit #if no man page is requested print help and exit
 [[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
-normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)"
+normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Could be buggy if more than one normal user exists
+
 #---------------------------------------------------------------------------------------------------------------------------------------
 if [[ "$mode" == "--bsd" ]]; then
   validmode=1
@@ -522,6 +522,7 @@ fi
 
 [[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
 echo "invalid options - exit with code 1" && helpme && exit 1
+exit
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
@@ -563,12 +564,12 @@ F=( "/bin/*" "/sbin/*" "/usr/bin/*" "/usr/sbin/*" "/usr/games/*" );for f in ${F[
 
 manpagealert
 
-ManPage Differences
-In the new Debian Manpages as soon as you give the pkg name you are redirected to the man page directly of Jessie.
-Works even with links , lynx and curl by CLI using "https://dyn.manpages.debian.org/jump?q=pkgname"
-If you need to compare two different versions of the same pkg you can run :
-diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-synaptics/synclient.1.en.html") \
-<(links -dump "https://manpages.debian.org/unstable/xserver-xorg-input-synaptics/synclient.1.en.html")
+# ManPage Differences
+# In the new Debian Manpages as soon as you give the pkg name you are redirected to the man page directly of Jessie.
+# Works even with links , lynx and curl by CLI using "https://dyn.manpages.debian.org/jump?q=pkgname"
+# If you need to compare two different versions of the same pkg you can run :
+# diff -w -y <(links -dump "https://manpages.debian.org/jessie/xserver-xorg-input-synaptics/synclient.1.en.html") \
+# <(links -dump "https://manpages.debian.org/unstable/xserver-xorg-input-synaptics/synclient.1.en.html")
 
 # 1. Curl Deb File and read the man page without downloading deb: 
 # curl -sL -o- "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ./usr/share/man/man8/avisd.8.gz |man /dev/stdin
