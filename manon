@@ -48,7 +48,7 @@ if [[ "$mode" == "--bsd" ]]; then
   if [[ "$mode" == "--bsd" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "https://man.freebsd.org/$bsdpage" 2>/dev/null &
   else
-     echo "$bsddata" |less
+     echo "$bsddata" |less -S
   fi  
 fi
 #---------------------------------------------------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ if [[ "$mode" == "--openbsd" ]]; then
   if [[ "$mode" == "--openbsd" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "https://man.openbsd.org/$bsdpage" 2>/dev/null &
   else
-     echo "$bsddata" |less
+     echo "$bsddata" |less -S
   fi  
 fi
 
@@ -94,7 +94,7 @@ if [[ "$mode" == "--ubuntu" ]]; then
   if [[ "$mode" == "--ubuntu" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com$address" 2>/dev/null &
   else 
-     links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less
+     links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less -S
   fi
 fi
 
@@ -121,7 +121,7 @@ if [[ "$mode" == "--ubuntulist" ]]; then
 			if [[ "$mode" == "--ubuntulist" && $3 == "--browser" ]]; then
                gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com${manpage[$ms]}" 2>/dev/null &
 			else
-			   links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less
+			   links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less -S
 			fi
 		else
 			echo "Invalid Selection - Try Again"
@@ -199,7 +199,7 @@ if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 	if [[ "$mode" == "--online-gui" ]];then
 		yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
 	else
-		echo "$data" |less #display in terminal rather than yad
+		echo "$data" |less -S #display in terminal rather than yad
 	fi
 fi
 # You can also try the official man pages project:
@@ -269,9 +269,9 @@ if [[ "$mode" == "--apt" ]]; then
                 if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
 				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin 
 				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
 				else 
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
 				fi
 			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
 				echo "out of range - try again"
@@ -357,9 +357,9 @@ if [[ "$mode" == "--down" ]]; then
 				if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling for various file types
 				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin  
                 elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
-                   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |gunzip -c |less 
+                   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |gunzip -c |less -S 
 				else 
-				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |less
+				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |less -S
 				fi
 	#			loop=0
 			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
@@ -409,8 +409,8 @@ if [[ "$mode" == "--debian" ]]; then
 	if [[ "$mode" == "--debian" && $3 == "--browser" ]]; then
 		gksu -u "$normaluser" xdg-open "https://manpages.debian.org/cgi-bin/man.cgi?query=$pkg&apropos=0&sektion=0&manpath=$found&format=html&locale=en" 2>/dev/null &
 	else
-		#awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less
-		awk "/Scroll to navigation/,0" <<<"$manpage"|less
+		#awk "/home | help | more information/,0" <<<"$manpage" |tail -n +2 |less -S
+		awk "/Scroll to navigation/,0" <<<"$manpage"|less -S
 	fi
 # Also check http://manpages.ubuntu.com/manpages/xenial/en/man1/dman.1.html
 # Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
@@ -526,7 +526,7 @@ exit
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
-# diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=grep" |less |fold -s -w 70) <(man grep |less |fold -s -w 70)
+# diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=grep" |less -S |fold -s -w 70) <(man grep |less -S |fold -s -w 70)
 # diff_man() { diff -y <(man --manpath="/old/path/to/man" "$1") <(man "$1"); }
 # Using process substitution = each process get a named fifo and it is treated as a file. 
 
