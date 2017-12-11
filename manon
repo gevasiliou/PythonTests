@@ -24,6 +24,10 @@ Option1:
                     Your current release is detected (lsb_release -r -s) and man pages for your release are provided.
                     Combine with --browser to display man page at browser
 
+    --debianlist    Display a list of available man pages (various releases) at i.e http://manpages.debian.org/grep (i.e jessie,stretch,testing, unstable, posix etc). 
+                    Combine with --browser to display man page at browser
+    
+
     --debianold     Old version for Debian Online Manpages (using debian manpages online cgi page)
                     Combine with --browser to display man page at browser
                     
