@@ -104,7 +104,7 @@ if [[ "$mode" == "--debianlist" ]]; then
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
 			echo "No results. "
-			#links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page"
+			links -dump "http://manpages.debian.org/$page"
 			exit 1
 		else
 			clear
@@ -115,7 +115,7 @@ if [[ "$mode" == "--debianlist" ]]; then
         if [[ $ms == "q" ]]; then
 			echo "exiting" && loop=0
 		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-			echo "Display ${manpage[$ms]/,/}"
+			echo "Display ${manpage[$ms]/,/}" #list is given in "link,version" format. ${var/,*/} removes the version at the end (removes comma and everything after comma)
 			if [[ "$mode" == "--debianlist" && $3 == "--browser" ]]; then
                gksu -u "$normaluser" xdg-open "http://manpages.debian.org${manpage[$ms]/,*/}" 2>/dev/null &
 			else
