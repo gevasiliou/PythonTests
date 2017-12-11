@@ -119,7 +119,7 @@ if [[ "$mode" == "--debianlist" ]]; then
 			if [[ "$mode" == "--debianlist" && $3 == "--browser" ]]; then
                gksu -u "$normaluser" xdg-open "http://manpages.debian.org${manpage[$ms]/,*/}" 2>/dev/null &
 			else
-			   links -dump http://manpages.debian.org"${manpage[$ms]/,*/}" |awk "/$pagecap/,0" |sed "1i http://manpages.debian.org${manpage[$ms]/,*/}" |less -S
+			   links -dump http://manpages.debian.org"${manpage[$ms]/,*/}" |awk "/Scroll to navigation/,0" |sed "1i http://manpages.debian.org${manpage[$ms]/,*/}" |less -S
 			fi
 		else
 			echo "Invalid Selection - Try Again"
