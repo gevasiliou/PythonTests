@@ -93,6 +93,39 @@ if [[ "$mode" == "--debian" ]]; then
   fi  
 fi
 
+#---------------------------------------------------------------------------------------------------------------------------------------
+if [[ "$mode" == "--debianlist" ]]; then
+  validmode=1
+  page="$1"
+  pagecap="${1^^}"
+  loop=1
+	manpage+=( $(curl -s -L -o- "http://manpages.debian.org/$page" |grep -Po ".* href=\"\K.*/$page.*pkgversion.*title.*$" |perl -pe 's/">.*title="/,/g' |perl -pe 's/">.*$//g' ) )
+
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No results. "
+			#links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page"
+			exit 1
+		else
+			clear
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+    	read -p "Select man pages to display by id or q to quit : " ms
+        if [[ $ms == "q" ]]; then
+			echo "exiting" && loop=0
+		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+			echo "Display ${manpage[$ms]/,/}"
+			if [[ "$mode" == "--debianlist" && $3 == "--browser" ]]; then
+               gksu -u "$normaluser" xdg-open "http://manpages.debian.org${manpage[$ms]/,*/}" 2>/dev/null &
+			else
+			   links -dump http://manpages.debian.org"${manpage[$ms]/,*/}" |awk "/$pagecap/,0" |sed "1i http://manpages.debian.org${manpage[$ms]/,*/}" |less -S
+			fi
+		else
+			echo "Invalid Selection - Try Again"
+		fi
+	done
+fi
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 # Ubuntu Online Man pages
