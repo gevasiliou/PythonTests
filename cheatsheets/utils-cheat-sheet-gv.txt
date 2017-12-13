@@ -159,7 +159,7 @@ PS: AWK can directly print to a file using { print $3 >>"F3.csv" }
 stream=...\f4 HYPERLINK "httjps://archive.org/randomURL1?fref=grp_mmbr_list"}...
 grep -Eo '\"https?:\/\/[^"]+\"' testsample.txt 
 
-##MGREP ALL CHARACTER BEFORE THE FIRST WHITESPACE USING GREP?
+##GREP ALL CHARACTER BEFORE THE FIRST WHITESPACE USING GREP?
 grep -oP "^\S+" filename.txt
 
 ##GREP USING A FILE WITH PATTERNS.
@@ -194,7 +194,7 @@ can be used as -Eow to match words in a line
 ##GREP LOOK AHEAD METHOD:
 \K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
 
-$ cat /var/log/messages.1 |grep  'sda:'
+$ grep  'sda:' /var/log/messages.1
 Mar 10 03:37:14 debian kernel: [    7.122304]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
 
 $ cat /var/log/messages.1 |grep -Po 'sd[a-z]+: \Ksd[a-z0-9].*'
@@ -202,6 +202,12 @@ sda1 sda2 sda3 sda4 < sda5 sda6 >
 
 $ a="Configuration file 'hello2.conf' is in use by process 735." && echo "$a" |grep -Po 'process \K[0-9]*'
 735 (https://regex101.com/r/hxwGPA/1)
+
+##GREP Lookahead - Capture part of text between two patterns (requires -P = Perl Regex support)
+$ echo "$a"
+user    25999  0.0  0.7 678772 259772 ?       Ssl  Nov05  11:54 fwd
+$ echo "$a" |grep -Po '.* \K\w+ (?=[?])'
+259772   #---> Result : The word just before ? is captured.
 
 ##GREP - Count occurences of a char within a string
 var="text,text,text,text"
