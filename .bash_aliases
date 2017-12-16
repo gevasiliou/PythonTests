@@ -152,18 +152,19 @@ function debcat () {
 	echo "Use --list switch to force a deb listing of all files"
 	echo "Use --ind switch to be prompted will all files found excluding directories and links"
 	echo "Combine --readable after --ind to force index to exlude links,dirs and binary files"
-
+    
 	[[ -z $1 ]] && echo "apt pkg file missing " && return
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
 	[[ $2 == "--list" ]] && lsdeb "$1" && return
 
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
+    #clear
     echo "deb package: $tmpdeb"
 
 
 	if [[ $2 == "--ind" ]];then
-	    unset flist ms loop
+	    unset flist ms loop key
         loop=1
 	    if [[ "$3" == "--readable" ]];then
 			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
@@ -176,19 +177,11 @@ function debcat () {
 			[[ "$ms" == "q" ]] && echo "exiting...." && return
 			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then #|| [[ ${flist[$ms]} =~ "/bin/" ]]
 				echo "We Cannot Display ${flist[$ms]} since it is a binary file"
-				key="q"
 			elif [[ $ms -gt $((${#flist[@]}-1)) ]]; then
 				echo "out of range - try again"
-				key="q"
 			else
 				#read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
 				echo "proceeding with ${flist[$ms]} "
-			fi
-			
-			if [[ "$key" == "q" ]]; then
-				echo "returning..."
-				declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'				
-			else 
 				if [[ ${flist[$ms]} =~ "man/man" ]]; then 
 				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
 				elif [[ ${flist[$ms]: -3} == ".gz" ]]; then
