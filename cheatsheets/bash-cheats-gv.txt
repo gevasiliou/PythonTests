@@ -423,6 +423,14 @@ $ read -d '' -a myarr2 <file7;declare -p myarr2             ---> myarr2=([0]="ab
 $ read -a myarr2 <file7;declare -p myarr2                   ---> myarr2=([0]="abc" [1]="def" [2]="ghi" [3]="nop")  #first line only
 $ IFS= read -d '' -a myarr2 <file7;declare -p myarr2        ---> myarr2=([0]=$'abc def ghi nop\nklm one two three\nfour five six nine\n')
 
+##LOOP/ITERATE OVER ARRAY KEYS
+Instead of a classic for loop like 
+   for (i=1;i<="${#array[@]}";i++);do 
+you can more simply loop through the keys like
+   for index in "${!array[@]}";do echo "$index";done
+
+Above is extremely usefull in 2D arrays to print out the array keys, but works fine for a quick loop on 1D arrays (i.e unsed "${array[$index]}")
+
 ##TRICK WITH IFS AND VALUES IN ONE LINE - ONE VARIABLE:
 
 Instead of creating an array with values and manipulate array items like:
@@ -946,9 +954,16 @@ http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 https://stackoverflow.com/questions/7529856/retrieving-multiple-arguments-for-a-single-option-using-getopts-in-bash
 
 ##ITERATE THROUGH ARGS
-function test { for a in "$@";do echo "$a";done;};test "${args[@]}"
-function test { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
-function test { IFS=[$'\n'"-"] read -d '' -a arr <<<"$@"; declare -p arr;};test -f one two -s three  --> declare -a arr=([0]="" [1]="f one two " [2]="s three")
+function tt { for a in "$@";do echo "$a";done;};test "${args[@]}"
+function tt { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
+function tt { IFS=[$'\n'"-"] read -d '' -a arr <<<"$@"; declare -p arr;};test -f one two -s three  --> declare -a arr=([0]="" [1]="f one two " [2]="s three")
+#For a normal delimiter like space , you can use the simplier  arr=("$@") and you can loop using for opt in "${a[@]}" or for ind in "${!a[@]}" to work with array keys
+
+function tt { n=$1;shift;files=("$@");echo "1st arg is $n";for a in "${!files[@]}";do echo "$a-${files[$a]}";done;};tt hello fil*
+1st arg is hello
+0-file10
+....
+16-file spaced
 
 function test { OPTIND=1;while getopts "f:f1" opt;do echo $opt"--"$OPTARG;done;};test -f one   ---> f--one
 function test { OPTIND=1;while getopts "f:f1" opt;do echo $opt"--"$OPTARG;done;};test -s one   ---> bash: illegal option -- s
