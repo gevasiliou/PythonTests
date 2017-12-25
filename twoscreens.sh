@@ -41,9 +41,18 @@ m=$(xrandr --listmonitors);yad --center --text="$m" #displays always the active 
 synclient TapButton1=1 #Non relevant command - just enable touchpad click if necessary.
 #detect primary and secondary monitors. Fortunatelly xrandr reports as connected monitors that might have been disabled with --off
 sec=$(xrandr |grep ' connected' |grep -e 'HDMI' -e 'VGA' |awk '{print $1}') #hardcoding - for me hdmi and vga monitors are always secondary
-prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one should be the laptop monitor = primary
+prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one should be the laptop monitor = primary (LVDS-1, eDP-1,etc)
 [[ -z "$sec" ]] && m=$(xrandr --listmonitors) && yad --center --text="No second monitor connected \n $m" && exit 1
 ##echo "primary is $prim and secondary is $sec" && exit
+# You can verify if an HDMI monnitor is connected using also cat /sys/class/drm/card0/*HDMI*/status
+# in my Toshiba returns two lines; one card disconnected - the next one connected if hdmi is used
+# Especially for hdmi you need to enable output on pulse audio.
+# Using gui: run  pavucontrol, go to the most right tab = configuration and selet an hdmi output (either std or 5.1)
+# using script: https://wiki.archlinux.org/index.php/PulseAudio/Examples
+# Remember that pactl and pacmd commands must runn as user and not as root
+# Those commands should work for easy switching to hdmi audio:
+#pacmd set-card-profile 0 output:hdmi-stereo-extra1
+#pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo
 
 if [[ -z $1 ]]; then
 answer=$(yad --center --form --num-output --separator="" --field="Screen Setup":CB "Mirror!Extended Desktop!VGA Only!VGA Enlarged!Laptop Only!Exit")

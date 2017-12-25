@@ -589,6 +589,7 @@ apt search showmount --> nfs-common  #or apt-cache search showmount
 apt --print-uris install pkg   # Returns the names of the .deb packages that will be installed in case of apt install. Works also with apt-get
 apt --print-uris download pkg  # Returns the deb file that apt download pkg would download:
 apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool/main/n/nfs-utils/nfs-common_1.3.4-2.1_amd64.deb' nfs-common_1%3a1.3.4-2.1_amd64.deb 230730 SHA256:8fedb6f5d28d521ca6b1623610255c7edf26c011b3c45e07e19e4378902bfab4
+apt-mark unhold pkg # unholds a package. Can be used to unhold all packages like apt-mark unhold $(apt list --installed 2>/dev/null |cut -f1 -d'/')
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:DU (SIZE OF FILES - DISK USAGE)
@@ -654,7 +655,7 @@ echo "mbar bar\n'my foo' foo" | xargs -l -t mv  --> works ok. Without quoting ar
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SEQ
 
-start=3; seq -s" : " -f "data%g" $start 5    ---> data3 : data4 : data5
+$ start=3; seq -s" : " -f "data%g" $start 5    ---> data3 : data4 : data5
 -s" : " - item separator
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -738,3 +739,10 @@ More examples:
 Open a new LibreOffice Draw document, select the line tool and run on terminal this one:
 # xdotool search "Untitled" windowactivate --sync mousemove --window %1 300 300  && sleep 0.5 && xdotool mousedown 1 && sleep 0.5 && xdotool mousemove_relative --sync 400 400 && sleep 0.5 && xdotool mouseup 1
 You should see a straight line draw automatically 
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:USERS
+id -u gv #prints the id of user gv
+w -hs #prints logged in users (gv & root)
+fgconsole #prints tty number = 7. can be used in scripts like tty$(fgconsole)
+HDMI_STATUS=$(cat /sys/class/drm/card0/*HDMI*/status)
