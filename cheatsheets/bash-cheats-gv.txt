@@ -359,6 +359,7 @@ Read supports -a option for array.
 read builtin default separator is new line. If read founds a new line then exits.
 Word Splitting can be done by adjusting IFS and disable read delimiter using read -d option.
 
+
 Example:
 IFS="[;]" read -a array <<<$'one;two;three;no more'; declare -p array --> [0]="one" [1]="two" [2]="three" [3]="no more"
 This works in bash 4.4 and also 4.3 so probably in all versions
@@ -422,6 +423,18 @@ $ IFS=$'\n' read -d '' -a myarr2 <file7;declare -p myarr2   ---> myarr2=([0]="ab
 $ read -d '' -a myarr2 <file7;declare -p myarr2             ---> myarr2=([0]="abc" [1]="def" [2]="ghi" [3]="nop" [4]="klm" [5]="one" [6]="two" [7]="three" [8]="four" [9]="five" [10]="six" [11]="nine")
 $ read -a myarr2 <file7;declare -p myarr2                   ---> myarr2=([0]="abc" [1]="def" [2]="ghi" [3]="nop")  #first line only
 $ IFS= read -d '' -a myarr2 <file7;declare -p myarr2        ---> myarr2=([0]=$'abc def ghi nop\nklm one two three\nfour five six nine\n')
+
+##REVERSE AN ARRAY using read -a
+$ array=(1 2 3 4 5 6 10 11 12);declare -p array
+declare -a array=([0]="1" [1]="2" [2]="3" [3]="4" [4]="5" [5]="6" [6]="10" [7]="11" [8]="12")
+$ read -d'\n' -a array < <(printf '%s\n' "${array[@]}"|tac);declare -p array
+declare -a array=([0]="12" [1]="11" [2]="10" [3]="6" [4]="5" [5]="4" [6]="3" [7]="2" [8]="1")
+
+.B PS1: Mind that same var name is used in read -a and in <(printf ....). This solution may not work in bash < 4.4
+
+.B PS2 : Same result can be also achieved with null read delimiter and new line as IFS:
+$ IFS=$'\n' read -d '' -a array < <(printf '%s\n' "${array[@]}"|tac);declare -p array
+declare -a array=([0]="12" [1]="11" [2]="10" [3]="6" [4]="5" [5]="4" [6]="3" [7]="2" [8]="1")
 
 ##LOOP/ITERATE OVER ARRAY KEYS
 Instead of a classic for loop like 
