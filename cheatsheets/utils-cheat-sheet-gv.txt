@@ -671,54 +671,6 @@ For example : timeout 2 yes
 timeout --foreground 12s tail -f access.log
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:YOUTUBE-DL
-
-.B Default Usage
-$ youtube-dl https://www.youtube.com/watch?v=o0yimq6W5Y8
-By default , youtube-dl downloads video file and audio file separately in a two steps process and then it merges and synchronizes those two files.
-Temp Files are deleted by default unless -k (keep) option is given.
-
-.B List Codecs
-$ youtube-dl -F url : displays available video and audio formats (selectable by format code)
-
-.B Get only the video without audio
-Can be done by specifying a particular video only format, like -f 134 (if 134 is a valid video only format for your video):
-$ youtube-dl -f 134 http://youtubturl 
-
-Mind that -f best will download both video and audio
-
-.B Get the video with audio
-$ youtube-dl -f 134+251 url 
-gets youtube video with video format 135 and audio format 125 and merges those two in a single file - local video
-Mind that video format is given first and audio format is given second: -f XXX+YYY (XXX is video and YYY is audio codec)
-
-If unsure which format codes to select use this global syntax:
-$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://www.youtube.com/watch?v=FoTsbrPxP8I
-
-You can also use just -f best which seems to download the best video + best audio at once.
-
-.B Extract Audio:
-$ youtube-dl --extract-audio --audio-format mp3 https://www.youtube.com/watch?v=FoTsbrPxP8I  #extracts audio in mp3. Requires ffmpeg to be installed.
-
-.B Get real video urls :
-$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I
-https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=135&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=video/mp4&gir=yes&clen=22267226&lmt=1480146626325700&dur=189.760&mt=1506376513&key=dg_yt0&signature=7B349CE08E2AB0D2154B30B864EF9C9B96F60E4E.4DC031B2476260349DCE899E5794B469FA8CF95C&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
-https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=140&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=audio/mp4&gir=yes&clen=3015473&lmt=1480133239302273&dur=189.823&mt=1506376513&key=dg_yt0&signature=4D01849E5C21A0BB8D9189D949F7D4C2B50DA676.1A23DA1855CEA7D4EE7E0CC913C5ADAA9CBBC232&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
-
-First url is video only , second url is audio only. Both urls can be opened in browser and contain a download button.
-
-.B Download a portion (crop) of a video:
-ffmpeg -ss 10 -i $(youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I) -t 10 -c:v copy -c:a copy testvid.mp4
--ss  : starting point
--i   : input file
--t   : duration before to close output
--c:v copy: just copy the existed video codec - no re-coding
--c:a copy: just copy present audio codec - no re-coding
-
-This should work according to https://nicktux.com/2017/09/24/youtubedl-ffmpeg-download-specific-timing/ but is not working in my Debian.
-youtube-dl --get-url returns two urls: one for video which is recognized and one for audio which is not recognized and ffmpeg fails.
-
-------------------------------------------------------------------------------------------------------------------------
 UTILS:XDOTOOL
 http://tuxradar.com/content/xdotool-script-your-mouse
 
@@ -746,3 +698,95 @@ id -u gv #prints the id of user gv
 w -hs #prints logged in users (gv & root)
 fgconsole #prints tty number = 7. can be used in scripts like tty$(fgconsole)
 HDMI_STATUS=$(cat /sys/class/drm/card0/*HDMI*/status)
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:YOUTUBE-DL - WGET - CURL - MPV
+https://github.com/rg3/youtube-dl
+##Default Usage
+$ youtube-dl https://www.youtube.com/watch?v=o0yimq6W5Y8
+By default , youtube-dl downloads video file and audio file separately in a two steps process and then it merges and synchronizes those two files.
+Temp Files are deleted by default unless -k (keep) option is given.
+
+##List Codecs
+$ youtube-dl -F url : displays available video and audio formats (selectable by format code)
+
+##Get only the video without audio
+Can be done by specifying a particular video only format, like -f 134 (if 134 is a valid video only format for your video):
+$ youtube-dl -f 134 http://youtubturl 
+
+Mind that -f best will download both video and audio
+
+##Get the video with audio
+$ youtube-dl -f 134+251 url 
+gets youtube video with video format 135 and audio format 125 and merges those two in a single file - local video
+Mind that video format is given first and audio format is given second: -f XXX+YYY (XXX is video and YYY is audio codec)
+
+If unsure which format codes to select use this global syntax:
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://www.youtube.com/watch?v=FoTsbrPxP8I
+
+You can also use just -f best which seems to download the best video + best audio at once.
+
+##Extract Audio:
+$ youtube-dl --extract-audio --audio-format mp3 https://www.youtube.com/watch?v=FoTsbrPxP8I  #extracts audio in mp3. Requires ffmpeg to be installed.
+
+##Get real video urls :
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I
+https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=135&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=video/mp4&gir=yes&clen=22267226&lmt=1480146626325700&dur=189.760&mt=1506376513&key=dg_yt0&signature=7B349CE08E2AB0D2154B30B864EF9C9B96F60E4E.4DC031B2476260349DCE899E5794B469FA8CF95C&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
+https://r2---sn-jtu5bgxxjx-5uis.googlevideo.com/videoplayback?id=1684ec6eb3f13fc2&itag=140&source=youtube&requiressl=yes&ei=n3vJWY6QMpPdWM6yqeAE&ms=au&initcwndbps=558750&pl=16&mv=m&mm=31&mn=sn-jtu5bgxxjx-5uis&pcm2cms=yes&ratebypass=yes&mime=audio/mp4&gir=yes&clen=3015473&lmt=1480133239302273&dur=189.823&mt=1506376513&key=dg_yt0&signature=4D01849E5C21A0BB8D9189D949F7D4C2B50DA676.1A23DA1855CEA7D4EE7E0CC913C5ADAA9CBBC232&ip=176.92.92.88&ipbits=0&expire=1506398207&sparams=ip,ipbits,expire,id,itag,source,requiressl,ei,ms,initcwndbps,pl,mv,mm,mn,pcm2cms,ratebypass,mime,gir,clen,lmt,dur
+
+First url is video only , second url is audio only. Both urls can be opened in browser and contain a download button.
+
+##Download a portion (crop) of a video:
+https://nicktux.com/2017/09/24/youtubedl-ffmpeg-download-specific-timing/
+
+$ ffmpeg -ss 10 -i $(youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --get-url https://www.youtube.com/watch?v=FoTsbrPxP8I) -t 10 -c:v copy -c:a copy testvid.mp4
+-ss  : starting point
+-i   : input file
+-t   : duration before to close output
+-c:v copy: just copy the existed video codec - no re-coding
+-c:a copy: just copy present audio codec - no re-coding
+
+This should work according to nicktux but is not working in my Debian.
+youtube-dl --get-url returns two urls: one for video which is recognized and one for audio which is not recognized and ffmpeg fails.
+
+##Simultaneously watch and save a movie by opencloud
+https://unix.stackexchange.com/questions/279884/play-subtitles-automatically-with-mpv
+https://superuser.com/questions/1136372/watch-movie-while-downloading-it
+
+Requires mpv , youtube-dl and ffmpeg. mpv will automatically install the required tools ffmpeg & youtube-dl
+OpenCloud usually provides an 'embed' option like this:
+<iframe src="https://openload.co/embed/BmB-MDfowlc/" scrolling="no" frameborder="0" width="700" height="430" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+
+If you curl https://openload.co/embed/BmB-MDfowlc/ |grep 'vtt' will return you the subtitles location.
+$ curl -s https://openload.co/embed/BmB-MDfowlc/ |grep -m1 'vtt' |grep -o 'src=\".*vtt\"'
+src="https://thumb.oloadcdn.net/subtitle/BmB-MDfowlc/ahwISdzLQBo.vtt"
+or even 
+$ curl -s https://openload.co/embed/BmB-MDfowlc/ |grep -m1 'vtt' |grep -Po 'src=\"\K.*vtt'
+https://thumb.oloadcdn.net/subtitle/BmB-MDfowlc/ahwISdzLQBo.vtt
+
+You can then wget this vtt file: wget https://thumb.oloadcdn.net/subtitle/BmB-MDfowlc/ahwISdzLQBo.vtt
+
+You can then use youtube-dl to get & play the video:
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://openload.co/embed/BmB-MDfowlc/ -o- |tee test.mp4 |mpv --sub-file=ahwISdzLQBo.vtt -
+-o- option in youtube-dl outputs the video file to '-' = screen/tty 
+tee writes those tty data to file and re-prints them in tty
+mpv player reads data from '-' = /dev/stdin=tty while loading the subs file previously got with wget
+
+.B Tips
+1. There is no direct way to force youtube-dl to automatically download subs from the 'embed' url- This command returns nothing:
+$ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --list-subs 'https://openload.co/embed/BmB-MDfowlc/'
+[Openload] BmB-MDfowlc: Downloading webpage
+[Openload] BmB-MDfowlc: Executing JS on webpage
+BmB-MDfowlc has no subtitles
+
+2. You can get the direct video url like:
+$ youtube-dl --get-url 'https://openload.co/embed/BmB-MDfowlc/'
+https://openload.co/stream/BmB-MDfowlc~1514335530~176.92.0.0~t0DoWtve?mime=true
+
+If you open above link in your browser you are redirected to 
+https://1fgm8jn.oloadcdn.net/dl/l/Q3HCbea0iBCYr8kz/BmB-MDfowlc/2839-BR720-SUBS-HACKSAW.mp4?mime=true
+You can find a download icon there for direct download but without subtitles
+
+3. You can also use wget to watch & save a movie:
+$ wget http://cclicence.film/myfavourite.mp4 -O- | tee myfav.mp4 | mpv - #or |mpv --sub-file=file.srt -
+wget can not 'extract' video urls so you need to provide the exact video url
