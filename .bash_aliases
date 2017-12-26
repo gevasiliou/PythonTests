@@ -24,6 +24,7 @@ alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wra
 alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
+alias aptsourcescp='cp -i sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y'
 alias printfunctions='set |grep -A2 -e "()"'
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
