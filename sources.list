@@ -41,4 +41,4 @@ deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 #wget http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2016.8.1_all.deb && dpkg -i deb-multimedia-keyring_2016.8.1_all.deb
 #apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 1397BC53640DB551
 #deb [arch=amd64,armel,armhf,i386,kfreebsd-amd64,kfreebsd-i386,mips,mipsel,powerpc] http://www.deb-multimedia.org stable main non-free
-deb http://www.deb-multimedia.org stable main non-free
+deb http://www.deb-multimedia.org testing main non-free
