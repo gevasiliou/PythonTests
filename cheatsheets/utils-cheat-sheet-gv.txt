@@ -790,3 +790,11 @@ You can find a download icon there for direct download but without subtitles
 3. You can also use wget to watch & save a movie:
 $ wget http://cclicence.film/myfavourite.mp4 -O- | tee myfav.mp4 | mpv - #or |mpv --sub-file=file.srt -
 wget can not 'extract' video urls so you need to provide the exact video url
+
+4. In case of embeded openload videos in webpages like http://teniesonline.ucoz.com/load/2-1-0-1485 you can curl the webpage
+and then grep for openload or embed:
+curl http://teniesonline.ucoz.com/load/2-1-0-1485 |grep 'open'
+<various lines but one is like that>
+<option selected="selected" value="">Επιλέξτε Player για προβολή</option> <br /> <br /> <option value="https://openload.co/embed/KD9TigOuVZ0/">Openload.co</option> <br /> <br /> </select></div></center></nofollow> 
+
+As already explained the embeded openload links contain both mp4 file and vtt. You can further curl this embed url and grp for subs / vtt
