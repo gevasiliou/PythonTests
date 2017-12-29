@@ -20,6 +20,12 @@ mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] 
 read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
 printf
 printf '%s: %s\n' "$user" "$shell"
+
+.B Use the help command
+help <cmd> - is a bash builtin designed to provide help on bash builtin functions.
+Run it with no arguments to see which bash functions are supported.
+Is a much more elegant way to look for help in a bash builtin function than using man bash & search
+Examples : $ help wait , help readarray, etc
 ------------------------------------------------------------------------------------------------------------------------
 BASH:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##READ THIS CHEAT FILE WITH MAN PAGES:
