@@ -34,7 +34,29 @@ function getactive {
 #mode1=$(echo "$xr" |grep -m1 -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #selected mode is marked with an asterisk
 #mode2=$(echo "$xr" |grep -v "$mode1" |grep -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #exclude mode1 and get the next mode
 #yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
-m=$(xrandr --listmonitors);yad --center --text="$m" #displays always the active -not just connected- monitors 
+yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" #displays always the active -not just connected- monitors 
+}
+
+function soundsetup {
+	if [ $1 -eq 1 -o $1 -eq 2 ];then 
+	sset=$1
+	else
+	sset=$(yad --center --form --title="Sound Setup" --item-separator="-" --separator='' --num-output --field="Enable HDMI Sound":CB "HDMI-PC-Exit")
+	fi
+
+	if [[ $sset -eq 1 ]];then
+	   if grep '^connected$' /sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
+	      pacmd set-card-profile 0 output:hdmi-surround;
+	   else
+	      sset=2
+	   fi
+	fi
+
+	if [[ $sset -eq 2 ]];then
+	   pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo;
+	fi
+	
+	yad --center --no-markup --title="Active Sound Setting" --text="$(pacmd list |grep 'active profile')" 
 }
 
 #---------------------MAIN PROG------------------------------------------#
@@ -42,7 +64,7 @@ synclient TapButton1=1 #Non relevant command - just enable touchpad click if nec
 #detect primary and secondary monitors. Fortunatelly xrandr reports as connected monitors that might have been disabled with --off
 sec=$(xrandr |grep ' connected' |grep -e 'HDMI' -e 'VGA' |awk '{print $1}') #hardcoding - for me hdmi and vga monitors are always secondary
 prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one should be the laptop monitor = primary (LVDS-1, eDP-1,etc)
-[[ -z "$sec" ]] && m=$(xrandr --listmonitors) && yad --center --text="No second monitor connected \n $m" && exit 1
+[[ -z "$sec" ]] && m=$(xrandr --listmonitors) && yad --center --text="No second monitor connected \n $m" #&& exit 1
 ##echo "primary is $prim and secondary is $sec" && exit
 # You can verify if an HDMI monnitor is connected using also cat /sys/class/drm/card0/*HDMI*/status
 # in my Toshiba returns two lines; one card disconnected - the next one connected if hdmi is used
@@ -50,14 +72,19 @@ prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one sh
 # Using gui: run  pavucontrol, go to the most right tab = configuration and selet an hdmi output (either std or 5.1)
 # using script: https://wiki.archlinux.org/index.php/PulseAudio/Examples
 # Remember that pactl and pacmd commands must runn as user and not as root
-# Those commands should work for easy switching to hdmi audio:
-#pacmd set-card-profile 0 output:hdmi-stereo-extra1
-#pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo
+#
+# Those commands work for easy switching to hdmi audio:
+# pacmd set-card-profile 0 output:hdmi-stereo #or output:hdmi-surround
+# pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo
+# In most computers with one soundcard , this card gets id 0, so set-card-profile 0 should work everywhere
+
+#if grep '^connected$' /sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then soundsetup 1; fi
+
 
 if [[ -z $1 ]]; then
-answer=$(yad --center --form --num-output --separator="" --field="Screen Setup":CB "Mirror!Extended Desktop!VGA Only!VGA Enlarged!Laptop Only!Exit")
+answer=$(yad --center --form --num-output --title="Monitors Setup" --separator="" --field="Screen Setup":CB "Mirror!Extended Desktop!VGA Only!VGA Enlarged!Laptop Only!Sound Setup!Exit")
 else
-echo "Setting screen schema by command line is not yed defined for option $1"
+echo "Setting screen schema by command line is not yed defined for option $1" && exit 1
 #we can call a function here to manipulate the $1 value and assign it to $answer , and thus case bellow will work in all cases
 #for exampe case $1 in "mirror") answer=1;;
 fi
@@ -68,7 +95,8 @@ case $answer in
 3) vgaonly "$prim" "$sec";;
 4) vgaenlarged "$prim" "$sec";;
 5) laptoponly "$prim" "$sec";;
-6) exit;;
+6) soundsetup;;
+7) exit;;
 esac
 getactive #After finishing the set up, read and display the values from xrandr , as a kind of gui verification.
 exit
