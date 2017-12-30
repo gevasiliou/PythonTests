@@ -36,9 +36,9 @@ function getactive {
 #yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
 yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" #displays always the active -not just connected- monitors 
 }
-
+#
 function soundsetup {
-	if [ $1 -eq 1 -o $1 -eq 2 ];then 
+	if [[ $1 -eq 1 ]] || [[ $1 -eq 2 ]];then 
 	sset=$1
 	else
 	sset=$(yad --center --form --title="Sound Setup" --item-separator="-" --separator='' --num-output --field="Enable HDMI Sound":CB "HDMI-PC-Exit")
@@ -56,6 +56,7 @@ function soundsetup {
 	   pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo;
 	fi
 	
+	#yad --center --no-markup --title="Active Sound Setting" --text="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')" 
 	yad --center --no-markup --title="Active Sound Setting" --text="$(pacmd list |grep 'active profile')" 
 }
 

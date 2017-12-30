@@ -2,9 +2,9 @@
 Version=1.0
 Type=Application
 Name=ScreenSet
-Comment=
-Exec=gksu -g /home/gv/Desktop/PythonTests/twoscreens.sh
+Comment="Adjust Screen Settngs for use with a second monitor"
+Exec=gksu -u gv -g /home/gv/Desktop/PythonTests/twoscreens.sh
 Icon=view-fullscreen
-Path=
 Terminal=false
+Categories=Settings;
 StartupNotify=false
