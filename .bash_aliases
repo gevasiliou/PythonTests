@@ -51,29 +51,29 @@ alias battery="upower -i $(upower -e |grep -e 'BAT')"
 alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf FNR \":  \" }1'" #cat with details
 
 function teee { 
-#This can be used between pipes toprint on screen what is coming in from the left comman and what comes out of the last command in pipe
-#without affecting the data transferred throught the pipe. Example cat file |teee |grep 'pattern1' |grep 'pattern2' 
+#This can be used between pipes toprint on screen what is coming in from the left command and flows to the next command
 
 #function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
 	v="$(</dev/stdin)"; 
-	echo '----------------left pipe in-------------' >/dev/tty;
+	echo '---------------- pipe -------------' >/dev/tty;
 	i=1;
 	while read -r l;do 
 	  echo "$i>$l" >/dev/tty;
 	  let i++;
 	done <<<"$v";
-	echo '----------------last pipe out-------------' >/dev/tty;
-	echo "$v"; 
+	echo '---------------- pipe -------------^' >/dev/tty; #disabled - for some reason prints the result of the last command
+	echo "$v"; ##necessary to keep the data going to the next ommand
+	
 #Usage example:
 #$ cat file1.txt |teee |grep 'WNA' |grep '621'
-#----------------left pipe in-------------
+#---------------- pipe -------------
 #1>denovo23    HNS.2_9729  HNS.2_20867
 #2>denovo28    HNS.6_14948 HNS.6_148211    HNS.11_327521
 #3>denovo62    HNS.7_468475    HNS.7_631780
 #4>denovo897   WNA.2_58410 WNA.1_175071
 #5>denovo621   WNA.2_20180 WNA.2_294219
 #6>denovo622   CES.1_24310 HNS.6_26786
-#----------------last pipe out-------------
+#---------------- pipe -------------
 #denovo621   WNA.2_20180 WNA.2_294219
 
 	}
