@@ -365,7 +365,7 @@ echo "Use -d for directories , -f for full depth"
 echo -e "Permissions\t| group\t| user\t| size\t| Change Time\t\t\t| Name"
 printf '%.s-' {1..130} 
 echo
-find -name "${p[@]}" $d $f -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n' | LC_ALL=C sort -t '|' -k1.1,1.2r -k6.1
+find "${p[@]}" $d $f -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n' | LC_ALL=C sort -t '|' -k1.1,1.2r -k6.1
 #sort k1.1,1.2r : sort at first char of first field in reverse order ==> links first, directories then, files last
 #sort k6 : then sort by last column = filename
 }
