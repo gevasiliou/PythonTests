@@ -798,3 +798,70 @@ curl http://teniesonline.ucoz.com/load/2-1-0-1485 |grep 'open'
 <option selected="selected" value="">Επιλέξτε Player για προβολή</option> <br /> <br /> <option value="https://openload.co/embed/KD9TigOuVZ0/">Openload.co</option> <br /> <br /> </select></div></center></nofollow> 
 
 As already explained the embeded openload links contain both mp4 file and vtt. You can further curl this embed url and grp for subs / vtt
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:SYSTEMD WIFI RESET AFTER SLEEP / HYBERNATE RESUME
+.B Forcing a Reset (check alias wfr)
+To force a wifi reset those works in Debian 9.0:
+1. nmcli radio wifi off && sleep 10 && nmcli radio wifi on #nmcli = network-manager command line interface
+2. systemctl restart network-manager
+
+While both commands work, the first one seems to emulate the 'wifi off' laptop button , while the second one is purelly SW based restart
+
+.B Reset by script
+People claim that scripts located in bellow directories run on system resume:
+1. Directory /usr/lib/pm-utils/sleep.d  --> Not working on Debian 9
+2. Directory /lib/systemd/system-sleep/ - Explained here: https://wiki.archlinux.org/index.php/Power_management#Hooks_in_.2Fusr.2Flib.2Fsystemd.2Fsystem-sleep
+
+First method does not work, but second method works fine. Better way to test script is with echo to a tmp log file i.e in Desktop 
+Systemd transmits two arguments ($1/$2) in all the scripts present in above directory.
+$1 gets value 'pre' or 'post' (prior sleep / after sleep)
+$2 gets value like sleep, hybernate and hybrid-sleep
+
+Typical script:
+
+#!/bin/sh
+case $1/$2 in
+  pre/*)
+    echo "Going to $2..."
+    # Place your pre suspend commands here, or `exit 0` if no pre suspend action required
+    ;;
+  post/*)
+    echo "Waking up from $2..."
+    # Place your post suspend (resume) commands here, or `exit 0` if no post suspend action required
+    ;;
+esac
+
+.B Reset Wifi by customized systemd service
+https://askubuntu.com/questions/761180/wifi-doesnt-work-after-suspend-after-16-04-upgrade
+
+1. Create a service : sudo nano /lib/systemd/system/wifi-resume.service
+PS:The service is calling the program from /etc/init.d/network-manager
+
+2. Write the service code:
+
+#/lib/systemd/system/wifi-resume.service
+#sudo systemctl enable wifi-resume.service
+[Unit]
+Description=Restart network-manager at resume
+After=suspend.target
+After=hibernate.target
+After=hybrid-sleep.target 
+#all this target files exist in /lib/systemd/system directory
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart network-manager  #Command works fine even in my Debian 9
+
+[Install]
+WantedBy=suspend.target
+WantedBy=hibernate.target
+WantedBy=hybrid-sleep.target
+
+3. Enable the service: sudo systemctl enable /lib/systemd/system/wifi-resume.service
+This creates the symlinks into the indicated [Install] directories of /etc/systemd/system and activates the service
+
+4. Check status with systemctl status wifi-resume.service
+
+.B Verifying sleep/hybernate states
+journalctl -b -u systemd-suspend
