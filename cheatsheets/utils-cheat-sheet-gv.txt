@@ -359,10 +359,24 @@ $ paste num2 let3
 $ paste -s num2 let3
 1       2
 a       b       c
-$ paste num2 let3 num2
+$ paste num2 let3 num2 #reusing num2 file
 1       a      1
 2       b      2
         c
+.B Print lines from two files (alternating):
+$ cat file1
+Aaaaaaa1
+Aaaaaaa2
+
+$ cat file2
+Bbbbbbb1
+Bbbbbbb2
+
+$ paste -d $'\n' file1 file2 #or just -d '\n'. You can create an extra line using paste -d '\n' file1 file2 /dev/null since /dev/null counts as file
+Aaaaaaa1
+Bbbbbbb1
+Aaaaaaa2
+Bbbbbbb2
 
 Also see this example: http://unix.stackexchange.com/questions/340691/stacked-records-to-columns/340692?noredirect=1#comment602328_340692
 $ paste -d"," <(grep -E '[0-9]' c2.txt) <(grep -E '[a-z]' c2.txt)
@@ -443,7 +457,7 @@ $ a="17.928671"; a=$(bc -l <<<"$a/1");echo "$a"            ---> 17.9286710000000
 $ a="17.928671"; a=$(bc -l <<<"scale=3; $a/1");echo "$a"   ---> 17.928                   #scale in effect
 $ a="17.928671"; a=$(printf '%.3f\n' "$a");echo "$a"       ---> 17.929                   #rounding in effect
 
-##TRICKY PRINTF + bc usage to sum up ascii values:
+##TRICKY BC + PRINTF usage to sum up ascii values:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
 echo "$sumA"              ---->> 49+46+78+102+51+39+99+53+39+50+46+101+52+39+78+99+54+39+ #mind the trailing +
 $ bc <<<"${sumA:0:-1}"    ---->> 1114
@@ -700,7 +714,12 @@ echo "mbar bar\n'my foo' foo" | xargs -l -t mv  --> works ok. Without quoting ar
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SEQ
+Produces a sequence. 
 
+Classic use: 
+$ seq 10 --> produces lines from 1 to 10. Can be used to quickly emulate lines of a file : seq 10 |awk ....
+
+Tricky usage:
 $ start=3; seq -s" : " -f "data%g" $start 5    ---> data3 : data4 : data5
 -s" : " - item separator
 
@@ -739,11 +758,26 @@ Open a new LibreOffice Draw document, select the line tool and run on terminal t
 You should see a straight line draw automatically 
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:USERS
+UTILS:SYSTEM INFO
 id -u gv #prints the id of user gv
 w -hs #prints logged in users (gv & root)
 fgconsole #prints tty number = 7. can be used in scripts like tty$(fgconsole)
 HDMI_STATUS=$(cat /sys/class/drm/card0/*HDMI*/status)
+
+.B UPOWER = Power Manager - freedesktop
+upower -e : Display devices controlled by power manager
+upower -d : Dump parameter of all objects
+upower -i /org/freedesktop/UPower/devices/battery_BAT0 --> display parameters of battery 0 = first system battery. Combine with grep.
+function power {
+echo "AC Power" && upower -i "$(upower -e |grep 'line_power')" |grep -e 'native-path' -e 'online' |sed -r 's/^\s+//g'
+echo && echo "Battery" && upower -i "$(upower -e |grep -e 'BAT')" |grep -e 'state' -e 'percentage' -e 'time to' -e 'native-path' |sed -r 's/^\s+//g'
+}
+PS: You can make use of upower in scripts to determine if PC runs on battery or on AC power.
+
+PS: You can nativelly get the same info by cat on the files of directory 
+Browsing '/sys/class/power_supply/' will drive you to BAT0 and AC0
+/sys/class/power_supply/BAT0 ---> link to /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/PNP0C0A:03/power_supply/BAT0
+/sys/class/power_supply/AC0  ---> link to /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/ACPI0003:00/power_supply/AC0
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:YOUTUBE-DL - WGET - CURL - MPV
