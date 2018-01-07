@@ -389,7 +389,7 @@ It is still not clear why and how it works, but it works.
 It seems that each space before \n at delimiters correspond to the next line
 
 Try to change the spaces:
-$ seq 10 |paste -s -d $' \n   \n'
+$ seq 10 |paste -s -d $' \n   \n' #one more space added before last \n
 1 2
 3 4 5 6
 7 8
@@ -405,7 +405,11 @@ $ seq 10 |paste -s -d $'  \n\n'
 
 Similarily 
 paste -s -d $' \n \n' will join lines by two ( like awk '{printf $0 (NR%2==0?ORS:OFS)}' )
+PS: Classic paste alternative:seq 10 |paste -d ' ' - - #mind the two dashes = read stdin twice!
+
 paste -s -d $'  \n  \n' will join lines by three ( equivalent to awk '{printf $0 (NR%3==0?ORS:OFS)}'
+PS1: Classic paste alternative: seq 10 |paste -d ' ' - - -  #read stdin three times!
+PS2: seq 10 |paste -d '%^' - - -   #Join 3 lines of the same file (seq 10 here) using delimiters = 1%2^3 etc
 
 PS: Don't get confused by seq. Paste will work the same on any lines coming from any file
 
