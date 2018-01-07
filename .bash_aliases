@@ -30,7 +30,7 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
 alias aptsourcescp='cp -i sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y'
 alias printfunctions='set |grep -A2 -e "()"'
-alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )'
+alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #alternative modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
 #lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
 
@@ -38,7 +38,7 @@ alias lsm='ls -l $@ && cd' #Strange, but cd keeps the $@ and it works.
 #Trick : ls -l /dir && cd $_ does the same job
 
 
-alias weather='curl wttr.in/Μαρούσι'
+alias weather='curl wttr.in/Κηφισιά'
 alias hexit='od -w40 -An -t x1c -v'
 alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
 #alias asciit='od -An -tuC'
@@ -66,7 +66,7 @@ function teee {
 	  let i++;
 	done <<<"$v";
 	echo '---------------- pipe -------------^' >/dev/tty; #disabled - for some reason prints the result of the last command
-	echo "$v"; ##necessary to keep the data going to the next ommand
+	echo "$v"; ##necessary to keep the data going to the next command
 	
 #Usage example:
 #$ cat file1.txt |teee |grep 'WNA' |grep '621'
@@ -109,6 +109,7 @@ echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory s
 }
 
 function lsdir { 
+# List only directories
 [[ -z "$1" ]] && local d="$PWD" || local d="$1"
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
 ls -all "$d" |grep '^d' 
@@ -301,7 +302,7 @@ find / -type f -executable -name "$fname"
 function mancheat { 
 echo "mancheat: explore the cheat sheets using man page viewer"
 [[ -z $1 ]] && echo "Pass me a cheat file name to display from ./cheatsheets/ directory" && return
-	man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+	man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
 #This works directly in cli:
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 }
