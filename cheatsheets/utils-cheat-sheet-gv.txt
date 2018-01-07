@@ -367,6 +367,48 @@ $ paste num2 let3 num2
 Also see this example: http://unix.stackexchange.com/questions/340691/stacked-records-to-columns/340692?noredirect=1#comment602328_340692
 $ paste -d"," <(grep -E '[0-9]' c2.txt) <(grep -E '[a-z]' c2.txt)
 Mind the process substitution of the same file. Remember that <(...) creates a temp fd descriptor which acts as a file argument in apps requesting files, like paste.
+
+.B Tricky usage to join /reorganize lines of the same file
+Considering a file with 10 lines , each line containing numbers like 1,2,3...10
+Now we want to achieve this output:
+1 2
+3 4 5
+6 7 
+8 9 10
+
+Means: join first two lines, then join next three lines, then repeat --> join two lines , join three lines and repeat up to EOF
+
+One approach is an awk like this: awk '{printf("%s",$0 (NR%5==0?ORS:":"))}' file1 |awk -F':' '{print $1,$2;print $3,$4,$5}'
+The initial file is grouped by 5 lines (separated by : ) and then we split it by 2 and by 3.
+
+This can be done MORE easily with paste like this:
+$ cat file1 |paste -s -d $' \n  \n'
+-s = serialize
+-d = delimiters
+It is still not clear why and how it works, but it works.
+It seems that each space before \n at delimiters correspond to the next line
+
+Try to change the spaces:
+$ seq 10 |paste -s -d $' \n   \n'
+1 2
+3 4 5 6
+7 8
+9 10
+
+Or even
+$ seq 10 |paste -s -d $'  \n\n'
+1 2 3
+4
+5 6 7
+8
+9 10
+
+Similarily 
+paste -s -d $' \n \n' will join lines by two ( like awk '{printf $0 (NR%2==0?ORS:OFS)}' )
+paste -s -d $'  \n  \n' will join lines by three ( equivalent to awk '{printf $0 (NR%3==0?ORS:OFS)}'
+
+PS: Don't get confused by seq. Paste will work the same on any lines coming from any file
+
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:COLUMN
 Print anything nicely with column program

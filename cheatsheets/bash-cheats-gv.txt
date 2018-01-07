@@ -1370,6 +1370,19 @@ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -   ---> Prints A dashed l
 printf '%.0s-' {1..20}; echo  #will print just 20 dashes
 eval printf %.0s- '{1..'"${COLUMNS:-$(tput cols)}"\}; echo
 
+.B Draw a line using a variable:
+$ var="┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃"
+$ printf "$var"'%.0s\n' {1..3}                       #Alternative: printf '%s\n' "$var" "$var" "$var"
+┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃
+┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃
+┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃   ┃
+
+For dashes:
+$ var="\x2D"   #2D is the hex ascii code of the dash
+$ printf "$var"'%.0s' {1..50} && echo
+--------------------------------------------------
+
+
 ##PRINT A TEXT CHAR BY CHAR
 $ a="Athens 35oC"; IFS=$'\n' t=( $(grep -o '.' <<<"$a") );declare -p t #If you left IFS to default value, space of word will be removed
 declare -a t=([0]="A" [1]="t" [2]="h" [3]="e" [4]="n" [5]="s" [6]=" " [7]="3" [8]="5" [9]="o" [10]="C")

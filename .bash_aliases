@@ -19,8 +19,11 @@ alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
-alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap &'
+alias yadit='yad --text="$(</dev/stdin)" --center --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"
+
+#alias yadit='yad --text-info --center --width=800 --height=600 --no-markup --wrap &'
 #alias lsdir='ls -l -d */'
+
 alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
