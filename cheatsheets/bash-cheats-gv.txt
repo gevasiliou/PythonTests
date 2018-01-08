@@ -161,7 +161,7 @@ $ IFS=$',' arr=( $(<file6) );declare -p arr
 declare -a arr=([0]="Dog" [1]=$'cat\nshark' [2]=$'rabbit\nmouse' [3]=$'bird\nwhale' [4]="dolphin")
 
 ------------------------------------------------------------------------------------------------------------------------
-##READ LINES FROM FILE NULL SEPARATED (AND NOT NEW LINES)
+##READ LINES FROM FILE NULL SEPARATED (AND NOT \n NEWLINE SEPARATED)
 http://stackoverflow.com/questions/8677546/bash-for-in-looping-on-null-delimited-string-variable
 http://stackoverflow.com/questions/42381149/bash-function-with-an-array-input-and-output
 
@@ -245,7 +245,7 @@ while IFS= read -r lines;do readarray -t -d' ' -O"${#vars[@]}" vars <<<"$lines";
 Or you can use the read -r -a method and transfer fields to another array that will not be overwritten by the next line.
 
 ------------------------------------------------------------------------------------------------------------------------
-## READ A SINGLE STRING/VARIABLE WITH READ -R:
+## READ A SINGLE STRING/VARIABLE WITH read -r:
 http://mywiki.wooledge.org/BashFAQ/001
 read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
 read -r first last junk <<< "$a" 
@@ -323,7 +323,13 @@ while read -r f1 && read -r f2;do echo "f1=$f1, f2=$f2";done < <(find . -name 'f
 f1=./file1, f2=./file2
 f1=./file3, f2=./file4
 ------------------------------------------------------------------------------------------------------------------------
+##READ TWO FILES AT THE SAME TIME (LINES ALTERNATION OF TWO FILES  , equiv to past -d '\n' file1 file2)
+while IFS= read -r line1 && IFS= read -ru3 line2; do  #mind the -u3 = read from fd3
+    echo "$line1"
+    echo "$line2"
+done < file1 3< file2 #mind that file2 feeds fd3
 
+------------------------------------------------------------------------------------------------------------------------
 ##READ FIRST TWO LINES ONLY 
 { IFS= read -r line1 && IFS= read -r line2; } < input.txt
 { line1=$(line) && line2=$(line); } < input.txt

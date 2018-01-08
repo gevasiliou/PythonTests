@@ -378,12 +378,18 @@ Bbbbbbb1
 Aaaaaaa2
 Bbbbbbb2
 
+Bash tricky alternative:
+while IFS= read -r line1 && IFS= read -ru3 line2; do
+    echo "$line1"
+    echo "$line2"
+done < file1 3< file2
+
 Also see this example: http://unix.stackexchange.com/questions/340691/stacked-records-to-columns/340692?noredirect=1#comment602328_340692
 $ paste -d"," <(grep -E '[0-9]' c2.txt) <(grep -E '[a-z]' c2.txt)
 Mind the process substitution of the same file. Remember that <(...) creates a temp fd descriptor which acts as a file argument in apps requesting files, like paste.
 
 .B Tricky usage to join /reorganize lines of the same file
-Considering a file with 10 lines , each line containing numbers like 1,2,3...10
+Considering a file with 10 lines , each line containing numbers like 1,2,3...10 (or seq 10)
 Now we want to achieve this output:
 1 2
 3 4 5
@@ -596,6 +602,33 @@ UTILS:DATE
 date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
 I have a smart function in bash profile for this that can work also as a pipe.
 
+##CONVERT EPOCH TO DATE 
+Assuming that you have the string 1267619929 that represents timestamp/epoch date 
+$ date -d @1267619929 +"%Y-%m-%d %H:%M:%S"   ---> 2010-03-03 14:38:49
+
+The last argument +"...." defines the output date format. 
+By removing it you can get the std date output format:
+$ date -d @1267619929   ---> Wed Mar  3 14:38:49 EET 2010
+
+.B Using printf
+Since Bash 4.2 you can use 
+$ printf '%(datefmt)T\n' epoch
+For datefmt you need a string accepted by strftime(3) - see man 3 strftime
+
+$ printf '%(%c)T\n' 1267619929   --- > Wed 03 Mar 2010 01:38:49 PM CET
+
+To make this work with a file in which epoch dates are stored:
+$ printf '%(%F %H:%M:%S)T\n' $(cat file10)  #mind the on-purpose absence of double quotes
+49990-01-04 04:47:16
+49990-01-04 06:26:02
+49990-01-04 11:06:03
+
+Here format %c is:
+%c The preferred date and time representation for the current locale.
+
+.B Using awk
+echo 1267619929 |awk '{ $1 = strftime("%Y-%m-%d %H:%M:%S", $1) }1'
+
 ##DELETE LINES FROM LOG FILE OLDER THAN 30 days 
 For a file with lines like 
 2017/04/04 15:53:22 [11487] building file list)
@@ -652,7 +685,7 @@ apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool
 apt-mark unhold pkg # unholds a package. Can be used to unhold all packages like apt-mark unhold $(apt list --installed 2>/dev/null |cut -f1 -d'/')
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:DU (SIZE OF FILES - DISK USAGE)
+UTILS:SIZE OF FILES - DISK USAGE (DU,LS,etc)
 du reports by default size of directories. Can be combined with -a to report also size of files (by default directories sizes is reported)
 Also -d1 restricts max depth to 1. -b returns the real file size and -h returns size in human readable format. -s is for sumarize
 Output of du is by default tab separated. If directory is ommited , current working directory is reported.
@@ -680,7 +713,9 @@ bsd.txt-173
 file4-3
 shellcolors.sh-684
 
-Tip: For binary/compiled files check out size utility
+Tip1: For binary/compiled files check out size utility
+
+Tip2: Get easily the size of any file in human readable format using ls -lh
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:XARGS
