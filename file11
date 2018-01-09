@@ -1,1 +1,16 @@
-example 2
+    HDFS  worker01.gtdns.com
+    state  STARTED
+    HDFS  worker02.gtdns.com
+    state  STOP
+    HDFS  worker03.gtdns.com
+    state  STARTED
+    HDFS  worker05.gtdns.com
+    state  STARTED
+    HDFS  worker06.gtdns.com
+    state  STARTED
+    HDFS  worker07.gtdns.com
+    state  STARTED
+    HDFS  worker08.gtdns.com
+    state  STARTED
+    HDFS  worker09.gtdns.com
+    state  STOP

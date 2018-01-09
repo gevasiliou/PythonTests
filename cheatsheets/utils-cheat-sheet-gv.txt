@@ -510,6 +510,8 @@ So the dot denotes a fixed point for key, while the comma denotes a range (from 
  
 As a result -k2.4,2.5 defines a key starting on field2-char4 up to key2 char5. If you ommit 2.5 , end of line will be used as ending point.
 
+Defining a key like -t '.' -k1.1,1.0 matches the first field only , dot separated. Position 1.0 refers to the end of first field.
+
 You can visually inspect the keys used by sort by using --debug . This will visualize the keys used:
 $ find man* |LC_ALL=C sort --debug -t '|' -k1.3 #starting point is char3. Ending point missing = End of line.
 sort: using simple byte comparison
@@ -606,6 +608,8 @@ I have a smart function in bash profile for this that can work also as a pipe.
 Assuming that you have the string 1267619929 that represents timestamp/epoch date 
 $ date -d @1267619929 +"%Y-%m-%d %H:%M:%S"   ---> 2010-03-03 14:38:49
 
+PS: Some epoch times include milliseconds. In this case you need to divide the given epoch by 1000.
+
 The last argument +"...." defines the output date format. 
 By removing it you can get the std date output format:
 $ date -d @1267619929   ---> Wed Mar  3 14:38:49 EET 2010
@@ -616,18 +620,26 @@ $ printf '%(datefmt)T\n' epoch
 For datefmt you need a string accepted by strftime(3) - see man 3 strftime
 
 $ printf '%(%c)T\n' 1267619929   --- > Wed 03 Mar 2010 01:38:49 PM CET
+Here format %c is:
+%c The preferred date and time representation for the current locale.
 
 To make this work with a file in which epoch dates are stored:
-$ printf '%(%F %H:%M:%S)T\n' $(cat file10)  #mind the on-purpose absence of double quotes
+$ printf '%(%F %T)T\n' $(cat file10)  #mind the on-purpose absence of double quotes - %F stands for Y-M-D and %T for H:M:S 
 49990-01-04 04:47:16
 49990-01-04 06:26:02
 49990-01-04 11:06:03
 
-Here format %c is:
-%c The preferred date and time representation for the current locale.
+To remove milliseconds , using printf and bc
+printf '%(%F %T)T\n' $(printf '%s/1000\n' $(<file10) |bc)
+2018-01-08 00:45:17
+2018-01-08 00:45:23
+2018-01-08 00:45:39
+
 
 .B Using awk
 echo 1267619929 |awk '{ $1 = strftime("%Y-%m-%d %H:%M:%S", $1) }1'
+
+
 
 ##DELETE LINES FROM LOG FILE OLDER THAN 30 days 
 For a file with lines like 
