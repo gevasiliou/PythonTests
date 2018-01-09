@@ -364,7 +364,7 @@ set -f
 echo "lsadv = ls advanced using find - similar output to ls -all. Includes octal file permissions." 
 echo "Use -d for directories , -f for full depth"
 
-#local p
+local p d f
 #echo "$@"
 [[ $1 == "-d" ]] && d="-type d" && shift || d=""
 [[ $1 == "-f" ]] && f="" && shift || f="-maxdepth 1"
