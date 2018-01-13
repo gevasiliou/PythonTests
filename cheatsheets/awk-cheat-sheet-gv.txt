@@ -57,7 +57,9 @@ Remember the 48H log example that you need to see events logged in any minute of
 ##AWK RESERVED WORDS
 awk '/pattern/ {action}' file 		# Execute action for matched 'pattern' condition 
 $0 									# Reference current record line
-FS 									# Field separator of input file (default whitespace).If unset (FS="" of -F"") then field separator is single char (like grep '.')
+FS 									# Field separator of input file (default whitespace).
+                                    # If unset (FS="" of -F"") then field separator is single char (like grep '.')
+                                    # FS can accept values like FS="\x22" for double quotes or FS="\42" in octal
 -F 									# Command line option to specify input field delimiter before starting awk script.
 OFS 			# Output Field separator (default whitespace). Mind that this can be assigned in command line like awk '{your script}' OFS=: file or awk -F" " -v OFS="\t"
 NF 				# Number of fields in current record/line (i.e {print $NF})
@@ -79,10 +81,9 @@ a=str1 OFS str2 					# Space Concatenates str1 , OFS and str2
 {print $1} 							# Prints the first field of input (as read using FS separator)
 {print $1,$2; print $3,$4} 		# Prints field 1 & 2 in one line, and field 3 & 4 on next line.(print sthing with ; = "\n") 
 'BEGIN {FS=OFS="\t"}; 			# Sets Input Field Separator (FS) and Output Separator (OFS) to tab. This works ony for printing fields/texts separated with comma (i.e print $1,$2) and does NOT work for $0 since $0 is one big field.
-next 						    # Goes to next record - blocks following code execution and restarts from the beginning
-nextfile					    # Stops the processing of current file1 and goes to file2 , starting from the beginning
 while (cond) {actions}				# While loop. Do is not required. Brackets not required for one command. 
 do {actions} while (conditions)		# Alternative while loop syntax. Break, Continue and exit can be used in loops 
+awk -c                              # This switch disables all gnu extensions and runs as the old awk - based on the book
 
 ##AWK BUILTIN FUNCTIONS
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
@@ -98,6 +99,7 @@ toupper(s)              # String s to uppercase
 getline                 # Set $0 to next input record from current input file. 
 getline <file2          # Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
 getline var <file2      # Read file2 and assign to var the whole record/line of file2 ($0). Without <file current file is used
+next                    # stops processing and goes to next record of the file
 nextfile                # goes to the next file - changes the flow of the script (does not return back)
 operators               # https://www.tutorialspoint.com/awk/awk_operators.htm
 
@@ -112,6 +114,8 @@ simple conditions checks       # Can be expressed like awk '$5 == "abc123"' - pr
 advanced conditions checks     # {if (expression) {commands for true} else {commands for false}}
 expr?true:false                # Conditional Expression - ternary operator. expression is evaluated and true command is run if expression=true
 Directories on the command line are fatal for standard awk; gawk ignores them if not in POSIX mode.
+convert a field to number : add 0 to it
+convert a field to string : concatenate with ""
 
 AWK:FUNCTIONS EXAMPLES
 awk '{print "NR:",NR,"FNR:",FNR,"fname:",FILENAME,"Field:",$1}' file1 file2                   #Both files will be printed in series

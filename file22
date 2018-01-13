@@ -1,4 +1,2 @@
-Name:Ed Mundo 
-Gender:Male 
-Age:41 
-Address: California
+div(class="ff-t fw-b mt-s")!=__("By")+'&nbsp;'
+div(class="ff-t fw-b mt-xxs mt-s@l")=__('Play Video')
