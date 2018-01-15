@@ -992,3 +992,27 @@ This creates the symlinks into the indicated [Install] directories of /etc/syste
 
 .B Verifying sleep/hybernate states
 journalctl -b -u systemd-suspend
+
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:MOREUTILS
+##Moreutils
+This is a package with some usefull perl/c utils:
+
+/usr/bin/chronic    ---> runs a command quietly unless it fails
+/usr/bin/combine    ---> a perl utility to print lines from two files using and/or/xor . i.e print if lines are present in file1 and file2
+/usr/bin/errno      ---> look up errno names and descriptions. Run with --list
+/usr/bin/ifdatap    ---> get network interface info without parsing ifconfig output
+/usr/bin/ifne       ---> ifne runs the following command if and only if the standard input is not empty. There is also the opposite using -r (reverse) switch 
+/usr/bin/isutf8     ---> check whether files are valid UTF-8
+/usr/bin/lckdo      ---> run a program with a lock held
+/usr/bin/mispipe    ---> 
+/usr/bin/parallel
+/usr/bin/pee
+/usr/bin/sponge     ---> holds the data piped to sponge and prints those data when file is finished. Different to tee.tee prints out whatever comes in tee
+/usr/bin/ts         ---> time stamp input. Usefull in tail -f
+/usr/bin/vidir      ---> edit a directory in editor. Delete a file from editor, and will deleted for real.
+/usr/bin/vipe       ---> pipe editor. Command cat ,,, |vipe |sed will open editor and allows changes before piping to sed
+/usr/bin/zrun
+
+See the whole man pages without installing using $debcat moreutils --ind --readable
