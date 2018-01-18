@@ -27,7 +27,7 @@ alias yadit='yad --text="$(</dev/stdin)" --center --no-markup --width=800 & diso
 alias dirsize='du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
-alias aptsourcescp='cp -i sources.list /etc/apt/'
+alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y'
 alias printfunctions='set |grep -A2 -e "()"'
 alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #alternative modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
