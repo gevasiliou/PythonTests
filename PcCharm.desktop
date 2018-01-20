@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PcCharm
+Comment=
+Exec=gksu -g /home/gv/Downloads/pycharm-edu-3.0/pycharm-edu-3.0/bin/pycharm.sh
+Icon=pycharm
+Path=
+Terminal=false
+StartupNotify=false
+Name[en_US]=PyCharm

@@ -161,7 +161,7 @@ function debcat () {
 	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
 	echo "Use --list switch to force a deb listing of all files"
 	echo "Use --ind switch to be prompted will all files found excluding directories and links"
-	echo "Combine --readable after --ind to force index to exlude links,dirs and binary files"
+	echo "Combine --all after --ind to force index to include binary files like .so,.mo,.ko,etc -excluded by default"
     
 	[[ -z $1 ]] && echo "apt pkg file missing " && return
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
@@ -176,10 +176,10 @@ function debcat () {
 	if [[ $2 == "--ind" ]];then
 	    unset flist ms loop key
         loop=1
-	    if [[ "$3" == "--readable" ]];then
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
-	    else
+	    if [[ "$3" == "--all" ]];then
 			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
+	    else
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
 	    fi
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
 	    while [[ $loop -eq 1 ]]; do
