@@ -191,7 +191,7 @@ grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
 match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
 can be used as -Eow to match words in a line
 
-##GREP LOOK AHEAD METHOD:
+##GREP FORGET PREVIOUS :
 \K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
 
 $ grep  'sda:' /var/log/messages.1
@@ -209,6 +209,35 @@ user    25999  0.0  0.7 678772 259772 ?       Ssl  Nov05  11:54 fwd
 $ echo "$a" |grep -Po '.* \K\w+ (?=[?])'
 259772   #---> Result : The word just before ? is captured.
 
+#GREP Lookahead/lookbehind more examples
+# echo "$a"
+also_onetime
+one_time
+two-something
+three time
+this is fifth time
+time
+time1
+2times
+3time
+
+$ echo "$a" |grep --color -P '(?=)time'  #ignore what is in front of time. Equivalent to grep -P '\Ktime'
+also_onetime         #time is captured/coloured
+one_time             #time is captured/coloured
+three time           #time is captured/coloured
+this is fifth time   #time is captured/coloured
+time                 #time is captured/coloured
+time1                #time is captured/coloured
+2times               #time is captured/coloured
+3time                #time is captured/coloured
+
+$ echo "$a" |grep --color -P 'one(?=)'    #find lines with one , catch one and ignore everything after one
+also_onetime         #one is captured/coloured
+one_time             #one is captured/coloured
+
+Above examples return the whole line since we use just -P and not -Po. Grep by default captures lines matching pattern.
+
+
 ##GREP - Count occurences of a char within a string
 var="text,text,text,text"
 GREP: reps=$(grep -o "," <<< "$var" | wc -l)
@@ -217,8 +246,9 @@ BASH Alternative: reps="${var//[^,]}" && echo "${#reps}"  #removes everything ex
 
 
 ##GREP - Find non matching files instead of non  matching lines
-grep -v ‘trivial information’  it will not work because the rest of the lines in the file are match to this inverted search so the file.txt will end up in the result.
-This job can be done using grep -L 'trivial information' *  (-L, --files-without-match)
+$ grep -v ‘trivial information’  will not work because the rest of the lines in the file are match to this inverted search so the file.txt will end up in the result.
+This job can be done using 
+$ grep -L 'trivial information' *  (-L, --files-without-match)
 With -L scanning will stop on the first match.
 #-----------------------------------------------------------------------------------------------------------------------
 
