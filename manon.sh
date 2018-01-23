@@ -8,7 +8,6 @@ Option1:
     --help          This usage screen.
 
     --online        Use online services to retrieve requested man page (die.net, mankier.com and man.he.net).
-    --online-gui    Force man page to be displayed in GUI (yad) 
                     Option2:
                            --mankier     Skip die.net look at mankier.com
                            --manhenet    Skip die.net and mankier.com and look directly in man.he.net
@@ -26,11 +25,7 @@ Option1:
 
     --debianlist    Display a list of available man pages (various releases) at i.e http://manpages.debian.org/grep (i.e jessie,stretch,testing, unstable, posix etc). 
                     Combine with --browser to display man page at browser
-    
-
-    --debianold     Old version for Debian Online Manpages (using debian manpages online cgi page)
-                    Combine with --browser to display man page at browser
-                    
+                        
     --bsd           Display the FreeBSD man pages (i.e https://man.freebsd.org/grep). 
                     Combine with --browser to display man page at browser
     
@@ -46,13 +41,178 @@ Option1:
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tab not)
 }	
-[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit #if no man page is requested print help and exit
-[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
-echo "mode selected:  $mode"
-normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Could be buggy if more than one normal user exists
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--bsd" ]]; then
+function apt {
+	validmode=1
+	loop=1
+	pkg="$1"
+	echo "package requested: $pkg"
+
+	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
+	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
+
+#    if [[ $1 =~ "/" ]];then 
+         aptresp=$(apt-get --print-uris download $1 2>&1) 
+         # apt-get --print-uris download is better than install. install will return the uris of all the dependencies;download will return just the uri of the package.
+         # Moreover apt-get download works fine with package/repo synthax.
+         echo "apt response=$aptresp"
+#    else
+#		pkg="$1"
+#		aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
+#		echo "Package: $aptpkg"
+#		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. 
+		#This seems to be valid for any package that needs to install an additional deb in order to work .
+		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+#	fi
+	if [[ "$aptresp" == *"Unable to locate package"* ]];then
+		echo "Error. Either wrong package name or other error. Raw output of apt:"
+#		apt-get --print-uris download $aptpkg
+		apt-get --print-uris download $pkg
+		exit 1
+	fi
+    aptpkg="${pkg%%/*}"
+	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+	echo "deb file : $deb"
+	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No man pages found in deb package - These are the contents of the $deb:"
+			curl -sL -o- $deb |dpkg -c /dev/stdin
+			exit 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+		
+		if [[ ${#manpage[@]} -eq 1 ]]; then
+			echo "One man page found - Display "
+			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
+			loop=0
+		else
+			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+			if [[ $ms == "a" ]]; then 
+				echo "Display all"
+				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[@]} |man /dev/stdin				
+			elif [[ $ms == "q" ]]; then
+				echo "exiting"
+				loop=0
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+				echo "Display ${manpage[$ms]}"
+				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+                if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin 
+				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
+				else 
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
+				fi
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+				echo "out of range - try again"
+			else
+				echo "Invalid Selection - Try Again"
+			fi
+		fi
+	done
+}
+
+function down {
+#if [[ "$mode" == "--down" ]]; then
+	validmode=1
+	loop=1
+	rawpkg="$1"
+	echo "rawpkg requested: $rawpkg"
+#    if [[ $rawpkg =~ "/" ]];then 
+         aptresp=$(apt-get --print-uris download $rawpkg 2>&1)
+#        echo "apt response=$aptresp"
+#    else
+#		aptpkg=$(apt list $pkg 2>/dev/null |grep $rawpkg |cut -d" " -f1 |cut -d"," -f1)
+#		echo "AptPackage: $aptpkg"
+#		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+#		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
+#		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+#	fi
+
+	if [[ "$aptresp" == *"Unable to locate package"* ]];then
+		echo "Error. Either wrong package name or other error. Raw output of apt:"
+#		apt-get --print-uris download $aptpkg
+		apt-get --print-uris download $rawpkg
+		exit 1
+#	else
+#	    aptpkg=$1
+	fi
+
+##	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1) #Prior to Nov17
+##	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1 || echo "Package: $aptpkg" #prior to Nov17
+#	apt-get download "$aptpkg" 2>/dev/null
+	apt-get download "$rawpkg" 2>/dev/null
+	pkg="${rawpkg%%/*}" #Nov17: remove the /repository i.e /experimental if exists
+	debname=$(find . -maxdepth 1 -name "$pkg*.deb")
+	echo "Deb Name = $debname"
+	datatar=$(ar t "$debname" |grep "data.tar")
+	echo "data.tar = $datatar"
+
+
+	if [[ ${datatar##*.} == "gz" ]];then 
+		options="z"   #Case of package agrep
+	elif [[ ${datatar##*.} == "xz" ]];then
+		options="J"  # the most common case for data.tar
+	else
+		echo "data.tar is not a gz or xz archive. Exiting"
+		exit 1
+	fi
+	#manpage+=($(ar p $debname $datatar | tar t"$options" |grep -v -e '^l' |grep -e "man/man" -e "changelog" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: Changelog option added
+	manpage+=($(dpkg -c $debname |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
+	#Nov17: Changelog option added and deb contents listing changed from 'ar -p' to 'dpkg -c' since the latest one seems more reliable and robust and also provides an ls similar output thus grep -v '^l' works fine = skip sym links	
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No man pages found in deb package - These are the contents of the $debname:"
+			ar p "$debname" "$datatar" | tar t"$options"
+			rm -f $debname
+			exit 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+	
+		if [[ ${#manpage[@]} -eq 1 ]]; then
+			echo "One man page found - Display "
+			ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin #works ok
+			loop=0
+		else
+			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+			if [[ $ms == "a" ]]; then 
+				echo "Display all"
+				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin #works ok
+	#			loop=0
+			elif [[ $ms == "q" ]]; then
+				echo "exiting"
+				loop=0
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+				echo "Display ${manpage[$ms]}"
+				#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
+				if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling for various file types
+				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin  
+                elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+                   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |gunzip -c |less -S 
+				else 
+				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |less -S
+				fi
+	#			loop=0
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+				echo "out of range - try again"
+			else
+				echo "Invalid Selection - Try Again"
+			fi
+		fi
+	done
+	[[ $3 != "--nodelete" ]] &&  rm -vf $debname || echo -e "$debname preserved :\n $(ls -all $debname)"
+#fi
+}
+
+function bsd {
+#if [[ "$mode" == "--bsd" ]]; then
   validmode=1
   bsdpage="$1"
   bsddata="$(links -dump https://man.freebsd.org/$bsdpage |sed '1,/home | help/d' )"
@@ -63,10 +223,13 @@ if [[ "$mode" == "--bsd" ]]; then
   else
      echo "$bsddata" |sed "1i https://man.freebsd.org/$bsdpage" |less -S
   fi  
-fi
+#fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 #links -dump https://man.openbsd.org/grep |sed '1,/GREP/d' |less
-if [[ "$mode" == "--openbsd" ]]; then
+}
+
+function openbsd {
+#if [[ "$mode" == "--openbsd" ]]; then
   validmode=1  
   bsdpage="$1"
   bsdpagecap="${bsdpage^^}" #Capitalize the man page title
@@ -78,11 +241,11 @@ if [[ "$mode" == "--openbsd" ]]; then
   else
      echo "$bsddata" |sed "1i https://man.openbsd.org/$bsdpage" |less -S
   fi  
-fi
+#fi
+}
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-
-if [[ "$mode" == "--debian" ]]; then
+function debian {
+#if [[ "$mode" == "--debian" ]]; then
   validmode=1  
   manpage="$1"
   release="$(lsb_release -r -s)"
@@ -95,10 +258,11 @@ if [[ "$mode" == "--debian" ]]; then
   else
      echo "$mandata" |sed "1i https://manpages.debian.org/$release/$manpage" |less -S
   fi  
-fi
+#fi
+}
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--debianlist" ]]; then
+function debianlist {
+#if [[ "$mode" == "--debianlist" ]]; then
   validmode=1
   page="$1"
   pagecap="${1^^}"
@@ -129,8 +293,10 @@ if [[ "$mode" == "--debianlist" ]]; then
 			echo "Invalid Selection - Try Again"
 		fi
 	done
-fi
+#fi
+}
 
+function ubuntu {
 #---------------------------------------------------------------------------------------------------------------------------------------
 # Ubuntu Online Man pages
 # Global Address : http://manpages.ubuntu.com
@@ -147,7 +313,7 @@ fi
 # or you can provide an indexed array to select the man page you want
 # To use zesty you just need to dump http://manpages.ubuntu.com/manpages/zesty/en/man1/dman.1.html
 
-if [[ "$mode" == "--ubuntu" ]]; then
+#if [[ "$mode" == "--ubuntu" ]]; then
   validmode=1
   page="$1"
   address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' -e 'plan9' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
@@ -160,10 +326,11 @@ if [[ "$mode" == "--ubuntu" ]]; then
   else 
      links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less -S
   fi
-fi
+#fi
+}
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--ubuntulist" ]]; then
+function ubuntulist {
+#if [[ "$mode" == "--ubuntulist" ]]; then
   validmode=1
   page="$1"
   loop=1
@@ -174,7 +341,7 @@ if [[ "$mode" == "--ubuntulist" ]]; then
 			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit 1
 		else
 			clear
-			echo "man page found: ${#manpage[@]}"
+			echo "man page found at http://manpages.ubuntu.com/cgi-bin/search.py?q=$page : ${#manpage[@]}"
 			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
     	read -p "Select man pages to display by id or q to quit : " ms
@@ -191,10 +358,11 @@ if [[ "$mode" == "--ubuntulist" ]]; then
 			echo "Invalid Selection - Try Again"
 		fi
 	done
-fi
+#fi
+}
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
+function online {
+#if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 	validmode=1
 	title=$1
 	unset dt0 dt data mson loopon
@@ -260,12 +428,12 @@ if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 		echo "No manual found either at die.net, mankier.com or man.he.net. Exiting"
 		exit
 	fi
-	if [[ "$mode" == "--online-gui" ]];then
-		yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
-	else
-		echo "$data" |less -S #display in terminal rather than yad
-	fi
-fi
+#	if [[ "$3" == "--gui" ]];then
+#		yad --text-info<<<"$data" --height=500 --width=800 --center --title="$title$tit Manual " --wrap --show-uri --no-markup &	
+#	else
+		echo "$data" |less -S 
+#	fi
+#fi
 # You can also try the official man pages project:
 # https://www.kernel.org/doc/man-pages/
 # http://man7.org/linux/man-pages/index.html
@@ -274,171 +442,10 @@ fi
 # curl --silent http://man7.org/linux/man-pages/dir_all_alphabetic.html |grep -w 'ln' |grep -o '"[^"]*"'
 # "./man1/ln.1.html"
 # "./man1/ln.1p.html"
+}
 
-
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--apt" ]]; then
-	validmode=1
-	loop=1
-	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
-	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
-
-    if [[ $1 =~ "/" ]];then 
-        aptresp=$(apt-get --print-uris download $1 2>&1)
-        echo "apt response=$aptresp"
-    else
-		pkg="$1"
-		aptpkg=$(apt list $pkg 2>/dev/null |grep $1 |cut -d" " -f1 |cut -d"," -f1)
-		echo "Package: $aptpkg"
-		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
-		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. 
-		#This seems to be valid for any package that needs to install an additional deb in order to work .
-		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
-	fi
-	if [[ "$aptresp" == *"Unable to locate package"* ]];then
-		echo "Error. Either wrong package name or other error. Raw output of apt:"
-		apt-get --print-uris install $aptpkg
-		exit 1
-	fi
-
-	deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
-	echo "deb file : $deb"
-	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-
-	while [[ $loop -eq 1 ]]; do
-		if [[ -z $manpage ]];then
-			echo "No man pages found in deb package - These are the contents of the $deb:"
-			curl -sL -o- $deb |dpkg -c /dev/stdin
-			exit 1
-		else
-			echo "man page found: ${#manpage[@]}"
-			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
-		fi
-		
-		if [[ ${#manpage[@]} -eq 1 ]]; then
-			echo "One man page found - Display "
-			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
-			loop=0
-		else
-			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
-			if [[ $ms == "a" ]]; then 
-				echo "Display all"
-				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[@]} |man /dev/stdin				
-			elif [[ $ms == "q" ]]; then
-				echo "exiting"
-				loop=0
-			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-				echo "Display ${manpage[$ms]}"
-				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
-                if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin 
-				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
-				else 
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
-				fi
-			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
-				echo "out of range - try again"
-			else
-				echo "Invalid Selection - Try Again"
-			fi
-		fi
-	done
-
-fi
-#---------------------------------------------------------------------------------------------------------------------------------------
-if [[ "$mode" == "--down" ]]; then
-	validmode=1
-	loop=1
-	rawpkg="$1"
-    if [[ $rawpkg =~ "/" ]];then 
-        aptresp=$(apt-get --print-uris download $rawpkg 2>&1)
-        echo "apt response=$aptresp"
-    else
-		aptpkg=$(apt list $pkg 2>/dev/null |grep $rawpkg |cut -d" " -f1 |cut -d"," -f1)
-		echo "Package: $aptpkg"
-		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
-		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
-		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
-	fi
-
-	if [[ "$aptresp" == *"Unable to locate package"* ]];then
-		echo "Error. Either wrong package name or other error. Raw output of apt:"
-		apt-get --print-uris install $aptpkg
-		exit 1
-	else
-	    aptpkg=$1
-	fi
-
-#	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1) #Prior to Nov17
-#	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1 || echo "Package: $aptpkg" #prior to Nov17
-	apt-get download "$aptpkg" 2>/dev/null
-	pkg="${rawpkg%%/*}" #Nov17: remove the /repository i.e /experimental if exists
-	debname=$(find . -maxdepth 1 -name "$pkg*.deb")
-	echo "Deb Name = $debname"
-	datatar=$(ar t "$debname" |grep "data.tar")
-	echo "data.tar = $datatar"
-
-
-	if [[ ${datatar##*.} == "gz" ]];then 
-		options="z"   #Case of package agrep
-	elif [[ ${datatar##*.} == "xz" ]];then
-		options="J"  # the most common case for data.tar
-	else
-		echo "data.tar is not a gz or xz archive. Exiting"
-		exit 1
-	fi
-	#manpage+=($(ar p $debname $datatar | tar t"$options" |grep -v -e '^l' |grep -e "man/man" -e "changelog" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: Changelog option added
-	manpage+=($(dpkg -c $debname |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" |grep -vE "\/$" |awk '{print $NF}')) 
-	#Nov17: Changelog option added and deb contents listing changed from 'ar -p' to 'dpkg -c' since the latest one seems more reliable and robust and also provides an ls similar output thus grep -v '^l' works fine = skip sym links	
-	while [[ $loop -eq 1 ]]; do
-		if [[ -z $manpage ]];then
-			echo "No man pages found in deb package - These are the contents of the $debname:"
-			ar p "$debname" "$datatar" | tar t"$options"
-			rm -f $debname
-			exit 1
-		else
-			echo "man page found: ${#manpage[@]}"
-			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
-		fi
-	
-		if [[ ${#manpage[@]} -eq 1 ]]; then
-			echo "One man page found - Display "
-			ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin #works ok
-			loop=0
-		else
-			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
-			if [[ $ms == "a" ]]; then 
-				echo "Display all"
-				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin #works ok
-	#			loop=0
-			elif [[ $ms == "q" ]]; then
-				echo "exiting"
-				loop=0
-			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-				echo "Display ${manpage[$ms]}"
-				#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
-				if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling for various file types
-				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin  
-                elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
-                   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |gunzip -c |less -S 
-				else 
-				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |less -S
-				fi
-	#			loop=0
-			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
-				echo "out of range - try again"
-			else
-				echo "Invalid Selection - Try Again"
-			fi
-		fi
-	done
-	[[ $3 != "--nodelete" ]] &&  rm -vf $debname || echo -e "$debname preserved :\n $(ls -all $debname)"
-fi
-
-#---------------------------------------------------------------------------------------------------------------------------------------
-
-if [[ "$mode" == "--debianold" ]]; then
+function debianold {
+#if [[ "$mode" == "--debianold" ]]; then
 	validmode=1
 	echo "grab man page by https://manpages.debian.org/cgi-bin/man.cgi and perform similar operation to dman ubuntu utility."
 	pkg="$1"
@@ -480,11 +487,12 @@ if [[ "$mode" == "--debianold" ]]; then
 # Also mind that debian manpages seems to fail in some pkgs, like netcat (either as pkg search or apropos search)
 # Another great tool to investigate seems to be python debmans: https://pypi.python.org/pypi/debmans/1.0.0 
 # https://debmans.readthedocs.io/en/latest/usage.html
-fi
+#fi
+}
 
-#---------------------------------------------------------------------------------------------------------------------------------------
+function debcheck {
 # Bellow Options have been made for testing only. Not working correctly, especially with new debian man pages web site.
-if [[ "$mode" == "--debcheck" ]]; then
+#if [[ "$mode" == "--debcheck" ]]; then
 	validmode=1
 	echo "This is debian online manpages checker"
 	unset pk
@@ -519,10 +527,12 @@ if [[ "$mode" == "--debcheck" ]]; then
 	fi
 	done
 
-	fi
-#---------------------------------------------------------------------------------------------------------------------------------------
+#fi
+}
+
+function aptvsdeb {
 #Bellow is also for testing 
-if [[ "$mode" == "--aptvsdeb" ]]; then
+#if [[ "$mode" == "--aptvsdeb" ]]; then
 	validmode=1
 	while IFS=" " read -r _ _ _ _ _ _ _ _ _ pkg;do
 		unset manpage
@@ -552,11 +562,13 @@ if [[ "$mode" == "--aptvsdeb" ]]; then
 			fi
 		fi
 	done <debmanonline.log
-fi
+#fi
 #---------------------------------------------------------------------------------------------------------------------------------------
-#Bellow is also for testing 
+}
 
-if [[ "$mode" == "--aptcheck" ]]; then
+function aptcheck {
+#Bellow is also for testing 
+#if [[ "$mode" == "--aptcheck" ]]; then
 		validmode=1
 		unset manpage aptresp aptpkg
 		pkg="$1"
@@ -581,12 +593,30 @@ if [[ "$mode" == "--aptcheck" ]]; then
 				declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 			fi
 		fi
-fi
+#fi
+}
 
+#------------------------MAIN PROGRAMM-----------------------------------------------------------------------------------------#
+
+[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
+[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
+echo "mode selected:  $mode"
+normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Could be buggy if more than one normal user exists
+case $mode in
+"--apt")apt "$@";;
+"--down")down "$@";;
+"--bsd")bsd "$@";;
+"--openbsd")openbsd "$@";;
+"--debian")debian "$@";;
+"--debianlist")debianlist "$@";;
+"--ubuntu")ubuntu "$@";;
+"--ubuntulist")ubuntulist "$@";;
+"--online")online "$@";;
+esac
 
 [[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
 echo "invalid options - exit with code 1" && helpme && exit 1
-exit
+exit 1
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
