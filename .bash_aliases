@@ -40,7 +40,7 @@ alias lsm='ls -l $@ && cd' #Strange, but cd keeps the $@ and it works.
 #Trick : ls -l /dir && cd $_ does the same job
 
 
-alias weather='curl wttr.in/Κηφισιά'
+alias weather='curl wttr.in/Κηφισιά' #/Μαρούσι
 alias hexit='od -w40 -An -t x1c -v'
 alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
 #alias asciit='od -An -tuC'
