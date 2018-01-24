@@ -58,7 +58,7 @@ a="apt-get install browser-plugin-freshplayer-pepperflash" && echo "------->> $a
 a="apt-get install flashplugin-nonfree flashplugin-nonfree-extrasound pepperflashplugin-nonfree" && echo "------->> $a" && eval "$a"
 a="apt-get install debianutils firmware-linux-free firmware-realtek" && echo "------->> $a" && eval "$a"
 a="apt-get install xfce4-terminal xfce4-appfinder xfce4-notes xfce4-notes-plugin xfce4-screenshooter xfce4-screenshooter-plugin" && echo "------->> $a" && eval "$a"
-a="apt-get install eog" && echo "------->> $a" && eval "$a"
+a="apt-get install eog shutter" && echo "------->> $a" && eval "$a"
 }
 
 function desktopfiles {
