@@ -1,18 +1,11 @@
 SED:BASICS: CHEAT SHEET by gv
+http://sed.sourceforge.net/grabbag/tutorials/sedfaq.txt
 http://sed.sourceforge.net/grabbag/tutorials/
 http://sed.sourceforge.net/sed1line.txt
 http://stackoverflow.com/questions/83329/how-can-i-extract-a-range-of-lines-from-a-text-file-on-unix
 http://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
 http://www.theunixschool.com/2012/06/sed-25-examples-to-delete-line-or.html
 man sed and info sed. Especially info has tons of examples and special cases.
-
--n: not printing/quiet. If missing the input is printed.
--e: sed expression follows
--i: infile edit
-'s/..' : replace
-'.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to disable global printing and print specific lines/patterns that /p applies.
-'..../d' : delete . Also !d for not delete. Combine /d with missing -n to see the input with the deletions.
-'N': N command ReadS next line into the pattern space.
 
 Read Sed Online Cheat Sheets in terminal : curl -sL -o- http://sed.sourceforge.net/sed1line.txt |less
 
@@ -90,7 +83,23 @@ y  # transform_chars
 {} # group commands. For example sed -n '5000p;q' (print and quit) does not work but sed -n '5000{p;q}' works fine.
 
 /regex/! # negates regex = NOT Operation i.e sed '/abc/!d' : delete all lines that DO NOT contain /abc/ regex = keep only /abc/ lines = sed -n '/abc/p'
-/regex/I # case insensitive regex match (gnu)
+/regex/I # case insensitive regex match (gnu) --- > echo ONE TWO | sed "s/one/unos/I"      # prints "unos TWO"
+
+'s/this/that/g' : replace this with that. Last /g is for 'global'. Can be /1=first found, /2=second found or even /2g=global after second found 
+/regex/{s/this/that/g;} : Replace only if regex is found in the line
+/regex/!{s/this/that/g;} : Replace this with that in all lines except line containing regex
+5!s/ham/cheese/  : except on line 5, replace 'ham' with 'cheese'
+'.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to disable global printing and print specific lines/patterns that /p applies.
+'..../d' : delete . Also !d for not delete. Combine /d with missing -n to see the input with the deletions.
+'N': N command ReadS next line into the pattern space.
+
+##SED CLI SWITCHES
+-n: not printing/quiet. If missing the input is printed.
+-e: sed expression follows
+-i: infile edit
+-f: read commands from file. Command should not include the word sed, i.e s/e/E/g and not sed 's/e/E/g'
+
+
 
 SED:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##READ THIS CHEAT FILE WITH MAN PAGES:
@@ -162,6 +171,7 @@ sed -n '/regexp/p' #grep emulation - Print lines matching regex
 sed -n '8,12p' #print from line 8 up to 12
 sed -n '16224,16482p;16483q' file #mind the 16483q command (quit). Variables: sed -n "$FL,$LL p" file.txt
 sed -n '8,/pattern/p' #from 8th line up to pattern
+sed '/regex/,+5' #match /regex/ plus the next 5 lines (or EOF, whichever comes first).
 sed -n '/word1/,/word2/p' #from word 1 up to first match of word2. Some times a space is required before p (/ p) = awk '/Tatty Error/,/suck/' a.txt
 sed '/pattern1/,/pattern2/!d;/pattern2/q' file #Print from pat1 to pat2 and quit. Usefull if pattern1 and/or pattern2 repeats in file.
 sed -n '/pattern1/,/pattern2/p;/pattern2/q' file #Same as above - print from pat1 to pat2 and quit.
@@ -175,6 +185,10 @@ sed -n 'ADDR1,+N'  #Matches ADDR1 and N lines following ADDR1, i.e sed -n '6,+2p
 sed -n '/regexp/{g;1!p;};h' #Print line before regex (not including the line with regex)
 sed -n '/regexp/{n;p;}' 	#Print line after regex (not including the line with regex)
 read -a arr -p "Enter line numbers: " ;sed -n "${arr[*]/%/p;}" infile  #Prints lines acc to user input.Based on bash echo "${arr[*]/%/p;}" -->1p; 3p; 5p; 7p;
+sed '1~3d' file      # delete every 3d line, starting with line 1 --> deletes lines 1, 4, 7, 10, 13, 16, ...
+sed '0~3d' file      # deletes lines 3, 6, 9, 12, 15, 18, ...
+sed -n '2~5p' file   # print every 5th line, starting with line 2 ---> prints lines 2, 7, 12, 17, 22, 27, ...
+
 
 ##PRINT IN REVERSE = tac emulation
 http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
@@ -187,6 +201,8 @@ sed  -n 's/Tatty Error/suck/p' a.txt ## This one replaces Tatty Error with word 
 echo "192.168.1.0/24" | sed  -n 's/0.24/2/p' 
 sed -i 's/foo\(.*baz\)/bar\1/' file  ##Replace foo with bar only if there is a baz later on the same line:
 sed -Ei 's/foo|bar|baz/foobar/g' file ##Replace any of foo, bar or baz with foobar
+sed '/regex/!{s/this/that/g;}' : Replace this with that in all lines except line containing regex
+sed '5!s/ham/cheese/'  : except on line 5, replace 'ham' with 'cheese'
 
 ##REPLACE CHARS WITH REGEX
 See info sed - Regular Expressions
