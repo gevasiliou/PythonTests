@@ -1,0 +1,9 @@
+# sed script to change all paragraphs to long lines
+/./{H; $!d;}             # Put each paragraph into hold space
+x;                       # Swap hold space and pattern space
+s/^\(\n\)\(..*\)$/\2\1/; # Move leading \n to end of PatSpace
+s/\n\(.\)/ \1/g;         # Replace all other \n with 1 space
+# Uncomment the following line to remove excess blank lines:
+# /./!d;
+#---end of sed script---
+##links -dump https://man.openbsd.org/grep |sed -f sedlonglines |sed -r 's/[[:space:]]+/ /g'
