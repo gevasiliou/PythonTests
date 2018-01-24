@@ -26,6 +26,7 @@ echo "installing gksu and sudo..." && apt-get install gksu sudo #installation of
 
 function gitclone {
 git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests
+git config credential.helper store #this will store the username/password on the next push.
 }
 
 function sysupgrade {
