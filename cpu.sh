@@ -12,6 +12,8 @@
 # to verify the capabilities of your cpu : cat /proc/cpuinfo
 # http://unix.stackexchange.com/questions/121410/setting-cpu-governor-to-on-demand-or-conservative
 # https://wiki.debian.org/HowTo/CpuFrequencyScaling
+# https://www.computerhope.com/unix/modprobe.htm
+
 if [[ $1 = "" ]]; then
 
 #echo "Supply a govenor like performace, powersave, etc"
@@ -60,3 +62,14 @@ esac
 exit
 #cpufreq-set -c 0 -f 1600000
 #cpufreq-set -c 1 -f 1600000
+#modprobe cpufreq_userspace 
+#cpufreq-info
+
+:help <<OOO
+depmod — Generate a list of kernel module dependences and associated map files.
+insmod — Insert a module into the Linux kernel.
+lsmod — Show the status of Linux kernel modules.
+modinfo — Show information about a Linux kernel module.
+rmmod — Remove a module from the Linux kernel.
+uname — Print information about the current system.
+OOO
