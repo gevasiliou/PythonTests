@@ -82,3 +82,4 @@ $ for f in /sys/devices/system/cpu/intel_pstate/**;do ls -all "$f";cat "$f";done
 
 
 OOO
+##grep "cpu MHz" /proc/cpuinfo
