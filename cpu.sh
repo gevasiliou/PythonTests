@@ -62,7 +62,8 @@ esac
 exit
 #cpufreq-set -c 0 -f 1600000
 #cpufreq-set -c 1 -f 1600000
-#modprobe cpufreq_userspace 
+#cpufreq-set -c 0 -g performance --min 2000000 --max 3000000 #real max will be the hw limit 2160000
+# modprobe cpufreq_userspace 
 #cpufreq-info
 
 :help <<OOO
@@ -72,4 +73,12 @@ lsmod — Show the status of Linux kernel modules.
 modinfo — Show information about a Linux kernel module.
 rmmod — Remove a module from the Linux kernel.
 uname — Print information about the current system.
+$ i=1;while ((i<100));do cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq;printf '\n';sleep 0.5;i=$i+1;done
+$ for f in /sys/devices/system/cpu/cpu*/cpufreq/*;do echo "------->> $f <<-----------";cat "$f";printf '\n';done
+$ realpath /sys/devices/system/cpu/cpu1/cpufreq
+/sys/devices/system/cpu/cpufreq/policy1
+$ find /sys/devices/system/cpu/** -type f -print -exec cat {} \; |less
+$ for f in /sys/devices/system/cpu/intel_pstate/**;do ls -all "$f";cat "$f";done #ls -all is prefered to see what file is writable
+
+
 OOO

@@ -655,6 +655,9 @@ find can accept an -exec option in two formats:
 
 .B Multiple exec options
 find dirname ... -exec somecommand {} \; -exec someothercommand {} \; #by wildcard
+find /sys/devices/system/cpu/cpu1/* -type f -exec echo {} \; -exec cat {} \; |less
+find /sys/devices/system/cpu/cpu1/* -type f -print -exec cat {} \; |less
+
 
 .B Example with grep
 [: http://unix.stackexchange.com/questions/85789/grep-in-couple-thousands-files :]
