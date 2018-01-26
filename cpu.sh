@@ -9,7 +9,9 @@
 # to stick a fixed cpu frequency use $cpufreq-set -c 0 -f 1600000 (in case 1,6 GHz is your max)
 # Use  fixed frequncy requires intel_pstate to be disabled . userspace governor is used automatically
 # the whole story works only if cpufrequtils are installed (check with apt policy - usually installed by default)
+#
 # to verify the capabilities of your cpu : cat /proc/cpuinfo
+# 
 # http://unix.stackexchange.com/questions/121410/setting-cpu-governor-to-on-demand-or-conservative
 # https://wiki.debian.org/HowTo/CpuFrequencyScaling
 # https://www.computerhope.com/unix/modprobe.htm
@@ -80,6 +82,7 @@ $ realpath /sys/devices/system/cpu/cpu1/cpufreq
 $ find /sys/devices/system/cpu/** -type f -print -exec cat {} \; |less
 $ for f in /sys/devices/system/cpu/intel_pstate/**;do ls -all "$f";cat "$f";done #ls -all is prefered to see what file is writable
 
-
+grep "cpu MHz" /proc/cpuinfo
+geany /etc/default/grub #edit the grub parameters : GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_pstate=enable" #or intel_pstate=disable
 OOO
-##grep "cpu MHz" /proc/cpuinfo
+
