@@ -50,18 +50,25 @@ apt-list virtualbox-guest-x11
 
 function utils {
 # Finetunning - Utilities
-a="apt-get install perl gawk sed grep" && echo "------->> $a" && eval "$a"
-a="apt-get install mpv youtube-dl links lynx yad xxd xdotool" && echo "------->> $a" && eval "$a"
-a="apt-get install wget vlc agrep aptitude transmission" && echo "------->> $a" && eval "$a"
-a="apt-get install hexchat htop hwinfo lshw unrar vobcopy" && echo "------->> $a" && eval "$a"
-a="apt-get install browser-plugin-freshplayer-pepperflash" && echo "------->> $a" && eval "$a"
-a="apt-get install flashplugin-nonfree flashplugin-nonfree-extrasound pepperflashplugin-nonfree" && echo "------->> $a" && eval "$a"
-a="apt-get install debianutils firmware-linux-free firmware-realtek" && echo "------->> $a" && eval "$a"
-a="apt-get install xfce4-terminal xfce4-appfinder xfce4-notes xfce4-notes-plugin xfce4-screenshooter xfce4-screenshooter-plugin" && echo "------->> $a" && eval "$a"
-a="apt-get install eog shutter" && echo "------->> $a" && eval "$a"
+unset toinst
+toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
+toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" )
+toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
+toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
+toinst+=( "cpufrequtils" "debianutils" )
+toinst+=( "firmware-linux-free" "firmware-realtek" )
+toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
+toinst+=( "eog" "shutter" )
+
+for i in "${toinst[@]}";do
+printf '%s ' "=========> Installing pkg $i"
+if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
+#dpkg-query -l pkg returns 0 if pkg is installed
+done
 }
 
 function desktopfiles {
+# all those files usually are not required since pkgs install them during pkg installation
 [[ ! -f /usr/share/applications/gksu.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/gksu.desktop /usr/share/applications/
 [[ ! -f /usr/share/applications/xce4-appfinder.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/xfce4-appfinder.desktop /usr/share/applications/
 [[ ! -f /usr/share/applications/xce4-terminal.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/xfce4-terminal.desktop /usr/share/applications/
@@ -71,6 +78,11 @@ function desktopfiles {
 }
 
 function chromeinstall {
+echo "ready to install google-chrome-stable from repos"
+apt-get install google-chrome-stable
+resp=$? #returns 0 on success , 100 in error
+if [[ "$resp" -ne 0 ]];then
+#if auto install from repos fails then go directly to google for downloading
 echo "Installing chrome from https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb. Deb file will be saved to /tmp"
 apt-get install desktop-file-utils
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -P /tmp
@@ -78,10 +90,12 @@ dpkg -i /tmp/google-chrome-stable_current_amd64.deb #on new systems may break bu
 ret=$?; [[ $ret -ne 0 ]] && apt-get install -f && dpkg -i /tmp/google-chrome-stable_current_amd64.deb  
 update-alternatives --config x-www-browser #as a confirmation - alternatives updated by chrome installer automatically
 rm -iv /tmp/google-chrome-stable_current_amd64.deb
+fi
+
 }
 
 function xfcepanels {
-echo "copying xfce4 panel data for bottom panel"
+echo "TODO: copying xfce4 panel data for bottom panel"
 }
 
 # Various update-alternatives

@@ -83,6 +83,7 @@ $ find /sys/devices/system/cpu/** -type f -print -exec cat {} \; |less
 $ for f in /sys/devices/system/cpu/intel_pstate/**;do ls -all "$f";cat "$f";done #ls -all is prefered to see what file is writable
 
 grep "cpu MHz" /proc/cpuinfo
-geany /etc/default/grub #edit the grub parameters : GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_pstate=enable" #or intel_pstate=disable
+geany /etc/default/grub && update-grub #edit the grub parameters : GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_pstate=enable" #or intel_pstate=disable
+
 OOO
 

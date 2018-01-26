@@ -1046,3 +1046,16 @@ This is a package with some usefull perl/c utils:
 /usr/bin/zrun
 
 See the whole man pages without installing using $debcat moreutils --ind --readable
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:DPKG
+dpkg-query -l pkg : advises if a programm is installed or not. Returns 0 if installed, 1 if not installed.
+dpkg -s pkg       : same as above, providing much detailed info if installed (equivalent to apt show pkg
+dpkg -L pkg       : Displays the files that pkg installed in your system, including dirs, /bin/files etc. Usefull if pkg name does not match executable name 
+dpkg --info       : Examine a .deb file
+dpkg --contents   : list the contents of a deb file
+dpkg -i debfile   : installs the saved deb file. If installation breaks , you can use apt-get install -f and will correct dependencies errors
+dpkg --purge pkg  : removes a pkg - like apt purge pkg
+dpkg --print/remove/add-architecture : prints or removes or add an architecture like [amd64]
+dpkg -S file      : searches for file installed. Similar to bash command -v file. Fails on pkgs.
+dpkg --dry-run    : global switch that simulates the action choosen. No changes made to the system

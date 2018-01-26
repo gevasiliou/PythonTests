@@ -19,6 +19,8 @@ alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
+alias maxpower='cpufreq-set -c 0 --min 2000000 --max 9000000 && cpufreq-set -c 1 --min 2000000 --max 9000000'
+
 
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #--wrap &'
 #alias yadit='yad --text="$(</dev/stdin)" --center --wrap --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"  # yadit alternative but without scroll bars and buttons
