@@ -82,7 +82,7 @@ echo "ready to install google-chrome-stable from repos"
 apt-get install google-chrome-stable
 resp=$? #returns 0 on success , 100 in error
 if [[ "$resp" -ne 0 ]];then
-#if auto install from repos fails then go directly to google for downloading
+#if apt install from repos fails then go directly to google for downloading
 echo "Installing chrome from https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb. Deb file will be saved to /tmp"
 apt-get install desktop-file-utils
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -P /tmp
