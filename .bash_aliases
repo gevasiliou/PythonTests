@@ -9,7 +9,7 @@
 #Install it using cp .bash_aliases /home/gv/ and cp .bash_aliases /root/ or cp .bash_aliases $HOME/ (under root terminal)
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
-alias words='/usr/share/dict/words'
+#alias words='/usr/share/dict/words'
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
@@ -166,14 +166,15 @@ function lsdeb () {
 
 function debcat () {
 	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
-	echo "Use --list switch to force a deb listing of all files"
+	echo "Use --list switch to force a deb listing of all files or --listnd to force listing excluding directories"
 	echo "Use --ind switch to be prompted will all files found excluding directories and links"
 	echo "Combine --all after --ind to force index to include binary files like .so,.mo,.ko,etc -excluded by default"
-    
+    echo 
 	[[ -z $1 ]] && echo "apt pkg file missing " && return
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
-	[[ $2 == "--list" ]] && lsdeb "$1" && return
-
+	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && lsdeb "$1" && return 0
+	[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
+	echo "$2 selected" && echo
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
     #clear

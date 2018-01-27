@@ -58,7 +58,7 @@ toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplu
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" )
+toinst+=( "eog" "shutter" "info" "pinfo" )
 
 for i in "${toinst[@]}";do
 printf '%s ' "=========> Installing pkg $i"
