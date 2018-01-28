@@ -46,13 +46,14 @@ to use systools you need sysfsutils installed
 apt-get install sysfsutils
 
 Alternativelly (this seems to work for me):
-go to /etc/modprob.d directory
-open file modesetting.conf
-add at the end:
+go to /etc/modprob.d/ directory
+open file modesetting.conf and add to the end 
+or create a new file with name rtl8192se.conf containing
 options rtl8192se modeset=1
-options rtl8192se fwlps=0 ips=0 swlps=0
+options rtl8192se fwlps=0 ips=0 swlps=0 disable_watchdog=1 ant_sel=2
+#see all options description using modinfo rtl8192se
 
-I verified with #systool -a -v -m rtl8192se
+Verify with #systool -a -v -m rtl8192se
   Parameters:
     debug               = "0"
     fwlps               = "N"
@@ -90,7 +91,7 @@ parm:           debug:Set debug level (0-5) (default 0) (int)
 Alternative way : use a script like this:
 modprobe -r rtl8192se
 sleep 3s
-modprobe rtl8192se fwlps=0 ips=0 swlps=0
+modprobe rtl8192se fwlps=0 ips=0 swlps=0 disable_watchdog=1 ant_sel=2
 This also worked for me (using connman as network manager)
 
 5. Disable all Network Managers and use hard coded configuration to connect to your WiFi
@@ -110,7 +111,7 @@ In my case system tray object includes (finally) cmst and clipboard manager.
 connman happened to fail after sid upgrade:
 Unable to create an interface to connman on the system bus.
 CMST will not be able to communicate with connman.
-According to lxqt team is the iptables pkg who did the story.
+According to lxqt team is the iptables pkg who did the fail story
 
 
 6. Bug in xfce4-power-manager : install with sudo. run as user, edjust options, check "tray icon", tray icon displayed, but on the next reboot user settings are lost - tray icon is also lost. 
