@@ -3,25 +3,57 @@
 set +f #treat * as glob star. Use set -f to disable globbing and treat * literally as an *
 [[ "$(whoami)" != "root" ]] && echo "you need to be root to run this script" && exit 1
 echo "proceeding as root"
+synclient TapButton1=1 #enable touchpad click if necessary.
 
 function essentials {
-# Essentials
-#cd /home/gv/Desktop
-
 if grep '.bash_aliases' /root/.bashrc >&/dev/null
 then 
-echo "/root/.bashrc already imports /root/.bash_aliases"
+  echo "/root/.bashrc already imports /root/.bash_aliases"
 else
-cat <<EOF >>/root/.bashrc
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+  read -p 'Press enter to modify /root/.bashrc to load external aliases file .bash_aliases or s to skip' answer
+  if [[ "$answer" != "s" ]];then
+    echo "if [ -f ~/.bash_aliases ];then . ~/.bash_aliases;fi" >>/root/.bashrc
+  else
+    echo "skipped" 
+  fi
 fi
-EOF
-fi
+
 echo "installing geany..." && apt-get install geany 
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 echo "installing git and nano..." && apt-get install git nano
-echo "installing gksu and sudo..." && apt-get install gksu sudo #installation of gksu will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator && Icon=gksu-root-terminal
+echo "installing gksu and sudo..." && apt-get install gksu sudo
+# gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
+# sudo is not installed by default in Debian
+}
+
+function tweakwifi {
+#https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
+echo "installing kmod and sysfsutils..." && apt-get install gksu sudo kmod sysfsutils
+# kmod will provide lsmod, insmod, modprobe,modinfo, etc. 
+# sysfsutils provide systool -a -v -m rtl8192se
+
+echo 'tweaking wlan0 adapter'
+module="$(lsmod |egrep -o -m1 'rtl[0-9]+[^ ]*')" &&\
+echo "Current Parameters:" &&\
+param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$param"
+# Tip: You can get an explanation of all parameters by running $ modinfo rtl8723be
+read -p 'Press enter to proceed'
+echo "options $module fwlps=0 ips=0 swlps=0 disable_watchdog=1 ant_sel=2" >/etc/modprobe.d/"$module".conf
+echo "conf file created:"
+ls -all /etc/modprobe.d/"$module".conf
+cat /etc/modprobe.d/"$module".conf
+
+echo "List all .conf files"
+ls -all /etc/modprobe.d/*
+
+echo && read -p "press enter to test the file by disabling and re-enabling wifi..."
+modprobe -r "$module" && sleep 5 && modprobe "$module" &&\
+echo "Modified Parameters:" &&\
+param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$param"
+
+
+#if  egrep 'parm:[ ]+disable_watchdog' <(modinfo "$module");then 
+#https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
 }
 
 function gitclone {
@@ -58,7 +90,7 @@ toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplu
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" )
+toinst+=( "eog" "shutter" "info" "pinfo" "sysfsutils" )
 
 for i in "${toinst[@]}";do
 printf '%s ' "=========> Installing pkg $i"
@@ -87,7 +119,8 @@ echo "Installing chrome from https://dl.google.com/linux/direct/google-chrome-st
 apt-get install desktop-file-utils
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -P /tmp
 dpkg -i /tmp/google-chrome-stable_current_amd64.deb #on new systems may break but is fixed with apt-get install --fix-broken
-ret=$?; [[ $ret -ne 0 ]] && apt-get install -f && dpkg -i /tmp/google-chrome-stable_current_amd64.deb  
+ret=$?; 
+[[ $ret -ne 0 ]] && apt-get install -f && dpkg -i /tmp/google-chrome-stable_current_amd64.deb  
 update-alternatives --config x-www-browser #as a confirmation - alternatives updated by chrome installer automatically
 rm -iv /tmp/google-chrome-stable_current_amd64.deb
 fi
@@ -97,6 +130,10 @@ fi
 function xfcepanels {
 echo "TODO: copying xfce4 panel data for bottom panel"
 }
+
+function firmware-install {
+echo "TODO: install the missing debian firmware..."
+	}
 
 # Various update-alternatives
 # update-alternatives --set x-www-browser /usr/bin/google-chrome-stable #chrome installation takes care of this
@@ -130,5 +167,6 @@ case $1 in
 "--chromeinstall")chromeinstall;;
 "--gitclone")gitclone;;
 "--essentials")essentials;;
+"--tweakwifi")tweakwifi;;
 *)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --gitclone --essentials";;
 esac
