@@ -18,17 +18,24 @@ else
   fi
 fi
 
-echo "installing geany..." && apt-get install geany 
+ess=( "geany" "git" "nano" "gksu" "sudo" "build-essential" "libpcap-dev" )
+ess+=( "linux-headers-$(uname -r)" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
-echo "installing git and nano..." && apt-get install git nano
-echo "installing gksu and sudo..." && apt-get install gksu sudo
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
+
+for i in "${ess[@]}";do
+printf '%s ' "=========> Installing pkg $i"
+if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
+#dpkg-query -l pkg returns 0 if pkg is installed
+done
+m-a prepare #module assistant : prepare kernel to build extra modules
+
 }
 
 function tweakwifi {
 #https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
-echo "installing kmod and sysfsutils..." && apt-get install gksu sudo kmod sysfsutils
+echo "installing kmod and sysfsutils..." && apt-get install kmod sysfsutils
 # kmod will provide lsmod, insmod, modprobe,modinfo, etc. 
 # sysfsutils provide systool -a -v -m rtl8192se
 
@@ -74,8 +81,9 @@ apt-get update && apt-get upgrade --allow-unauthenticated && apt-get dist-upgrad
 function vboxinstall {
 echo "Installing virtualbox guest addition cd"
 echo "at the end make sure that virtualbox-guest-x11 is installed"
-apt-get install linux-headers-$(uname -r)
-apt-get install build-essential module-assistant && m-a prepare
+
+essentials
+
 apt-get install virtual* #this will install all virtualbox packages, including the additions cd and virtualbox itself
 apt-list virtualbox-guest-x11
 }
@@ -90,7 +98,10 @@ toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplu
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" "sysfsutils" )
+toinst+=( "eog" "shutter" "info" "pinfo" "okular" ) 
+#okular is a perfect pdf reader from kde with touch support and text highlight tools
+#pinfo is a gtk like info reader
+
 
 for i in "${toinst[@]}";do
 printf '%s ' "=========> Installing pkg $i"
@@ -168,5 +179,5 @@ case $1 in
 "--gitclone")gitclone;;
 "--essentials")essentials;;
 "--tweakwifi")tweakwifi;;
-*)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --gitclone --essentials";;
+*)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --tweakwifi --gitclone --essentials";;
 esac
