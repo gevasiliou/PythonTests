@@ -18,8 +18,9 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" "build-essential" "libpcap-dev" )
+ess=( "geany" "git" "nano" "gksu" "sudo" )
 ess+=( "linux-headers-$(uname -r)" )
+ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
@@ -31,6 +32,28 @@ if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";el
 done
 m-a prepare #module assistant : prepare kernel to build extra modules
 
+}
+
+function utils {
+# Finetunning - Utilities
+unset toinst
+toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
+toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" )
+toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
+toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
+toinst+=( "cpufrequtils" "debianutils" )
+toinst+=( "firmware-linux-free" "firmware-realtek" )
+toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
+toinst+=( "eog" "shutter" "info" "pinfo" "okular" ) 
+#okular is a perfect pdf reader from kde with touch support and text highlight tools
+#pinfo is a gtk like info reader
+
+
+for i in "${toinst[@]}";do
+printf '%s ' "=========> Installing pkg $i"
+if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
+#dpkg-query -l pkg returns 0 if pkg is installed
+done
 }
 
 function tweakwifi {
@@ -88,27 +111,7 @@ apt-get install virtual* #this will install all virtualbox packages, including t
 apt-list virtualbox-guest-x11
 }
 
-function utils {
-# Finetunning - Utilities
-unset toinst
-toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
-toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" )
-toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
-toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
-toinst+=( "cpufrequtils" "debianutils" )
-toinst+=( "firmware-linux-free" "firmware-realtek" )
-toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" "okular" ) 
-#okular is a perfect pdf reader from kde with touch support and text highlight tools
-#pinfo is a gtk like info reader
 
-
-for i in "${toinst[@]}";do
-printf '%s ' "=========> Installing pkg $i"
-if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
-#dpkg-query -l pkg returns 0 if pkg is installed
-done
-}
 
 function desktopfiles {
 # all those files usually are not required since pkgs install them during pkg installation
