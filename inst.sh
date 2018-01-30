@@ -332,7 +332,7 @@ echo "Pattern for apt list that comes after = $pattern"
 function aptlist_manipulate {
 #all these lines were before at function selectpackages
 
-if [[ $pattern1 = "*" ]]; then
+if [[ $pattern1 == "*" ]]; then
 	pattern1=""  #If user enters an asterisk then apt list blanc will bring all pkgs.
 elif [[ "${pattern1: -1}" != "*" && "${pattern1: -1}" != "$" ]]; then
 	pattern1=$(echo "$pattern1""*")
@@ -385,25 +385,21 @@ fi
 #while [[ $stop -eq 0 ]];do
 echo "Installed=$installed ---- Pattern=$pattern"
 case "$installed" in
-"Not Installed") 
-readarray -t fti < <(apt list $pattern |grep -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
-"Installed")
-readarray -t fti < <(apt list $pattern |grep -v "Listing" |grep  "installed" |cut -f1 -d "/" |grep $exclude);; 
-"All")
+"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
+"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
+"All")readarray -t fti < <(apt list "$pattern" |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
 #readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep -v -e "$exclude1" -e "$exclude2");; 
-readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
+
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" pattern
-"All Experimental")
+"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
-"Installed vs Experimental")
+"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
 #here the things are a bit different. Get all experimental pkgs from the --installed list
-readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
-"All Unstable")
-readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
-"Installed vs Unstable")
-readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+
+"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
+
 #declare -p fti
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
@@ -414,12 +410,21 @@ for (( item=0; item<=$c; item++ )); do
 echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
 done
-
-aptshow=$(apt show ${pd[@]})
-#declare -p aptshow
+#declare -p fti
+#declare -p pd
+aptshow=$(apt show "${pd[@]}")
+#declare -p aptshow 
 #echo "$aptshow" |grep "virtual"
 #exit
-pddescription=$(grep -e "Description:" <<< $aptshow |tr -d '"') #some packages like xtail have "" in their description which breaks the rest code (yad --select function in particular)
+
+
+pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042')" #\042 is the octal code of double quote "
+#TODO 2018:  apt-cache show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc"  breaks  the description.
+#coinor-libcoinutils3 is a virtual package that for some reason is reported by apt list '*coin*utils*'
+#apt show moves (!) the results of virtual pkgs to the end , and this mess things up in Description.
+#apt-cache show works better but reports all versions of pkgs
+
+#some packages like xtail have "" in their description which breaks the rest code (yad --select function in particular)
 #pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
 #declare -p pddescription && set +f && exit
 pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
@@ -428,7 +433,7 @@ pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
 pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
 pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
-
+#done
 # To be noted:
 # when using apt show a*, virtual packages were also listed.
 # As a result, the apt show of virtual packages returns not a real package as description and this mess things up.
