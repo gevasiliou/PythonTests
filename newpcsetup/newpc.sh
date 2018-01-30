@@ -19,11 +19,14 @@ else
 fi
 
 ess=( "geany" "git" "nano" "gksu" "sudo" )
-ess+=( "linux-headers-$(uname -r)" )
+ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
+ess+=( "kmod" "sysfsutils" )
 ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
+# kmod will provide lsmod, insmod, modprobe,modinfo, etc. 
+# sysfsutils provide systool -a -v -m rtl8192se
 
 for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
@@ -38,15 +41,16 @@ function utils {
 # Finetunning - Utilities
 unset toinst
 toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
-toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" )
+toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" "moreutils" )
 toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" "okular" ) 
+toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
+toinst+=( "iio-sensor-proxy" "inotify-tools" )
 #okular is a perfect pdf reader from kde with touch support and text highlight tools
-#pinfo is a gtk like info reader
+#pinfo is an links browser info pages reader
 
 
 for i in "${toinst[@]}";do
@@ -58,9 +62,7 @@ done
 
 function tweakwifi {
 #https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
-echo "installing kmod and sysfsutils..." && apt-get install kmod sysfsutils
-# kmod will provide lsmod, insmod, modprobe,modinfo, etc. 
-# sysfsutils provide systool -a -v -m rtl8192se
+essentials
 
 echo 'tweaking wlan0 adapter'
 module="$(lsmod |egrep -o -m1 'rtl[0-9]+[^ ]*')" &&\

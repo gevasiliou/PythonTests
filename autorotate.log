@@ -1,0 +1,23 @@
+Tue Jan 30 03:10:53 EET 2018 Main Programm Starting
+Tue Jan 30 03:10:55 EET 2018 Unlock Selected
+Tue Jan 30 03:10:55 EET 2018 notrunning - starting now
+Tue Jan 30 03:10:55 EET 2018 Start of Function gv. Parameters Received:
+Tue Jan 30 03:10:55 EET 2018 Auto Recognize screen {alt}: eDP-1
+Jan 30 03:10:55 Setting up watches.
+Jan 30 03:10:55 Watches established.
+Jan 30 03:10:56 sensor.log MODIFY 
+Tue Jan 30 03:10:56 EET 2018 xrandr rotate right-up
+Jan 30 03:10:59 Setting up watches.
+Jan 30 03:10:59 Watches established.
+Jan 30 03:11:01 sensor.log MODIFY 
+Tue Jan 30 03:11:01 EET 2018 xrandr rotate normal
+Jan 30 03:11:04 Setting up watches.
+Jan 30 03:11:04 Watches established.
+Tue Jan 30 03:11:42 EET 2018 Main Programm Starting
+Tue Jan 30 03:11:45 EET 2018 monitor-sensor pid = 3178
+Tue Jan 30 03:11:45 EET 2018 Exit Selected
+Tue Jan 30 03:11:45 EET 2018 Bye Bye to all!
+environment: line 1:  3178 Terminated              monitor-sensor >> sensor.log 2>&1
+Tue Jan 30 03:11:45 EET 2018 xrandr rotate normal
+Jan 30 03:11:45 Setting up watches.
+Jan 30 03:11:45 Watches established.
