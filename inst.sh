@@ -120,12 +120,14 @@ echo "exclude=$exclude"
 
 function printarray {
 arr=("${@}")
+#declare -p arr && exit
 ind=0
 	echo "Start of Array"	
 #	echo "Array[@]=" "${arr[@]}"
-	for e in "${arr[@]}"; do
-		echo "Array[$ind]=" $e
-		ind=$(($ind+1))
+	
+	for e in "${!arr[@]}"; do
+		echo "Array[$e]=${arr[$e]}"
+#		ind=$(($ind+1))
 	done
  	printf "End of Array\n\n"
 
@@ -400,27 +402,28 @@ case "$installed" in
 "Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 
-#declare -p fti
+#declare -p fti && exit
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
 [[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
 [[ $c -gt 1000 ]] && echo "More than 1000 pkgs found (actually found $c pkgs). Will list only first 1000 pkgs" |yad --text-info && c=1000
 for (( item=0; item<=$c; item++ )); do
-[[ -z "${fti[$item]}" ]] && continue
+[[ -z "${fti[$item]}" ]] && echo "${fti[$item]} skipped" && continue
 echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
 done
+#exit
 #declare -p fti
 #declare -p pd
 
-aptshow=$(apt show "${pd[@]}") #2018
+#aptshow=$(apt show "${pd[@]}") #2018
 
 #declare -p aptshow 
 #echo "$aptshow" |grep "virtual"
 #exit
 
 
-pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042')" #\042 is the octal code of double quote "
+#2018 pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042')" #\042 is the octal code of double quote "
 #TODO 2018:  apt-cache show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc"  breaks  the description.
 #coinor-libcoinutils3 is a virtual package that for some reason is reported by apt list '*coin*utils*'
 #apt show moves (!) the results of virtual pkgs to the end , and this mess things up in Description.
@@ -443,17 +446,31 @@ pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042'
 # ubug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
 # 
 
-#some packages like xtail have "" in their description which breaks the rest code (yad --select function in particular)
+
+declare -A dyn
+eval $(apt show "${pd[@]}" |awk '/Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "\|" "\x22" "\n"}')
+eval $(apt show "${pd[@]}" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "\|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - \| - " "\x22" "\n"}')
+eval $(apt policy "${pd[@]}" |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" \|" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
+
+#for it in "${!dyn[@]}";do echo "pkgarray[$it]=${dyn[$it]}";done
+
+#some packages like xtail have double quotes in their description first line which breaks the rest code (yad --select function in particular)
+#easy solution : apt show xtail |sed 's/"/\x27/g' --> replace native double quotes to single quotes
+#another problem of xtail is that apt show does not have Download-Size property...
 #pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
 #declare -p pddescription && set +f && exit
-pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
-pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
 
-pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
-pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
-pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
+#2018skipped <<EOF
+#pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
+#pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
+
+#pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
+#pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
+#pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 #done
-# To be noted:
+#2018-EOF
+
+# Virtual Packages:
 # when using apt show a*, virtual packages were also listed.
 # As a result, the apt show of virtual packages returns not a real package as description and this mess things up.
 # Example: Package: abiword-gnome - State: not a real package (virtual)
@@ -462,43 +479,54 @@ pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
 # apt show abiword-gnome returns: --> Package: abiword-gnome --> State: not a real package (virtual)
 # Depending on apt pinning priorities, apt list / apt show may return some virtual packages (happened when sid had priority <1)
 # Another suspicious package to return "virtual package" is apt-spy.
+# Though we have a found a virtual pkg that is returned by apt list: try apt list co*utils* -->coinor-libcoinutils3/now is virtual
 
-
-if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
-echo "grab versions differently in experimental packages"
-pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
-#pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |awk -F'Version:' '{print $2}')) #candidate
-pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate version stripped
-
-#get installed version
-fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/')) #remove the /experimental string from pkg name 
-pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental format
-pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
-
-else
-echo "Classic version grab"
-pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
-pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " ")) #pdpi=pdpolicy installed
-pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " ")) #pdpc=pdpolicy candidate
-fi
-#exit
+#2018skipped <<EOF
+#if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
+#echo "grab versions differently in experimental packages"
+#pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
+##pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |awk -F'Version:' '{print $2}')) #candidate
+#pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate version stripped
+#
+##get installed version
+#fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/')) #remove the /experimental string from pkg name 
+#pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental format
+#pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
+#
+#else
+#echo "Classic version grab"
+#pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
+#pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " ")) #pdpi=pdpolicy installed
+#pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " ")) #pdpc=pdpolicy candidate
+#fi
+##exit
+#2018EOF
 
 #echo "${pdss[@]}"
 #exit
 list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
 
-for (( pitem=0; pitem<=$c; pitem++ )); do
-[[ -z "${fti[$pitem]}" ]] && continue
+#2018  for (( pitem=0; pitem<=$c; pitem++ )); do
+#2018 [[ -z "${fti[$pitem]}" ]] && continue
 #Build the list for yad with double quotes and space.
-list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" ) #to be used by yad only - no new lines (\n) allowed by yad list.
 
-list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pitem]},${pdszd[pitem]},${pdszi[pitem]},\n"))
+#2018 list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" ) #to be used by yad only - no new lines (\n) allowed by yad list.
+
+for it in "${!dyn[@]}";do
+eval $(awk -v dq="\"" -v it="$it" '{print "list+=(" dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" <<<"${dyn[$it]}" )
+#awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $5 dq,dq $4 dq,dq $3 dq,dq $2 dq}' FS="|" <<<"${dyn[$it]}"
+done
+
+#declare -p list #&& exit
+#2018 list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pitem]},${pdszd[pitem]},${pdszi[pitem]},\n"))
 # Format of List2 is different. $list for yad has been built in order to be understood by yad = not \n chars inside.
 # We could export list to list2 as it was, but will be saved later infiles as one line without \n. 
 # It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
 
-done
+#2018 done
+
 #printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
+list2+=( $(awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" OFS="," <<<"${dyn[$it]}" ))
 export LIST3=$(printf "%s\n" ${list2[@]})
 
 unset toinstall
@@ -521,8 +549,11 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --column="Download Size" \
 --column="Installed Size" \
 "${list[@]}" ))
-#the --checklist option is required by yad in order to print all entries with value of "true". If you ommit this option, only the last entry is printed.
-#alternativelly with option --print-all you can print ALL the list including true - false selection of rows
+# list array should contain each field in a separate array position. Switch to new row is made autommatically when max columns num is reached.
+# array example for 2 fields/2 columns: "one" "two" "three" "four" ---> one two in first row, three four second row 
+# the --checklist option is required by yad in order to print all entries with value of "true". 
+# If you ommit this option, only the last entry is printed.
+# alternativelly with option --print-all you can print ALL the list including true - false selection of rows
 
 btn=$?
 echo "Button Pressed:" $btn
@@ -549,7 +580,7 @@ case $btn in
 	unset IFS
 	;;
 10) # New Selection
-	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc 
+	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc dyn
 	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
 	#selectpackages #by not sending an arg to selectpackages, previously values are used.
 	# Just unset all variables, and allow the while loop to be repeated
