@@ -412,7 +412,9 @@ pd+=("${fti[$item]}")
 done
 #declare -p fti
 #declare -p pd
-aptshow=$(apt show "${pd[@]}")
+
+aptshow=$(apt show "${pd[@]}") #2018
+
 #declare -p aptshow 
 #echo "$aptshow" |grep "virtual"
 #exit
@@ -422,7 +424,24 @@ pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042'
 #TODO 2018:  apt-cache show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc"  breaks  the description.
 #coinor-libcoinutils3 is a virtual package that for some reason is reported by apt list '*coin*utils*'
 #apt show moves (!) the results of virtual pkgs to the end , and this mess things up in Description.
-#apt-cache show works better but reports all versions of pkgs
+#apt-cache show works better but reports all versions of pkgs. When using --no-all-versions reports an error for virtual pkgs 
+
+#declare -A dyn
+#eval "$(apt show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc/testing"  |awk '/Package:/{printf "dyn\[" $2 "\]=\""};/Description:|State:/{$1="";printf $0 "\"" "\n"}')"
+# this works and creates an associative array
+# access the keys of associative array using ${!din[@]}
+
+#Even better
+# eval $(apt show co*utils* |awk '/Package:/{printf "dyn[" $2 "]=\""};/Installed-Size:/{$1="";printf $0 "\|"};/Download-Size:/{$1="";printf $0 "\|"};/Description:|State:/{$1="";printf $0 "\"" "\n"}')
+# eval $(apt policy co*utils* |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" \|" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
+# [coreutils]=" 15.4 MB| 2,686 kB| GNU core utilities |8.28-1 | 8.28-1
+# [collectd-utils]=" 204 kB| 125 kB| statistics collection and monitoring daemon (utilities) |(none) | 5.7.1-1.1
+# [colord-gtk-utils]=" 46.1 kB| 13.6 kB| miscellaneous GUI utilities interacting with colord |(none) | 0.1.26-2
+# 
+# And you can build list2 for yad directly:
+# for key in "${!dyn[@]}";do printf '"%s"' $key;awk -vdq="\"" '{print dq $4 dq,dq $3 dq,dq $2 dq,dq $1 dq}' FS="[|]" <<<"${dyn[$key]}";done
+# ubug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
+# 
 
 #some packages like xtail have "" in their description which breaks the rest code (yad --select function in particular)
 #pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
@@ -495,7 +514,7 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --button="gtk-cancel":1 \
 --button="New Selection":10 \
 --column="Install":CHK \
---column="File" \
+--column="Package" \
 --column="Description" \
 --column="Installed" \
 --column="Candidate" \
