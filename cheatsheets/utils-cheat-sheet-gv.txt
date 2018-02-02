@@ -191,6 +191,42 @@ grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
 match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
 can be used as -Eow to match words in a line
 
+##GREP Lookahead/lookbehind
+https://www.regular-expressions.info/lookaround.html
+
+.B Negative lookbehind: 
+(?<!a)b   ---> matches "b" that is not preceded by an "a", using negative lookbehind. 
+It doesn't match cab, but matches the b (and only the b) in bed or debt. 
+
+.B Positive lookbehind :
+(?<=a)b   ---> matches the b (and only the b) in cab, but does not match bed or debt since there is not an "a" before "b".
+
+.B Negative lookahead: 
+q(?!u). matches a "q" that is not followed by an "u" without matching u itself
+echo "quit qax" |grep -P 'q(?!u)'   ---> quit qax
+                                              ^ 
+.B Positive lookahead :
+q(?=u) matches a "q" only if is followed by an "u", without making the u part of the match. 
+echo "quit qax" |grep -P 'q(?=u)'    ---> quit qax
+                                          ^
+.B More complex examples 
+
+$ echo "baba cab bed debt" |grep -P '(?>a)b'    ---> baba cab bed debt
+                                                      ^^   ^^
+$ echo "bara cab bed debt" |grep -P 'b(?>a)'    ---> bara cab bed debt
+                                                     ^^   
+$ echo "one two three" |grep -Po '(?=two).*'    ---> two three
+
+$ echo "one two three" |grep -Po '(?<=two).*'   ---> three
+
+$ echo "one two three" |grep -Po '.*(?=two)'    ---> one 
+
+$ echo "one two three" |grep -Po '.*(?<=two)'   ---> one two
+
+$ echo "one two three" |grep -Po '(?:two).*'    ---> two three
+
+$ echo "one two three" |grep -Po '.*(?:two)'    ---> one two
+
 ##GREP FORGET PREVIOUS :
 \K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
 
@@ -200,7 +236,7 @@ Mar 10 03:37:14 debian kernel: [    7.122304]  sda: sda1 sda2 sda3 sda4 < sda5 s
 $ cat /var/log/messages.1 |grep -Po 'sd[a-z]+: \Ksd[a-z0-9].*'
 sda1 sda2 sda3 sda4 < sda5 sda6 >
 
-$ a="Configuration file 'hello2.conf' is in use by process 735." && echo "$a" |grep -Po 'process \K[0-9]*'
+$ a="Configuration file 'hello2. conf' is in use by process 735." && echo "$a" |grep -Po 'process \K[0-9]*'
 735 (https://regex101.com/r/hxwGPA/1)
 
 ##GREP Lookahead - Capture part of text between two patterns (requires -P = Perl Regex support)
@@ -209,33 +245,6 @@ user    25999  0.0  0.7 678772 259772 ?       Ssl  Nov05  11:54 fwd
 $ echo "$a" |grep -Po '.* \K\w+ (?=[?])'
 259772   #---> Result : The word just before ? is captured.
 
-#GREP Lookahead/lookbehind more examples
-# echo "$a"
-also_onetime
-one_time
-two-something
-three time
-this is fifth time
-time
-time1
-2times
-3time
-
-$ echo "$a" |grep --color -P '(?=)time'  #ignore what is in front of time. Equivalent to grep -P '\Ktime'
-also_onetime         #time is captured/coloured
-one_time             #time is captured/coloured
-three time           #time is captured/coloured
-this is fifth time   #time is captured/coloured
-time                 #time is captured/coloured
-time1                #time is captured/coloured
-2times               #time is captured/coloured
-3time                #time is captured/coloured
-
-$ echo "$a" |grep --color -P 'one(?=)'    #find lines with one , catch one and ignore everything after one
-also_onetime         #one is captured/coloured
-one_time             #one is captured/coloured
-
-Above examples return the whole line since we use just -P and not -Po. Grep by default captures lines matching pattern.
 
 
 ##GREP - Count occurences of a char within a string

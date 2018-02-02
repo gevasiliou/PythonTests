@@ -32,11 +32,11 @@ source $TMPFILE
 
 pkgdis2=$(echo $PKGDIS |cut -f1 -d"/")
 descr=$(echo -e "------------------# apt policy $pkgdis2 #---------------------- \n ")
-descr+=$( apt policy "$pkgdis2" )
+descr+=$( apt policy "$pkgdis2" 2>&1)
 descr+=$(echo -e "\n ------------------# apt show $PKGDIS #----------------------\n ")
-descript=$( apt show "$PKGDIS" )
-if [[ "$descript" =~ "Description:" ]];then
-descr+=$( apt show "$PKGDIS" )
+descript=$( apt show "$PKGDIS" 2>&1)
+if [[ "$descript" =~ "Description:" ]] || [[ "$descript" =~ "State:" ]];then
+descr+="$descript"
 else
 descr+=$(echo -e "\n ------------------# No description available #----------------------\n ")
 fi
@@ -85,6 +85,7 @@ done
 
 function selectpackages {
 #if something is sent here, then do it pattern. Otherwise the previous pattern will be kept (is not unsetted).
+echo "select packages function"
 [[ "$1" != "" ]] && pattern1="$1" 
 [[ "$2" != "" ]] && pattern2="$2"
 
@@ -115,6 +116,7 @@ installed=`echo $selections | awk -F',' '{print $6}'`
 [[ $exclude1 != "" && $exclude2 == "" ]] && exclude="-v -e $exclude1"
 
 echo "exclude=$exclude"
+echo "end of select packages function"
 #exit
 }
 
@@ -324,9 +326,9 @@ else
 fi
 pattern=$(tr '\n' ' ' <<<"$pattern")
 
-echo "Pattern1 for apt search = $pattern1"
-echo "Pattern2 for apt search = $pattern2"
-read -p "any key" key
+#echo "Pattern1 for apt search = $pattern1"
+#echo "Pattern2 for apt search = $pattern2"
+#read -p "any key"
 echo "Pattern for apt list that comes after = $pattern"
 
 }
@@ -389,7 +391,7 @@ echo "Installed=$installed ---- Pattern=$pattern"
 case "$installed" in
 "Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
 "Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
-"All")readarray -t fti < <(apt list "$pattern" |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
+"All")readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
 #readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep -v -e "$exclude1" -e "$exclude2");; 
 
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" pattern
@@ -412,63 +414,36 @@ for (( item=0; item<=$c; item++ )); do
 echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
 done
-#exit
-#declare -p fti
-#declare -p pd
 
-#aptshow=$(apt show "${pd[@]}") #2018
-
-#declare -p aptshow 
-#echo "$aptshow" |grep "virtual"
-#exit
-
-
-#2018 pddescription="$(grep -e 'Description:' -e 'State:' <<< "$aptshow" |tr -d '\042')" #\042 is the octal code of double quote "
-#TODO 2018:  apt-cache show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc"  breaks  the description.
-#coinor-libcoinutils3 is a virtual package that for some reason is reported by apt list '*coin*utils*'
-#apt show moves (!) the results of virtual pkgs to the end , and this mess things up in Description.
-#apt-cache show works better but reports all versions of pkgs. When using --no-all-versions reports an error for virtual pkgs 
-
-#declare -A dyn
-#eval "$(apt show "coinor-libcoinutils3" "coinor-libcoinutils3v5" "coinor-libcoinutils-doc/testing"  |awk '/Package:/{printf "dyn\[" $2 "\]=\""};/Description:|State:/{$1="";printf $0 "\"" "\n"}')"
-# this works and creates an associative array
-# access the keys of associative array using ${!din[@]}
-
-#Even better
 # eval $(apt show co*utils* |awk '/Package:/{printf "dyn[" $2 "]=\""};/Installed-Size:/{$1="";printf $0 "\|"};/Download-Size:/{$1="";printf $0 "\|"};/Description:|State:/{$1="";printf $0 "\"" "\n"}')
 # eval $(apt policy co*utils* |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" \|" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
 # [coreutils]=" 15.4 MB| 2,686 kB| GNU core utilities |8.28-1 | 8.28-1
 # [collectd-utils]=" 204 kB| 125 kB| statistics collection and monitoring daemon (utilities) |(none) | 5.7.1-1.1
 # [colord-gtk-utils]=" 46.1 kB| 13.6 kB| miscellaneous GUI utilities interacting with colord |(none) | 0.1.26-2
 # 
-# And you can build list2 for yad directly:
+# You can build list2 for yad directly:
 # for key in "${!dyn[@]}";do printf '"%s"' $key;awk -vdq="\"" '{print dq $4 dq,dq $3 dq,dq $2 dq,dq $1 dq}' FS="[|]" <<<"${dyn[$key]}";done
-# ubug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
+# bug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
 # 
 
-
+aptshow="$(apt show "${pd[@]}")"
+aptpolicy="$(apt policy "${pd[@]}")"
 declare -A dyn
-eval $(apt show "${pd[@]}" |awk '/Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "\|" "\x22" "\n"}')
-eval $(apt show "${pd[@]}" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "\|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - \| - " "\x22" "\n"}')
-eval $(apt policy "${pd[@]}" |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" \|" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
+eval $(echo "$aptshow" |awk '/Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')
+#eval $(echo "$aptshow" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - | - " "\x22" "\n"}')
+eval $(echo "$aptshow" |awk '/Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf "-|" "\x22" "\n"}' )
+eval $(echo "$aptshow" |awk '/Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )
 
-#for it in "${!dyn[@]}";do echo "pkgarray[$it]=${dyn[$it]}";done
+#eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" |" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
+eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf " - | " "\x22" "\n"}')
+eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);d=0;printf "dyn[" $0 "]+=\x22" };/Candidate:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
+# At first we used to gather all apt show fields at once , but we preferred separate calls per property in case a property is missing,like pkg coinor-libcoinutils3 (try it with 'co*utils* pattern
+# AWK Alternative: apt show '*tail' |grep -Po '(?<=Installed-Size: ).*'
+
+# for it in "${!dyn[@]}";do echo "pkgarray[$it]=${dyn[$it]}";done
 
 #some packages like xtail have double quotes in their description first line which breaks the rest code (yad --select function in particular)
-#easy solution : apt show xtail |sed 's/"/\x27/g' --> replace native double quotes to single quotes
-#another problem of xtail is that apt show does not have Download-Size property...
-#pddescription=$(grep -e "Package:\|Description:\|not a real package" <<< $aptshow)
-#declare -p pddescription && set +f && exit
-
-#2018skipped <<EOF
-#pdsizeDown=$(grep "Download-Size:" <<< $aptshow)
-#pdsizeInst=$(grep "Installed-Size:" <<< $aptshow)
-
-#pdss=($(printf "%s\n" ${pddescription[@]} |cut -f2-3 -d ":"))
-#pdszd=($(printf "%s\n" ${pdsizeDown[@]} |cut -f2 -d ":"))
-#pdszi=($(printf "%s\n" ${pdsizeInst[@]} |cut -f2 -d ":"))
-#done
-#2018-EOF
+#easy solution : apt show xtail |sed 's/\x22/\x27/g' --> replace double quotes with single quotes
 
 # Virtual Packages:
 # when using apt show a*, virtual packages were also listed.
@@ -481,49 +456,12 @@ eval $(apt policy "${pd[@]}" |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\
 # Another suspicious package to return "virtual package" is apt-spy.
 # Though we have a found a virtual pkg that is returned by apt list: try apt list co*utils* -->coinor-libcoinutils3/now is virtual
 
-#2018skipped <<EOF
-#if [ $installed = "All Experimental" -o $installed = "Installed vs Experimental" -o $installed = "All Unstable" -o $installed = "Installed vs Unstable" ]; then
-#echo "grab versions differently in experimental packages"
-#pdpolicy=$(grep "^Version:" <<< $aptshow) #get the candidate versions at experimental
-##pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Version:" |awk -F'Version:' '{print $2}')) #candidate
-#pdpc=($(printf "%s\n" ${pdpolicy[@]} |awk -F'Version:' '{print $2}')) #candidate version stripped
-#
-##get installed version
-#fti2=($(printf "%s\n" ${pd[@]} |cut -f1 -d'/')) #remove the /experimental string from pkg name 
-#pdpolicy2=$(apt policy ${fti2[@]} |grep -e "Installed:") #apt policy doesnot accept pkg/experimental format
-#pdpi=($(printf "%s\n" ${pdpolicy2[@]} |grep -e "Installed:" |cut -f4 -d " "))
-#
-#else
-#echo "Classic version grab"
-#pdpolicy=$(apt policy ${pd[@]} |grep -e "Installed:" -e "Candidate:" )
-#pdpi=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Installed:" |cut -f4 -d " ")) #pdpi=pdpolicy installed
-#pdpc=($(printf "%s\n" ${pdpolicy[@]} |grep -e "Candidate:" |cut -f4 -d " ")) #pdpc=pdpolicy candidate
-#fi
-##exit
-#2018EOF
-
-#echo "${pdss[@]}"
-#exit
 list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
-
-#2018  for (( pitem=0; pitem<=$c; pitem++ )); do
-#2018 [[ -z "${fti[$pitem]}" ]] && continue
-#Build the list for yad with double quotes and space.
-
-#2018 list+=( "FALSE" "${fti[pitem]}" "${pdss[pitem]}" "${pdpi[pitem]}" "${pdpc[pitem]}" "${pdszd[pitem]}" "${pdszi[pitem]}" ) #to be used by yad only - no new lines (\n) allowed by yad list.
 
 for it in "${!dyn[@]}";do
 eval $(awk -v dq="\"" -v it="$it" '{print "list+=(" dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" <<<"${dyn[$it]}" )
-#awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $5 dq,dq $4 dq,dq $3 dq,dq $2 dq}' FS="|" <<<"${dyn[$it]}"
+# awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $5 dq,dq $4 dq,dq $3 dq,dq $2 dq}' FS="|" <<<"${dyn[$it]}"
 done
-
-#declare -p list #&& exit
-#2018 list2+=($(echo -e "FALSE,${fti[pitem]},${pdss[pitem]},${pdpi[pitem]},${pdpc[pitem]},${pdszd[pitem]},${pdszi[pitem]},\n"))
-# Format of List2 is different. $list for yad has been built in order to be understood by yad = not \n chars inside.
-# We could export list to list2 as it was, but will be saved later infiles as one line without \n. 
-# It is though strange that if you printf the $list with IFS=$'\n', you get seperate lines for every field change.
-
-#2018 done
 
 #printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
 list2+=( $(awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" OFS="," <<<"${dyn[$it]}" ))
@@ -537,7 +475,7 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 --button="Show Deb Pkg":'bash -c "listdeb"' \
 --button="Show manual":'bash -c "readmanpage"' \
 --button="Save List":'bash -c "savepkglist"' \
---button="Display":'bash -c "pkgdisplay"' \
+--button="pkg show":'bash -c "pkgdisplay"' \
 --button="gtk-ok":0 \
 --button="gtk-cancel":1 \
 --button="New Selection":10 \
@@ -557,9 +495,6 @@ toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --heigh
 
 btn=$?
 echo "Button Pressed:" $btn
-#printarray ${list[@]} && exit
-#printarray ${toinstall[@]} && exit
-#declare -p toinstall
 case $btn in 
 0) 	
 	echo "Package list to be installed"
@@ -590,13 +525,14 @@ done
 exitright
 exit
 
-# GREP Tips:
+# Tips:
 # If you are in doubt about the results of a command like an extra grep you can compare results of previous command with new command like this:
 # diff -w -y <(apt search manpages |grep "/" |cut -d"/" -f1 |grep -E '^[a-zA-Z0-9]') <(apt search manpages |grep "/" |cut -d"/" -f1)
 # Differences will be noted with > symbol and then you can manually verify that the results of the new command (extra grep) is as expected.
 # Usefull when you want to verify the performance in commands that produce large output.
+# dpkg -L does the same job as deb list for installed packages
 
-#To be done:
+# To be done:
 # How to provide local man page of apt-get? apt-get is not a package (apt list apt-get returns nothing)
 # on the other hand, man apt brings only apt manual , not apt-get even if combined with --all switch
 # The apt.deb has inside all manuals, thus at least the "try online" option works and gives you the list of all manuals included in apt.
