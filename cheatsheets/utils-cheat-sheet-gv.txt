@@ -211,9 +211,9 @@ echo "quit qax" |grep -P 'q(?=u)'    ---> quit qax
                                           ^
 .B More complex examples 
 
-$ echo "baba cab bed debt" |grep -P '(?>a)b'    ---> baba cab bed debt
+$ echo "baba cab bed debt" |grep -P '(?>a)b'    ---> baba cab bed debt --- seems equal to 'ab' pattern
                                                       ^^   ^^
-$ echo "bara cab bed debt" |grep -P 'b(?>a)'    ---> bara cab bed debt
+$ echo "bara cab bed debt" |grep -P 'b(?>a)'    ---> bara cab bed debt  --- seems equal to 'ba' pattern
                                                      ^^   
 $ echo "one two three" |grep -Po '(?=two).*'    ---> two three
 
