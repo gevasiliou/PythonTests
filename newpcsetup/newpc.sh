@@ -46,7 +46,7 @@ toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "bro
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
-toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
+toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "catfish" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" "debian-goodies")
 #okular is a perfect pdf reader from kde with touch support and text highlight tools

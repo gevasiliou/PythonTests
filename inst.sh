@@ -18,6 +18,7 @@ exclude2="dbg"
 
 function pkgselect { 
 #echo "Args Received by caller = $@" |yad --text-info
+#Args Received by caller = FALSE xfce4-whiskermenu-plugin  Alternate menu plugin for the Xfce desktop environment 1.6.2-1   2.1.4-1  157 kB  718 kB
 #$0 " , " $1 " , " $2 " , " $3 " , " $4 " , " $5
 #echo -e "FILEID=\"$1\"\nFILENAME=\"$4\"\nFILECOMMAND=\"$5\"" > $TMPFILE
 echo -e "PKGDIS=\"$2\"\nPKGVER=\"$4\"\nPKGDEBSIZE=\"$6\"" > $TMPFILE
@@ -27,6 +28,8 @@ export -f pkgselect
 
 function pkgdisplay { 
 source $TMPFILE
+[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental" 
+#echo "$installed" |yad --text-info
 #descr=$( apt show "$PKGDIS" )
 #yad --title="Package Display-$PKGDIS" --no-markup --center --text="${descr[@]}" --width=800 --height=200 --button="Go Back":0
 
@@ -83,43 +86,6 @@ for i in ${toinstall[@]}; do #$toninstall array is global var assigned in the ma
 done
 }
 
-function selectpackages {
-#if something is sent here, then do it pattern. Otherwise the previous pattern will be kept (is not unsetted).
-echo "select packages function"
-[[ "$1" != "" ]] && pattern1="$1" 
-[[ "$2" != "" ]] && pattern2="$2"
-
-selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --buttons-layout=center --columns=2 --align=right --separator="," --date-format="%Y-%m-%d" \
-		--field="Pattern1:" "$pattern1" --field="Pattern2:" "$pattern2" --field="Apt Operation:CB" "apt list!apt search" \
-		--field="Exclude1:" "$exclude1" --field="Exclude2:" "$exclude2" \
-		--field="Show installed":CB "All!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
-
-if [ $? == 1 -o $? == 252 ]; then #1 is for Cancel Button, 252 is for ESC button
-echo "Script Exit."
-exitright
-exit 1
-fi
-
-echo $selections
-#exit
-pattern1=`echo $selections | awk -F',' '{print $1}'`
-pattern2=`echo $selections | awk -F',' '{print $2}'`
-aptsearch=`echo $selections | awk -F',' '{print $3}'`
-#pattern=$(echo -e \"$pattern\")
-exclude1=`echo $selections | awk -F',' '{print $4}'`
-exclude2=`echo $selections | awk -F',' '{print $5}'`
-installed=`echo $selections | awk -F',' '{print $6}'`
-
-[[ $exclude1 == "" && $exclude2 == "" ]] && exclude="-v -e ////\\\\\/////" # I tried exclude="-e \"\"" but grep complains. Will be almost impossible a pkg to have this slash pattern in it's pkgname
-[[ $exclude1 != "" && $exclude2 != "" ]] && exclude="-v -e $exclude1 -e $exclude2"
-[[ $exclude1 == "" && $exclude2 != "" ]] && exclude="-v -e $exclude2"
-[[ $exclude1 != "" && $exclude2 == "" ]] && exclude="-v -e $exclude1"
-
-echo "exclude=$exclude"
-echo "end of select packages function"
-#exit
-}
-
 function printarray {
 arr=("${@}")
 #declare -p arr && exit
@@ -136,8 +102,10 @@ ind=0
 }
 
 function listdebapt {
+#This function is not used yet. Has been built as an alternative to function listdeb
 	source $TMPFILE
-	pkg="$PKGDIS"
+	[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental"
+	pkg="${PKGDIS%/*}"
 	aptpkg="$PKGDIS"
 	aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
 	debname=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
@@ -149,7 +117,8 @@ export -f listdebapt
 
 function listdeb {
 	source $TMPFILE
-	pkg="$PKGDIS"
+	[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental"
+	pkg="${PKGDIS%/*}"
 	aptpkg="$PKGDIS"
 	debname=$(find . -name "$pkg*.deb")
 	if [[ "$debname" == "" ]];then
@@ -195,8 +164,9 @@ export -f listdeb
 
 function readmanpage {
 	source $TMPFILE
+	[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental"
 	firstcall="yes" #initial state to display local man the very first time
-	pkg="$PKGDIS"
+	pkg="${PKGDIS%/*}"
 	aptpkg="$PKGDIS"
 	[[ "$1" == "no" ]] && firstcall="no" #If it is a recall then you are not in local man thus you need to go back to deb contents.
 	if [[ "$PKGVER" != "(none)" && "$firstcall" == "yes" ]];then #the first time we wanna display the local man
@@ -372,6 +342,43 @@ rmdir -v tmpdeb
 set +f
 }
 
+function selectpackages {
+#if something is sent here, then do it pattern. Otherwise the previous pattern will be kept (is not unsetted).
+echo "select packages function"
+[[ "$1" != "" ]] && pattern1="$1" 
+[[ "$2" != "" ]] && pattern2="$2"
+
+selections=$(yad --title="Select Files" --window-icon="gtk-find" --center --form --buttons-layout=center --columns=2 --align=right --separator="," --date-format="%Y-%m-%d" \
+		--field="Pattern1:" "$pattern1" --field="Pattern2:" "$pattern2" --field="Apt Operation:CB" "apt list!apt search" \
+		--field="Exclude1:" "$exclude1" --field="Exclude2:" "$exclude2" \
+		--field="Installation Status":CB "Any!Not Installed!Installed!All Unstable!Installed vs Unstable!All Experimental!Installed vs Experimental" )
+
+if [ $? == 1 -o $? == 252 ]; then #1 is for Cancel Button, 252 is for ESC button
+echo "Script Exit."
+exitright
+exit 1
+fi
+
+echo $selections
+#exit
+pattern1=`echo $selections | awk -F',' '{print $1}'`
+pattern2=`echo $selections | awk -F',' '{print $2}'`
+aptsearch=`echo $selections | awk -F',' '{print $3}'`
+#pattern=$(echo -e \"$pattern\")
+exclude1=`echo $selections | awk -F',' '{print $4}'`
+exclude2=`echo $selections | awk -F',' '{print $5}'`
+installed=`echo $selections | awk -F',' '{print $6}'`
+
+[[ $exclude1 == "" && $exclude2 == "" ]] && exclude="-v -e ////\\\\\/////" # I tried exclude="-e \"\"" but grep complains. Will be almost impossible a pkg to have this slash pattern in it's pkgname
+[[ $exclude1 != "" && $exclude2 != "" ]] && exclude="-v -e $exclude1 -e $exclude2"
+[[ $exclude1 == "" && $exclude2 != "" ]] && exclude="-v -e $exclude2"
+[[ $exclude1 != "" && $exclude2 == "" ]] && exclude="-v -e $exclude1"
+
+echo "exclude=$exclude"
+echo "end of select packages function"
+#exit
+}
+
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 while [[ $stop -eq 0 ]];do
 selectpackages $initpkg1 $initpkg2
@@ -385,22 +392,23 @@ echo "apt list selected"
 echo "exclude value=$exclude"
 aptlist_manipulate
 fi
-#exit
-#while [[ $stop -eq 0 ]];do
+export installed
 echo "Installed=$installed ---- Pattern=$pattern"
+
 case "$installed" in
 "Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
 "Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
-"All")readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
-#readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep -v -e "$exclude1" -e "$exclude2");; 
+"Any")readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
+# We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" exclude-pattern
 
-# We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" pattern
 "All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
+
 "Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
-#here the things are a bit different. Get all experimental pkgs from the --installed list
+#here the things are a bit different. Get all experimental pkgs from the --installed list == get experimental versions (if any) only from installed pkgs
 
 "All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+
 "Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 
@@ -414,7 +422,7 @@ for (( item=0; item<=$c; item++ )); do
 echo -e "fti[$item] = \"${fti[$item]}\""
 pd+=("${fti[$item]}")
 done
-
+#declare -p pd && exit 
 # eval $(apt show co*utils* |awk '/Package:/{printf "dyn[" $2 "]=\""};/Installed-Size:/{$1="";printf $0 "\|"};/Download-Size:/{$1="";printf $0 "\|"};/Description:|State:/{$1="";printf $0 "\"" "\n"}')
 # eval $(apt policy co*utils* |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" \|" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
 # [coreutils]=" 15.4 MB| 2,686 kB| GNU core utilities |8.28-1 | 8.28-1
@@ -427,16 +435,22 @@ done
 # 
 
 aptshow="$(apt show "${pd[@]}")"
-aptpolicy="$(apt policy "${pd[@]}")"
+aptpolicy="$(apt policy "${pd[@]%/*}")" #in array elements like pkg/experimental removes the /* == /experimental
 declare -A dyn
 eval $(echo "$aptshow" |awk '/Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')
 #eval $(echo "$aptshow" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - | - " "\x22" "\n"}')
 eval $(echo "$aptshow" |awk '/Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf "-|" "\x22" "\n"}' )
 eval $(echo "$aptshow" |awk '/Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )
 
-#eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);printf "dyn[" $0 "]+=\" |" };/Installed:/{printf $2 " | "};/Candidate:/{printf $2 "\"" "\n"}')
+#Get installed version
 eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf " - | " "\x22" "\n"}')
-eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);d=0;printf "dyn[" $0 "]+=\x22" };/Candidate:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
+
+#Get Candidate version
+#eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);d=0;printf "dyn[" $0 "]+=\x22" };/Candidate:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
+eval $(echo "$aptshow" |awk '/Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
+#Better to use apt show since pkg/experimental works in apt show but not in apt policy.
+
+
 # At first we used to gather all apt show fields at once , but we preferred separate calls per property in case a property is missing,like pkg coinor-libcoinutils3 (try it with 'co*utils* pattern
 # AWK Alternative: apt show '*tail' |grep -Po '(?<=Installed-Size: ).*'
 
@@ -466,9 +480,9 @@ done
 #printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
 list2+=( $(awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" OFS="," <<<"${dyn[$it]}" ))
 export LIST3=$(printf "%s\n" ${list2[@]})
-
+tit="Apt Browser - Installation Status: $installed"
 unset toinstall
-toinstall=($(yad --list --title="Files Browser" --no-markup --width=1200 --height=600 --center --checklist \
+toinstall=($(yad --list --title="$tit" --no-markup --width=1200 --height=600 --center --checklist \
 --select-action 'bash -c "pkgselect %s "' \
 --print-column=2 \
 --separator="\n" \
