@@ -111,12 +111,15 @@ $ curl -o- "https://github.com/fhcrc/seqmagick/archive/0.6.1.tar.gz"
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:GREP
+
 ##EXCLUDE FROM ONE FILE ENTRIES THAT EXIST IN ANOTHER FILE: grep -Fxvf file2.txt file1.txt
--F for fixed string in order to avoid regex (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
+-F for fixed string in order to avoid regex =fgrep (with regex an entry "tar" in file2 will match tar,patar, guitar, etc in file1) 
 -x = line grep to ensure matching whole lines 
 -v = reverse the grep = display not matching lines
 -f = load words/lines from file file2.txt
+-E = extended regex = egrep
 file1.txt = the file to be grepped 
+Tip: egrep and fgrep are actually shell scripts that call grep -E and grep -F respectivelly
 
 ##MULTI GREP WITH REVERSE OPERATION : grep -v -e "pattern" -e "pattern"
 grep -nA1 -e "====" c.txt |grep -B1 -e "====" |grep -v -e ":" -e "--"
@@ -148,6 +151,14 @@ This works because |$ (or |^) matches and colorize invisibly the null byte at th
 
 .B In a function: 
 function highlight () { grep --color -E "$1|$" "${@:1}" }
+
+.B Retain Color when piped (i.e to less)
+grep --color=always 'pattern' file |less -r #or -R.
+color auto enables colors when destination of output is a tty but on a pipe color marking (esc sequences) are removed.
+Using --color=always color sequences are retained even in pipes. less is forced due to -r or -R to read those coloring instructions
+
+.B Colorize but also print the non matching lines along with matching lines
+grep --color -E 'pattern|$' file #or '^|pattern'
 
 ##GREP MULTIPLE PATTERNS AND PRINT
 Combine grep with cut and multipatterns: 
@@ -190,8 +201,9 @@ PS2: This gives 50% MORE time than single grep : time find ./appsfiles/* -type f
 grep -E '^([a-z]{1,3}|pom.|i,j,k)$' b.txt
 match lines with one word, that have less than 4 letters a-z , and also catch word 'pom.' and 'i,j,k'
 can be used as -Eow to match words in a line
+Tip: grep -E = extended regex , treats pipe symbol as an OR. Classic grep can use this OR by escaping the pipe symbol : grep 'patt1\|patt2'. 
 
-##GREP Lookahead/lookbehind
+##GREP PCRE Lookahead/lookbehind
 https://www.regular-expressions.info/lookaround.html
 
 .B Negative lookbehind: 
@@ -259,6 +271,15 @@ $ grep -v ‘trivial information’  will not work because the rest of the lines
 This job can be done using 
 $ grep -L 'trivial information' *  (-L, --files-without-match)
 With -L scanning will stop on the first match.
+
+##GREP POSIXLY CORRECT OPTION
+env POSIXLY_CORRECT=1 grep "hello" myfile -v ---> will raise an error for the -v flag (accepted to gnu grep)
+
+
+##GREP INSTALL AN OLDER VERSION SIMULTANEOUSLY
+You can apt download grep-version-you-like , you then extract grep from data.tar inside .deb, save it somewhere , rename it to grepold and copy this file to /bin
+Same job for the manpage included in the .deb package. Just be sure to rename also the man page from grep.1.gz to grepold.1.gz (same name as renamed grep)
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 UTILS:CUT
