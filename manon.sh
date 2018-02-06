@@ -223,6 +223,7 @@ function bsd {
   else
      echo "$bsddata" |sed "1i https://man.freebsd.org/$bsdpage" |less -S
   fi  
+# In Debian you can also download /view the pkg freebsd-manpages which has almost all freebsd man pages (bug: grep is missing)
 #fi
 #---------------------------------------------------------------------------------------------------------------------------------------
 #links -dump https://man.openbsd.org/grep |sed '1,/GREP/d' |less

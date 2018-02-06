@@ -239,6 +239,8 @@ $ echo "one two three" |grep -Po '(?:two).*'    ---> two three
 
 $ echo "one two three" |grep -Po '.*(?:two)'    ---> one two
 
+$ echo abc_12345678.csv | grep -oP '(?<=_)\d+(?=\.)' ---> 12345678
+
 ##GREP FORGET PREVIOUS :
 \K: This sequence resets the starting point of the reported match. Any previously matched characters are not included in the final matched sequence.
 

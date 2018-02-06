@@ -59,6 +59,10 @@ alias tabit="perl -pe 's/\x20{1,4}/\t/g'"  #alternative : sed -r or sed -E - ext
 alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf FNR \":  \" }1'" #cat with details
 #alternative: for f in ./*;do echo "========>> $f <<========";cat "$f";done
 
+function aptless {
+[[ -z $1 ]] && echo "no patteern given" && exit 1
+apt list "$@" |grep --color=always '^.[^/]*' |less -r
+}
 
 function power {
 echo "AC Power" && upower -i "$(upower -e |grep 'line_power')" |grep -e 'native-path' -e 'online' |sed -r 's/^\s+//g'

@@ -134,7 +134,7 @@ function listdeb {
 		fi
 
 		if [[ sure -eq 0 ]];then
-			apt-get download "$aptpkg" 2>/dev/null |yad --progress --pulsate --auto-close --title="Downloading..."
+			apt-get download "$aptpkg" 2>/dev/null |yad --progress --center --pulsate --auto-close --title="Downloading..."
 			debname=$(find . -name "$pkg*.deb")
 		else
 			return 1
@@ -152,8 +152,9 @@ function listdeb {
 		return 1
 	fi
 	debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
-	debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
-	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
+#	debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
+#	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
+	echo -e "${debname:2}\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
 	#rm -f $debname
 	echo "$PWD/${debname:2}">>$DEBLIST
 	#echo "$PWD/${debname:2}" >6&
@@ -169,7 +170,7 @@ function readmanpage {
 	pkg="${PKGDIS%/*}"
 	aptpkg="$PKGDIS"
 	[[ "$1" == "no" ]] && firstcall="no" #If it is a recall then you are not in local man thus you need to go back to deb contents.
-	if [[ "$PKGVER" != "(none)" && "$firstcall" == "yes" ]];then #the first time we wanna display the local man
+	if [[ ! "$PKGVER" =~ "(none)" ]] && [[ "$firstcall" == "yes" ]];then #the first time we wanna display the local man
 		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg LOCAL Manual " --wrap --show-uri --no-markup \
 		--button="Try Online":10 \
 		--button="gtk-ok":0 \
@@ -192,7 +193,7 @@ function readmanpage {
 		fi 
 		
 		if [[ sure -eq 0 ]];then
-			apt-get download "$aptpkg" 2>/dev/null |yad --height 200 --width 200 --progress --pulsate --auto-close --title="Downloading $aptpkg"
+			apt-get download "$aptpkg" 2>/dev/null |yad --height 200 --width 200 --center --progress --pulsate --auto-close --title="Downloading $aptpkg"
 			debname=$(find . -name "$pkg*.deb")
 		else
 			return 1
@@ -213,7 +214,7 @@ function readmanpage {
 	unset manpage manpage2
 	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep "man/man" |grep -vE "\/$" |grep -v "^l" |awk '{print $NF}'))
 	manpage+=($(echo "__________________OTHER_FILES_________________________________"))
-	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep -v -e "^l" -e "^d" -e "man/man"|grep -e "doc" -e ".gz" |grep -vE "\/$" |awk '{print $NF}'))
+	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep -v -e "^l" -e "^d" -e "man/man"|grep -e "doc" -e ".gz" -e "/info/" -e "/examples/" |grep -vE "\/$" |awk '{print $NF}'))
 	#declare -p manpage |yad --text-info --wrap
 		if [[ -z $manpage ]];then
 			debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")

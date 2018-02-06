@@ -79,6 +79,14 @@ prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one sh
 # pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo
 # In most computers with one soundcard , this card gets id 0, so set-card-profile 0 should work everywhere
 
+# You can also adjust volume by terminal using pacmd set-sink-volume 6 10000.
+# Get the sink number:
+# $ pacmd list |awk '/active profile/{getline;getline;print;exit}'
+#		alsa_output.pci-0000_00_1b.0.analog-stereo/#6: Built-in Audio Analog Stereo
+# $ pacmd list |awk '/active profile/{getline;getline;print;exit}' |grep -Po '(?<=#)\d+(?=:)' 
+# 6
+# Alternative: amixer sset 'Master' 50%
+
 #if grep '^connected$' /sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then soundsetup 1; fi
 
 
