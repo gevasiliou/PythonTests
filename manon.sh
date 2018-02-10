@@ -169,7 +169,7 @@ function down {
 		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package - These are the contents of the $debname:"
 			ar p "$debname" "$datatar" | tar t"$options"
-			rm -f $debname
+			rm -fv $debname
 			exit 1
 		else
 			echo "man page found: ${#manpage[@]}"

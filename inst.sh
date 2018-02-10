@@ -120,7 +120,9 @@ function listdeb {
 	[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental"
 	pkg="${PKGDIS%/*}"
 	aptpkg="$PKGDIS"
-	debname=$(find . -name "$pkg*.deb")
+	rawdebname=$(apt-get --print-uris download $aptpkg |awk '{print $2}')  && debname=$(find ./tmpdeb -name "$rawdebname" -printf '%f\n' ) || return 1
+
+	#debname=$(find . -name "$pkg*.deb")
 	if [[ "$debname" == "" ]];then
 		debsize=$(sed 's/\,//g' <<<"$PKGDEBSIZE") && sizebytes="${debsize:0:-2}" && sizebytes="${sizebytes%.*}" && sizepower="${debsize: -2}"
 		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 ))
@@ -133,30 +135,32 @@ function listdeb {
 			sure=0
 		fi
 
-		if [[ sure -eq 0 ]];then
-			apt-get download "$aptpkg" 2>/dev/null |yad --progress --center --pulsate --auto-close --title="Downloading..."
-			debname=$(find . -name "$pkg*.deb")
+		if [[ "$sure" -eq 0 ]];then
+			apt-get download "$aptpkg" |yad --progress --center --pulsate --auto-close --title="Downloading..."
+			debname=$rawdebname && mv "./$debname" ./tmpdeb && echo "./tmpdeb/${debname}">>$DEBLIST
+			#debname=$(find . -name "$pkg*.deb")
 		else
 			return 1
 		fi
 	fi
 	#echo "Deb Name = $debname"
-	datatar=$(ar t "$debname" |grep "data.tar")
+#	datatar=$(ar t "./tmpdeb/$debname" |grep "data.tar")
 	#echo "data.tar = $datatar"
 
-	if [[ ${datatar##*.} == "gz" ]];then 
-		options="z"
-	elif [[ ${datatar##*.} == "xz" ]];then
-		options="J"
-	else
-		return 1
-	fi
-	debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
+#	if [[ ${datatar##*.} == "gz" ]];then 
+#		options="z"
+#	elif [[ ${datatar##*.} == "xz" ]];then
+#		options="J"
+#	else
+#		return 1
+#	fi
+	debcontents=$(dpkg -c ./tmpdeb/$debname)
+#	debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
 #	debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
 #	echo -e "${debname:2}\n\nmanpages:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
-	echo -e "${debname:2}\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000
+	echo -e "./tmpdeb/${debname}\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 1000 --title="$debname"
 	#rm -f $debname
-	echo "$PWD/${debname:2}">>$DEBLIST
+	#echo "$PWD/${debname:2}">>$DEBLIST
 	#echo "$PWD/${debname:2}" >6&
 # Display also other zipped text / changelog files
 # ar -p `ls *.deb` data.tar.xz |tar -xJO ./usr/share/doc/xul-ext-password-editor/changelog.Debian.gz |gunzip |less -f /dev/stdin
@@ -164,6 +168,7 @@ function listdeb {
 export -f listdeb
 
 function readmanpage {
+#    set -x
 	source $TMPFILE
 	[[ "$installed" =~ "Experimental" ]] && PKGDIS="${PKGDIS}/experimental"
 	firstcall="yes" #initial state to display local man the very first time
@@ -171,7 +176,7 @@ function readmanpage {
 	aptpkg="$PKGDIS"
 	[[ "$1" == "no" ]] && firstcall="no" #If it is a recall then you are not in local man thus you need to go back to deb contents.
 	if [[ ! "$PKGVER" =~ "(none)" ]] && [[ "$firstcall" == "yes" ]];then #the first time we wanna display the local man
-		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$pkg LOCAL Manual " --wrap --show-uri --no-markup \
+		man $pkg 2>&1 |yad --text-info --height=700 --width=1100 --center --title="$aptpkg LOCAL Manual " --wrap --show-uri --no-markup \
 		--button="Try Online":10 \
 		--button="gtk-ok":0 \
 		--button="gtk-cancel":1
@@ -179,7 +184,9 @@ function readmanpage {
 		[[ "$resp" -ne 10 ]] && return 0 #If you select other than "Try Online" then exit (otherwise go on).
 	fi
 	#echo "Package: $aptpkg"
-	debname=$(find . -name "$pkg*.deb")
+	#echo "$rawdebname" |yad --text-info --center
+    rawdebname=$(apt-get --print-uris download $aptpkg |awk '{print $2}')  && debname=$(find ./tmpdeb -name "$rawdebname" -printf '%f\n' ) || return 1
+	#debname=$(find . -name "$pkg*.deb") 
 	if [[ "$debname" == "" ]];then
 		debsize=$(sed 's/\,//g' <<<"$PKGDEBSIZE") && sizebytes="${debsize:0:-2}" && sizebytes="${sizebytes%.*}" && sizepower="${debsize: -2}"
 		[[ $sizepower == " B" ]] && sizebytes=$(( $sizebytes / 1000 )) #Bytes
@@ -192,15 +199,17 @@ function readmanpage {
 			sure=0
 		fi 
 		
-		if [[ sure -eq 0 ]];then
-			apt-get download "$aptpkg" 2>/dev/null |yad --height 200 --width 200 --center --progress --pulsate --auto-close --title="Downloading $aptpkg"
-			debname=$(find . -name "$pkg*.deb")
+		if [[ "$sure" -eq 0 ]];then
+			apt-get download "$aptpkg" |yad --height 200 --width 200 --center --progress --pulsate --auto-close --title="Downloading $aptpkg"
+			#debname=$(find . -name "$pkg*.deb")
+			debname=$rawdebname && 	mv -v ./"$debname" ./tmpdeb && echo "./tmpdeb/${debname}">>$DEBLIST
 		else
 			return 1
 		fi
 	fi
+	
 	#echo "Deb Name = $debname"
-	datatar=$(ar t "$debname" |grep "data.tar")
+	datatar=$(ar t "./tmpdeb/$debname" |grep "data.tar")
 	#echo "data.tar = $datatar"
 
 	if [[ ${datatar##*.} == "gz" ]];then 
@@ -212,15 +221,15 @@ function readmanpage {
 		return 1
 	fi
 	unset manpage manpage2
-	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep "man/man" |grep -vE "\/$" |grep -v "^l" |awk '{print $NF}'))
+	manpage+=($(ar p ./tmpdeb/$debname $datatar | tar tv"$options" |grep "man/man" |grep -vE "\/$" |grep -v "^l" |awk '{print $NF}'))
 	manpage+=($(echo "__________________OTHER_FILES_________________________________"))
-	manpage+=($(ar p $debname $datatar | tar tv"$options" |grep -v -e "^l" -e "^d" -e "man/man"|grep -e "doc" -e ".gz" -e "/info/" -e "/examples/" |grep -vE "\/$" |awk '{print $NF}'))
+	manpage+=($(ar p ./tmpdeb/$debname $datatar | tar tv"$options" |grep -v -e "^l" -e "^d" -e "man/man"|grep -e "doc" -e ".gz" -e "/info/" -e "/examples/" |grep -vE "\/$" |awk '{print $NF}'))
 	#declare -p manpage |yad --text-info --wrap
 		if [[ -z $manpage ]];then
-			debcontents=$(ar p "$debname" "$datatar" | tar tv"$options")
-			debmancontents=$(ar p "$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
-			echo -e "No man pages found in deb : ${debname:2}\n\nmanpages listing:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
-			echo "$PWD/${debname:2}">>$DEBLIST
+			debcontents=$(ar p "./tmpdeb/$debname" "$datatar" | tar tv"$options")
+			debmancontents=$(ar p "./tmpdeb/$debname" "$datatar" | tar tv"$options" |grep "man/man" |grep -v "/$")
+			echo -e "No man pages found in deb : ${debname}\n\nmanpages listing:\n$debmancontents\n\nDeb Contents Tree\n$debcontents" |yad --text-info --center --height 500 --width 500
+			#echo "$PWD/${debname:2}">>$DEBLIST
 			return 1
 		#else
 			#echo "man page found: ${#manpage[@]}"
@@ -230,14 +239,14 @@ function readmanpage {
 		if [[ ${#manpage[@]} -eq 1 ]]; then
 			#echo "man page found - Display "
 			#ar p "$debname" "$datatar" | tar xO"$options" $manpage |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg Manual " --wrap --show-uri --no-markup
-			mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" $manpage))
-			tit="$pkg ONLINE Manual"
-			echo "$PWD/${debname:2}">>$DEBLIST
+			mpg=$(man <(ar p "./tmpdeb/$debname" "$datatar" | tar xO"$options" $manpage))
+			tit="$aptpkg ONLINE Manual"
+			#echo "$PWD/${debname:2}">>$DEBLIST
 		else
 			#echo "Display all"
 			#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin |yad --text-info --height=500 --width=800 --center --title="$pkg All Manuals " --wrap --show-uri --no-markup
 			#echo "${manpage[@]}" |yad --text-info --height=500 --width=800 --wrap
-			manpagetodisplay=$(yad --list --title="Deb Browser" --no-markup --width=500 --height=600 --center \
+			manpagetodisplay=$(yad --list --title="$debname Deb Browser" --no-markup --width=500 --height=600 --center \
 			--print-column=2 \
 			--button="Show All":10 \
 			--button="gtk-ok":0 \
@@ -249,19 +258,23 @@ function readmanpage {
 			if [[ "$manyad" -eq 0  && "$manpagetodisplay" != *"OTHER_FILES"* ]]; then #OK / Select File to Display
 				manpagetodisplay=$(echo "${manpagetodisplay:0:-1}") #there is a bloody | in the end , due to yad
 				#echo "manyad=0=display only $manpagetodisplay" |yad --text-info
-				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" "$manpagetodisplay"))
-				tit="$pkg Man Page $manpagetodisplay"
-				echo "$PWD/${debname:2}">>$DEBLIST
+				mpg=$(man <(ar p "./tmpdeb/$debname" "$datatar" | tar xO"$options" "$manpagetodisplay"))
+				tit="$debname Man Page $manpagetodisplay"
+				#echo "$PWD/${debname:2}">>$DEBLIST
 			elif [[ "$manyad" -eq 10 ]]; then #Show All
+				#set -x
 				#echo "manyad=10=display all" |yad --text-info
-				for i in ${manpage[@]};do [[ "$i" != *"OTHER_FILES"* ]] && manpage2+=( "$i" );done;
-				#echo "${manpage2[@]}" |yad --text-info --wrap
-				mpg=$(man <(ar p "$debname" "$datatar" | tar xO"$options" ${manpage2[@]}))
-				tit="$pkg - ALL ONLINE Manuals"
-				echo "$PWD/${debname:2}">>$DEBLIST
+				#for i in ${manpage[@]};do [[ "$i" != *"OTHER_FILES"* ]] && manpage2+=( "$i" );done;
+				for i in ${manpage[@]};do [[ "$i" == *"man/man"* ]] && manpage2+=( "$i" );done; #other files seems to confuse the show all procedure
+				#printf '%s\n' "${manpage2[@]}" |yad --text-info --wrap
+				mpg=$(man <(ar p "./tmpdeb/$debname" "$datatar" | tar xO"$options" ${manpage2[@]}))
+				##man <(ar p "./tmpdeb/$debname" "$datatar" | tar xO"$options" ${manpage2[@]}) |yad --text-info --center --no-markup
+				##man <(ar p "./tmpdeb/mame-tools_0.189+dfsg.1-1_amd64.deb" data.tar.xz | tar xOJ ./usr/share/man/man1/castool.1.gz ./usr/share/man/man1/chdman.1.gz)
+				tit="$debname - ALL ONLINE Manuals"
+				#echo "$PWD/${debname:2}">>$DEBLIST
 			else 
 				#echo "manyad=1 = exit" |yad --text-info
-				echo "$PWD/${debname:2}">>$DEBLIST
+				#echo "$PWD/${debname:2}">>$DEBLIST
 				return 1
 			fi
 		fi
@@ -273,7 +286,7 @@ function readmanpage {
 	[[ "$resp1" -eq 10 && ${#manpage[@]} -gt 1 ]] && unset manpagetodisplay manpage manpage2 debcontents debmancontents && readmanpage no
 
 #	[[ "$resp1" -eq 10 ]] && listdeb 
-	echo "$PWD/${debname:2}">>$DEBLIST
+	#echo "$PWD/${debname:2}">>$DEBLIST
 #Bug: All the simple echo  instead of screen was going to array aptinstall on the main program. It seems that yad list call method (inside array) was sucking echoes inside. 
 }
 export -f readmanpage
@@ -336,10 +349,10 @@ function exitright {
 echo -e "Temp Files to remove:"
 cat $DEBLIST |sort |uniq
 ls tmpdeb/
-for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
-rm -fv tmpdeb/deblist.log
+#for f in $(cat tmpdeb/deblist.log |sort |uniq);do rm -fv $f;done
+#rm -fv tmpdeb/deblist.log
 rm -fv *.FAILED
-rmdir -v tmpdeb
+rm -rfv tmpdeb
 set +f
 }
 
