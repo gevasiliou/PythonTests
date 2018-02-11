@@ -1,6 +1,17 @@
 #include <stdio.h>
-/* This is a comment - compile with gcc helloworld.c and run with ./a.out */
 #include <float.h>
+/* This is a comment - compile with gcc helloworld.c and run with ./a.out */
+/*
+# find / -type f -name 'float.h'
+/usr/include/c++/6/tr1/float.h
+/usr/include/c++/7/tr1/float.h
+/usr/lib/gcc/x86_64-linux-gnu/6/include/float.h
+/usr/lib/gcc/x86_64-linux-gnu/5/include/float.h
+/usr/lib/gcc/x86_64-linux-gnu/7/include/float.h
+
+Obviously the version of gcc selects the right float.h
+*/
+
 
 int main()
 {
@@ -19,14 +30,14 @@ int main()
 	b = 20;
 
 	c = a + b;
-	printf("value of c=a+b: %d+%d=%d \n", a,b,c);
+	printf("value of c=a+b: c=10+20 ==> %d+%d=%d \n", a,b,c);
 
 	int area;
 	area = LENGTH * WIDTH;
-	printf("value of area : %d\n\n", area);
+	printf("value of area 10 * 5 : %d\n\n", area);
     
     f = 70.0/3.0;
-	printf("value of f : %f \n", f);
+	printf("value of f=70/3 ==> f : %f \n", f);
 
     return 0;
 }
