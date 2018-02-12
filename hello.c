@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <float.h>
-/* This is a comment - compile with gcc helloworld.c and run with ./a.out */
-/*
+/* This is a comment
+Compile with gcc helloworld.c and run with ./a.out
+or use gcc hello.c -o hello.out and then run with ./hello.out
+
 # find / -type f -name 'float.h'
 /usr/include/c++/6/tr1/float.h
 /usr/include/c++/7/tr1/float.h
@@ -11,7 +13,7 @@
 
 Obviously the version of gcc selects the right float.h
 */
-
+#define P_S (4*1024) /*just for testing*/
 
 int main()
 {
@@ -21,6 +23,8 @@ int main()
 	const int WIDTH = 5;
 
     printf("Hello,\t\t world!\n");
+
+    printf("PS is:%d\n",P_S);
     printf("Storage size for int : %d \n", sizeof(int));
     printf("Storage size for float : %d \n", sizeof(float));
 	printf("Minimum float positive value: %E\n", FLT_MIN );
