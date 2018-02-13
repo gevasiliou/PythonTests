@@ -4,12 +4,13 @@
 #do
 sleep 0.5
 	if grep '^connected$' /sys/class/drm/card0/card0-HDMI*/status ;then #/sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
+	    sleep 1
 	    gksu -u gv pacmd set-card-profile 0 output:hdmi-surround;
-            amixer sset 'Master' 120% >& /dev/null
+        amixer sset 'Master' 120% >& /dev/null
         echo "$(date) --- HDMI connected" >> /home/gv/Desktop/PythonTests/hdmi.log #full path required
 	else
 	    gksu -u gv pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo; #pacmd does not run as root
-            amixer sset 'Master' 120% >& /dev/null
+        amixer sset 'Master' 120% >& /dev/null
 	    echo "$(date) --- HDMI disconnected" >> /home/gv/Desktop/PythonTests/hdmi.log #full path required
 	fi
 
