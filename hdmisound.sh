@@ -1,11 +1,12 @@
 #!/bin/bash
 #while inotifywait -e modify /sys/class/drm/card0/card0-HDMI-A-2/status #/sys/class/drm/card0/*HDMI*/status; 
+#inotify does not work on /sys/files since they are special files like ram, updated by kernel
 #do
 	if grep '^connected$' /sys/class/drm/card0/card0-HDMI*/status ;then #/sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
 	    gksu -u gv pacmd set-card-profile 0 output:hdmi-surround;
         echo "$(date) --- HDMI connected" >> /home/gv/Desktop/PythonTests/hdmi.log #full path required
 	else
-	    gksu -u gv pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo;
+	    gksu -u gv pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo; #pacmd does not run as root
 	    echo "$(date) --- HDMI disconnected" >> /home/gv/Desktop/PythonTests/hdmi.log #full path required
 	fi
 
@@ -23,6 +24,8 @@ KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start 
 
 PS: rule files can not call shell scripts directly
 PS: systemctl path may vary. Find it using which systmctl
+PS: To avoid permission issues better to copy an existed rule file: cp 78-sound.rule 78-hdmi.rules
+    This will ensure that the new file will have the correct permissions.
 
 2. Create a .service file. Service files can call sh scripts without problem.
 nano /etc/systemd/system/hdmi-sound.service
