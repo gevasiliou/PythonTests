@@ -18,7 +18,7 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" )
+ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
 ess+=( "kmod" "sysfsutils" )
 ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" )
@@ -48,7 +48,7 @@ toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "catfish" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
-toinst+=( "iio-sensor-proxy" "inotify-tools" "debian-goodies")
+toinst+=( "iio-sensor-proxy" "inotify-tools" "debian-goodies" "hwinfo" )
 #okular is a perfect pdf reader from kde with touch support and text highlight tools
 #pinfo is an links browser info pages reader
 #debian-goodies provide debman which downloads a deb package in a tmp directory (using debget script from the same bunch of scripts), and then extracts man pages out of this deb package.
@@ -83,7 +83,9 @@ modprobe -r "$module" && sleep 5 && modprobe "$module" &&\
 echo "Modified Parameters:" &&\
 param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$param"
 
-
+#to disable power saving you can also use iw command: iw wlan0 set power_save off
+#iw gives great options for wireless card management
+#
 #if  egrep 'parm:[ ]+disable_watchdog' <(modinfo "$module");then 
 #https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
 }

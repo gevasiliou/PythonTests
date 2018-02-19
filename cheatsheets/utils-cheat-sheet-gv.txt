@@ -858,12 +858,12 @@ Try those ones:
 You can make automation scripts either on fixed windows using absolute coords, or in particular windows using relative coords.
 
 More examples: 
-# xdotool search "Notes" windowactivate --sync type "hello George, how are you?"  #Assuming that a notes window is present
-# xdotool key ctrl+c
-# xdotool key F1
+$ xdotool search "Notes" windowactivate --sync type "hello George, how are you?"  #Assuming that a notes window is present
+$ xdotool key ctrl+c
+$ xdotool key F1
 
 Open a new LibreOffice Draw document, select the line tool and run on terminal this one:
-# xdotool search "Untitled" windowactivate --sync mousemove --window %1 300 300  && sleep 0.5 && xdotool mousedown 1 && sleep 0.5 && xdotool mousemove_relative --sync 400 400 && sleep 0.5 && xdotool mouseup 1
+$ xdotool search "Untitled" windowactivate --sync mousemove --window %1 300 300  && sleep 0.5 && xdotool mousedown 1 && sleep 0.5 && xdotool mousemove_relative --sync 400 400 && sleep 0.5 && xdotool mouseup 1
 You should see a straight line draw automatically 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -1071,7 +1071,7 @@ This is a package with some usefull perl/c utils:
 /usr/bin/mispipe    ---> 
 /usr/bin/parallel
 /usr/bin/pee
-/usr/bin/sponge     ---> holds the data piped to sponge and prints those data when file is finished. Different to tee.tee prints out whatever comes in tee
+/usr/bin/sponge     ---> holds the data piped to sponge and prints those data when file is finished. Different to tee.tee prints out whatever comes in
 /usr/bin/ts         ---> time stamp input. Usefull in tail -f
 /usr/bin/vidir      ---> edit a directory in editor. Delete a file from editor, and will deleted for real.
 /usr/bin/vipe       ---> pipe editor. Command cat ,,, |vipe |sed will open editor and allows changes before piping to sed
@@ -1091,3 +1091,102 @@ dpkg --purge pkg  : removes a pkg - like apt purge pkg
 dpkg --print/remove/add-architecture : prints or removes or add an architecture like [amd64]
 dpkg -S file      : searches for file installed. Similar to bash command -v file. Fails on pkgs.
 dpkg --dry-run    : global switch that simulates the action choosen. No changes made to the system
+
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:COOL GITHUB PROJECTS
+
+##WEATHER FROM CLI
+https://github.com/chubin/wttr.in
+
+curl wttr.in/Κηφισιά 
+curl wttr.in/'Νέα Ερυθραία'
+
+##CHEATS/HELP ON COMMANDS/LANGUAGES BY CURL
+https://github.com/chubin/cheat.sh
+
+
+curl cheat.sh/grep                # grep examples
+curl cheat.sh/~screenshot         # searching for screenshot
+curl cheat.sh/rust/hello          # hello world program in rust. 
+curl cheat.sh/scala/~currying     # look for currying in scala cheat sheets
+curl cheat.sh/~snapshot/r         # look for snapshot in all cheat sheets
+
+.B Special pages:
+    :help               help page
+    :list               list all cheat sheets
+    :post               how to post new cheat sheet
+    :bash_completion    bash function for tab completion
+    :bash               bash function and tab completion setup
+    :fish               fish function and tab completion setup
+    :zsh                zsh function and tab completion setup
+    :emacs              cheat.sh function for Emacs
+    :emacs-ivy          cheat.sh function for Emacs (uses ivy)
+    :styles             list of color styles
+    :styles-demo        show color styles usage examples
+
+##CLI SERVICES COLLECTION
+https://github.com/chubin/awesome-console-services
+
+.B IP address
+curl https://canihazip.com/s
+curl ipinfo.io/ip
+curl icanhazip.com
+curl curlmyip.net
+curl ipecho.net/plain
+curl ifcfg.me
+curl ip-addr.es
+dig +short myip.opendns.com @resolver1.opendns.com
+
+.B IP-based geolocation
+curl ipinfo.io/8.8.8.8 or curl ipinfo.io/8.8.8.8/loc
+curl freegeoip.net/csv/8.8.8.8 or freegeoip.net/xml/4.2.2.2 or freegeoip.net/json/github.com
+
+.B Text Sharing (like pastebin)
+ix.io
+sprunge.us
+ptpb.pw
+
+.B URL shortener
+curl -s http://tinyurl.com/api-create.php?url=http://www.google.com
+
+.B File Transfer
+curl --upload-file <file> transfer.sh/<filename>
+
+.B Tools
+curl qrenco.de/STRING or echo STRING | curl -F-=\<- qrenco.de — create QR-code for a string (chubin/qrenco.de)
+
+.B Weather
+curl wttr.in or curl wttr.in/Berlin - the right way to check the weather
+finger oslo@graph.no
+
+.B Exchange rates and financial information
+curl rate.sx - get cryptocurrencies exchange rates
+curl moneroj.org - get Monero exchange rate
+
+.B Manuals, cheat sheets and FAQs
+curl cheat.sh - UNIX/Linux commands cheat sheets using curl (chubin/cheat.sh)
+Dictionaries and translators
+curl 'dict://dict.org/d:command line'
+
+.B Messages/texts/jokes/fortunes/names generators
+git commit -m $(curl -sk https://whatthecommit.com/index.txt) — generate random commit message
+curl -H 'Accept: text/plain' foaas.com/cool/:from — fuck off as a service
+curl -s https://uinames.com/api/?region=france\&amount=25 | jq '.[] | .name +" " + .surname' — generate 25 random french names
+curl https://icanhazdadjoke.com — random jokes
+
+.B Chats, games and fun
+nc towel.blinkenlights.nl 23 — watch StarWars in terminal
+ssh chat.shazow.net — chat over SSH (shazow/ssh-chat)
+
+.B Clients
+At least on of the clients, that you need to access these services, is installed in almost every UNIX/Linux system.
+curl/curl
+httpie — modern command line HTTP client
+wget
+
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:MAKE A BOOTABLE CD 
+
+dd bs=4M if=kali-linux-xfce-2017.3-amd64.iso of=/dev/sdb conv=fdatasync

@@ -1,0 +1,7 @@
+PYTHON:BASICS: CHEAT SHEET by gv
+https://docs.python.org/2/tutorial/
+
+##PYTHON CODE FORMAT
+In python code must be written in visual blocks (structured) and identation is the key to separate functions, loops, if-then-else, etc
+
+##OBJECTS 

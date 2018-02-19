@@ -1,0 +1,30 @@
+Install DosBox on Debian
+apt install dosbox
+
+Download games (zip files)
+http://www.abandonia.com/en/game/all?page=3
+https://www.dosgamesarchive.com/
+
+
+In linux create a folder in / like dosbox
+cd / && mkdir dosbox
+PS: You might need to apply chmod +x /dosbox
+
+in linux extract downloaded game zip to /dosbox
+
+Switch on dosbox 
+$ dosbox
+
+In dosbox mount the linux folder : 
+z:\>mount c /dosbox
+You get a message of sucessfull mount
+
+Then you step into c using dos synthax 
+c:
+
+You browse c as in dos : 
+c:\>dir
+
+Navigate to the game subdir (if present) , and you just run the game exe file.
+
+

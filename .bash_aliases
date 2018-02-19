@@ -59,6 +59,11 @@ alias tabit="perl -pe 's/\x20{1,4}/\t/g'"  #alternative : sed -r or sed -E - ext
 alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf FNR \":  \" }1'" #cat with details
 #alternative: for f in ./*;do echo "========>> $f <<========";cat "$f";done
 
+alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode managed && sleep 1 && ifconfig wlan0 up && sleep 1 && NetworkManager'
+alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
+
+
+
 function aptless {
 [[ -z $1 ]] && echo "no patteern given" && exit 1
 apt list "$@" |grep --color=always '^.[^/]*' |less -r
