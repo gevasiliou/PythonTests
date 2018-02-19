@@ -41,16 +41,17 @@ function utils {
 # Finetunning - Utilities
 unset toinst
 toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
-toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" "moreutils" )
+toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" "moreutils" "debian-goodies" )
 toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "catfish" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
-toinst+=( "iio-sensor-proxy" "inotify-tools" "debian-goodies" "hwinfo" )
-#okular is a perfect pdf reader from kde with touch support and text highlight tools
-#pinfo is an links browser info pages reader
+toinst+=( "iio-sensor-proxy" "inotify-tools" )
+toinst+=( "cmake" )
+#okular is a perfect pdf reader from kde with touch support (scroll & zoom) providing also text highlight tools
+#pinfo is an info pages reader like links browser
 #debian-goodies provide debman which downloads a deb package in a tmp directory (using debget script from the same bunch of scripts), and then extracts man pages out of this deb package.
 
 for i in "${toinst[@]}";do
@@ -112,7 +113,7 @@ echo "at the end make sure that virtualbox-guest-x11 is installed"
 essentials
 
 apt-get install virtual* #this will install all virtualbox packages, including the additions cd and virtualbox itself
-apt-list virtualbox-guest-x11
+apt list virtualbox-guest-x11 #just to verify that this utlil is installed
 }
 
 
@@ -148,10 +149,6 @@ fi
 function xfcepanels {
 echo "TODO: copying xfce4 panel data for bottom panel"
 }
-
-function firmware-install {
-echo "TODO: install the missing debian firmware..."
-	}
 
 # Various update-alternatives
 # update-alternatives --set x-www-browser /usr/bin/google-chrome-stable #chrome installation takes care of this
