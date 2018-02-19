@@ -130,13 +130,15 @@ echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory s
 
 function lsdir { 
 # List only directories
+# TBD: Make it work with globs like tmp*
 [[ -z "$1" ]] && local d="$PWD" || local d="$1"
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
 ls -allh "$d" |grep '^d' 
+#-h: show size in human format 
 #alternative : find "$d" -maxdepth 1 -type d |column
 }
 
-function dpkgnum { dpkg -L "$1" |nl;}  #prints info about a package with numbering of the entries.
+function dpkginfo { dpkg -L "$1" |nl;}  #prints files installed by a package with numbering of the entries.
 
 function printarray () { 
 echo "printarray: Prints indexed array $1 as stored in bash environment "
