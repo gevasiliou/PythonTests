@@ -42,7 +42,7 @@ alias lsm='ls -l $@ && cd' #Strange, but cd keeps the $@ and it works.
 #Trick : ls -l /dir && cd $_ does the same job
 
 
-alias weather='curl wttr.in/Κηφισιά' #/Μαρούσι
+alias weather="curl wttr.in/'Νέα Ερυθραία'" #/Μαρούσι
 alias hexit='od -w40 -An -t x1c -v'
 alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
 #alias asciit='od -An -tuC'
@@ -86,7 +86,7 @@ function teee {
 	  let i++;
 	done <<<"$v";
 	echo '---------------- pipe -------------^' >/dev/tty; #disabled - for some reason prints the result of the last command
-	echo "$v"; ##necessary to keep the data going to the next command
+	echo "$v"; ##echo to pipe buffer - necessary to keep the data flow to the next command if any or to screen
 	
 #Usage example:
 #$ cat file1.txt |teee |grep 'WNA' |grep '621'
@@ -132,7 +132,7 @@ function lsdir {
 # List only directories
 [[ -z "$1" ]] && local d="$PWD" || local d="$1"
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-ls -all "$d" |grep '^d' 
+ls -allh "$d" |grep '^d' 
 #alternative : find "$d" -maxdepth 1 -type d |column
 }
 
