@@ -9,7 +9,7 @@ sleep 0.5
 	    su gv -c 'pacmd set-card-profile 0 output:hdmi-surround'
             active=$(su gv -c 'pacmd list |grep "active profile"')
             echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
-            amixer sset 'Master' 120%  >> /var/log/hdmi.log 2>&1
+            amixer sset 'Master' 120%  >& /dev/null
 
 	else
 	    sleep 2
@@ -17,7 +17,7 @@ sleep 0.5
 	    su gv -c 'pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo' #pacmd does not run as root
             active=$(su gv -c 'pacmd list |grep "active profile"')
             echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
-            amixer sset 'Master' 120% >> /var/log/hdmi.log 2>&1
+            amixer sset 'Master' 120% >& /dev/null
 	fi
 
 #done
