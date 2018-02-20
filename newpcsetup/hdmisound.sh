@@ -5,19 +5,19 @@
 sleep 0.5
 	if grep '^connected$' /sys/class/drm/card0/card0-HDMI*/status ;then #/sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
 	    sleep 2
-        echo "$(date) --- HDMI connected" >> /var/log/hdmi.log #full path required
-	    gksu -u gv pacmd set-card-profile 0 output:hdmi-surround;
-        active=$(su gv -c 'pacmd list |grep "active profile"')
-        echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
-        amixer sset 'Master' 120% >>& /var/log/hdmi.log
+            echo "$(date) --- HDMI connected" >> /var/log/hdmi.log #full path required
+	    su gv -c 'pacmd set-card-profile 0 output:hdmi-surround'
+            active=$(su gv -c 'pacmd list |grep "active profile"')
+            echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
+            amixer sset 'Master' 120%  >> /var/log/hdmi.log 2>&1
 
 	else
 	    sleep 2
 	    echo "$(date) --- HDMI disconnected" >> /var/log/hdmi.log #full path required
-	    gksu -u gv pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo; #pacmd does not run as root
-        active=$(su gv -c 'pacmd list |grep "active profile"')
-        echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
-        amixer sset 'Master' 120% >>& /var/log/hdmi.log
+	    su gv -c 'pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo' #pacmd does not run as root
+            active=$(su gv -c 'pacmd list |grep "active profile"')
+            echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
+            amixer sset 'Master' 120% >> /var/log/hdmi.log 2>&1
 	fi
 
 #done
