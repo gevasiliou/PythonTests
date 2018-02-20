@@ -49,7 +49,8 @@ toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "catfish" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" )
-toinst+=( "cmake" )
+toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qttools5-dev" "qttools5-dev-tools" )
+
 #okular is a perfect pdf reader from kde with touch support (scroll & zoom) providing also text highlight tools
 #pinfo is an info pages reader like links browser
 #debian-goodies provide debman which downloads a deb package in a tmp directory (using debget script from the same bunch of scripts), and then extracts man pages out of this deb package.
