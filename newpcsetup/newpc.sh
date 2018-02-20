@@ -155,10 +155,11 @@ if [[ ! -f /lib/udev/rules.d/78-hdmi.rules ]];then
 cat <<EOF >/lib/udev/rules.d/78-hdmi.rules
 KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start hdmi-sound.service"
 EOF
-chmod 644 /lib/udev/rules.d/78-hdmi.rules
+  chmod 644 /lib/udev/rules.d/78-hdmi.rules
+  ls -allh /lib/udev/rules.d/78-hdmi.rules
 else
-echo "udev hdmi rules file exists:"
-ls -allh /lib/udev/rules.d/78-hdmi.rules
+  echo "udev hdmi rules file exists:"
+  ls -allh /lib/udev/rules.d/78-hdmi.rules
 fi
 
 if [[ ! -f /etc/systemd/system/hdmi-sound.service ]];then
@@ -177,6 +178,7 @@ WantedBy=multi-user.target
 EOF
 
 chmod 777 /etc/systemd/system/hdmi-sound.service
+ls -allh /etc/systemd/system/hdmi-sound.service
 
 else 
   echo "systemd hdmi sound service exists:"
@@ -186,6 +188,7 @@ fi
 if [[ ! -f /usr/bin/hdmisound.sh ]];then 
   cp -iv /home/gv/Desktop/PythonTests/newpcsetup/hdmisound.sh /usr/bin
   chmod 755 /usr/bin/hdmisound.sh
+  ls -allh /usr/bin/hdmisound.sh
 else
   echo "hdmisound.sh exists:"
   ls -allh /usr/bin/hdmisound.sh
