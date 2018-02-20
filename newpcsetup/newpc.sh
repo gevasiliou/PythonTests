@@ -150,6 +150,51 @@ function xfcepanels {
 echo "TODO: copying xfce4 panel data for bottom panel"
 }
 
+function hdmisound {
+if [[ ! -f /lib/udev/rules.d/78-hdmi.rules ]];then
+cat <<EOF >/lib/udev/rules.d/78-hdmi.rules
+KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start hdmi-sound.service"
+EOF
+chmod 644 /lib/udev/rules.d/78-hdmi.rules
+else
+echo "udev hdmi rules file exists:"
+ls -allh /lib/udev/rules.d/78-hdmi.rules
+fi
+
+if [[ ! -f /etc/systemd/system/hdmi-sound.service ]];then
+cat <<EOF >/etc/systemd/system/hdmi-sound.service
+[Unit]
+Description=hdmi sound hotplug
+
+[Service]
+Type=simple
+RemainAfterExit=no
+ExecStart=/usr/bin/hdmisound.sh
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+chmod 777 /etc/systemd/system/hdmi-sound.service
+
+else 
+  echo "systemd hdmi sound service exists:"
+  ls -allh /etc/systemd/system/hdmi-sound.service
+fi
+
+if [[ ! -f /usr/bin/hdmisound.sh ]];then 
+  cp -iv /home/gv/Desktop/PythonTests/newpcsetup/hdmisound.sh /usr/bin
+  chmod 755 /usr/bin/hdmisound.sh
+else
+  echo "hdmisound.sh exists:"
+  ls -allh /usr/bin/hdmisound.sh
+fi
+
+udevadm control --reload-rules
+
+}
+
 # Various update-alternatives
 # update-alternatives --set x-www-browser /usr/bin/google-chrome-stable #chrome installation takes care of this
 # update-alternatives --set x-terminal-emulator /usr/bin/xfce4-terminal.wrapper #setting xfce terminal as default terminal
@@ -183,5 +228,6 @@ case $1 in
 "--gitclone")gitclone;;
 "--essentials")essentials;;
 "--tweakwifi")tweakwifi;;
+"--hdmisound")hdmisound;;
 *)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --tweakwifi --gitclone --essentials";;
 esac

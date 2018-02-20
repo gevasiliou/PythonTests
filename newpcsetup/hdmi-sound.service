@@ -4,7 +4,7 @@ Description=hdmi sound hotplug
 [Service]
 Type=simple
 RemainAfterExit=no
-ExecStart=/home/gv/Desktop/PythonTests/hdmisound.sh
+ExecStart=/usr/bin/hdmisound.sh
 
 [Install]
 WantedBy=multi-user.target
