@@ -393,6 +393,12 @@ echo "end of select packages function"
 #exit
 }
 
+function resetvariables {
+	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc dyn
+	unset fti fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
+
+}
+
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 while [[ $stop -eq 0 ]];do
 selectpackages $initpkg1 $initpkg2
@@ -429,7 +435,7 @@ esac
 #declare -p fti && exit
 IFS=$'\n' 
 c=${#fti[@]} # c=number of packages, items in array fti
-[[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && break
+[[ $c -lt 1 ]] && echo "Np packages found matching your pattern" && resetvariables && continue #skips the rest code and goes back to while, like a forced done 
 [[ $c -gt 1000 ]] && echo "More than 1000 pkgs found (actually found $c pkgs). Will list only first 1000 pkgs" |yad --text-info && c=1000
 for (( item=0; item<=$c; item++ )); do
 [[ -z "${fti[$item]}" ]] && echo "${fti[$item]} skipped" && continue
@@ -544,7 +550,7 @@ case $btn in
 	;;
 10) # New Selection
 	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc dyn
-	unset fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
+	unset fti fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
 	#selectpackages #by not sending an arg to selectpackages, previously values are used.
 	# Just unset all variables, and allow the while loop to be repeated
 esac	
