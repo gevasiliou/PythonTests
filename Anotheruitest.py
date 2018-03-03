@@ -18,7 +18,7 @@ with UInput(capabilities) as ui:
     ui.syn()
 #   ui.close() # not absolutelly necessary. ui is closed after the ui.sun().
 subprocess.Popen(['notify-send', 'Right Click 1 injected'])
-# Result: This works.... But a couple of times it didn't work.
+# Result: This works.... But a couple of times didn't work.
 #
 '''
 capabilities = {

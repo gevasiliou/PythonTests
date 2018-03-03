@@ -82,10 +82,9 @@ def main():
     vbox.show()
 
     window.connect("destroy", lambda w: gtk.main_quit())
-
     # Create the drawing area
     drawing_area = gtk.DrawingArea()
-    drawing_area.set_size_request(200, 200)
+    drawing_area.set_size_request(600, 600)
     vbox.pack_start(drawing_area, True, True, 0)
 
     drawing_area.show()
