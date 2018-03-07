@@ -1,0 +1,85 @@
+================================================================================
+=                           Bluelog Live Notes                                 =
+================================================================================
+
+Bluelog Live is technically a separate piece of software from the main Bluelog
+tool. It's comprised of simple static HTML pages and a CGI module that loads
+in the log files from Bluelog. 
+
+Bluelog is NOT a web server, it simply generates the HTML files which you will
+then serve with your HTTP daemon of choice (Apache, lighttpd, etc). Therefore,
+before you try and start Bluelog Live, make sure your web server is already
+configured properly. Bluelog is in fact completely unaware of the status of the
+Live pages while running, it just pumps out data and hopes for the best.
+
+--------------------------------------------------------------------------------
+- Installing                                                                   -
+--------------------------------------------------------------------------------
+
+Bluelog Live mode makes use of a CGI module written in C, and should be
+compatible with any system that can run Bluelog.
+
+Under lighttpd, make sure you have something along the lines of the following
+in your configuration file:
+
+server.modules = ("mod_cgi")
+index-file.names = ( "index.html" )
+cgi.assign = (".cgi" => "")
+
+--------------------------------------------------------------------------------
+- General Notes                                                                -
+--------------------------------------------------------------------------------
+
+Once you have your server setup, you need to manually create a link from
+/usr/share/bluelog to wherever you want to serve it out of. Perhaps something
+like /var/www/htdocs/bluelog. I left this step out of the installation
+intentionally, as I didn't want to run the risk of clobbering anyone's existing
+website.
+
+To actually start Bluelog Live, you simply need to pass Bluelog the "-l"
+option. You should notice that the information displayed in the console will
+say "Starting Bluelog Live" and that the file locations have changed. Assuming
+everything went as planned, you should be able to point a web browser at the
+server and see the page. If the "Info" box is populated, then everything should
+be working.
+
+While optional, I would suggest running Bluelog Live with the "-x" option,
+which obfuscates the last octet of the discovered device's MAC. It is a small
+detail, but it does prevent people's full MAC address from being displayed on
+the web page. Of course, their MAC is already being broadcast for everyone to
+see...but that is no reason we can't do the right thing.
+
+--------------------------------------------------------------------------------
+- Theming                                                                      -
+--------------------------------------------------------------------------------
+
+While Bluelog Live has a pretty simplistic interface, I've tried to leave it
+flexible enough that you can theme it for your event or organization with CSS.
+
+If you take a look at the www/ directory, you can see a number of CSS files
+which are included with Bluelog to serve as examples of the kind of things
+that are possible.
+
+In addition to the standard interface elements, there are also two additional
+CSS classes, "auxbox1" and "auxbox2", which appear above and below the status
+boxes, respectively.
+
+These can be used to add additional images or elements that are not present in
+the standard Bluelog Live layout. Check out the "LCARS" theme as an example of
+how these can be used.
+
+--------------------------------------------------------------------------------
+- Supported Browsers                                                           -
+--------------------------------------------------------------------------------
+
+Bluelog Live was written as simple as possible so that it can run on the widest
+array of web browsers. It is known to work on pretty much any half-way modern
+browser, including the relatively simplistic browsers included with systems like
+the PlayStation 3 (in fact, the PS3 was used extensively when testing to show
+results on a large screen).
+
+--------------------------------------------------------------------------------
+- Future Development                                                           -
+--------------------------------------------------------------------------------
+
+See the "FUTURE" file for information on the next generation of Bluelog Live.
