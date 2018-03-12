@@ -6,7 +6,7 @@ sleep 0.5
 	if grep '^connected$' /sys/class/drm/card0/card0-HDMI*/status ;then #/sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
 	    sleep 2
             echo "$(date) --- HDMI connected" >> /var/log/hdmi.log #full path required
-	    su gv -c 'pacmd set-card-profile 0 output:hdmi-surround'
+	    su gv -c 'pacmd set-card-profile 0 output:hdmi-stereo' #hdmi-surround
             active=$(su gv -c 'pacmd list |grep "active profile"')
             echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
             amixer sset 'Master' 120%  >& /dev/null
