@@ -662,9 +662,15 @@ function body { IFS= read -r header;printf '%s\n' "$header";"$@";};ps -o pid,com
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:DATE
-##CONVERT DATE TO EPOCH. Date must be in format 14/Feb/2017:11:31:20
-date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
-I have a smart function in bash profile for this that can work also as a pipe.
+##CONVERT DATE TO AN INTEGER
+$ date +%Y%m%d%H%M%S   #Y=Year, m=month, d=day , H=Hour, M=minute,S=second
+20180312001629 #this is an integer representing the current time
+Such integers can be compared by bash using -lt -gt -eq etc
+
+##CONVERT DATE TO EPOCH. 
+date +%s  #prints current date in epoch seconds
+date +%s --date "2018-03-12 23:50:00" # convert to epoch the specified date (if --date or -d is missing current date = now is used)
+Epoch seconds can also be compared by bash as integers
 
 ##CONVERT EPOCH TO DATE 
 Assuming that you have the string 1267619929 that represents timestamp/epoch date 
@@ -701,14 +707,124 @@ printf '%(%F %T)T\n' $(printf '%s/1000\n' $(<file10) |bc)
 .B Using awk
 echo 1267619929 |awk '{ $1 = strftime("%Y-%m-%d %H:%M:%S", $1) }1'
 
-
-
 ##DELETE LINES FROM LOG FILE OLDER THAN 30 days 
 For a file with lines like 
 2017/04/04 15:53:22 [11487] building file list)
 
 You can exclude old logs using :
 grep -v "$(date '+%Y/%m/%d' -d '30 days ago')*" logfile
+
+##START/STOP A SCRIPT AT A TIME WINDOW 
+This is a sample loop from now up to a specific time point:
+
+stop=$(date +%Y%m%d%H%M%S --date "2018-03-12 00:20:55")   #converts given date (using the --date flag) to a kind of integer format.
+while [[ $(date +%Y%m%d%H%M%S) -le $stop ]];do            #comparing current date & time with stop date & time
+echo "date now is $(date)";
+sleep 1;      #sleep 1 second
+done
+
+date now is Mon Mar 12 00:20:51 EET 2018
+date now is Mon Mar 12 00:20:52 EET 2018
+date now is Mon Mar 12 00:20:53 EET 2018
+date now is Mon Mar 12 00:20:54 EET 2018
+date now is Mon Mar 12 00:20:55 EET 2018
+
+
+This is a similar script to start/stop at a specific time, but it is a bit "resources hungry" since it keeps comparing current time to start time:
+
+date;             #just print the current date & time
+compl=false;      #completed = false
+start=$(date +%Y%m%d%H%M%S --date "2018-03-12 01:45:50");
+stop=$(date +%Y%m%d%H%M%S --date "2018-03-12 01:45:55");
+while true;do 
+ while [[ $(date +%Y%m%d%H%M%S) -ge $start ]] && [[ $(date +%Y%m%d%H%M%S) -le $stop ]];do 
+  echo "date now is $(date)";
+  sleep 1;
+  compl=true;
+ done;
+ ($compl) && break;   #if run then exit
+done
+
+Mon Mar 12 01:45:37 EET 2018
+date now is Mon Mar 12 01:45:50 EET 2018
+date now is Mon Mar 12 01:45:51 EET 2018
+date now is Mon Mar 12 01:45:52 EET 2018
+date now is Mon Mar 12 01:45:53 EET 2018
+date now is Mon Mar 12 01:45:54 EET 2018
+date now is Mon Mar 12 01:45:55 EET 2018
+
+
+To make a loop with time you need to format date/time in such a way that can be comparable. The most easy trick is to transform date to something that will look like an integer and you then use lt,le,eq,gt,ge operators of bash.
+
+Consider this :
+
+$ date
+Mon Mar 12 00:16:29 EET 2018 #this format/data type is not comparable by bash
+$ date +%Y%m%d%H%M%S
+20180312001629 #this is an integer representing the current time
+This is a sample loop from now up to a specific time point:
+
+stop=$(date +%Y%m%d%H%M%S --date "2018-03-12 00:20:55")
+while [[ $(date +%Y%m%d%H%M%S) -le $stop ]];do #comparing current date & time with stop date & time
+echo "date now is $(date)";
+sleep 1;      #sleep 1 second
+done
+
+date now is Mon Mar 12 00:20:51 EET 2018
+date now is Mon Mar 12 00:20:52 EET 2018
+date now is Mon Mar 12 00:20:53 EET 2018
+date now is Mon Mar 12 00:20:54 EET 2018
+date now is Mon Mar 12 00:20:55 EET 2018
+The trick here is that the command
+
+stop=$(date +%Y%m%d%H%M%S --date "2018-03-12 00:20:55")
+converts given date (using the --date flag) to a kind of integer format.
+
+Then the while loop keeps comparing current date in the same integer format with the stop date.
+
+This is a similar script to start/stop at a specific time, but it is a bit "resources hungry" since it keeps comparing current time to start time:
+
+date;             #just print the current date & time
+compl=false;
+start=$(date +%Y%m%d%H%M%S --date "2018-03-12 01:45:50");
+stop=$(date +%Y%m%d%H%M%S --date "2018-03-12 01:45:55");
+while true;do 
+ while [[ $(date +%Y%m%d%H%M%S) -ge $start ]] && [[ $(date +%Y%m%d%H%M%S) -le $stop ]];do 
+  echo "date now is $(date)";
+  sleep 1;
+  compl=true;
+ done;
+ ($compl) && break;
+done
+
+Mon Mar 12 01:45:37 EET 2018
+date now is Mon Mar 12 01:45:50 EET 2018
+date now is Mon Mar 12 01:45:51 EET 2018
+date now is Mon Mar 12 01:45:52 EET 2018
+date now is Mon Mar 12 01:45:53 EET 2018
+date now is Mon Mar 12 01:45:54 EET 2018
+date now is Mon Mar 12 01:45:55 EET 2018
+
+
+A very light alternative to start/stop a script at specific time would be to use epoch date / epoch seconds.
+
+date                         #just print the current date & time
+start="2018-03-12 02:17:52"
+stop="2018-03-12 02:17:57"
+timerequired=$(( $(date +%s --date "$start") - $(date +%s) ))
+sleep $(($timerequired))     #sleep till the starting time 
+while [[ $(date +%s) -le $(date +%s --date "$stop") ]];do 
+  echo "date now is $(date)";
+  sleep 1;
+done
+
+Mon Mar 12 02:17:39 EET 2018
+date now is Mon Mar 12 02:17:52 EET 2018
+date now is Mon Mar 12 02:17:53 EET 2018
+date now is Mon Mar 12 02:17:54 EET 2018
+date now is Mon Mar 12 02:17:55 EET 2018
+date now is Mon Mar 12 02:17:56 EET 2018
+date now is Mon Mar 12 02:17:57 EET 2018
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GIT
