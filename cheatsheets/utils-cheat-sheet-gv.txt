@@ -1307,7 +1307,6 @@ UTILS:MAKE A BOOTABLE CD
 
 dd bs=4M if=kali-linux-xfce-2017.3-amd64.iso of=/dev/sdb conv=fdatasync
 
-
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:AUTO ENABLE HDMI SOUND WHEN HDMI IS PLUGGED IN
 https://wiki.archlinux.org/index.php/PulseAudio/Examples#Automatically_switch_audio_to_HDMI
@@ -1344,6 +1343,30 @@ chmod 777 /etc/systemd/system/hdmi-sound.service
 ##3. Copy the file hdmisound.sh to /usr/bin
 cp -iv /home/gv/Desktop/PythonTests/newpcsetup/hdmisound.sh /usr/bin
 
+Or create this file:
+cat <<EOF >/usr/bin/hdmisound.sh
+sleep 0.5
+	if grep '^connected$' /sys/class/drm/card0/card0-HDMI*/status ;then #/sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
+	    sleep 2
+            echo "$(date) --- HDMI connected" >> /var/log/hdmi.log #full path required
+	        su gv -c 'pacmd set-card-profile 0 output:hdmi-stereo' #hdmi-surround
+	        # Using hdmi-surround ,if you play a movie with true surround you will not hear all voices in the pc unless pc supports surround i.e have multiple speakers / channels.
+            active=$(su gv -c 'pacmd list |grep "active profile"')
+            echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
+            amixer sset 'Master' 120%  >& /dev/null
+
+	else
+	    sleep 2
+	    echo "$(date) --- HDMI disconnected" >> /var/log/hdmi.log #full path required
+	    su gv -c 'pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo' #pacmd does not run as root
+            active=$(su gv -c 'pacmd list |grep "active profile"')
+            echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
+            amixer sset 'Master' 120% >& /dev/null
+	fi
+exit 0
+EOF
+chmod +x /usr/bin/hdmisound.sh
+
 ##4. Reload rules and you are ready
 udevadm control --reload-rules
 
@@ -1356,3 +1379,85 @@ Feb 13 02:21:16 debian hdmisound.sh[25807]: connected
 
 ##6. As an additional check you can look at the file /var/log/hdmi.log
 
+------------------------------------------------------------------------------------------------------------------------
+UTILS:XORG
+
+##XORG CONFIGURATION FILES
+ls -all /usr/share/X11/xorg.conf.d/*
+-rw-r--r-- 1 root root   92 Mar  7 04:44 /usr/share/X11/xorg.conf.d/10-amdgpu.conf
+-rw-r--r-- 1 root root 1099 Jan 18  2017 /usr/share/X11/xorg.conf.d/10-evdev.conf
+-rw-r--r-- 1 root root 1350 Jan 18 14:11 /usr/share/X11/xorg.conf.d/10-quirks.conf
+-rw-r--r-- 1 root root   92 Mar  7 10:51 /usr/share/X11/xorg.conf.d/10-radeon.conf
+-rw-r--r-- 1 root root  945 Sep 23 14:47 /usr/share/X11/xorg.conf.d/40-libinput.conf
+-rw-r--r-- 1 root root 1175 Mar 17 05:23 /usr/share/X11/xorg.conf.d/41-evdev.conf
+-rw-r--r-- 1 root root  113 Jul 14  2017 /usr/share/X11/xorg.conf.d/50-multitouch.conf
+-rw-r--r-- 1 root root 1753 Nov 18  2016 /usr/share/X11/xorg.conf.d/70-synaptics.conf
+-rw-r--r-- 1 root root 2747 Jun 26  2017 /usr/share/X11/xorg.conf.d/70-wacom.conf
+-rw-r--r-- 1 root root  742 Sep 28  2016 /usr/share/X11/xorg.conf.d/90-touchscreen.conf
+
+Conf files name starts with a priority number.
+40-libinput.conf is loaded by xserver AFTER 10-*.conf
+
+Files 10-evdev.conf and 40-libinput.conf affect the same input devices.
+Since libinput has a higher priority, libinput driver is used but libinput sucks - evdev is much better and more configurable
+
+For this reason i made a 'cp 10-evdev.conf 41-evdev.conf' to force evdev driver to be used in all input devices - higher priority than 40-libinput.conf
+
+If you create/copy evdev to 99-evdev.conf then this conf will override all previously conf files including 70-synaptics.conf and will
+make touchpad not to work correctly.
+
+You can verify the driver used (evded or libinput) by xinput list-props DevId.
+If evdev is used you should see properties like
+Evdev Middle Button Emulation (277):	0
+
+if libinput is used the above line will be like
+libinput Middle Button Emulation (277):	0
+
+##XINPUT
+You can use xinput to see / adjust properties in all input devices
+
+xinput list                              # list input devices
+xinput list-props DevId                  # list properties of a device providing DevId as reported by xinput list
+xinput set-prop DevId PropId PropValue   # set a property to Device ID. PropID could be full prop name or prop id number
+
+example:
+xinput list-props 13
+Device 'SynPS/2 Synaptics TouchPad':
+	Device Enabled (141):	1
+    ....more options here....
+    
+xinput set-prop 13 141 0 ---> disables the TouchPad
+xinput set-prop 13 141 1 ---> enables the TouchPad
+
+##XORG & TOUCHSCREENS
+cat /usr/share/X11/xorg.conf.d/90-touchscreen.conf
+Section "InputClass"
+        Identifier      "Touchscreen"
+        MatchProduct    "ELAN Touchscreen"
+        MatchIsTouchscreen "yes"
+        Driver "evdev"
+        MatchDevicePath "/dev/input/event*"
+#       Option  "MinX"  "48"
+#       Option  "MaxX"  "65487"
+#       Option  "MinY"  "-384"
+#       Option  "MaxY"  "64810"
+#       Option  "SwapXY"        "0" # unless it was already set to 1
+#       Option  "InvertX"       "0"  # unless it was already set
+#       Option  "InvertY"       "0"  # unless it was already set
+        Option "EmulateThirdButton" "1"
+        Option "EmulateThirdButtonTimeout" "500"
+        Option "EmulateThirdButtonThreshold" "30"
+        Option "Evdev Third Button Emulation" "1"
+        Option "Evdev Third Button Emulation Timeout" "550"
+#/* CARD8 */
+#"Evdev Third Button Emulation Button"
+        Option "Evdev Third Button Emulation Threshold" "33"
+
+EndSection
+
+This file was created by me (using internet search) in an attempt to make touchscreen to nativelly support long press right click
+It turned out that long press right click , touch screen scrolling etc, are features supported by GTK3 progs and not GTK2 progs.
+As a result almost any GTK3 will support touchscreen events like scrolling : okular pdf reader, nautilus file manager, etc
+
+Touchscreen right click by long pressing it seems that fails even in GTK3.
+This can be solved with python scripting - see rightclick-gv.py & relevant rightclick python scripts 
