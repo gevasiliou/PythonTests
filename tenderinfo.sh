@@ -2,7 +2,9 @@
 echo "Tender Info Engine"
 [[ -z $1 ]] && echo "pass me a valid tender info url" && exit 1
 u="$1"
+echo "URL to search tenders:  $1"
 keys="[Σσ]υσσω|ΣΥΣΣΩ|ΜΠΑΤ|[Μμ]πατ|UPS"
+read -e -p "Enter Regex Search Pattern (or press enter to use default keys):  " -i "$keys" keys
 echo "keys to search : $keys"
 
 echo "Starting"
