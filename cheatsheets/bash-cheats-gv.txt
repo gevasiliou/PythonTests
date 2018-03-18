@@ -250,6 +250,7 @@ http://mywiki.wooledge.org/BashFAQ/001
 read -r first last junk <<< 'Bob Smith 123 Main Street Elk Grove Iowa 123-555-6789'
 read -r first last junk <<< "$a" 
 # $first will contain "Bob", last will contain "Smith", junk holds everything else that follows
+# Since IFS is left to default value and since read -d is not used, the string given to read will be separated by IFS value
 ------------------------------------------------------------------------------------------------------------------------
 
 ## READ FROM FILE AND SPLIT FIELD BY DOUBLE QUOTES 
@@ -347,8 +348,7 @@ Best trick :   alpha | xargs -d "\n" beta
 
 ------------------------------------------------------------------------------------------------------------------------
 ##READ WITH LINE BUILTIN
-$ line <file will print the first line of file
-can also be assigned to a var: a=$(line <file)
+$ line <file            #will print the first line of file. Can also be assigned to a var: a=$(line <file)
 
 ------------------------------------------------------------------------------------------------------------------------
 ##READ:LOOP WITH FILE DESCRIPTOR
@@ -487,6 +487,17 @@ IFS=[$'\n'"|"] read -d '' -a var <<<"$a"; declare -p var --> declare -a var='([0
 
 PS: Sometimes the use of -r yelds only to the first value [0]="a" and rest values were ignored.
 
+##READ - ASSIGN A DEFAULT VALUE TO VARIABLE
+$ keys="one|two";read -e -p "Enter Pattern:" -i "$keys" keys; echo "new keys=$keys"
+Enter Pattern:one|two    #just press enter
+new keys=one|two         #keys value preserved
+
+$ keys="one|two";read -e -p "Enter Pattern:" -i "$keys" keys; echo "new keys=$keys"
+Enter Pattern:one|two|three|four       # add |three|four to the existed prompt
+new keys=one|two|three|four            # keys value updated
+
+-e       : use readline function to obtain the line - prompt ignored. See 'help read'
+-i TEXT  : use TEXT as initial text for readline
 
 ------------------------------------------------------------------------------------------------------------------------
 
