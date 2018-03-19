@@ -1331,6 +1331,11 @@ BASH:PRINTF
 http://wiki.bash-hackers.org/commands/builtin/printf
 http://www.computerhope.com/unix/uprintf.htm
 
+##PRINTF: FLOATING NUMBERS
+$ printf '%.3f\n' 1.2347 --> will round to three decimals mathematically , printing 1.235
+$ read a;printf '%.3f\n' $(bc -l <<<"$a")  ---> will use bc to do the maths and printf .3f to print them rounded
+# you can feed read a with any math expression like '100/63' or even '5+50*3/20 + (19*2)/7'
+
 ##PRINTF: LOOPING OVER HEXADECIMAL VALUES (HEX LOOP)
 Range 00-09 and then 0A-0B-0C-0D-0E-0F. Repeats for all numbers.
 The most easy way is to use printf since natively supports hex printing

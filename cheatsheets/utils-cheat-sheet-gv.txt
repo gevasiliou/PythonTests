@@ -524,6 +524,7 @@ $ a="17.928671"; a=$(bc <<<"$a/1");echo "$a"               ---> 17         #usin
 $ a="17.928671"; a=$(bc -l <<<"$a/1");echo "$a"            ---> 17.92867100000000000000  #scale active - max dec digits
 $ a="17.928671"; a=$(bc -l <<<"scale=3; $a/1");echo "$a"   ---> 17.928                   #scale in effect
 $ a="17.928671"; a=$(printf '%.3f\n' "$a");echo "$a"       ---> 17.929                   #rounding in effect
+$ read a;printf '%.3f\n' $(bc -l <<<"$a")                  ---> bc will do the maths and printf will print them rounded. $a can be any expression
 
 ##TRICKY BC + PRINTF usage to sum up ascii values:
 while read -rn1 char;do sumA+=$(printf '%d+' "'$char'");done <<<"1.Nf3 c5 2.e4 Nc6"
