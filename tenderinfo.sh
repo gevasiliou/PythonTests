@@ -8,6 +8,6 @@ read -e -p "Enter Regex Search Pattern (or press enter to use default keys):  " 
 echo "keys to search : $keys"
 
 echo "Starting"
-curl --silent "$u" |egrep "$keys" |perl -pe 's/>/>\n/g' |egrep -v '<u.*>|</a>' |sed 's/<a href="//g' |perl -pe 's/" style=.*>\n/\n/g'
+curl --silent "$u" |egrep "$keys" |perl -pe 's/>/>\n/g' |egrep -v '<u.*>|</a>' |sed 's/<a href="//g' |perl -pe 's/" style=.*>\n/\n/g' |sed 's/<\/u>$//g'
 echo "Finished"
 exit 0
