@@ -612,6 +612,7 @@ Pattern (1[5-9]|[2-9][0-9]|100) will expand to 15-19 OR 20-99 OR 100 = range 15-
 BASH:FIND 
 Read here why you never parse output of ls: http://mywiki.wooledge.org/BashGuide/Practices#Quoting (chap 5)
 POSIX Find Manual :http://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
+
 ##USE FIND AS LS ALTERNATIVE
 find /home/gv -maxdepth 1 -type d -> list only directories
 find /home/gv -maxdepth 1 -type f -> lists only files
@@ -664,11 +665,24 @@ find can accept an -exec option in two formats:
 -exec command {} \; #In this method command is invocated in each result of find
 -exec command {} +  #In this method command is invocated after buffering an amount of find results.
 
+A tricky use of -exec is to call bash and run a customized script like:
+$ find . -name '[pg]*.py' -exec bash -c 'echo "$0"' {} \;
+./pycurl-example.py
+
+The find results are fed to  -exec by {}.
+
+A more trick usage is something like this:
+$ find . -name '[pg]*.py' -exec bash -c 'echo "$0:$1"' "file" {} \;
+file:./pycurl-example.py
+
+"file" after bash -c is given to bash as $0 and {} (find results) are assigned to $1.
+
+If you don't want to pass any special text to bash -c , you can use something like -exec bash -c '....' _ {} \; just to be able to refer to find results as $1 instead of $0
+
 .B Multiple exec options
 find dirname ... -exec somecommand {} \; -exec someothercommand {} \; #by wildcard
 find /sys/devices/system/cpu/cpu1/* -type f -exec echo {} \; -exec cat {} \; |less
 find /sys/devices/system/cpu/cpu1/* -type f -print -exec cat {} \; |less
-
 
 .B Example with grep
 [: http://unix.stackexchange.com/questions/85789/grep-in-couple-thousands-files :]
