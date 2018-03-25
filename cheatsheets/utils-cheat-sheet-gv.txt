@@ -1462,3 +1462,31 @@ As a result almost any GTK3 will support touchscreen events like scrolling : oku
 
 Touchscreen right click by long pressing it seems that fails even in GTK3.
 This can be solved with python scripting - see rightclick-gv.py & relevant rightclick python scripts 
+
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:NETCAT 
+See wikipedia netcat for a lot of examples
+
+##INVOCATION - Simple client / server
+Server: $ netcat -l -k -p Port ---> Listening mode - awaiting connections
+
+Client: $ netcat ip Port   --> Connects to IP at specific Port
+OR
+Client: echo "hello" >/dev/tcp/IP/Port  
+PS: You can use a second terminal as "client" in the same machine
+
+.B Common Options
+-l : listen
+-p : port
+-k : keep open
+-s : Specify particular host to establish a connection
+
+
+##NETCAT & VLC STREAMING
+https://wiki.videolan.org/Uncommon_uses/
+
+PC1 : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
+PC2 : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
+OR    $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
+
