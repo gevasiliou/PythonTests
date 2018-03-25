@@ -1466,9 +1466,18 @@ This can be solved with python scripting - see rightclick-gv.py & relevant right
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:NETCAT 
-See wikipedia netcat for a lot of examples
+https://en.wikipedia.org/wiki/Netcat     # wikipedia has a lot of examples
+https://gist.github.com/lenciel/8780269
+
+Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ Latest Release
+PC1-Toshiba : 192.168.1.116
+PC2-Dell : 192.168.1.106
 
 ##INVOCATION - Simple client / server
+nc     : netcat traditional tool
+netcat : the usuall netcat package in modern distros like debian
+ncat   : Similar tool to netcat - same principle - same switches but is not a netcat. Provided by package nmap
+
 Server: $ netcat -l -k -p Port ---> Listening mode - awaiting connections
 
 Client: $ netcat ip Port   --> Connects to IP at specific Port
@@ -1477,16 +1486,41 @@ Client: echo "hello" >/dev/tcp/IP/Port
 PS: You can use a second terminal as "client" in the same machine
 
 .B Common Options
--l : listen
+-l : listen. As a general idea the listening machine should be started first
 -p : port
 -k : keep open
 -s : Specify particular host to establish a connection
 
 
-##NETCAT & VLC STREAMING
+##SEND A FILE
+PC2-Dell: netcat -l -p 8111 >somefilecopy.pdf     
+# or $ netcat -l -p 8111 |cat - >somefilecopy.pdf
+
+PC1-Toshiba: cat somefile.pdf >/dev/tcp/192.168.1.106/8111  
+# or $ cat file.pdf |netcat 192.168.1.106 8111 
+# or $ netcat 192.168.1.106 8111 <file.pdf 
+
+Alternative:
+PC1-Toshiba : cat somefile.pdf |netcat -l -p 8111            #or netcat -l -p 8111 <file.pdf
+PC2-Dell    : cat </dev/tcp/192.168.1.116/8111 >somecopy.pdf  #or netcat 192.168.1.116 8111 >copy.pdf 
+Works but connection is not automatically terminated when cat is finished
+
+
+##VIDEO VLC/MPV STREAMING
 https://wiki.videolan.org/Uncommon_uses/
 
-PC1 : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
-PC2 : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
-OR    $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
+.B Method 1 - Classic Server - Client
+PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat -l -p 8111   #server
+#or           $ netcat -l -p 8111 <3071-BRHD-GR-TRAGOUDA.mp4
+
+PC2-Dell    : $ cat </dev/tcp/192.168.1.116/8111 |vlc -            #client
+#or         : $ netcat 192.168.1.116 8111 |vlc -
+#Surprisingly this does not work : $ vlc </dev/tcp/192.168.1.116/8111 
+
+
+.B Method 2 - Reversed
+PC2-Dell    : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
+PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
+OR $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
+OR $ netcat 192.168.1.106 8111 <3071-BRHD-GR-TRAGOUDA.mp4
 
