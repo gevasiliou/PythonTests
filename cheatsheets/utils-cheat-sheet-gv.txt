@@ -1469,7 +1469,7 @@ UTILS:NETCAT
 https://en.wikipedia.org/wiki/Netcat     # wikipedia has a lot of examples
 https://gist.github.com/lenciel/8780269
 
-Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ Latest Release
+Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ Latest Release (March 2018)
 PC1-Toshiba : 192.168.1.116
 PC2-Dell : 192.168.1.106
 
