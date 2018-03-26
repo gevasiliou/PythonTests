@@ -1510,11 +1510,12 @@ Works but connection is not automatically terminated when cat is finished
 https://wiki.videolan.org/Uncommon_uses/
 
 .B Method 1 - Classic Server - Client
-PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat -l -p 8111   #server
-#or           $ netcat -l -p 8111 <3071-BRHD-GR-TRAGOUDA.mp4
+PC1-Toshiba : $ netcat -l -p 8111 <3071-BRHD-GR-TRAGOUDA.mp4
+#OR           $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat -l -p 8111   #server
 
-PC2-Dell    : $ cat </dev/tcp/192.168.1.116/8111 |vlc -            #client
-#or         : $ netcat 192.168.1.116 8111 |vlc -
+PC2-Dell    : $ netcat 192.168.1.116 8111 |vlc -            #client
+#or         : $ cat </dev/tcp/192.168.1.116/8111 |vlc - 
+#or         : $ mpv <(netcat 192.168.1.116 8111)            #might not work with vlc
 #Surprisingly this does not work : $ vlc </dev/tcp/192.168.1.116/8111 
 
 
