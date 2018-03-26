@@ -1525,3 +1525,16 @@ PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
 OR $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
 OR $ netcat 192.168.1.106 8111 <3071-BRHD-GR-TRAGOUDA.mp4
 
+##Movie Streaming with SRT File
+Not tested yet but idea is to use two netcats at server at different ports.
+One port will serve the movie, the other port will serve srt file
+Something like this:
+PC1:
+netcat -l -p 8111 <mymovie.mp4
+netcat -l -p 8112 <mymovie.srt
+
+PC2:
+mpv <(netcat IP MoviePort) --sub-file <(netcat IP SRTPort)
+
+Tip: You can send the srt file from server to client and open this srt file explicitly with mpv when movie is playing.
+Srt will not be autoloaded due to mismatching names of srt pipe && movie pipe
