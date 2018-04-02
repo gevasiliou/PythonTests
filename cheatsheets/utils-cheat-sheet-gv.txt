@@ -1621,3 +1621,31 @@ Accordingly you should load the matching initrd: /boot/initrd-matching-vmlinuz-c
 Tip: 
 You can still call the grub CLI even if grub works ok by following grub menu on-screen instructions.
 You might need this tweak in case you want to manually load a kernel from a usb (/dev/sdb or /dev/sdc) as a workaround if usb auto-boot was not succesfull for some reason.
+
+##FSTAB
+To ensure that booting will be ok you need a working /etc/fstab file like this:
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/sda9 during installation
+UUID=78164877-465b-408a-9c0f-3360a317fc42 /               ext4    errors=remount-ro 0       1
+# /boot/efi was on /dev/sda1 during installation
+UUID=F665-1803  /boot/efi       vfat    umask=0077      0       1
+# swap was on /dev/sda8 during installation
+UUID=3278b9af-f992-4ab8-8fe5-7d20bef6ce43 none            swap    sw              0       0
+
+
+##FSTAB - AUTOMOUNT DRIVE / PARTITION
+https://superuser.com/questions/646249/automatically-mount-a-2nd-hard-drive-in-debian-7
+
+Partition /dev/sda3 holds my Windows. You can automount this partition like this:
+1. umount /dev/sda3
+2. mkdir /media/MyWin 
+3. blkid ---> find the /dev/sda3 UUID
+4. Add to /etc/fstab the following line
+UUID=A25866FE5866D119 /media/MyWin ntfs defaults 0 0
+5. mount -a

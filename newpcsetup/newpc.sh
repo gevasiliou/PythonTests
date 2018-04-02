@@ -21,7 +21,7 @@ fi
 ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
 ess+=( "kmod" "sysfsutils" )
-ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" )
+ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
