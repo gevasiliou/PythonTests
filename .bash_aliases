@@ -10,6 +10,10 @@
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
 #alias words='/usr/share/dict/words'
+function aptlog {
+l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
+}
+
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
