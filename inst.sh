@@ -458,9 +458,11 @@ aptshow="$(apt show "${pd[@]}")"
 aptpolicy="$(apt policy "${pd[@]%/*}")" #in array elements like pkg/experimental removes the /* == /experimental
 declare -A dyn
 #printarray dyn && exitright
+#echo "$aptshow" |grep -B15 -P '\x27'
+#set -x
 eval $(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')
 #eval $(echo "$aptshow" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - | - " "\x22" "\n"}')
-eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf "-|" "\x22" "\n"}' )
+eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf " - | " "\x22" "\n"}' )
 eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )
 
 #Get installed version
