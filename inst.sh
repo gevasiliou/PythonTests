@@ -387,6 +387,7 @@ installed=`echo $selections | awk -F',' '{print $6}'`
 [[ $exclude1 != "" && $exclude2 != "" ]] && exclude="-v -e $exclude1 -e $exclude2"
 [[ $exclude1 == "" && $exclude2 != "" ]] && exclude="-v -e $exclude2"
 [[ $exclude1 != "" && $exclude2 == "" ]] && exclude="-v -e $exclude1"
+#exclude="$exclude -e residual-config"
 
 echo "exclude=$exclude"
 echo "end of select packages function"
@@ -413,23 +414,26 @@ echo "exclude value=$exclude"
 aptlist_manipulate
 fi
 export installed
+
 echo "Installed=$installed ---- Pattern=$pattern"
+#exclude="$exclude -e residual-config"
+echo "to be excluded: $exclude"
 
 case "$installed" in
-"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
-"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
-"Any")readarray -t fti < <(apt list $pattern |cut -f1 -d "/" |grep -v -e "Listing" |grep $exclude);; 
+"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" -e "residual-config" |cut -f 1 -d "/" |grep $exclude);;
+"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing"  -e "residual-config" |cut -f1 -d "/" |grep $exclude);; 
+"Any")readarray -t fti < <(apt list $pattern | grep -v -e "residual-config" -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" exclude-pattern
 
-"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
+"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
 
-"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
+"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing"  -e "residual-config" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
 #here the things are a bit different. Get all experimental pkgs from the --installed list == get experimental versions (if any) only from installed pkgs
 
-"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 
-"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 
 #declare -p fti && exit
@@ -486,7 +490,9 @@ eval $(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Versi
 # when using apt show a*, virtual packages were also listed.
 # As a result, the apt show of virtual packages returns not a real package as description and this mess things up.
 # Example: Package: abiword-gnome - State: not a real package (virtual)
-# Hopefully apt list is not displaying virtual packages (!). So if you apt show the packages returned by apt list and not the pattern you will be ok. 
+# Hopefully apt list is not displaying virtual packages (!). 
+# Though if a package was removed and then was turned to virtual will be shown by apt list as [residual-config]
+# So if you apt show the packages returned by apt list and not the pattern you will be ok. 
 # This can be verified by running 'apt list "abi*" ' (abiword-gnome is missing) and also 'apt list -a abiword-gnome' returns nothing.
 # apt show abiword-gnome returns: --> Package: abiword-gnome --> State: not a real package (virtual)
 # Depending on apt pinning priorities, apt list / apt show may return some virtual packages (happened when sid had priority <1)

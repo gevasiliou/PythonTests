@@ -1501,10 +1501,14 @@ PC1-Toshiba: cat somefile.pdf >/dev/tcp/192.168.1.106/8111
 # or $ netcat 192.168.1.106 8111 <file.pdf 
 
 Alternative:
-PC1-Toshiba : cat somefile.pdf |netcat -l -p 8111            #or netcat -l -p 8111 <file.pdf
-PC2-Dell    : cat </dev/tcp/192.168.1.116/8111 >somecopy.pdf  #or netcat 192.168.1.116 8111 >copy.pdf 
-Works but connection is not automatically terminated when cat is finished
+PC1-Toshiba : cat somefile.pdf |netcat -l -p 8111            
+#or netcat -l -p 8111 <file.pdf
 
+PC2-Dell    : cat </dev/tcp/192.168.1.116/8111 >somecopy.pdf  
+#or netcat 192.168.1.116 8111 >copy.pdf 
+#or netcat 192.168.1.116 8111 |cat - >copy.pdf
+Works but connection is not automatically terminated when cat is finished
+You can force connection to close after inactivity by using -w 5 switch (wait 5 seconds) at netcat listening side.
 
 ##VIDEO VLC/MPV STREAMING
 https://wiki.videolan.org/Uncommon_uses/
