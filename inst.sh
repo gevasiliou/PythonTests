@@ -420,20 +420,20 @@ echo "Installed=$installed ---- Pattern=$pattern"
 echo "to be excluded: $exclude"
 
 case "$installed" in
-"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" -e "residual-config" |cut -f 1 -d "/" |grep $exclude);;
-"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing"  -e "residual-config" |cut -f1 -d "/" |grep $exclude);; 
-"Any")readarray -t fti < <(apt list $pattern | grep -v -e "residual-config" -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
+"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
+"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
+"Any")readarray -t fti < <(apt list $pattern | grep -v -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" exclude-pattern
 
-"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
+"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
 
-"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing"  -e "residual-config" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
+"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing"  |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
 #here the things are a bit different. Get all experimental pkgs from the --installed list == get experimental versions (if any) only from installed pkgs
 
-"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 
-"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing"  -e "residual-config" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 
 #declare -p fti && exit
@@ -464,18 +464,24 @@ declare -A dyn
 #printarray dyn && exitright
 #echo "$aptshow" |grep -B15 -P '\x27'
 #set -x
-eval $(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')
-#eval $(echo "$aptshow" |awk '{is=0;ds=0};/Package:/{printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|";is=1};/Download-Size:/{$1="";ds=1;printf $0 "\x22" "\n"}END{if (ds!=1 || is!=1) printf " - | - " "\x22" "\n"}')
-eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf " - | " "\x22" "\n"}' )
-eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )
+eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')"
+
+#eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf " - | " "\x22" "\n"}' )
+eval "$(echo "$aptshow" |awk '/^Package:/{is=0;printf "dyn[" $2 "]+=\x22";pkgNR=NR};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1};/^State:/{printf "-|" "\x22" "\n";is=1}' )"
+
+#eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )"
+eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf " - | " "\x22" "\n"}' )"
 
 #Get installed version
-eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf " - | " "\x22" "\n"}')
+eval "$(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf " - | " "\x22" "\n"}')"
 
 #Get Candidate version
-#eval $(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);d=0;printf "dyn[" $0 "]+=\x22" };/Candidate:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
-eval $(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')
+#eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')"
+eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
 #Better to use apt show since pkg/experimental works in apt show but not in apt policy.
+
+#for ee in "${!pd[@]}"; do echo "pd[$ee]=${pd[$ee]}";done 
+#for e in "${!dyn[@]}"; do echo "dyn[$e]=${dyn[$e]}";done && exit 
 
 
 # At first we used to gather all apt show fields at once , but we preferred separate calls per property in case a property is missing,like pkg coinor-libcoinutils3 (try it with 'co*utils* pattern
