@@ -470,17 +470,16 @@ eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/Descriptio
 eval "$(echo "$aptshow" |awk '/^Package:/{is=0;printf "dyn[" $2 "]+=\x22";pkgNR=NR};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1};/^State:/{printf "-|" "\x22" "\n";is=1}' )"
 
 #eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )"
-eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf " - | " "\x22" "\n"}' )"
+eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf "-|" "\x22" "\n"}' )"
 
 #Get installed version
-eval "$(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf " - | " "\x22" "\n"}')"
+eval "$(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf "-|" "\x22" "\n"}')"
 
 #Get Candidate version
 #eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')"
 eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
 #Better to use apt show since pkg/experimental works in apt show but not in apt policy.
 
-#for ee in "${!pd[@]}"; do echo "pd[$ee]=${pd[$ee]}";done 
 #for e in "${!dyn[@]}"; do echo "dyn[$e]=${dyn[$e]}";done && exit 
 
 
