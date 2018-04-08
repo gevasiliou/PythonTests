@@ -84,8 +84,9 @@ case $fileaction in
 esac
 
 fileedited=1
+unset list commands desktopfiles filecomment fmn   #2018 addition
 }
-
+export -f fileedit #2018 addition
 
 function filerun   
 { 
@@ -268,17 +269,20 @@ buildlist12	#grep all files at once
 
 
 performance stop
+# 2018 deletion
+#--button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
 
 yad --list --title="Application Files Browser" --no-markup --width=1200 --height=600 --center --print-column=0 \
 --select-action 'bash -c "yadlistselect %s "' \
 --dclick-action='bash -c "filedisplay"' \
---button="Display":'bash -c "filedisplay"' --button="Edit":4 --button="Run":'bash -c "filerun"' \
+--button="Display":'bash -c "filedisplay"' --button="Edit":'bash -c "fileedit"' --button="Run":'bash -c "filerun"' \
 --button="New Selection":2 --button=gtk-quit:1 --column "No" --column="Icon":IMG --column="Menu Name" \
 --column "File" --column "Exec" --column "Description" "${list[@]}" 
-
 btn=$?
+
+#yad --select-action == an action to do for each item highlighted inside list == call yadlistselect function == save to a tmp file the current selection
 if [ $btn -eq 1 ]; then
-	stop="true" 
+	stop="true"   #button 1 = quit
 	#Tip: Click on buttons with id , yad list exits. If list exits with button 1 then stop the loop
 fi
 
@@ -288,10 +292,11 @@ if [ $btn -eq 2 ]; then
 	fileedited=0
 fi
 
-if [ $btn -eq 4 ]; then
-	fileedit #Call file edit function.
-	unset list commands desktopfiles filecomment fmn
-fi
+#2018 deletion
+#if [ $btn -eq 4 ]; then
+#	fileedit #Call file edit function.
+#	unset list commands desktopfiles filecomment fmn #moved inside fileedit function
+#fi
 done
 
 rm -f $TMPFILE

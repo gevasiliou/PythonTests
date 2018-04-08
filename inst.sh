@@ -294,7 +294,7 @@ export -f readmanpage
 function search_manipulate {
 echo "You are in function search manipulate"
 echo "Selections = $selections"
-
+#exit 
 [[ "${pattern1:0:1}" == "*" ]] && pattern1="${pattern1:1}" #if first char is * exclude this char
 [[ "${pattern1: -1}" == "$" || "${pattern1: -1}" == "*" ]] && pattern1="${pattern1:0:-1}" #if last char is * exclude him
 #In apt search we don't want wildmark (*) in pkg name.
@@ -373,9 +373,9 @@ exitright
 exit 1
 fi
 
-echo $selections
+echo "select pkgs function-selections  =  $selections"
 #exit
-pattern1=`echo $selections | awk -F',' '{print $1}'`
+pattern1="$(echo "$selections" | awk -F',' '{print $1}')"
 pattern2=`echo $selections | awk -F',' '{print $2}'`
 aptsearch=`echo $selections | awk -F',' '{print $3}'`
 #pattern=$(echo -e \"$pattern\")
@@ -402,7 +402,7 @@ function resetvariables {
 
 #------------------------------------------MAIN PROGRAM-----------------------------------------------------#
 while [[ $stop -eq 0 ]];do
-selectpackages $initpkg1 $initpkg2
+selectpackages "$initpkg1" "$initpkg2"
 
 if [[ $aptsearch == "apt search" ]];then
 echo "apt search selected"
@@ -416,9 +416,8 @@ fi
 export installed
 
 echo "Installed=$installed ---- Pattern=$pattern"
-#exclude="$exclude -e residual-config"
 echo "to be excluded: $exclude"
-
+#exit
 case "$installed" in
 "Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
 "Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
@@ -545,6 +544,7 @@ btn=$?
 echo "Button Pressed:" $btn
 case $btn in 
 0) 	
+    #Button OK = Install
 	echo "Package list to be installed"
 	printf "%s\n" ${toinstall[@]} #this prints the list correctly.
 	aptinstall #call the aptinstall function to install selected packages.
@@ -563,8 +563,9 @@ case $btn in
 	unset IFS
 	;;
 10) # New Selection
-	unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc dyn
-	unset fti fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
+	#unset c pd aptshow pddescription pdsizeDown pdsizeInst pdss pdszd pdszi pdpolicy pdpc dyn
+	#unset fti fti2 pdpolicy2 pdpi pitem list list2 LIST3 toinstall IFS initpkg1 initpkg2
+	resetvariables
 	#selectpackages #by not sending an arg to selectpackages, previously values are used.
 	# Just unset all variables, and allow the while loop to be repeated
 esac	
