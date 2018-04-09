@@ -145,15 +145,24 @@ ls -allh "$d" |grep '^d'
 function dpkginfo { dpkg -L "$1" |nl;}  #prints files installed by a package with numbering of the entries.
 
 function printarray () { 
-echo "printarray: Prints indexed array $1 as stored in bash environment "
+echo "printarray: Prints array $1 as stored in bash environment "
 # ab=( "one" "two" "fi ve" );printarray --> please provide a var
 # printarray ab
 # [0]="one
 # [1]="two
 # [2]="fi ve" #works even with space in array values
-[[ -z $1 ]] && echo "Provide an array variable to display" && return
-#declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\n\[/g" #Only valid in GNU Sed
-declare -p $1 | perl -pe "s/declare -a $1=\(//g; s/\)$//g; s/\" \[/\n\[/g" #Valid even in BSD
+[[ -z $1 ]] && echo "Provide an array name (without \$) to display " && return
+#declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\"\n\[/g" #Only valid in GNU Sed -not working in BSD
+declare -p $1 | perl -pe "s/declare -[aA] $1=\(//g; s/\)$//g; s/\" \[/\"\n\[/g" #works even in BSD
+#This works because when array is defined in main bash shell , the array is also accessible by the functions
+
+
+#Alternative:
+#function printarray { for k in $(eval echo "\${!$1[@]}");do printf '%s' "$1[${k}]="; eval echo "\${$1[$k]}";done; }
+
+#Tip: 
+#Shell quick printing: for key in "${!array[@]}";do echo "array[$key]=${array[$key]}";done
+#using ${!array[@]} syntax we can loop over array KEYS/INDEX
 }
 
 function mandiff { 
