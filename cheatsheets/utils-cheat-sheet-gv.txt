@@ -1008,13 +1008,18 @@ Browsing '/sys/class/power_supply/' will drive you to BAT0 and AC0
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:YOUTUBE-DL - WGET - CURL - MPV
 https://github.com/rg3/youtube-dl
+
+https://oload.win/stream/5KSeX_DV9Y4~1523564561~176.92.0.0~TRYa2RIQ
+
 ##Default Usage
 $ youtube-dl https://www.youtube.com/watch?v=o0yimq6W5Y8
+$ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' https://openload.co/embed/5KSeX_DV9Y4/
+
 By default , youtube-dl downloads video file and audio file separately in a two steps process and then it merges and synchronizes those two files.
 Temp Files are deleted by default unless -k (keep) option is given.
 
 ##List Codecs
-$ youtube-dl -F url : displays available video and audio formats (selectable by format code)
+$ youtube-dl -F url #displays available video and audio formats (selectable by format code)
 
 ##Get only the video without audio
 Can be done by specifying a particular video only format, like -f 134 (if 134 is a valid video only format for your video):
@@ -1078,7 +1083,10 @@ $ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://openload.co/
 tee writes those tty data to file and re-prints them in tty
 mpv player reads data from '-' = /dev/stdin=tty while loading the subs file previously got with wget
 
-.B Tips
+.B Tips & Bugs
+0. https://9xbuddy.com/sites/openload 
+Above website will give you subtitles vtt link and real video mp4 link suitable for downloading or curl or direct mpv playing
+
 1. There is no direct way to force youtube-dl to automatically download subs from the 'embed' url- This command returns nothing:
 $ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --list-subs 'https://openload.co/embed/BmB-MDfowlc/'
 [Openload] BmB-MDfowlc: Downloading webpage
@@ -1088,6 +1096,7 @@ BmB-MDfowlc has no subtitles
 2. You can get the direct video url like:
 $ youtube-dl --get-url 'https://openload.co/embed/BmB-MDfowlc/'
 https://openload.co/stream/BmB-MDfowlc~1514335530~176.92.0.0~t0DoWtve?mime=true
+PS: No longer works in March 2018
 
 If you open above link in your browser you are redirected to 
 https://1fgm8jn.oloadcdn.net/dl/l/Q3HCbea0iBCYr8kz/BmB-MDfowlc/2839-BR720-SUBS-HACKSAW.mp4?mime=true
@@ -1104,6 +1113,29 @@ curl http://teniesonline.ucoz.com/load/2-1-0-1485 |grep 'open'
 <option selected="selected" value="">Επιλέξτε Player για προβολή</option> <br /> <br /> <option value="https://openload.co/embed/KD9TigOuVZ0/">Openload.co</option> <br /> <br /> </select></div></center></nofollow> 
 
 As already explained the embeded openload links contain both mp4 file and vtt. You can further curl this embed url and grp for subs / vtt
+
+5. Openload hides real source behind jscript. So day by day openload improves js and youtube-dl fails to catch the stream url.
+
+Workaround 1: 
+Open the embed link in browser and look at source code. 
+For embed url https://openload.co/embed/5KSeX_DV9Y4/ , browsing the source you will something like:
+<video class="vjs-tech" id="olvideo_html5_api" crossorigin="anonymous" poster="https://thumb.oloadcdn.net/splash/5KSeX_DV9Y4/pUHDM0i7V74.jpg" src="/stream/5KSeX_DV9Y4~1523568076~176.92.0.0~0IUY-wyi?mime=true">
+
+This code snippet will appear when the video is really playing in your screen.... (all the commercials are finished)
+
+The url given above i src="/stream/..." is the real source. 
+You can "copy link address" with right click: https://openload.co/stream/5KSeX_DV9Y4~1523568076~176.92.0.0~0IUY-wyi?mime=true #delete ?mime=true
+
+Above link address works fine with youtube-dl so this command works fine:
+$ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' https://openload.co/stream/5KSeX_DV9Y4~1523568076~176.92.0.0~0IUY-wyi -o- |mpv -
+
+In most cases mpv can work directly with above stream url:
+$ mpv https://openload.co/stream/5KSeX_DV9Y4~1523568076~176.92.0.0~0IUY-wyi
+
+Workaroud 2: 
+Hit the 'download' button in browser/openload web page till browser starts to download the video.
+Go to 'Show all downloads' and copy the download link that is in use by your web browser.
+Use this link either directly to mpv or to youtube-dl |tee |mpv
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SYSTEMD WIFI RESET AFTER SLEEP / HYBERNATE RESUME
