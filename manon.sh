@@ -102,7 +102,7 @@ function apt {
 				echo "Display ${manpage[$ms]}"
 				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
                 if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin 
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
 				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
 				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
 				else 
@@ -598,7 +598,7 @@ function aptcheck {
 }
 
 #------------------------MAIN PROGRAMM-----------------------------------------------------------------------------------------#
-
+{
 [[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
 [[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
@@ -618,6 +618,7 @@ esac
 [[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
 echo "invalid options - exit with code 1" && helpme && exit 1
 exit 1
+}
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same

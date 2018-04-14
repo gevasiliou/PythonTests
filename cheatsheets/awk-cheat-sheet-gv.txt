@@ -68,11 +68,11 @@ FNR 			# Reference number of the current record relative to current input file .
 FILENAME 		# Reference current input file
 ORS 			# Output Record separator (default newline). Can be set to another value, or can be used to avoid double print (print a;print$0 <==> print aORS$0)
 RS 				# Record separator of input file (default newline)
-RT				# Record Terminator . Is like the RS but in case of multi RS it is dynamically updated to keep the current used separator/terminator to display the last field. Thus it's setting varies acc to multi RS value.
+RT				# Record Terminator in use. Holds the RS in use - dynamically updated to keep the current used separator/terminator. Thus it's setting varies acc to multi RS value , i.e RS=":|\n"
 FPAT			# FPAT = "([^,]+)|(\"[^\"]+\")"  -Defines what the field contains. FS (field separator) defines what a field does NOT contain.
-FIELDWIDTHS     # Defines a fixed field width
+FIELDWIDTHS     # Defines a fixed field width. Goes to BEGIN section.
 ^ , $ 							# Match beginning/end of field
-== 								# Equal operator for if
+== 								# Equal comparison operator for if
 ~ 								# Match regex opterator for if (i.e if ($2 ~ /thing/) print $0 - will print lines in which $2 matches anything,something,etc - may require double quotes) 
 !~ 								# Regex not equal operator - negation of previous ~ . Alternative : (!($1~/pattern/))
 BEGIN 								# Denotes block executed once at start of the script (No input processed yet)
@@ -89,25 +89,41 @@ awk -c                              # This switch disables all gnu extensions an
 https://www.gnu.org/software/gawk/manual/html_node/String-Functions.html
 http://awk.freeshell.org/Backreferences   #apply to gensub,etc
 
-sub(regex, sub, string) # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
-sub & gsub(r,t,s)             #Substitute t for all occurrences of regex r in string s - Accepts & in replacement part within double quotes= backref to replaced part. Does not accept \\1 like gensub
+sub(regex, sub, string)         # Substitute sub for first occurrence of regex in string  ($0 is used if ommited)
+
+sub & gsub(r,t,s)               #Substitute t for all occurrences of regex r in string s - Accepts & in replacement part within double quotes= backref to replaced part. Does not accept \\1 like gensub
+
 gensub(regexp, replacement, how [, target])  #Accepts a target other than current FNR (vs sub and gsub who work with FNR) and return the modified string instead of the number of substitutions. Seems that does not accept \& but accepts groups like \\1,\\2
+
 substr(str, start, l)   # Returns substring of string str, starting at index start of length l. If length is omitted, the suffix of str starting at index start is returned.
+
 system(cmd)             # Execute cmd and return exit status. Usefull if you need to insert a file between records (instead to load in memory, cat it)
+
 tolower(s)              # String s to lowercase
+
 toupper(s)              # String s to uppercase
+
 getline                 # Set $0 to next input record from current input file. 
+
 getline <file2          # Goes to next input record of file2.From this point onwards, awk fields $0,$1, etc refer to file2
 getline var <file2      # Read file2 and assign to var the whole record/line of file2 ($0). Without <file current file is used
-next                    # stops processing and goes to next record of the file
+
+next                    # stops processing and goes to next record of the current file
+
 nextfile                # goes to the next file - changes the flow of the script (does not return back)
+
 operators               # https://www.tutorialspoint.com/awk/awk_operators.htm
 
 length(s)               #return the length of s. Works even with arrays,fields,etc
+
 match(s ,r[,a])         #return index of where s matches r or 0 if there is no match; set RSTART and RLENGTH.If array a is given is filled with matches
+
 split(s,a,r,seps)       #splits s into array a on regex r;returns number of fields; seps is an array holding each separator used (similar to RT for records)
+
 sprintf (fmt, list)     #return list formatted according to fmt.can be assigned to variable (printf can not do that)
+
 substr ( s, i, n)       #return the n-character substring of s starting at i;if n is omitted, return the suffix of s starting at i
+
 index(s, t)             #Return  the index of the string t in the string s, returns 0 if t is not present.
 
 simple conditions checks       # Can be expressed like awk '$5 == "abc123"' - prints lines that field5 match abc123. Print is ommited since it is the default awk action
@@ -214,8 +230,10 @@ echo djfs1d2.3asdf | awk -v FPAT="[0-9]+" '{print $NF}'    ##--> 3 (last numeric
 (the last behavior may or may not be desirable)
 
 ##FIELDWIDTHS - Fixed width fields
-awk 'BEGIN{FIELDWIDTHS="3 6 12 10 14 3 1";OFS=","}{$1=$1}1' <<<"024170529s18687522049000005000011868443700001479N"
-Output: 024,170529,s18687522049,0000050000,11868443700001,479,N
+When using fixed widths the FS is not used and width is given in chars.
+awk 'BEGIN{FIELDWIDTHS="4 4";OFS=","}{$1=$1}1' <<<"02 4170529"   ---> 02 4,1705    #29 in the end is ignored. 
+Space is treated as char == part of the field.                       |_$1_||_$2_|
+                       
 
 ##GSUB & SUB BACKEREFERENCE TO REPLACED PART
 awk -F":" '{gsub(/^.[^:]+/,"*&*")}1' <<<"Paco Gutierrez:835-365-1284:454"  #Output: *Paco Gutierrez*:835-365-1284:454
@@ -1259,34 +1277,35 @@ awk '1; NR%3==0 {print "----"}' file
 awk 'FNR==1 && $1==8 && $2>500{print FILENAME}' *.csv 	
 # Prints file names of all the files satisfying all three criteria (Field 1 to be 8 and field 2 to be more than 500 at first line of each file)
 
-awk 'BEGIN{FS="";OFS="-"}$1=$1' 			#Input chars will be transformed to dash separated. By setting FS to null "" awk treats each char as a field. 
-							#By $1=$1 you force the output to be redisigned acc to new different OFS="-"
+awk 'BEGIN{FS="";OFS="-"}$1=$1'             #Input chars will be transformed to dash separated. 
+                                            #By setting FS to null "" awk treats each char as a field. 
+                                            #$1=$1 forces record reconstruction acc to new different OFS="-"
 
-awk '{print $1}' file 					#Print first field for each record in file
-awk '{print FNR "\t" $0}'				#Print line numbers in each file = cat -n
-awk '/regex/' 					        #print only lines which match regular expression (emulates "grep")
+awk '{print $1}' file                       #Print first field for each record in file
+awk '{print FNR "\t" $0}'                   #Print line numbers in each file = cat -n
+awk '/regex/'                               #print only lines which match regular expression (emulates "grep")
 awk 'BEGIN {IGNORECASE=1};/regexp/'			#case insensitive grep
-awk '!/regex/' 						#print only lines which do NOT match regex (emulates "grep -v")
-awk '$2 == "foo"' file					#Print any line where field 2 is equal to "foo" in file
-awk '$2 != "foo"' file					#Print lines where field 2 is NOT equal to "foo" in file
-awk '$1 ~ /regex/' file					#Print line if field 1 matches regex in file
-awk '$1 !~ /regex/' file				#Print line if field 1 does NOT match regex in file
-awk 'if ($0 ~ /edu/ && $0 ~ /li/) print'		#Two Patterns - Boolean AND
-awk ‘$0 ~ /foo/ && ($2 == bar++)’			# AND Operation. Var bar is not incremented if no substring ‘foo’ is found on record. 
-/foo|bar|baz/  { buzzwords++ }END{print buzzwords, "buzzwords seen" }	#regex patter with or + counting + printing of counts
-awk '$7  ~ /^[a-f]/'    				#print line if field #7 matches regex
-awk '$7 !~ /^[a-f]/'    				#print line if field #7 does NOT match regex
-awk 'NR!=1{print $1}' file				#Print first field for each record in file excluding the first record
-awk 'END{print NR}' 					#count lines (emulates "wc -l").Actually prints NR after end of file. 
-awk '$1 > $2 {print $1,$2,$1-$2}' filename		#prints Field1 , Field2 and difference $1-$2 for all lines that $1>$2
+awk '!/regex/'                              #print only lines which do NOT match regex (emulates "grep -v")
+awk '$2 == "foo"' file                      #Print any line where field 2 is equal to "foo" in file
+awk '$2 != "foo"' file                      #Print lines where field 2 is NOT equal to "foo" in file
+awk '$1 ~ /regex/' file                     #Print line if field 1 matches regex in file
+awk '$1 !~ /regex/' file                    #Print line if field 1 does NOT match regex in file
+awk 'if ($0 ~ /edu/ && $0 ~ /li/) print'    #Two Patterns - Boolean AND
+awk ‘$0 ~ /foo/ && ($2 == bar++)’           # AND Operation. bar is not ++ unless ‘foo’ is found on record. 
+/foo|bar|baz/  { buzzwords++ }END{print buzzwords, "buzzwords seen" }	#regex pattern with or + counting + printing of counts
+awk '$7  ~ /^[a-f]/'                        #print line if field #7 matches regex
+awk '$7 !~ /^[a-f]/'                        #print line if field #7 does NOT match regex
+awk 'NR!=1{print $1}' file                  #Print first field for each record in file excluding the first record
+awk 'END{print NR}'                         #count lines (emulates "wc -l").Actually prints NR after end of file. 
+awk '$1 > $2 {print $1,$2,$1-$2}'           #prints Field1 , Field2 and difference $1-$2 for all lines that $1>$2
 
-awk '/foo/{n++}; END {print n+0}' file			#Print total number of lines that contain foo
-awk '{total=total+NF};END{print total}' file		#Print total number of fields in all lines
+awk '/foo/{n++}; END {print n+0}' file      #Print total number of lines that contain foo
+awk '{total=total+NF};END{print total}'     #Print total number of fields in all lines
 
-awk '/regex/{getline;print}' file			#Print line immediately after regex, but not line containing regex in file
-awk 'length > 32' file					#Print lines with more than 32 characters in file
+awk '/regex/{getline;print}' file           #Print line immediately after regex, but not line containing regex in file
+awk 'length > 32' file                      #Print lines with more than 32 characters in file
 
-awk 'NR==12' file					#Print line number 12 of file
+awk 'NR==12' file                           #Print line number 12 of file
 awk '{s=0; for (i=1; i<=NF; i++) s=s+$i; print s}'  	#print the sums of the fields of every line
 awk '{for (i=1; i<=NF; i++) s=s+$i}; END{print s}' 	#print the sums of the fields of ALL lines
 
@@ -1296,18 +1315,20 @@ awk '1;{print "\n"}'					#triple space a file
 awk '{print FNR "\t" $0}' files* 			#precede each line by its line number FOR THAT FILE (left alignment).
 awk '{print NR "\t" $0}' files* 			#precede each line by its line number FOR ALL FILES TOGETHER, with tab.
 awk '{printf("%5d : %s\n", NR,$0)}'			#number each line of a file (number on left, right-aligned)
-x == y ? a[i++] : b[i++]				#The famous conditions expressions - mind the trick to increment array indexes
+x == y ? a[i++] : b[i++]				#The famous ternary if operation ; mind the trick to increment array indexes
 awk 'NF{$0=++a " :" $0};1' 				#number each line of file, but only print numbers if line is not blank
 
 awk '/Beth/{n++}; END {print n+0}' file           		#print the total number of lines that contain "Beth"
 awk '$1 > max {max=$1; maxline=$0}; END{ print max, maxline}'   #print the largest first field and the line that contains it
-awk '{ print NF ":" $0 } ' 					#print the number of fields in each line, followed by the line
-awk '{ print $NF }' 						#print the last field of each line
+awk '{ print NF ":" $0 } ' 					        #print the number of fields in each line, followed by the line
+awk '{ print $NF }' 						        #print the last field of each line
 awk '{ field = $NF }; END{ print field }'			#print the last field of the last line
-awk ’length($0) > 80’ data     					#print lines with length more than 80
+awk ’length($0) > 80’ data     					    #print lines with length more than 80
 awk ’NF > 0’ data      		    			        #print any line with at least one record=no blank line
-awk 'NF > 4' 						        #print every line with more than 4 fields
-awk '$NF > 4' 							#print every line where the value of the last field is > 4
+awk 'NF > 4' 						                #print every line with more than 4 fields
+awk '$NF > 4'                                       #print every line where the value of the last field is > 4
+awk -v RS="\0" '{print NR,$0}'                      #Use null char \x0 as record separator. 
+                                                    #Whole file is treated as one "stream" with "\n" chars inside 
 
 awk 'BEGIN{while (a++<513) s=s " "; print s}' 			#create a string of a specific length (e.g., generate 513 spaces)
 awk 'BEGIN { str=sprintf("%40s", " ");gsub(" ","-",str);print str }' #Will print 40 spaces and then convert to 40dashes 
@@ -1336,11 +1357,13 @@ awk '/Iowa/,/Montana/' 				#print section of file between two regular expression
 awk '$1 ~ /foo/ { print $0 }' BBS-list  	#print if field1 matches pattern foo
 
 awk NF 						#delete ALL blank lines from a file (same as "grep '.' ") - alternative awk '/./'
-awk 'NF--'              			#removes last field and prints the line. Actually reconstructs the record with -1 field
+awk 'NF--'              			#removes last field and prints the line. Reconstructs record without last field 
+awk 'NF-=3'                         #removes last three fields. Gives fatal error if record has less than 3 fields
 awk 'a !~ $0; {a=$0}' 				#remove duplicate, consecutive lines (emulates classic "uniq")
 awk '!a[$0]++' OR awk '!($0 in a){a[$0];print}' #remove duplicate, nonconsecutive lines - even unsorted!! = Advance uniq 
 
-gawk -v BINMODE="w" '1' infile >outfile 	#IN DOS ENVIRONMENT# convert DOS newlines (CR/LF) to Unix format. Alternative: tr -d \r <infile >outfile
+gawk -v BINMODE="w" '1' infile >outfile 	#IN DOS ENVIRONMENT# convert DOS newlines (\r\n=CR & LF) to Unix format. Alternative: tr -d \r <infile >outfile
+
 awk '{sub(/^[ \t]+/, "")};1' 			#delete leading whitespace (spaces, tabs) from front of each line aligns all text flush left
 awk '{sub(/[ \t]+$/, "")};1' 			#delete trailing whitespace (spaces, tabs) from end of each line
 
