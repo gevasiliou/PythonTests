@@ -85,21 +85,30 @@ y  # transform_chars
 /regex/! # negates regex = NOT Operation i.e sed '/abc/!d' : delete all lines that DO NOT contain /abc/ regex = keep only /abc/ lines = sed -n '/abc/p'
 /regex/I # case insensitive regex match (gnu) --- > echo ONE TWO | sed "s/one/unos/I"      # prints "unos TWO"
 
-'s/this/that/g' : replace this with that. Last /g is for 'global'. Can be /1=first found, /2=second found or even /2g=global after second found 
+'s/replace-this/with-that/g' : replace this with that. 
+Last /g is for 'global' = all occurences in the same line (not in whole file - sed is a line tool). 
+Can be /4=fourth occurence found in the same line or even /2g=global after second occurence found in the same line
+
 /regex/{s/this/that/g;} : Replace only if regex is found in the line
 /regex/!{s/this/that/g;} : Replace this with that in all lines except line containing regex
 5!s/ham/cheese/  : except on line 5, replace 'ham' with 'cheese'
 '.../p' : print (force print when -n is used). some times requires space ('/.../ p'). Also !p for not print. Combine with -n to disable global printing and print specific lines/patterns that /p applies.
 '..../d' : delete . Also !d for not delete. Combine /d with missing -n to see the input with the deletions.
-'N': N command ReadS next line into the pattern space.
+'N': N command Reads next line into the pattern space.
 
 ##SED CLI SWITCHES
 -n: not printing/quiet. If missing the input is printed.
--e: sed expression follows
--i: infile edit
+
+-e: sed expression follows. Can be used multiple times for multiple expressions
+
+-i: instant infile edit
+
 -f: read commands from file. Command should not include the word sed, i.e s/e/E/g and not sed 's/e/E/g'
 
-
+-z: use \0 (null) as record separator. Can fool sed to treat the whole file as a big string / big line with \n chars as part of the line as soon as the file does not contain real null chars.
+Examples: 
+sed 's/AAA/XXX/2g'   ---> will replace 2nd AAA and then all AAA found on the same -one- line (\n separated by default)
+sed -z 's/AAA/XXX/2g' ---> will replace 2nd and then global/all AAA found in any line, since the whole file is considered to be one big line up to \0 or EOF
 
 SED:CHEAT SHEET TXT 2 MANPAGE FORMATTING
 ##READ THIS CHEAT FILE WITH MAN PAGES:
