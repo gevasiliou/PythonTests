@@ -1,52 +1,14 @@
 #!/bin/bash
 # Bellow schemes based on LVDS-1 laptop screen 1366x768 and an LG TV 37'' connected with VGA cable, detected as VGA-1 with native resolution 1920x1080
 
-function mirror {
-#xrandr --output LVDS-1 --mode 1366x768 --scale 1x1 --output VGA-1 --same-as LVDS-1 --mode 1920x1080 --scale 0.711x0.711
-# Above sscale etting in reallity enlarges VGA-1 by reducing the resolution with scale to match 1366x768 , as in LVDS-1
-xrandr --output $1 --mode 1366x768 --scale 1x1 --output $2 --same-as $1 --mode 1920x1080 --scale 0.711x0.711
-}
-
-function extended {
-#xrandr --output VGA-1 --mode 1920x1080 --scale 1x1 --output LVDS-1 --mode 1366x768 --scale 1x1 --left-of VGA-1 
-xrandr --output $2 --mode 1920x1080 --scale 1x1 --output $1 --mode 1366x768 --scale 1x1 --left-of $2 
-}
-
-function vgaonly {
-#xrandr --output LVDS-1 --off --output VGA-1 --mode 1920x1080 --scale 1x1
-xrandr --output $1 --off --output $2 --mode 1920x1080 --scale 1x1
-}
-
-function vgaenlarged {
-#xrandr --output LVDS-1 --off --output VGA-1 --mode 800x600 --scale 1x1
-xrandr --output $1 --off --output $2 --mode 800x600 --scale 1x1
-}
-
-function laptoponly {
-#xrandr --output VGA-1 --off --output LVDS-1 --mode 1366x768 --scale 1x1
-xrandr --output $2 --off --output $1 --mode 1366x768 --scale 1x1
-}
-
-function getactive {
-#xr=$(xrandr)
-#mon1=$(echo "$xr" |grep -v disconnected |grep -m1 connected |cut -f1 -d"(") #|grep -Po '^[A-Z-0-9]*')
-#mon2=$(echo "$xr" |grep -v disconnected |grep -v "$mon1" |grep connected |cut -f1 -d"(") #|grep -Po '^[A-Z-0-9]*')
-#mode1=$(echo "$xr" |grep -m1 -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #selected mode is marked with an asterisk
-#mode2=$(echo "$xr" |grep -v "$mode1" |grep -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #exclude mode1 and get the next mode
-#yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
-yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" #displays always the active -not just connected- monitors 
-}
-#
 function soundsetup {
-	if [[ $1 -eq 1 ]] || [[ $1 -eq 2 ]];then 
-	sset=$1
-	else
-	sset=$(yad --center --form --title="Sound Setup" --item-separator="-" --separator='' --num-output --field="Enable HDMI Sound":CB "HDMI-PC-Exit")
-	fi
+	[[ $1 == "--hdmi" ]] && sset=1
+	[[ $1 == "--laptop" ]] && sset=2
+	[[ -z $1 ]] && sset=$(yad --center --form --title="Sound Setup" --item-separator="-" --separator='' --num-output --field="Enable HDMI Sound":CB "HDMI-PC-Exit")
 
 	if [[ $sset -eq 1 ]];then
 	   if grep '^connected$' /sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
-	      pacmd set-card-profile 0 output:hdmi-surround;
+	      pacmd set-card-profile 0 output:hdmi-stereo;
 	   else
 	      sset=2
 	   fi
@@ -57,8 +19,56 @@ function soundsetup {
 	fi
 	
 	#yad --center --no-markup --title="Active Sound Setting" --text="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')" 
-	yad --center --no-markup --title="Active Sound Setting" --text="$(pacmd list |grep 'active profile')" 
+	#16.04.2018 : yad --center --no-markup --title="Active Sound Setting" --text="$(pacmd list |grep 'active profile')" 
 }
+
+
+function mirror {
+#xrandr --output LVDS-1 --mode 1366x768 --scale 1x1 --output VGA-1 --same-as LVDS-1 --mode 1920x1080 --scale 0.711x0.711
+# Above sscale etting in reallity enlarges VGA-1 by reducing the resolution with scale to match 1366x768 , as in LVDS-1
+xrandr --output $1 --mode 1366x768 --scale 1x1 --output $2 --same-as $1 --mode 1920x1080 --scale 0.711x0.711
+soundsetup --hdmi
+}
+
+function extended {
+#xrandr --output VGA-1 --mode 1920x1080 --scale 1x1 --output LVDS-1 --mode 1366x768 --scale 1x1 --left-of VGA-1 
+xrandr --output $2 --mode 1920x1080 --scale 1x1 --output $1 --mode 1366x768 --scale 1x1 --left-of $2 
+soundsetup --hdmi
+}
+
+function vgaonly {
+#xrandr --output LVDS-1 --off --output VGA-1 --mode 1920x1080 --scale 1x1
+xrandr --output $1 --off --output $2 --mode 1920x1080 --scale 1x1
+soundsetup --hdmi
+}
+
+function vgaenlarged {
+#xrandr --output LVDS-1 --off --output VGA-1 --mode 800x600 --scale 1x1
+xrandr --output $1 --off --output $2 --mode 800x600 --scale 1x1
+soundsetup --hdmi
+}
+
+function laptoponly {
+#xrandr --output VGA-1 --off --output LVDS-1 --mode 1366x768 --scale 1x1
+xrandr --output $2 --off --output $1 --mode 1366x768 --scale 1x1
+soundsetup --laptop
+}
+
+function getactive {
+#xr=$(xrandr)
+#mon1=$(echo "$xr" |grep -v disconnected |grep -m1 connected |cut -f1 -d"(") #|grep -Po '^[A-Z-0-9]*')
+#mon2=$(echo "$xr" |grep -v disconnected |grep -v "$mon1" |grep connected |cut -f1 -d"(") #|grep -Po '^[A-Z-0-9]*')
+#mode1=$(echo "$xr" |grep -m1 -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #selected mode is marked with an asterisk
+#mode2=$(echo "$xr" |grep -v "$mode1" |grep -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #exclude mode1 and get the next mode
+#yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
+soundsetup="$(pacmd list |grep 'active profile')"
+screensetup="$(xrandr --listmonitors)"
+
+#Apr2018: yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" 
+yad --center --no-markup --title="Active Setup" --text="Screen\n$screensetup\n\n\nSound\n$soundsetup" 
+#displays always the active -not just connected- monitors 
+}
+#
 
 #---------------------MAIN PROG------------------------------------------#
 synclient TapButton1=1 #Non relevant command - just enable touchpad click if necessary.
