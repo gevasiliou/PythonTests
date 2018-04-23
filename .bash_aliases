@@ -200,6 +200,7 @@ function debcat () {
 	[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
 	echo "$2 selected" && echo
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
+    local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[56789][0-9]{6,}\b')
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
     #clear
     echo "deb package: $tmpdeb"
@@ -209,9 +210,9 @@ function debcat () {
 	    unset flist ms loop key
         loop=1
 	    if [[ "$3" == "--all" ]];then
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
+			flist+=($(curl -L -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
 	    else
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
+			flist+=($(curl -L -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
 	    fi
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
 	    while [[ $loop -eq 1 ]]; do
@@ -225,11 +226,17 @@ function debcat () {
 				#read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
 				echo "proceeding with ${flist[$ms]} "
 				if [[ ${flist[$ms]} =~ "man/man" ]]; then 
-				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
+				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
 				elif [[ ${flist[$ms]: -3} == ".gz" ]]; then
-				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |gunzip -c |sed "1i ${flist[$ms]}" |less
+				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |gunzip -c |sed "1i ${flist[$ms]}" |less
+				elif [[ ${flist[$ms]: -4} == ".png" ]]; then
+				   pto="$(xdg-mime query default image/png)";ptopure="${pto%%.*}";echo "openning $ptopure"
+				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} | cat - >/tmp/test.png; "$ptopure" /tmp/test.png;rm -f /tmp/test.png
+				elif [[ ${flist[$ms]: -4} == ".jpg" ]]; then
+				   pto="$(xdg-mime query default image/jpg)";ptopure="${pto%%.*}";echo "openning $ptopure"
+				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} | cat - >/tmp/test.jpg; "$ptopure" /tmp/test.jpg;rm -f /tmp/test.jpg
 				else 
-				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |sed "1i ${flist[$ms]}" |less
+				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |sed "1i ${flist[$ms]}" |less
 				fi
 			fi
 		done
