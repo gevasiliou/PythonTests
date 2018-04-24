@@ -1603,6 +1603,10 @@ file /boot/efi/EFI/debian/grubx64.efi
 6.2 the nvram entry was properly created.
 efibootmgr --verbose | grep debian
 
+##GRUB - BOOT IN COMMAND LINE
+You can press 'e' when in grub menu and find the line including kernel parameters (usually ro quiet) and add to the end the word single.
+You can also add a custom entry in the grub menu, so this CLI boot will be presented as an option by grub on your next boot.
+
 ##GRUB TWEAKS
 find / -type f -name 'grub.cfg'   ---> /boot/grub/grub.cfg
 
