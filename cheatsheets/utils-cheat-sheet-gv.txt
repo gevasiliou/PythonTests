@@ -1607,6 +1607,12 @@ efibootmgr --verbose | grep debian
 You can press 'e' when in grub menu and find the line including kernel parameters (usually ro quiet) and add to the end the word single.
 You can also add a custom entry in the grub menu, so this CLI boot will be presented as an option by grub on your next boot.
 
+Using single as boot parameter enters actually recovery mode and some features like network are disabled.
+To bring up network you need 
+$ ifconfig           #detect your network interface
+$ ifconfig eth0 up   #bring up your interface
+$ dhclient eth0      #enable dhcp client for your interface to get a valid ip. You should be ready.
+
 ##GRUB TWEAKS
 find / -type f -name 'grub.cfg'   ---> /boot/grub/grub.cfg
 
