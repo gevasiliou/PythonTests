@@ -34,7 +34,7 @@ if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";el
 #dpkg-query -l pkg returns 0 if pkg is installed
 done
 m-a prepare #module assistant : prepare kernel to build extra modules
-
+wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add - #add the usually missing videolan public key
 }
 
 function utils {
@@ -104,6 +104,7 @@ echo "make backup of /etc/apt/sources.list" && cp -iv /etc/apt/sources.list /etc
 echo "copy sources.list to /etc/apt" && cp -iv /home/gv/Desktop/PythonTests/sources.list /etc/apt/
 echo "copy apt preferences to /etc/apt/" && cp -iv /home/gv/Desktop/PythonTests/preferences /etc/apt/
 echo "Updating the system (update && upgrade && dist-upgrade)"
+wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add -
 apt-get update && apt-get upgrade --allow-unauthenticated && apt-get dist-upgrade --allow-unauthenticated 
 } 
 
