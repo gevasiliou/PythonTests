@@ -18,7 +18,7 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" )
+ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
 ess+=( "kmod" "sysfsutils" )
 ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" )
