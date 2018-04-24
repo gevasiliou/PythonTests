@@ -2,7 +2,9 @@
 echo "SHLVL=$SHLVL";echo "BASH_SUBSHELL=$BASH_SUBSHELL";echo "Parameter par=$par"
 echo "Just an echo - nothing more to be done here"
 
-echo "You run this script as USER=$USER"
+echo "You run this script as USER=$USER (this is the value of USER variable"
+echo "Who am i returns:" && whoami
+echo "/bin/id returns:" && id
 echo "Your HOME dir is $HOME"
 echo "Your PATH is $PATH"
 echo "Parameter received="$#
@@ -19,7 +21,7 @@ printf "%d args:" $# && printf " <%s>" "$@"  && echo
 #pipedata=$(<mypipe)
 
 read -p "Enter a value" 
-echo "you entered $REPLY"
+echo "you entered $REPLY (this is the value of default REPLY var , used to capture the response of read -p when no var is given"
 #echo "$pipedata"
 
 #dpkgnum agrep
