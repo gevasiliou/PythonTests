@@ -3,8 +3,8 @@ echo "SHLVL=$SHLVL";echo "BASH_SUBSHELL=$BASH_SUBSHELL";echo "Parameter par=$par
 echo "Just an echo - nothing more to be done here"
 
 echo "You run this script as USER=$USER (this is the value of USER variable"
-echo "Who am i returns:" && whoami
-echo "/bin/id returns:" && id
+echo -n "Who am i returns:" && whoami
+echo -n "/bin/id returns:" && id
 echo "Your HOME dir is $HOME"
 echo "Your PATH is $PATH"
 echo "Parameter received="$#
