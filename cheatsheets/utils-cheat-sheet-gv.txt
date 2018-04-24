@@ -1609,7 +1609,7 @@ You can also add a custom entry in the grub menu, so this CLI boot will be prese
 
 Using single as boot parameter enters actually recovery mode and some features like network are disabled.
 To bring up network you need 
-$ ifconfig           #detect your network interface
+$ ifconfig -a        #detect your network interface
 $ ifconfig eth0 up   #bring up your interface
 $ dhclient eth0      #enable dhcp client for your interface to get a valid ip. You should be ready.
 
