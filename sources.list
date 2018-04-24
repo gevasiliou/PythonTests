@@ -29,6 +29,7 @@ deb-src http://security.debian.org/ testing/updates main contrib non-free
 deb http://download.videolan.org/pub/debian/testing/ /
 deb-src http://download.videolan.org/pub/debian/testing/ /
 # wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add -
+# apt-key adv --keyserver keyserver.ubuntu.com --recv-keys <keyidgoeshere>
 
 ###Google Chrome Browser
 deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
