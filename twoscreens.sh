@@ -61,11 +61,11 @@ function getactive {
 #mode1=$(echo "$xr" |grep -m1 -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #selected mode is marked with an asterisk
 #mode2=$(echo "$xr" |grep -v "$mode1" |grep -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #exclude mode1 and get the next mode
 #yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
-soundsetup="$(pacmd list |grep 'active profile')"
+soundsetup="$(pacmd list 2>&1 |grep 'active profile')"
 screensetup="$(xrandr --listmonitors)"
-
+[[ -z "$soundsetup" ]] && soundsetup="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')"
 #Apr2018: yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" 
-yad --center --no-markup --title="Active Setup" --text="Screen\n$screensetup\n\n\nSound\n$soundsetup" 
+yad --center --no-markup --title="Active Setup" --text="Screen Setup\n$screensetup\n\n\nSound Setup\n$soundsetup" 
 #displays always the active -not just connected- monitors 
 }
 #
