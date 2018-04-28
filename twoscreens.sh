@@ -1,5 +1,5 @@
 #!/bin/bash
-# Bellow schemes based on LVDS-1 laptop screen 1366x768 and an LG TV 37'' connected with VGA cable, detected as VGA-1 with native resolution 1920x1080
+# Bellow schemes based on LVDS-1 laptop screen 1366x768 and an LG TV 37'' connected with VGA/HDMI cable, detected as VGA-1 /HDMI-1 with native resolution 1920x1080
 
 function soundsetup {
 	[[ $1 == "--hdmi" ]] && sset=1
@@ -8,14 +8,16 @@ function soundsetup {
 
 	if [[ $sset -eq 1 ]];then
 	   if grep '^connected$' /sys/class/drm/card0/*HDMI*/status >/dev/null 2>&1;then 
-	      pacmd set-card-profile 0 output:hdmi-stereo;
+	      gksu -u gv pacmd set-card-profile 0 output:hdmi-stereo;
+          sleep 1;
 	   else
 	      sset=2
 	   fi
 	fi
 
 	if [[ $sset -eq 2 ]];then
-	   pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo;
+	   gksu -u gv pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo;
+       sleep 1;
 	fi
 	
 	#yad --center --no-markup --title="Active Sound Setting" --text="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')" 
@@ -61,9 +63,8 @@ function getactive {
 #mode1=$(echo "$xr" |grep -m1 -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #selected mode is marked with an asterisk
 #mode2=$(echo "$xr" |grep -v "$mode1" |grep -e '*' |grep  -Po '^[ ]*[0-9x0-9]*') #exclude mode1 and get the next mode
 #yad --center --text="Screen Setup:\n Monitor 1: \n $mon1 \n mode: $mode1 \n\n\n Monitor 2: \n $mon2 \n mode: $mode2"
-soundsetup="$(pacmd list 2>&1 |grep 'active profile')"
+soundsetup="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')"
 screensetup="$(xrandr --listmonitors)"
-[[ -z "$soundsetup" ]] && soundsetup="$(gksu -u gv pacmd list 2>&1 |grep 'active profile')"
 #Apr2018: yad --center --no-markup --title="Monitors Active" --text="$(xrandr --listmonitors)" 
 yad --center --no-markup --title="Active Setup" --text="Screen Setup\n$screensetup\n\n\nSound Setup\n$soundsetup" 
 #displays always the active -not just connected- monitors 
