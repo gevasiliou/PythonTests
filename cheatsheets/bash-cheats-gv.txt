@@ -1782,11 +1782,33 @@ exec >log 2>&1 #equals to 1>log 2>&1 = 2>log
 Now, all of the commands in the rest of your script will inherit log as their stdout and stderr. 
 
 ## REDIRECTION EXPLAINED FOR ENGINNERS
-Imagine each device as a lamp and each fd as a wire. If lamp found to be not connected to a wire is destroyed.
-Thus initial state is fd1 --> screen. To remove fd1 wire from screen you need to connect first a helper wire (exec 3&>1)
+Imagine each device as a lamp and each fd (1,2) as a wire. 
+If any lamp found not to be connected to a wire, lamp is destroyed.
+Any lamp can hold more than one wire.
+
+Thus initial state is wire fd1 --> lamp "screen". 
+To remove fd1 from screen you need to use a helper wire (exec 3&>1) to avoid screen to be left without wire (and destroyed)
 Once lamp/screen is connected with wire 3 you can remove wire 1 and attach it in another lamp (i.e file)
 Inside a script redirection looks like that lamp1 (stdout) is enclosed in a box (subshell). 
-When lamp 1 lits (stdout), it lits inside box, while lamp 2 (stderr) lamp still remains out of the box.
+When lamp 1 lits (stdout), it lits inside a box, while lamp 2 (stderr) lamp still remains out of the box and goes to stderr lamp which usuall goes to screnn, unless otherwise redireted.
+
+
+##PREFIX STDOUT AND STDERR
+https://unix.stackexchange.com/questions/157689/how-to-capture-ordered-stdout-stderr-and-add-timestamp-prefixes
+https://unix.stackexchange.com/questions/440426/how-to-prefix-any-output-in-a-bash-script
+
+This commands will prefix stdout/stderr :
+  exec > >(sed 's/^/foo: /')
+  exec 2> >(sed 's/^/foo: (stderr) /' >&2)
+  echo foo
+  echo bar >&2
+  date
+
+Produces this output:
+  foo: foo
+  foo: (stderr) bar
+  foo: Fri Apr 27 20:04:34 IST 2018
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BASH:WORKING WITH /dev
