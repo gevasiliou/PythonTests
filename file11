@@ -1,16 +1,7 @@
-    HDFS  worker01.gtdns.com
-    state  STARTED
-    HDFS  worker02.gtdns.com
-    state  STOP
-    HDFS  worker03.gtdns.com
-    state  STARTED
-    HDFS  worker05.gtdns.com
-    state  STARTED
-    HDFS  worker06.gtdns.com
-    state  STARTED
-    HDFS  worker07.gtdns.com
-    state  STARTED
-    HDFS  worker08.gtdns.com
-    state  STARTED
-    HDFS  worker09.gtdns.com
-    state  STOP
+This is a task to identify some credit card numbers on various banks in Greece.
+Card numbers are not known, only card's holder name is known.
+
+What i am expecting to receive is something like this:
+Card No, Bank, Card Credit Limit, Card Used Limit, Card CVV Code, Card 4digits pin code
+
+<signature>treopl90##$%^op!@#$%^&*(opomnb)_+</signature>
