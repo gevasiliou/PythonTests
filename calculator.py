@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 #apt install python3-tk && apt install python-tk
-
+#in python 2 (run as python) tkinter needs capital T : import Tkinter
 calculator = Tk()
 calculator.title("CALCULATOR")
 calculator.resizable(0, 1)#remove or change this in order to get different screen sizes
