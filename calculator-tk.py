@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from math import *
 #apt install python3-tk && apt install python-tk
 #in python 2 (run as python) tkinter needs capital T : import Tkinter
 calculator = Tk()
@@ -36,6 +37,17 @@ class Application(Frame):
 			self.replaceText(self.result)
 		except:
 			messagebox.showinfo("ERROR", "Invalid input", icon="warning", parent=calculator)
+#Another Test
+	def SqrtExpression(self):#python's calculate function 
+		self.expression = self.display.get()
+#		print(sqrt(eval(self.expression))) #prints to stdout for troubleshooting
+		try:
+			self.result = sqrt(eval(self.expression)) #eval is required because display.get returns the display as text and not as number
+			#sqrt is a function from math library. You could import math and then use math.sqrt
+			self.replaceText(self.result)
+		except:
+			messagebox.showinfo("ERROR", "Invalid input", icon="warning", parent=calculator)
+#End  of Test
 
 	def clearText(self):#clears imput on pressing C on Calculator
 		self.replaceText("0")
@@ -90,7 +102,7 @@ class Application(Frame):
 		self.minusButton.grid(row=3, column=3, sticky="NWNESWSE")
 
 		self.equalsButton = Button(self, font=("Helvetica", 44), text="=", borderwidth=bow, fg=fgc, bg=bgc, command=lambda: self.calculateExpression())
-		self.equalsButton.grid(row=3, column=4, sticky="NWNESWSE", rowspan=3)
+		self.equalsButton.grid(row=3, column=4, sticky="NWNESWSE", rowspan=2)
 
 #This is the Fourth Row
 		self.zeroButton = Button(self, font=("Helvetica", 44), text="0", borderwidth=bow, fg=fgc, bg=bgc, command=lambda: self.appendToDisplay("0"))
@@ -112,8 +124,13 @@ class Application(Frame):
 		self.PowButton = Button(self, font=("Helvetica", 44), text="^", borderwidth=bow, fg=fgc, bg=bgc, command=lambda: self.appendToDisplay("^"))
 		self.PowButton.grid(row=5, column=2, sticky="NWNESWSE")
 
+		self.SqrtButton = Button(self, font=("Helvetica", 44), text="sqrt", borderwidth=bow, fg=fgc, bg=bgc, command=lambda: self.SqrtExpression()) #command=lambda: self.calculateExpression())
+		self.SqrtButton.grid(row=5, column=3, sticky="NWNESWSE")
+
 		self.ExitButton = Button(self, font=("Helvetica", 44), text="exit", borderwidth=bow, fg=fgc, bg=bgc, command=lambda: exit())
-		self.ExitButton.grid(row=5, column=3, sticky="NWNESWSE")
+		self.ExitButton.grid(row=5, column=4, sticky="NWNESWSE")
+
+		
 
 app = Application(calculator).grid()		
 calculator.mainloop()
