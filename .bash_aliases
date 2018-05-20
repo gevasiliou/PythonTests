@@ -66,10 +66,20 @@ alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf 
 alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode managed && sleep 1 && ifconfig wlan0 up && sleep 1 && NetworkManager'
 alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
 
+function tablet {
+[[ -z $1 ]] && echo "no option given. Send me 'on' or 'off'" && return 1
 
+if [[ $1 == "off" ]];then
+while read i;do echo "enabling $(xinput list --name-only $i)" && xinput enable $i;done <<<"$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')"
+fi
+
+if [[ $1 == "on" ]];then
+while read i;do echo "disabling $(xinput list --name-only $i)" && xinput disable $i;done <<<"$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')"
+fi
+}
 
 function aptless {
-[[ -z $1 ]] && echo "no patteern given" && exit 1
+[[ -z $1 ]] && echo "no patteern given" && return 1
 apt list "$@" |grep --color=always '^.[^/]*' |less -r
 }
 
@@ -167,7 +177,7 @@ declare -p $1 | perl -pe "s/declare -[aA] $1=\(//g; s/\)$//g; s/\" \[/\"\n\[/g" 
 
 function mandiff { 
 echo "mandiff: Compare installed man pages $1 vs the online man page at maniker.com"
-[[ -z $1 ]] && echo "manpage missing " && return
+[[ -z $1 ]] && echo "manpage missing " && return 1
 [[ $(man -w "$1" 2>/dev/null) == "" ]] && echo "no valid manpage found for $1" && return
 #mandiff = compare with diff an installed man page with online one by mankier.com
 diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70)
@@ -175,7 +185,7 @@ diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s 
 
 function lsdeb () { 
 	echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --nd to exclude directories"
-	[[ -z $1 ]] && echo "apt pkg file missing " && return
+	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 	tmpdeb=$(echo "${tmpdeb: 1:-1}")
 	echo "$tmpdeb"
@@ -194,8 +204,8 @@ function debcat () {
 	echo "Use --ind switch to be prompted will all files found excluding directories and links"
 	echo "Combine --all after --ind to force index to include binary files like .so,.mo,.ko,etc -excluded by default"
     echo 
-	[[ -z $1 ]] && echo "apt pkg file missing " && return
-	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return
+	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
+	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return 1
 	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && lsdeb "$1" && return 0
 	[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
 	echo "$2 selected" && echo
@@ -217,7 +227,7 @@ function debcat () {
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
 	    while [[ $loop -eq 1 ]]; do
 			read -p "Select file to display by id or  q to quit : " ms
-			[[ "$ms" == "q" ]] && echo "exiting...." && return
+			[[ "$ms" == "q" ]] && echo "exiting...." && return 1
 			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then #|| [[ ${flist[$ms]} =~ "/bin/" ]]
 				echo "We Cannot Display ${flist[$ms]} since it is a binary file"
 			elif [[ $ms -gt $((${#flist[@]}-1)) ]]; then
@@ -260,7 +270,7 @@ function debcat () {
 
 function aptshowlight() { 
 echo "aptshowlight: It is apt show $1 but in light version , giving only Package name and short description"
-[[ -z $1 ]] && echo "Package missing " && return
+[[ -z $1 ]] && echo "Package missing " && return 1
 #aptshowlight : runs apt show on given arg $1 , and prints only package name, section and Description. Combine with yadit.
 #notice that if you specify to -A (after context) more lines than really available the results are not correct.
 apt show $1 2>/dev/null |grep -A2 -e "Package:" -e "Description:" |grep -v -e "Version\|Priority\|Maintainer\|Installed-"
@@ -268,14 +278,14 @@ apt show $1 2>/dev/null |grep -A2 -e "Package:" -e "Description:" |grep -v -e "V
 
 function aptshowsmart() { 
 echo "aptshowsmart: apt show $1 in a smart way , using less pager"
-[[ -z $1 ]] && echo "Package missing " && return
+[[ -z $1 ]] && echo "Package missing " && return 1
 local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d/ -f1)
 apt show $ass |less
 }
 
 function debman { 
 echo "debman: debian man pages online of package $1"
-[[ -z $1 ]] && echo "Pass me a package to query debian manpages" && return
+[[ -z $1 ]] && echo "Pass me a package to query debian manpages" && return 1
 #debman uses the 2017 new web page with jump option
 links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
 }
@@ -283,7 +293,7 @@ links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0
 
 function wiki() { 
 echo "wiki: Returns wikipedia $@ entries in terminal"
-[[ -z $1 ]] && echo "Pass me a page to search WikiPedia " && return
+[[ -z $1 ]] && echo "Pass me a page to search WikiPedia " && return 1
 #dig +short txt $1.wp.dg.cx #This uses dig (apt install dnsutils) and does not work.
 local q="$@"
 links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
@@ -292,7 +302,7 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 
 function dircat() { 
 echo "dircat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
-[[ -z $1 ]] && echo "Pass me a directory to cat files" && return
+[[ -z $1 ]] && echo "Pass me a directory to cat files" && return 1
 [[ -d $d ]] && local d="$1" || local d=( "$@" ) #If files provided , store them in a array
 #[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return #disabled 24 Sep evening to allow single files
 echo "${d[@]}"
@@ -331,7 +341,7 @@ fi
 
 function findexec {
 echo "findexec: find executable files under directories of /. Double quotes on file name is MANDATORY"
-[[ -z $1 ]] && echo "Pass me a file name to look for executable files under / dir" && return
+[[ -z $1 ]] && echo "Pass me a file name to look for executable files under / dir" && return 1
 local fname=("$1")
 echo "arg=$fname"
 #for $1=*grep* search for all combinations: *grep* , grep*,*grep,grep
@@ -344,7 +354,7 @@ find / -type f -executable -name "$fname"
 
 function mancheat { 
 echo "mancheat: explore the cheat sheets using man page viewer"
-[[ -z $1 ]] && echo "Pass me a cheat file name to display from ./cheatsheets/ directory" && return
+[[ -z $1 ]] && echo "Pass me a cheat file name to display from ./cheatsheets/ directory" && return 1
 	man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
 #This works directly in cli:
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
@@ -379,7 +389,7 @@ echo "dupes: Find duplicate files under cwd , including subdirectories. Pipe to 
 [[ -z $1 ]] && echo "Current Working Directory ($PWD) will be used." && local dn="$PWD" || local dn="$1"
 if [[ "$dn" == "/" ]];then
 	read -p "Are you sure you want to search all directories under / ?" rep
-	[[ "$rep" =~ ^[nN] ]] && return
+	[[ "$rep" =~ ^[nN] ]] && return 1
 fi	
 
 echo "Directory to Examine=$dn"
