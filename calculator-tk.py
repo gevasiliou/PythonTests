@@ -10,7 +10,9 @@ fgc = "black" #button foreground color
 bgc = "gray" #button background color
 bow = 5 #button borderwidth value
 fh = 44  #button font height
-wv = 4 #button width value given in text units == chars
+wv = 4 #button width value given in text units == chars. If ommitted width is auto adjusted.
+rlf = "raised" #button relief value. Options: flat, groove, raised (default when ommitted), ridge, solid, or sunken
+
 class Application(Frame):
 	def __init__(self, master, *args, **kwargs):
 		Frame.__init__(self, master, *args, **kwargs)
@@ -73,7 +75,7 @@ class Application(Frame):
 		self.sevenButton = Button(self, font=("Helvetica", fh), text="7", borderwidth=bow, width=wv, fg=fgc, bg=bgc,  command=lambda: self.appendToDisplay("7"))
 		self.sevenButton.grid(row=2, column=0, sticky="NWNESWSE")
 
-		self.eightButton = Button(self, font=("Helvetica", fh), text="8", borderwidth=bow, width=wv, fg=fgc, bg=bgc, relief="groove", command=lambda: self.appendToDisplay("8"))
+		self.eightButton = Button(self, font=("Helvetica", fh), text="8", borderwidth=bow, width=wv, fg=fgc, bg=bgc, relief=rlf, command=lambda: self.appendToDisplay("8"))
 		self.eightButton.grid(row=2, column=1, sticky="NWNESWSE")
 
 		self.nineButton = Button(self, font=("Helvetica", fh), text="9", borderwidth=bow, width=wv, fg=fgc, bg=bgc, command=lambda: self.appendToDisplay("9"))
