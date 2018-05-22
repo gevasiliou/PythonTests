@@ -1643,6 +1643,25 @@ sed "s/from/to/3"       awk '{$0=gensub("from","to",3); print}'
 sed "s/reg[ex]/ZZ/4"    awk '{$0=gensub(/reg[ex]/, "ZZ", 4); print}'
 sed "s/.*=/equ/5"       awk -v var=".*=" '{$0=gensub(var,"equ",5);print}'
 
+##DIFFERENT / CHANGE FS FOR THE SECOND FILE (by Ed)
+
+$ cat file1
+key1,field1,key2,field2
+
+$ cat file2
+key4;field4;key5;field5
+
+$ awk '{print FNR,$0}' RS=',' file1 RS=';' file2
+1 key1
+2 field1
+3 key2
+4 field2
+
+1 key4      #second file: FNR resets, RS redifined to ;
+2 field4
+3 key5
+4 field5
+
 -------------------------------------------------------------------------------------------------------------------
 AWK:GREP EMULATION MULTIPLE FILES
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42419795#42419795
