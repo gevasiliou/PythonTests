@@ -31,13 +31,13 @@ ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$')
 # Set the actions to be taken for each possible orientation
 case "$ORIENTATION" in
 normal)
-xrandr --output $screen2 --rotate normal ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen2 --rotate normal && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 bottom-up)
-xrandr --output $screen2 --rotate inverted ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+xrandr --output $screen2 --rotate inverted && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" -1 0 1 0 -1 1 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
 right-up)
-xrandr --output $screen2 --rotate right ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen2 --rotate right && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 left-up)
-xrandr --output $screen2 --rotate left ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+xrandr --output $screen2 --rotate left && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
 esac
 done
 exit #exit may not required. added by me.
