@@ -31,7 +31,10 @@ Option1:
     
     --openbsd       Display OpenBSD man pages (i.e https://man.openbsd.org/grep). 
                     Combine with --browser to display man page at browser
-    
+
+    --netbsd        Display NetBSD man pages (i.e http://netbsd.gw.com/cgi-bin/man-cgi?grep++NetBSD-current). 
+                    Combine with --browser to display man page at browser    
+
     --ubuntu        Display the man page from Ubuntu (i.e http://manpages.ubuntu.com/grep). 
                     Combine with --browser to display man page at browser 
     
@@ -243,6 +246,21 @@ function openbsd {
      echo "$bsddata" |sed "1i https://man.openbsd.org/$bsdpage" |less -S
   fi  
 #fi
+}
+
+function netbsd {
+#http://netbsd.gw.com/cgi-bin/man-cgi?grep++NetBSD-current
+  validmode=1  
+  netbsdpage="$1"
+  bsdpagecap="${bsdpage^^}" #Capitalize the man page title
+  netbsddata="$(links -dump http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current |awk "/$netbsdpagecap/,0")"
+  [[ -z "$netbsddata" ]] && echo "No man page found at \"http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current\"" && exit 1
+
+  if [[ "$mode" == "--netbsd" && $3 == "--browser" ]]; then
+     gksu -u "$normaluser" xdg-open "http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current" 2>/dev/null &
+  else
+     echo "$netbsddata" |sed "1i http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current" |less -S
+  fi  
 }
 
 function debian {
@@ -608,6 +626,7 @@ case $mode in
 "--down")down "$@";;
 "--bsd")bsd "$@";;
 "--openbsd")openbsd "$@";;
+"--netbsd")netbsd "$@";;
 "--debian")debian "$@";;
 "--debianlist")debianlist "$@";;
 "--ubuntu")ubuntu "$@";;
