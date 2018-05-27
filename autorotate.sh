@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+# https://github.com/julienw/config-files/blob/master/yoga/rotate-screen.sh
 # October 2016 - Tested and worked on Toshiba Radius 11 Convertible Laptop with Debian 8.5 Sid and XFCE 4.12 
 # This is a bash script to make screen autorotation possible based on device orientation.
 # All you need for this script to run  iio-sensor-proxy and inotify ($sudo apt install iio-sensor-proxy inotify-tools)
@@ -16,6 +17,16 @@
 #echo 'position:' $pos
 #screen=$(expr substr "${scr}" 1 $(($pos-2))) #pos has the value of "c" from connected. -1 has a space , -2 has the screen name
 #echo 'Auto Recognized Screen:' $screen
+function Tablet { 
+    [[ $1 == "off" ]] && action="enable"
+    [[ $1 == "on" ]] && action="disable"
+    while read i; do
+       #echo "enabling $(xinput list --name-only $i)"
+       xinput $action $i;
+    done <<< "$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')";
+}
+
+
 screen2=$(xrandr | grep 'connected' |grep -v 'disconnected' | grep -oE '[a-zA-Z]+[\-]+[^ ]') #this seems also to work and print the VGA-1 / eDP-1
 echo 'Auto Recognize screen {alt}:' $screen2
 > sensor.log # Clear sensor log to keep the size small.
@@ -23,22 +34,26 @@ monitor-sensor >> sensor.log 2>&1 & # Launch monitor-sensor - store output in a 
 
 # Parse output or monitor sensor to get the new orientation whenever the log file is updated
 # Possibles are: normal, bottom-up, right-up, left-up. Light data will be ignored
-while inotifywait -e modify sensor.log; do 
-#switch -e = event.  modify = event to watch. sensor.log = file to watch.
-ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$') 
-# Read the last line that was added to the file and get the orientation
-
-# Set the actions to be taken for each possible orientation
-case "$ORIENTATION" in
-normal)
-xrandr --output $screen2 --rotate normal && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
-bottom-up)
-xrandr --output $screen2 --rotate inverted && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" -1 0 1 0 -1 1 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
-right-up)
-xrandr --output $screen2 --rotate right && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
-left-up)
-xrandr --output $screen2 --rotate left && xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1 ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
-esac
+while inotifywait -e modify sensor.log; do  #switch -e = event.  modify = event to watch. sensor.log = file to watch.
+	ORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$')  # Read the last line that was added to the file and get the orientation
+	case "$ORIENTATION" in # Set the actions to be taken for each possible orientation
+	normal)
+		   xrandr --output $screen2 --rotate normal
+		   xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1 
+		   Tablet off;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+	bottom-up)
+			xrandr --output $screen2 --rotate inverted
+			xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" -1 0 1 0 -1 1 0 0 1 
+			Tablet on ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Left ;;
+	right-up)
+			xrandr --output $screen2 --rotate right
+			xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1 
+			Tablet on ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+	left-up)
+			xrandr --output $screen2 --rotate left
+			xinput set-prop "ELAN Touchscreen" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1 
+			Tablet on ;; ##&& gsettings set com.canonical.Unity.Launcher launcher-position Bottom ;;
+	esac
 done
 exit #exit may not required. added by me.
 
