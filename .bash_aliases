@@ -66,8 +66,32 @@ alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf 
 alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode managed && sleep 1 && ifconfig wlan0 up && sleep 1 && NetworkManager'
 alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
 
+function cinema {
+echo "A youtube-dl automation script"
+[[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
+if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";return 1;fi	
+if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
+if [[ $2 == "--save" ]];then
+movietitle="$1"
+movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
+echo "command to be executed:"
+echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |tee $movietitle |mpv --force-seekable=yes -"
+echo "movie will be watched and also saved (simultaneously) in current directory with name :  $movietitle"
+echo "starting in 5 seconds , or press ctrl+c to exit"
+sleep 5
+youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |tee "$movietitle" |mpv --force-seekable=yes -
+ls -l "$movietitle"
+return
+fi
+echo "command to be executed:"
+echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |mpv --force-seekable=yes -"
+echo "starting in 5 seconds , or press ctrl+c to exit"
+sleep 5
+youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --force-seekable=yes -
+}
+
 function tablet {
-[[ -z $1 ]] && echo "no option given. Send me 'on' or 'off'" && return 1
+[[ -z $1 ]] && echo "tablet function invoked but no option was given. Send me 'on' or 'off'" && return 1
 
 if [[ $1 == "off" ]];then
 while read i;do echo "enabling $(xinput list --name-only $i)" && xinput enable $i;done <<<"$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')"
