@@ -1075,6 +1075,8 @@ or even
 $ curl -s https://openload.co/embed/BmB-MDfowlc/ |grep -m1 'vtt' |grep -Po 'src=\"\K.*vtt'
 https://thumb.oloadcdn.net/subtitle/BmB-MDfowlc/ahwISdzLQBo.vtt
 
+Caution: Sometimes the openload embed link is given in plain html and not in https. If curl doesnot return any result at all (zero bytes captured) replace http with https and tryagain.
+
 You can then wget this vtt file: wget https://thumb.oloadcdn.net/subtitle/BmB-MDfowlc/ahwISdzLQBo.vtt
 
 You can then use youtube-dl to get & play the video:
@@ -1082,6 +1084,9 @@ $ youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://openload.co/
 -o- option in youtube-dl outputs the video file to '-' = screen/tty 
 tee writes those tty data to file and re-prints them in tty
 mpv player reads data from '-' = /dev/stdin=tty while loading the subs file previously got with wget
+
+As of August 2018, has been proved that mpv can directly read the vtt file from remote source without previously wget-ting the file:
+youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
 
 .B Tips & Bugs
 0. https://9xbuddy.com/sites/openload 

@@ -67,27 +67,64 @@ alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode ma
 alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
 
 function cinema {
-echo "A youtube-dl automation script"
+echo "A youtube-dl automation script. Downloads from url, and open mpv to watch the video."
+echo "Combine with --save after url to also keep a local copy of the video in current working directory"
+echo "if you provide an openload embeded link , provide --getsubs after url and we will try to get the vtt subtitles"
 [[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
+
 if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";return 1;fi	
+
 if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
+
 if [[ $2 == "--save" ]];then
-movietitle="$1"
-movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
-echo "command to be executed:"
-echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |tee $movietitle |mpv --force-seekable=yes -"
-echo "movie will be watched and also saved (simultaneously) in current directory with name :  $movietitle"
-echo "starting in 5 seconds , or press ctrl+c to exit"
-sleep 5
-youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |tee "$movietitle" |mpv --force-seekable=yes -
-ls -l "$movietitle"
-return
+  movietitle="$1"
+  movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
+  echo "command to be executed:"
+  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |tee $movietitle |mpv --force-seekable=yes -"
+  echo "movie will be watched and also saved (simultaneously) in current directory with name :  $movietitle"
+  echo "starting in 5 seconds , or press ctrl+c to exit"
+  sleep 5
+  youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |tee "$movietitle" |mpv --force-seekable=yes -
+  ls -l "$movietitle"
+  return
 fi
+
+if [[ $2 == "--getsubs" ]];then
+  echo "getting subtitles..."
+  suburl=$(getsubsurl "$1")
+  [[ "$suburl" == "no vtt subs found" ]] && echo "no vtt subs found" && return 1
+  echo "command to be executed:"
+  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |mpv --force-seekable=yes --sub-file=$suburl -"
+  read -p "press any key to proceed or press ctrl+c to exit"
+  youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --force-seekable=yes --sub-file="$suburl" -
+  return
+fi
+
 echo "command to be executed:"
 echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |mpv --force-seekable=yes -"
 echo "starting in 5 seconds , or press ctrl+c to exit"
 sleep 5
 youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --force-seekable=yes -
+
+#youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
+#[[ -z $(curl -s "http://openload.co/embed/1AfWyTzfRcg") ]] && echo problem || echo all good -->> returns problem, while https returns all good
+
+}
+
+function getsubsurl {
+echo "[getsubsurl function]: returns openload vtt subs url hidden in embeded openload links" >/dev/tty
+[[ -z $1 ]] && echo "[getsubsurl function]: no video url given.... exiting now. " >/dev/tty && return 1
+
+if ! which youtube-dl >/dev/null;then echo "[getsubsurl function]: you need to install youtube-dl" >/dev/tty;return 1;fi	
+
+if ! which curl >/dev/null;then echo "[getsubsurl function]: you need to install curl" >/dev/tty;return 1;fi	
+
+ur="$1"
+[[ -z $(curl -s "$ur") ]] && echo "[getsubsurl function]: $ur returns no data - switching to https" >/dev/tty && ur=$(sed 's/^http/https/' <<<"$ur")
+
+subs=$(curl -s "$ur" |grep -m1 'vtt' |grep -Po 'src=\"\K.*vtt')
+[[ -z "$subs" ]] && echo "no vtt subs found" || echo "$subs"
+
 }
 
 function tablet {
