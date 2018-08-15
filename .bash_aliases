@@ -77,6 +77,8 @@ if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";retu
 if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
 
 if [[ $2 == "--save" ]];then
+#if printf '%s\n' "$@" |fgrep -- '--save' >/dev/null;then 
+  echo "--save option given"
   movietitle="$1"
   movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
   echo "command to be executed:"
@@ -108,6 +110,10 @@ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --for
 
 #youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
 #[[ -z $(curl -s "http://openload.co/embed/1AfWyTzfRcg") ]] && echo problem || echo all good -->> returns problem, while https returns all good
+
+#curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/11 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g'
+#http://openload.co/embed/jzKhHNYcoj4/LwdrSVS1311.avi
+
 
 }
 
