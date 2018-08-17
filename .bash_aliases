@@ -111,9 +111,22 @@ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --for
 #youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
 #[[ -z $(curl -s "http://openload.co/embed/1AfWyTzfRcg") ]] && echo problem || echo all good -->> returns problem, while https returns all good
 
-#curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/11 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g'
-#http://openload.co/embed/jzKhHNYcoj4/LwdrSVS1311.avi
+#in most cases openload embed link is found on the main page:
+#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/18 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
+#http://openload.co/embed/ZJr47lNfSCs/LwdrSVS1318.mp4
+#cinem "$c" --getsubs
 
+#in some other cases not
+#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
+#<empty>
+
+#in such cases you can grap the next moviestar page associated with openload button:
+#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |egrep 'openload' |tr ',>' '\n' |egrep -o 'http.*onlinemoviestar.*/play[^\")]*' |sed 's/\x27//g') && echo "$c"
+#https://onlinemoviestar.xyz/play/series/206209/13/20/aHR0cDovL29wZW5sb2FkLmNvL2VtYmVkLzJrNmZQNjBHdkRZL0x3ZHJTVlMxMzIwLm1wNA%2C%2C
+
+#d=$(curl -Ls "$c" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$d"
+#http://openload.co/embed/2k6fP60GvDY/LwdrSVS1320.mp4
+#cinema "$d" --getsubs
 
 }
 
