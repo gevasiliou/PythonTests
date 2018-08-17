@@ -68,45 +68,67 @@ alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig
 
 function cinema {
 echo "A youtube-dl automation script. Downloads from url, and open mpv to watch the video."
-echo "Combine with --save after url to also keep a local copy of the video in current working directory"
-echo "if you provide an openload embeded link , provide --getsubs after url and we will try to get the vtt subtitles"
-[[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
+echo "Options:"
+echo "  --url=<url> the video link"
+echo "  --openloadurl=<url> the openload video link"
+echo "  --save : keep a local copy of the video in current working directory"
+echo "  --getsubs: try to find openload vtt subs file"
+echo
+unset videotowatch subflag movietitle videotowatch suburl subs
 
 if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";return 1;fi	
-
 if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
+if ! which curl >/dev/null;then echo "you need to install curl";return 1;fi	
 
-if [[ $2 == "--save" ]];then
-#if printf '%s\n' "$@" |fgrep -- '--save' >/dev/null;then 
-  echo "--save option given"
-  movietitle="$1"
+#[[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
+
+if printf '%s\n' "$@" |fgrep -- '--url=' >/dev/null;then
+    videotowatch=$(printf "%s\n" "$@" |grep -- '--url=' |sed 's/--url=//')
+else 
+    if printf '%s\n' "$@" |fgrep -- '--openloadurl=' >/dev/null;then
+      openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//')
+      echo "openload link=$openloadlink"
+      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
+	  if [[ -z $videotowatch ]];then 
+		link2=$(curl -s $openloadlink |egrep 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
+		videotowatch=$(curl -Ls "$link2" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
+	  fi
+	fi
+fi
+
+echo && echo "video to watch=$videotowatch"
+[[ -z $videotowatch ]] && echo "no valid video url/openload url given.... exiting now. " && return 1
+
+#if [[ $2 == "--getsubs" ]];then
+if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then 
+  echo "--getsubs option given... Trying to get subtitles..." && echo && subflag=1
+  suburl=$(getsubsurl "$videotowatch")
+  if [[ "$suburl" == "no vtt subs found" ]]; then 
+	echo "no vtt subs found"
+	return 1
+  else
+    subs="--sub-file=$suburl"
+  fi
+fi
+
+
+#if [[ $2 == "--save" ]];then
+if printf '%s\n' "$@" |fgrep -- '--save' >/dev/null;then 
+  movietitle="$videotowatch"
   movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
-  echo "command to be executed:"
-  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |tee $movietitle |mpv --force-seekable=yes -"
-  echo "movie will be watched and also saved (simultaneously) in current directory with name :  $movietitle"
-  echo "starting in 5 seconds , or press ctrl+c to exit"
-  sleep 5
-  youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |tee "$movietitle" |mpv --force-seekable=yes -
-  ls -l "$movietitle"
-  return
+  printf "%s" "--save option given. Local file will be named $movietitle"
+  [[ $subflag -eq 1 ]] && moviename="${movietitle%%.*}" && wget --quiet "$suburl" -O "${moviename}.vtt" && printf "%s" " and subs will be named ${moviename}.vtt" 
+  #saving vtt subs. Play locally using mpv L* (video and subs start by letter L)
+else
+  movietitle=""
 fi
+echo
 
-if [[ $2 == "--getsubs" ]];then
-  echo "getting subtitles..."
-  suburl=$(getsubsurl "$1")
-  [[ "$suburl" == "no vtt subs found" ]] && echo "no vtt subs found" && return 1
-  echo "command to be executed:"
-  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |mpv --force-seekable=yes --sub-file=$suburl -"
-  read -p "press any key to proceed or press ctrl+c to exit"
-  youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --force-seekable=yes --sub-file="$suburl" -
-  return
-fi
-
-echo "command to be executed:"
-echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $1 -o- |mpv --force-seekable=yes -"
-echo "starting in 5 seconds , or press ctrl+c to exit"
-sleep 5
-youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --force-seekable=yes -
+echo && echo "command to be executed:"
+echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $videotowatch -o- |tee $movietitle |mpv $subs --force-seekable=yes -"
+read -p "press any key to start or press ctrl+c to exit"
+youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |mpv $subs --force-seekable=yes -
+#if --save is not given , $movietitle is empty "" and actually piping to tee "" does nothing.
 
 #youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
 #[[ -z $(curl -s "http://openload.co/embed/1AfWyTzfRcg") ]] && echo problem || echo all good -->> returns problem, while https returns all good
@@ -131,7 +153,6 @@ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$1" -o- |mpv --for
 #d=$(curl -Ls "$c" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$d"
 #http://openload.co/embed/2k6fP60GvDY/LwdrSVS1320.mp4
 #cinema "$d" --getsubs
-
 }
 
 function getsubsurl {
@@ -139,15 +160,18 @@ echo "[getsubsurl function]: returns openload vtt subs url hidden in embeded ope
 [[ -z $1 ]] && echo "[getsubsurl function]: no video url given.... exiting now. " >/dev/tty && return 1
 
 if ! which youtube-dl >/dev/null;then echo "[getsubsurl function]: you need to install youtube-dl" >/dev/tty;return 1;fi	
-
 if ! which curl >/dev/null;then echo "[getsubsurl function]: you need to install curl" >/dev/tty;return 1;fi	
 
 ur="$1"
 [[ -z $(curl -s "$ur") ]] && echo "[getsubsurl function]: $ur returns no data - switching to https" >/dev/tty && ur=$(sed 's/^http/https/' <<<"$ur")
 
 subs=$(curl -s "$ur" |grep -m1 'vtt' |grep -Po 'src=\"\K.*vtt')
-[[ -z "$subs" ]] && echo "no vtt subs found" || echo "$subs"
-
+if [[ -z "$subs" ]];then 
+	echo "no vtt subs found" 
+else
+	echo "[getsubsurl function]: vtt subs found - $subs" >/dev/tty
+	echo "$subs"
+fi
 }
 
 function tablet {
