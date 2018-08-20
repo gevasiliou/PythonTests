@@ -523,14 +523,14 @@ echo "Use -d for directories only , -f for full depth"
 
 local p d f
 #echo "$@"
-[[ $1 == "-d" ]] && d="-type d" && shift || d=""
-[[ $1 == "-f" ]] && f="" && shift || f="-maxdepth 1"
-[[ -z $1 ]] && p="./" || p=( "$@" )
+[[ $1 == "-d" ]] && d="-type d" && shift || d=""     #if type is not defined, all types are returned
+[[ $1 == "-f" ]] && f="" && shift || f="-maxdepth 0" #when maxdepth is not defined, full depth is considered by find
+[[ -z $1 ]] && p="./" || p=( "$@" ) #dry run as lsadv defines ./ as find path
 #echo "${p[@]}"
-echo -e "Permissions\t| group\t| user\t| size\t| Change Time\t\t\t| Name"
+echo -e "Permissions\t| Links\t| user\t\t| group\t\t| size\t| Change Time\t\t\t| Name"
 printf '%.s-' {1..130} 
 echo
-find "${p[@]}" $d $f -printf '%M (%m) | %g\t| %u\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n' | LC_ALL=C sort -t '|' -k1.1,1.2r -k6.1
+find "${p[@]}" $f $d -printf '%M(%m) | %n\t| %u(%U)\t| %g(%G)\t| %s\t| %Cb %Cd %CY %Cr\t| %p\n' | LC_ALL=C sort -t '|' -k1.1,1.2r -k6.1
 #sort k1.1,1.2r : sort at first char of first field in reverse order ==> links first, directories then, files last
 #sort k6 : then sort by last column = filename
 set +f
