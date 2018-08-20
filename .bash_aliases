@@ -519,7 +519,7 @@ grep -e "$dupes" <(printf '%s\n' "${fn[@]}")  |awk -F/ '{print $NF,"==>",$0}' |L
 function lsadv {
 set -f
 echo "lsadv = ls advanced using find - similar output to ls -all. Includes octal file permissions." 
-echo "Use -d for directories , -f for full depth"
+echo "Use -d for directories only , -f for full depth"
 
 local p d f
 #echo "$@"
