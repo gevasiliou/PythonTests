@@ -69,8 +69,8 @@ alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig
 function cinema {
 echo "A youtube-dl automation script. Downloads from url, and open mpv to watch the video."
 echo "Options:"
-echo "  --url=<url> the video link"
-echo "  --openloadurl=<url> the openload video link"
+echo "  --url=<url> direct video link"
+echo "  --openloadurl=<url> urls with hidden openload video link"
 echo "  --save : keep a local copy of the video in current working directory"
 echo "  --getsubs: try to find openload vtt subs file"
 echo
