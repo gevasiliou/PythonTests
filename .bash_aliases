@@ -88,7 +88,7 @@ else
     if printf '%s\n' "$@" |fgrep -- '--openloadurl=' >/dev/null;then
       openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//')
       echo "openload link=$openloadlink"
-      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
+      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.*' |sed 's/[\"]//g')
 	  if [[ -z $videotowatch ]];then 
 		link2=$(curl -s $openloadlink |egrep 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
 		videotowatch=$(curl -Ls "$link2" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
@@ -137,7 +137,7 @@ youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o-
 #in most cases openload embed link is found on the main page:
 #c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/18 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
 #http://openload.co/embed/ZJr47lNfSCs/LwdrSVS1318.mp4
-#cinem "$c" --getsubs
+#cinema "$c" --getsubs
 
 #in some other cases not
 #c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
