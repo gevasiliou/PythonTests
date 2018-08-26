@@ -110,6 +110,7 @@ if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then
     subs="--sub-file=$suburl"
   fi
 fi
+#cinema --openloadurl=https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/14/episodes/1 --getsubs 
 
 
 #if [[ $2 == "--save" ]];then
