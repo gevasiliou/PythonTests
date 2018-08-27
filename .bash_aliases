@@ -100,15 +100,24 @@ echo && echo "video to watch=$videotowatch"
 [[ -z $videotowatch ]] && echo "no valid video url/openload url given.... exiting now. " && return 1
 
 #if [[ $2 == "--getsubs" ]];then
-if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then 
-  echo "--getsubs option given... Trying to get subtitles..." && echo && subflag=1
-  suburl=$(getsubsurl "$videotowatch")
-  if [[ "$suburl" == "no vtt subs found" ]]; then 
-	echo "no vtt subs found"
-	return 1
-  else
-    subs="--sub-file=$suburl"
-  fi
+if printf '%s\n' "$@" |fgrep -- '--subs=' >/dev/null
+then 
+	suburl=$(printf "%s\n" "$@" |grep -- '--subs=' |sed 's/--subs=//')
+	suburl=$(set +f && ls $suburl && set -f)
+	echo "--subs option given... Trying to read subtitles file $suburl..." && echo
+	subs="--sub-file=$suburl"
+	#example: cinema --openloadurl=https://openload.co/f/NyTst2m1ELw --subs=$(ls /home/gv/*.srt)
+else
+	if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then 
+	  echo "--getsubs option given... Trying to get subtitles..." && echo && subflag=1
+	  suburl=$(getsubsurl "$videotowatch")
+	  if [[ "$suburl" == "no vtt subs found" ]]; then 
+		echo "no vtt subs found"
+		return 1
+	  else
+		subs="--sub-file=$suburl"
+	  fi
+	fi
 fi
 # cinema --openloadurl=https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/14/episodes/1 --getsubs 
 # gksu -u gv xdg-open https://www.watch-online.cc/tv-shows/tt0203259/law-and-order-special-victims-unit/season/14/episode/2/
