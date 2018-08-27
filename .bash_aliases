@@ -110,7 +110,8 @@ if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then
     subs="--sub-file=$suburl"
   fi
 fi
-#cinema --openloadurl=https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/14/episodes/1 --getsubs 
+# cinema --openloadurl=https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/14/episodes/1 --getsubs 
+# gksu -u gv xdg-open https://www.watch-online.cc/tv-shows/tt0203259/law-and-order-special-victims-unit/season/14/episode/2/
 
 
 #if [[ $2 == "--save" ]];then
