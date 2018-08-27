@@ -1,17 +1,20 @@
 #!/bin/bash
-echo "SHLVL=$SHLVL";echo "BASH_SUBSHELL=$BASH_SUBSHELL";echo "Parameter par=$par"
+echo "Shell level parameter SHLVL=$SHLVL";echo "BASH_SUBSHELL=$BASH_SUBSHELL"
 echo "Just an echo - nothing more to be done here"
 
-echo "You run this script as USER=$USER (this is the value of USER variable)"
-echo -n "Who am i returns:  " && whoami
+echo "You run this script as \$USER=$USER (this is the value of USER variable)"
+echo -n "whoami command returns:  " && whoami
 echo -n "/bin/id returns:  " && id
-echo "Your HOME dir is $HOME"
-echo "Your PATH is $PATH"
-echo "Parameter received= "$#
+echo "Your \$HOME dir is $HOME"
+echo "Your \$PATH is $PATH"
+echo "Numbers of Parameter received= "$#
+echo "special parameter \$0 value: " "$0"
+echo "full location of this script:" $PWD${0#.}
 [[ -z $1 ]] && echo "parameter 1 is empty" ||  echo "Parameter 1 is: $1"
-echo "parameter 2 is: $2"
-echo "Parameter 3 is: $3"
-printf "%d args:" $# && printf " <%s>" "$@"  && echo
+echo "\$2 is: $2"
+echo "\$3 is: $3"
+printf "%d args found in \$@ array\n" "$#"
+printf " <%s>\n" "$@"  && echo
 #demonstrating word splitting - Test with ./oneshot.sh hello world "how are you?"  --> <hello> <world> <how are you?>
 #More word splitting examples:
 #log=/some/text/inside/here IFS=/
