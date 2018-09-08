@@ -10,6 +10,7 @@
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
 #alias words='/usr/share/dict/words'
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/sbin:/sbin:/usr/sbin
 function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
@@ -34,7 +35,7 @@ alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #-
 
 alias dirsize='df -h / && du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
-alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/'
+alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ && chown gv:gv /home/gv/.bash_aliases'
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y'
 alias printfunctions='set |grep -A2 -e "()"'
@@ -88,9 +89,10 @@ else
     if printf '%s\n' "$@" |fgrep -- '--openloadurl=' >/dev/null;then
       openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//')
       echo "openload link=$openloadlink"
-      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.*' |sed 's/[\"]//g')
-	  if [[ -z $videotowatch ]];then 
-		link2=$(curl -s $openloadlink |egrep 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
+      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.[^ ]*' |sed 's/[\"]//g')
+	  if [[ -z $videotowatch ]];then
+		echo "[!!]second try to catch video url"
+		link2=$(curl -s $openloadlink |egrep -m1 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
 		videotowatch=$(curl -Ls "$link2" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
 	  fi
 	fi
