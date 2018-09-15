@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """
-thinkpad-rotate.py
+rotate-gv.py
 
 Rotates any detected screen, wacom digitizers, touchscreens,
 touchpad/trackpoint based on orientation gathered from accelerometer.
 
 Tested with Lenovo Thinkpad 14 Yoga S3
+
+Adjusted to work in Toshiba Radius 11 with ELAN touch screen
 
 https://github.com/johanneswilm/thinkpad-yoga-14-s3-scripts
 
@@ -69,9 +71,11 @@ STATES = [
     {'rot': 'left', 'pen': 'cw', 'coord': '0 -1 1 1 0 0 0 0 1', 'touchpad': 'disable', 'check': lambda x, y: x >1 and x <= 10 and y >630},
 ]
 
+#GV: Values hardcoded. Uncheck the printing of real emmited x-y-z to find the best values that work for you in different orientations
+#rot: right means right-side up. rot left means left side up.
 """
 normal : x=0 , y>630
-left/right-up: x<640 
+left/right-up: x<640
 right/left-up : x>0 && x<9, y=0 or y=630
 inverted : x~0, y>0 && y<9
 """
