@@ -862,18 +862,33 @@ strace -cf grep pattern file #will also report performance in a much more analyt
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:APT
 apt list pkg
-apt list pkg* # Be carefull that bash filename expansion applies to *. You may need to apply set -f for this one or to double quote it like "pkg*"
-apt show pkg  # Show details of pkg
-apt search keyword  #Search all pkgs in all repos for the keyword/description given
+apt list 'pkg*' # quote it to avoid bash globbing for * unless set -f is in action (globbing disable)
 apt install pkg
 apt purge pkg
+apt install -t release pkg #install pkg and dependencies using specified release
+apt install pkg/release    #install pkg but not dependencies using specified release. Dependencies will be used by current release.
+
+apt show pkg  # Show details of pkg
+apt search keyword  #Search all pkgs in all repos for the keyword/description given
+
 apt-file search showmount   or /bin/showmount #advises which package you need to install in order to get showmount
 OR JUST 
 apt search showmount --> nfs-common  #or apt-cache search showmount
+
 apt --print-uris install pkg   # Returns the names of the .deb packages that will be installed in case of apt install. Works also with apt-get
 apt --print-uris download pkg  # Returns the deb file that apt download pkg would download:
 apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool/main/n/nfs-utils/nfs-common_1.3.4-2.1_amd64.deb' nfs-common_1%3a1.3.4-2.1_amd64.deb 230730 SHA256:8fedb6f5d28d521ca6b1623610255c7edf26c011b3c45e07e19e4378902bfab4
+
 apt-mark unhold pkg # unholds a package. Can be used to unhold all packages like apt-mark unhold $(apt list --installed 2>/dev/null |cut -f1 -d'/')
+
+apt-get changelog thunar/unstable  #downloads and displays changelog of pkg. 
+Get:1 http://metadata.ftp-master.debian.org thunar 1.8.1-1 Changelog [37.3 kB]
+Fetched 37.3 kB in 0s (121 kB/s)
+
+zless /usr/share/doc/thunar/changelog.Debian.gz    #Dsiplays changelog of installed pkg
+
+apt-file search file     #returns all apt pkgs containing the file
+apt-file list pkgname    #list files installed by pkg. Similar to dpkg -L for not installed pkgs.
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SIZE OF FILES - DISK USAGE (DU,LS,etc)
