@@ -754,7 +754,7 @@ sed '/./=' filename | sed '/./N; s/\n/ /'
 ## COUNT LINES (emulates "wc -l")
 sed -n '$='
 --------------------------------------------------------------------------------------------------------------------------------------
-SED:ONELINERS:TEXT CONVERSION AND SUBSTITUTION 
+SED:ONELINERS:SUBSTITUTE TEXT CONVERSION AND SUBSTITUTION 
 
 ## IN UNIX ENVIRONMENT: convert DOS newlines (CR/LF) to Unix format.
 sed 's/.$//'               # assumes that all lines end with CR/LF
@@ -803,8 +803,9 @@ sed  -e :a -e 's/^.\{1,77\}$/ &/;ta' -e 's/\( *\)\1/\1/'  # method 2
 
 ## SUBSTITUTE (find and replace) "foo" with "bar" on each line
 sed 's/foo/bar/'             # replaces only 1st instance in a line
-sed 's/foo/bar/4'            # replaces only 4th instance in a line
 sed 's/foo/bar/g'            # replaces ALL instances in a line
+sed 's/foo/bar/4'            # replaces only 4th instance in the same line
+sed 's/foo/bar/4g'            # replaces all instances after 4th instance in the same line
 sed 's/\(.*\)foo\(.*foo\)/\1bar\2/' # replace the next-to-last case
 sed 's/\(.*\)foo/\1bar/'            # replace only the last case
 
@@ -845,8 +846,22 @@ gsed -r ':a;s/(^|[^0-9.])([0-9]+)([0-9]{3})/\1\2,\3/g;ta'
 ## ADD A BLANK LINE EVERY 5 lines (after lines 5, 10, 15, 20, etc.)
 gsed '0~5G'                  # GNU sed only
 sed 'n;n;n;n;G;'             # other seds
+
+## ONE SUBSTITUTION MULTIPLE PATTERNS
+sed -e '/patt1/' -e '/patt2/' -e 's/foo/bar/g'  #all seds, Replace foo with bar in lines with patt1 or patt2
+
+sed -E '/patt1|patt2/s/foo/bar/g'               #GNU. Same operation as above.
+
+sed -E '/patt1|patt2/! s/foo/bar/g'             #GNU. Replace foo with bar in lines NOT having patt1 or patt2 
+
+sed -E '/patt1|patt2/b; s/foo/bar/g'            #Jump (with /b) to the undefined label and go to next line skipping substitution
+
+sed -E '/patt1/b; /patt2/b; /start/,/end/b; s/foo/bar/g'                #Same as above. Skip substitution for three different cases (patterns & range)
+
+sed '/#/ba ; /\/\//ba ; /\/\*\*/,/\*\*\//ba ; s/example/EXAMPLE/g; :a'  #Similar, but jumps to label a which is defined in the end = skip s/../../g
+
 --------------------------------------------------------------------------------------------------------------------------------------
-SED:ONELINERS:SELECTIVE PRINTING OF CERTAIN LINES:
+SED:ONELINERS:PRINT SELECTIVE PRINTING OF CERTAIN LINES:
 
 ## PRINT FIRST 10 lines of file (emulates behavior of "head")
 sed 10q
@@ -933,7 +948,7 @@ sed -n '3,${p;n;n;n;n;n;n;}' # other seds
 ## PRINT SECTION OF FILE BETWEEN TWO REGULAR EXPRESSIONS (inclusive)
 sed -n '/Iowa/,/Montana/p'             # case sensitive
 --------------------------------------------------------------------------------------------------------------------------------------
-SED:ONELINERS:SELECTIVE DELETION OF CERTAIN LINES:
+SED:ONELINERS:DELETE SELECTIVE DELETION OF CERTAIN LINES:
 
 ## PRINT ALL OF FILE EXCEPT SECTION BETWEEN 2 regular expressions
 sed '/Iowa/,/Montana/d'
@@ -1105,6 +1120,7 @@ Various scripts in this file have been written or contributed by:
 SED:ONELINERS:DOCS
 More Docs: http://sed.sourceforge.net/
 --------------------------------------------------------------------------------------------------------------------------------------
+
 SED:REGEX VS PERL - DOMAIN NAME EXTRACT FROM URL
 The sed operations can be done by perl -pe.
 Actually perl support for regex is a bit better than sed.
