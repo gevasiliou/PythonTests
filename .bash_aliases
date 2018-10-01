@@ -87,11 +87,13 @@ if printf '%s\n' "$@" |fgrep -- '--url=' >/dev/null;then
     videotowatch=$(printf "%s\n" "$@" |grep -- '--url=' |sed 's/--url=//')
 else 
     if printf '%s\n' "$@" |fgrep -- '--openloadurl=' >/dev/null;then
-      openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//')
+      openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//') #just remove --openload to get the url sent to function
       echo "openload link=$openloadlink"
       videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.[^ ]*' |sed 's/[\"]//g')
 	  if [[ -z $videotowatch ]];then
-		echo "[!!]second try to catch video url"
+		echo "[!!]First try to cath video url FAILED. Proceeding to second try to catch video url...."
+		echo "[!!]First try was:"
+		echo "[!!]curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.[^ ]*' |sed 's/[\"]//g"
 		link2=$(curl -s $openloadlink |egrep -m1 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
 		videotowatch=$(curl -Ls "$link2" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
 	  fi
