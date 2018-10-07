@@ -4,6 +4,7 @@ import cv2
 cap = cv2.VideoCapture(0) #this works ok with local web cam
 
 #cap = cv2.VideoCapture('rtsp://192.168.1.110') #this is ip testing - not working
+#https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv
 
 img_counter = 0
 
