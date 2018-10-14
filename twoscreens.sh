@@ -25,10 +25,16 @@ function soundsetup {
 }
 
 
-function mirror {
+function lapmirror {
 #xrandr --output LVDS-1 --mode 1366x768 --scale 1x1 --output VGA-1 --same-as LVDS-1 --mode 1920x1080 --scale 0.711x0.711
 # Above sscale etting in reallity enlarges VGA-1 by reducing the resolution with scale to match 1366x768 , as in LVDS-1
+
 xrandr --output $1 --mode 1366x768 --scale 1x1 --output $2 --same-as $1 --mode 1920x1080 --scale 0.711x0.711
+soundsetup --hdmi
+}
+
+function natmirror {
+xrandr --output $1 --mode 1366x768 --scale 1x1 --output $2 --same-as $1 --mode 1920x1080 --scale 1x1
 soundsetup --hdmi
 }
 
@@ -74,8 +80,12 @@ yad --center --no-markup --title="Active Setup" --text="Screen Setup\n$screenset
 #---------------------MAIN PROG------------------------------------------#
 synclient TapButton1=1 #Non relevant command - just enable touchpad click if necessary.
 #detect primary and secondary monitors. Fortunatelly xrandr reports as connected monitors that might have been disabled with --off
+
 sec=$(xrandr |grep ' connected' |grep -e 'HDMI' -e 'VGA' |awk '{print $1}') #hardcoding - for me hdmi and vga monitors are always secondary
+#alternative: xrandr |grep '[^dis]connected'
+
 prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one should be the laptop monitor = primary (LVDS-1, eDP-1,etc)
+
 [[ -z "$sec" ]] && m=$(xrandr --listmonitors) && yad --center --text="No second monitor connected \n $m" #&& exit 1
 ##echo "primary is $prim and secondary is $sec" && exit
 # You can verify if an HDMI monnitor is connected using also cat /sys/class/drm/card0/*HDMI*/status
@@ -102,7 +112,7 @@ prim=$(xrandr |grep ' connected' |grep -v "$sec" |awk '{print $1}') #this one sh
 
 
 if [[ -z $1 ]]; then
-answer=$(yad --center --form --num-output --title="Monitors Setup" --separator="" --field="Screen Setup":CB "Mirror!Extended Desktop!VGA Only!VGA Enlarged!Laptop Only!Sound Setup!Exit")
+answer=$(yad --center --form --num-output --title="Monitors Setup" --separator="" --field="Screen Setup":CB "Laptop Mirror!Native Mirror!Extended Desktop!VGA Only!VGA Enlarged!Laptop Only!Sound Setup!Exit")
 else
 echo "Setting screen schema by command line is not yed defined for option $1" && exit 1
 #we can call a function here to manipulate the $1 value and assign it to $answer , and thus case bellow will work in all cases
@@ -110,13 +120,14 @@ echo "Setting screen schema by command line is not yed defined for option $1" &&
 fi
 
 case $answer in
-1) mirror "$prim" "$sec";;
-2) extended "$prim" "$sec";;
-3) vgaonly "$prim" "$sec";;
-4) vgaenlarged "$prim" "$sec";;
-5) laptoponly "$prim" "$sec";;
-6) soundsetup;;
-7) exit;;
+1) lapmirror "$prim" "$sec";;
+2) natmirror "$prim" "$sec";;
+3) extended "$prim" "$sec";;
+4) vgaonly "$prim" "$sec";;
+5) vgaenlarged "$prim" "$sec";;
+6) laptoponly "$prim" "$sec";;
+7) soundsetup;;
+8) exit;;
 esac
 getactive #After finishing the set up, read and display the values from xrandr , as a kind of gui verification.
 exit

@@ -9,4 +9,10 @@ apt install crunch hydra #services login cracker - crunch generates password fil
 dpkg -i ipscan_3.5.2_amd64.deb #Angry IP Scanner 64bit -/usr/bin/ipscan
 apt install libbluetooth-dev && cd ./Bluelog && make && make install && bluelog #bluelog logs all bt devices when run unattended - https://github.com/MS3FGX/Bluelog/blob/master/README
 
+#installing metasploit
+#
+#https://github.com/rapid7/metasploit-framework/wiki/Nightly-Installers
+#
+# curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall
+
 
