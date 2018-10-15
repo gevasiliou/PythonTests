@@ -421,7 +421,7 @@ echo "to be excluded: $exclude"
 case "$installed" in
 "Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
 "Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
-"Any")readarray -t fti < <(apt list $pattern | grep -v -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
+"Any")readarray -t fti < <(apt list $pattern | grep -v -e 'i386' -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" exclude-pattern
 
 "All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
@@ -457,26 +457,28 @@ done
 # bug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
 # 
 
-aptshow="$(apt show "${pd[@]}")"
-aptpolicy="$(apt policy "${pd[@]%/*}")" #in array elements like pkg/experimental removes the /* == /experimental
+aptshow="$(apt show "${pd[@]}" |sed 's/[()+-~/\]/\*/g')"
+#declare -p aptshow;exit
+aptpolicy="$(apt policy "${pd[@]%/*}" |sed 's/[()+-~/\]/\*/g')" #in array elements like pkg/experimental removes the /* == /experimental
 declare -A dyn
 #printarray dyn && exitright
 #echo "$aptshow" |grep -B15 -P '\x27'
 #set -x
-eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/Description:|State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')"
+
+eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/^Description:|^State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')"
 
 #eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf " - | " "\x22" "\n"}' )
-eval "$(echo "$aptshow" |awk '/^Package:/{is=0;printf "dyn[" $2 "]+=\x22";pkgNR=NR};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1};/^State:/{printf "-|" "\x22" "\n";is=1}' )"
+eval "$(echo "$aptshow" |awk '/^Package:/{is=0;printf "dyn[" $2 "]+=\x22";pkgNR=NR};/^Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1};/^State:/{printf "-|" "\x22" "\n";is=1}' )"
 
-#eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )"
-eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf "-|" "\x22" "\n"}' )"
+#eval echo "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )"
+eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/^Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf "-|" "\x22" "\n"}' )"
 
 #Get installed version
 eval "$(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=\x22" };/Installed:/{i=1;printf $2 " | " "\x22" "\n"}END{if (i==0) printf "-|" "\x22" "\n"}')"
 
 #Get Candidate version
 #eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')"
-eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
+eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Version:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
 #Better to use apt show since pkg/experimental works in apt show but not in apt policy.
 
 #for e in "${!dyn[@]}"; do echo "dyn[$e]=${dyn[$e]}";done && exit 
@@ -485,7 +487,7 @@ eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Vers
 # At first we used to gather all apt show fields at once , but we preferred separate calls per property in case a property is missing,like pkg coinor-libcoinutils3 (try it with 'co*utils* pattern
 # AWK Alternative: apt show '*tail' |grep -Po '(?<=Installed-Size: ).*'
 
-# for it in "${!dyn[@]}";do echo "pkgarray[$it]=${dyn[$it]}";done
+#for it in "${!dyn[@]}";do echo "pkgarray[$it]=${dyn[$it]}";done;exit
 
 #some packages like xtail have double quotes in their description first line which breaks the rest code (yad --select function in particular)
 #easy solution : apt show xtail |sed 's/\x22/\x27/g' --> replace double quotes with single quotes
