@@ -478,8 +478,11 @@ eval "$(echo "$aptpolicy" |awk 'NF==1{gsub(/:$/,"",$0);i=0;printf "dyn[" $0 "]+=
 
 #Get Candidate version
 #eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/Version:/{d=1;printf $2 "\x22" "\n"}END{if (d==0) printf " - " "\x22" "\n"}')"
-eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Version:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
+eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Version:/{d=1;printf $2 " | " "\x22" "\n"}/^State:/{printf " -|" "\x22" "\n"}')"
 #Better to use apt show since pkg/experimental works in apt show but not in apt policy.
+
+#Get Section
+eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Section:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
 
 #for e in "${!dyn[@]}"; do echo "dyn[$e]=${dyn[$e]}";done && exit 
 
@@ -505,15 +508,15 @@ eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Ver
 # Another suspicious package to return "virtual package" is apt-spy.
 # Though we have a found a virtual pkg that is returned by apt list: try apt list co*utils* -->coinor-libcoinutils3/now is virtual
 
-list2=($(echo -e "CHKBOX,Package,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
+list2=($(echo -e "CHKBOX,Package,Section,PkgDescription,Installed, Candidate,DownSize,Installed Size,\n")) #Header Line
 
 for it in "${!dyn[@]}";do
-eval $(awk -v dq="\"" -v it="$it" '{print "list+=(" dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" <<<"${dyn[$it]}" )
+eval $(awk -v dq="\"" -v it="$it" '{print "list+=(" dq "FALSE" dq,dq it dq,dq $6 dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" <<<"${dyn[$it]}" )
 # awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $5 dq,dq $4 dq,dq $3 dq,dq $2 dq}' FS="|" <<<"${dyn[$it]}"
 done
 
 #printf "%s\n" ${list2[@]} # this prints the list2 correctly on terminal but not in file even if you export it at line 154
-list2+=( $(awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" OFS="," <<<"${dyn[$it]}" ))
+list2+=( $(awk -v dq="\"" -v it="$it" '{print dq "FALSE" dq,dq it dq,dq $6 dq,dq $1 dq,dq $4 dq,dq $5 dq,dq $3 dq,dq $2 dq ")"}' FS="|" OFS="," <<<"${dyn[$it]}" ))
 export LIST3=$(printf "%s\n" ${list2[@]})
 tit="Apt Browser - Installation Status: $installed"
 unset toinstall
@@ -530,6 +533,7 @@ toinstall=($(yad --list --title="$tit" --no-markup --width=1200 --height=600 --c
 --button="New Selection":10 \
 --column="Install":CHK \
 --column="Package" \
+--column="Section" \
 --column="Description" \
 --column="Installed" \
 --column="Candidate" \
