@@ -419,20 +419,20 @@ echo "Installed=$installed ---- Pattern=$pattern"
 echo "to be excluded: $exclude"
 #exit
 case "$installed" in
-"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
-"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v "Listing" |cut -f1 -d "/" |grep $exclude);; 
+"Not Installed") readarray -t fti < <(apt list $pattern |grep -v -e 'i386' -e "installed" -e "Listing" |cut -f 1 -d "/" |grep $exclude);;
+"Installed") readarray -t fti < <(apt list --installed $pattern |grep -v -e 'i386' -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
 "Any")readarray -t fti < <(apt list $pattern | grep -v -e 'i386' -e "Listing" |cut -f1 -d "/" |grep $exclude);; 
 # We need cut to be first to isolate pkgname. Some packages that had "dev" in their deb name and not in pkg name (i.e lynx-common) were wrongly exluded by grep -v -e "dev" exclude-pattern
 
-"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
+"All Experimental")readarray -t fti < <(apt list --all-versions $pattern |grep -v -e 'i386' -e "Listing" |grep "/experimental" |cut -f1 -d " " |cut -f1 -d "," |grep $exclude);;
 #here the things are a bit different. Get all exprimental packages (either installed or not) that match the pattern provided
 
-"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v "Listing"  |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
+"Installed vs Experimental") readarray -t fti < <(apt list --installed --all-versions $pattern 2>&1 |grep -v -e 'i386' -e "Listing"  |grep "/experimental" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);; #we need to cut even for coma to catch the case "experimental,now"
 #here the things are a bit different. Get all experimental pkgs from the --installed list == get experimental versions (if any) only from installed pkgs
 
-"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"All Unstable")readarray -t fti < <(apt list --all-versions $pattern |grep -v -e "Listing" -e 'i386' |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 
-"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
+"Installed vs Unstable") readarray -t fti < <(apt list --installed --all-versions $pattern |grep -v -e 'i386' -e "Listing" |grep "unstable" |grep -v "testing" |cut -f1 -d " " |cut -f1 -d"," |grep $exclude);;
 esac
 
 #declare -p fti && exit
