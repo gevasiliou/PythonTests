@@ -1,0 +1,7 @@
+NICK gvgv
+PONG :A37770A9
+USER gv 8 * :gv 
+PRIVMSG monaxoss : hello from bot
+:acheron.ca.us.seersirc.net 005 gvgv WALLCHOPS WATCH=128 WATCHOPTS=A SILENCE=15 MODES=12 CHANTYPES=# PREFIX=(qaohv)~&@%+ CHANMODES=beI,kfL,lj,psmntirRcOAQKVCuzNSMTGZ NETWORK=SeersIRC CASEMAPPONG=ascii EXTBAN=~,qjncrRaT ELIST=MNUCT STATUSMSG=~&@%+ :are supported by this server
+USER gv 8 * :gv 
+PRIVMSG monaxoss : hello from bot

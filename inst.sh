@@ -217,7 +217,7 @@ function readmanpage {
 	elif [[ ${datatar##*.} == "xz" ]];then
 		options="J"
 	else
-		echo "data.tar is not a gz or xz archive. Exiting" |yad --text-info --height 500 --width 500
+		echo "data.tar is not a gz or xz archive, but it is ${datatar:-empty}. Now Exiting" |yad --text-info --height 500 --width 500
 		return 1
 	fi
 	unset manpage manpage2
