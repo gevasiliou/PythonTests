@@ -17,7 +17,7 @@ function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
 
-alias ipchicken="links -dump www.ipchicken.com |egrep -o '[0-9]{3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}'"
+alias ipchicken="links -dump www.ipchicken.com |egrep -o '[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}'"
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
