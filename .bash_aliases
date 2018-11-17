@@ -11,6 +11,7 @@
 
 #alias words='/usr/share/dict/words'
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/sbin:/sbin:/usr/sbin
+#firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
 export MOZ_USE_XINPUT2=1
 
 function aptlog {
