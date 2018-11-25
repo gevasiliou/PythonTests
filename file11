@@ -1,7 +1,3 @@
-This is a task to identify some credit card numbers on various banks in Greece.
-Card numbers are not known, only card's holder name is known.
-
-What i am expecting to receive is something like this:
-Card No, Bank, Card Credit Limit, Card Used Limit, Card CVV Code, Card 4digits pin code
-
-<signature>treopl90##$%^op!@#$%^&*(opomnb)_+</signature>
+one
+two
+three

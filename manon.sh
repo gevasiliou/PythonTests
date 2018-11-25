@@ -14,7 +14,11 @@ Option1:
                            * If option2 is ommited , default is die.net service
 
     --apt           Debian Specific. Extract and display the man page from the deb package without downloading it. 
-
+                    All man pages and examples,change logs, info pages, are returned by default
+                    Option 2:
+                             --manonly : Return only manpages, and exclude logs,exapmples,etc.
+                             --noman   : Exclude man pages and return changelog entries,examples, etc
+                             
     --down          Debian Specific. Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
                     Option 2:
                              --nodelete     When used with --down the deb package will not be deleted.
@@ -77,8 +81,13 @@ function apt {
     aptpkg="${pkg%%/*}"
 	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
-	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-
+	if [[ $3 == "--manonly" ]]; then
+	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+    elif [[ $3 == "--noman" ]]; then
+    manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+    else
+    manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+	fi
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package - These are the contents of the $deb:"
