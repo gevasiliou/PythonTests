@@ -220,13 +220,13 @@ function teee {
 
 #function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
 	v="$(</dev/stdin)"; 
-	echo '---------------- pipe -------------' >/dev/tty;
+	echo '---------------- pipe entry-------------' >/dev/tty;
 	i=1;
 	while read -r l;do 
 	  echo "$i>$l" >/dev/tty;
 	  let i++;
 	done <<<"$v";
-	echo '---------------- pipe -------------^' >/dev/tty; #disabled - for some reason prints the result of the last command
+	echo '---------------- pipe exit-------------' >/dev/tty; #disabled - for some reason prints the result of the last command
 	echo "$v"; ##echo to pipe buffer - necessary to keep the data flow to the next command if any or to screen
 	
 #Usage example:
