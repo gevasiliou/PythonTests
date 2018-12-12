@@ -20,6 +20,10 @@ groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
 
+.I See the special synthax of any installed man page:
+zcat manpage.gz
+zcat $(man -w grep)
+
 ##WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
@@ -39,7 +43,7 @@ The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become 
 You can either decompress a .deb in the screen and ask man to display it OR
 you can download the .deb package and decompress/display the manpages available and finally delete the .deb unless you plan to tinstall it!
 
-.B On line - No deb download
+.I On line - No deb download
 $ apt --print-uris download agrep
 'http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb' agrep_4.17-9_amd64.deb 194788 SHA256:4d3648e483f9a367b821095c9d6e24016b486723920e4abc34324ad1c89f2867
 $ curl -sL -o- 'http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-9_amd64.deb' |dpkg -c /dev/stdin  --> Provides a list of all the contents inside deb
@@ -49,7 +53,7 @@ $ curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-
 
 The use of dpkg-deb --fsys-tarfile is required since deb packages when unzipped are constisted of two major subfiles.
 
-.B With downloading deb package
+.I With downloading deb package
 $ apt download agrep                           ---> Get:1 http://ftp.gr.debian.org/debian jessie/non-free amd64 agrep amd64 4.17-9 [195 kB]
 OR 
 $ curl -sLO "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" # curl -O saves the file in CWD
@@ -75,6 +79,31 @@ readarray is a shell builtin
 $ type grep
 grep is /bin/grep
 
+##MAN PAGES IN COLOR
+https://www.tecmint.com/view-colored-man-pages-in-linux/
+
+$ vi ~/.bashrc
+export LESS_TERMCAP_mb=$'\e[1;35m'
+export LESS_TERMCAP_md=$'\e[1;35m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;4;31m'
+
+Color codes used in the above configuration.
+31 – red (secondary options)
+35 – Magenta (titles & main options)
+33 – yellow (footer & search)
+
+Escape codes used in the above configuration.
+0 – reset/normal
+1 – bold
+4 – underlined
+
+##MAN PAGES IN VIM
+viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
+You can then save the man page as it displayed using :w filename
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:DEB - TAR FILES
@@ -141,23 +170,23 @@ awk '/pattern1/ && /pattern2/'
 awk '/regexp1/ && /regexp2/ && /regexp3/ { print; }'
 
 ##GREP COLORIZE 
-.B grep --color 'pattern' file
+.I grep --color 'pattern' file
 This will return and colorize ONLY the matching lines. 
 Colorize will be applied only to 'pattern' and not to the whole line, unless we use 'pattern.*' or '.*pattern.*'
 
-.B grep --color -E 'pattern.*|$' file
+.I grep --color -E 'pattern.*|$' file
 This will print ALL lines of the file but will colorize only the lines matching pattern
 This works because |$ (or |^) matches and colorize invisibly the null byte at the end of the line (or at the beginning in case of |^)
 
-.B In a function: 
+.I In a function: 
 function highlight () { grep --color -E "$1|$" "${@:1}" }
 
-.B Retain Color when piped (i.e to less)
+.I Retain Color when piped (i.e to less)
 grep --color=always 'pattern' file |less -r #or -R.
 color auto enables colors when destination of output is a tty but on a pipe color marking (esc sequences) are removed.
 Using --color=always color sequences are retained even in pipes. less is forced due to -r or -R to read those coloring instructions
 
-.B Colorize but also print the non matching lines along with matching lines
+.I Colorize but also print the non matching lines along with matching lines
 grep --color -E 'pattern|$' file #or '^|pattern'
 
 ##GREP MULTIPLE PATTERNS AND PRINT
@@ -206,22 +235,22 @@ Tip: grep -E = extended regex , treats pipe symbol as an OR. Classic grep can us
 ##GREP PCRE Lookahead/lookbehind
 https://www.regular-expressions.info/lookaround.html
 
-.B Negative lookbehind: 
+.I Negative lookbehind: 
 (?<!a)b   ---> matches "b" that is not preceded by an "a", using negative lookbehind. 
 It doesn't match cab, but matches the b (and only the b) in bed or debt. 
 
-.B Positive lookbehind :
+.I Positive lookbehind :
 (?<=a)b   ---> matches the b (and only the b) in cab, but does not match bed or debt since there is not an "a" before "b".
 
-.B Negative lookahead: 
+.I Negative lookahead: 
 q(?!u). matches a "q" that is not followed by an "u" without matching u itself
 echo "quit qax" |grep -P 'q(?!u)'   ---> quit qax
                                               ^ 
-.B Positive lookahead :
+.I Positive lookahead :
 q(?=u) matches a "q" only if is followed by an "u", without making the u part of the match. 
 echo "quit qax" |grep -P 'q(?=u)'    ---> quit qax
                                           ^
-.B More complex examples 
+.I More complex examples 
 
 $ echo "baba cab bed debt" |grep -P '(?>a)b'    ---> baba cab bed debt --- seems equal to 'ab' pattern
                                                       ^^   ^^
@@ -425,7 +454,7 @@ $ paste num2 let3 num2 #reusing num2 file
 1       a      1
 2       b      2
         c
-.B Print lines from two files (alternating):
+.I Print lines from two files (alternating):
 $ cat file1
 Aaaaaaa1
 Aaaaaaa2
@@ -450,7 +479,7 @@ Also see this example: http://unix.stackexchange.com/questions/340691/stacked-re
 $ paste -d"," <(grep -E '[0-9]' c2.txt) <(grep -E '[a-z]' c2.txt)
 Mind the process substitution of the same file. Remember that <(...) creates a temp fd descriptor which acts as a file argument in apps requesting files, like paste.
 
-.B Tricky usage to join /reorganize lines of the same file
+.I Tricky usage to join /reorganize lines of the same file
 Considering a file with 10 lines , each line containing numbers like 1,2,3...10 (or seq 10)
 Now we want to achieve this output:
 1 2
@@ -683,7 +712,7 @@ The last argument +"...." defines the output date format.
 By removing it you can get the std date output format:
 $ date -d @1267619929   ---> Wed Mar  3 14:38:49 EET 2010
 
-.B Using printf
+.I Using printf
 Since Bash 4.2 you can use 
 $ printf '%(datefmt)T\n' epoch
 For datefmt you need a string accepted by strftime(3) - see man 3 strftime
@@ -705,7 +734,7 @@ printf '%(%F %T)T\n' $(printf '%s/1000\n' $(<file10) |bc)
 2018-01-08 00:45:39
 
 
-.B Using awk
+.I Using awk
 echo 1267619929 |awk '{ $1 = strftime("%Y-%m-%d %H:%M:%S", $1) }1'
 
 ##DELETE LINES FROM LOG FILE OLDER THAN 30 days 
@@ -1005,7 +1034,7 @@ w -hs #prints logged in users (gv & root)
 fgconsole #prints tty number = 7. can be used in scripts like tty$(fgconsole)
 HDMI_STATUS=$(cat /sys/class/drm/card0/*HDMI*/status)
 
-.B UPOWER = Power Manager - freedesktop
+.I UPOWER = Power Manager - freedesktop
 upower -e : Display devices controlled by power manager
 upower -d : Dump parameter of all objects
 upower -i /org/freedesktop/UPower/devices/battery_BAT0 --> display parameters of battery 0 = first system battery. Combine with grep.
@@ -1103,7 +1132,7 @@ mpv player reads data from '-' = /dev/stdin=tty while loading the subs file prev
 As of August 2018, has been proved that mpv can directly read the vtt file from remote source without previously wget-ting the file:
 youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
 
-.B Tips & Bugs
+.I Tips & Bugs
 0. https://9xbuddy.com/sites/openload 
 Above website will give you subtitles vtt link and real video mp4 link suitable for downloading or curl or direct mpv playing
 
@@ -1159,14 +1188,14 @@ Use this link either directly to mpv or to youtube-dl |tee |mpv
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SYSTEMD WIFI RESET AFTER SLEEP / HYBERNATE RESUME
-.B Forcing a Reset (check alias wfr)
+.I Forcing a Reset (check alias wfr)
 To force a wifi reset those works in Debian 9.0:
 1. nmcli radio wifi off && sleep 10 && nmcli radio wifi on #nmcli = network-manager command line interface
 2. systemctl restart network-manager
 
 While both commands work, the first one seems to emulate the 'wifi off' laptop button , while the second one is purelly SW based restart
 
-.B Reset by script
+.I Reset by script
 People claim that scripts located in bellow directories run on system resume:
 1. Directory /usr/lib/pm-utils/sleep.d  --> Not working on Debian 9
 2. Directory /lib/systemd/system-sleep/ - Explained here: https://wiki.archlinux.org/index.php/Power_management#Hooks_in_.2Fusr.2Flib.2Fsystemd.2Fsystem-sleep
@@ -1190,7 +1219,7 @@ case $1/$2 in
     ;;
 esac
 
-.B Reset Wifi by customized systemd service
+.I Reset Wifi by customized systemd service
 https://askubuntu.com/questions/761180/wifi-doesnt-work-after-suspend-after-16-04-upgrade
 
 1. Create a service : sudo nano /lib/systemd/system/wifi-resume.service
@@ -1221,7 +1250,7 @@ This creates the symlinks into the indicated [Install] directories of /etc/syste
 
 4. Check status with systemctl status wifi-resume.service
 
-.B Verifying sleep/hybernate states
+.I Verifying sleep/hybernate states
 journalctl -b -u systemd-suspend
 
 
@@ -1281,7 +1310,7 @@ curl cheat.sh/rust/hello          # hello world program in rust.
 curl cheat.sh/scala/~currying     # look for currying in scala cheat sheets
 curl cheat.sh/~snapshot/r         # look for snapshot in all cheat sheets
 
-.B Special pages:
+.I Special pages:
     :help               help page
     :list               list all cheat sheets
     :post               how to post new cheat sheet
@@ -1297,7 +1326,7 @@ curl cheat.sh/~snapshot/r         # look for snapshot in all cheat sheets
 ##CLI SERVICES COLLECTION
 https://github.com/chubin/awesome-console-services
 
-.B IP address
+.I IP address
 curl https://canihazip.com/s
 curl ipinfo.io/ip
 curl icanhazip.com
@@ -1307,48 +1336,48 @@ curl ifcfg.me
 curl ip-addr.es
 dig +short myip.opendns.com @resolver1.opendns.com
 
-.B IP-based geolocation
+.I IP-based geolocation
 curl ipinfo.io/8.8.8.8 or curl ipinfo.io/8.8.8.8/loc
 curl freegeoip.net/csv/8.8.8.8 or freegeoip.net/xml/4.2.2.2 or freegeoip.net/json/github.com
 
-.B Text Sharing (like pastebin)
+.I Text Sharing (like pastebin)
 ix.io
 sprunge.us
 ptpb.pw
 
-.B URL shortener
+.I URL shortener
 curl -s http://tinyurl.com/api-create.php?url=http://www.google.com
 
-.B File Transfer
+.I File Transfer
 curl --upload-file <file> transfer.sh/<filename>
 
-.B Tools
+.I Tools
 curl qrenco.de/STRING or echo STRING | curl -F-=\<- qrenco.de — create QR-code for a string (chubin/qrenco.de)
 
-.B Weather
+.I Weather
 curl wttr.in or curl wttr.in/Berlin - the right way to check the weather
 finger oslo@graph.no
 
-.B Exchange rates and financial information
+.I Exchange rates and financial information
 curl rate.sx - get cryptocurrencies exchange rates
 curl moneroj.org - get Monero exchange rate
 
-.B Manuals, cheat sheets and FAQs
+.I Manuals, cheat sheets and FAQs
 curl cheat.sh - UNIX/Linux commands cheat sheets using curl (chubin/cheat.sh)
 Dictionaries and translators
 curl 'dict://dict.org/d:command line'
 
-.B Messages/texts/jokes/fortunes/names generators
+.I Messages/texts/jokes/fortunes/names generators
 git commit -m $(curl -sk https://whatthecommit.com/index.txt) — generate random commit message
 curl -H 'Accept: text/plain' foaas.com/cool/:from — fuck off as a service
 curl -s https://uinames.com/api/?region=france\&amount=25 | jq '.[] | .name +" " + .surname' — generate 25 random french names
 curl https://icanhazdadjoke.com — random jokes
 
-.B Chats, games and fun
+.I Chats, games and fun
 nc towel.blinkenlights.nl 23 — watch StarWars in terminal
 ssh chat.shazow.net — chat over SSH (shazow/ssh-chat)
 
-.B Clients
+.I Clients
 At least on of the clients, that you need to access these services, is installed in almost every UNIX/Linux system.
 curl/curl
 httpie — modern command line HTTP client
@@ -1537,7 +1566,7 @@ OR
 Client: echo "hello" >/dev/tcp/IP/Port  
 PS: You can use a second terminal as "client" in the same machine
 
-.B Common Options
+.I Common Options
 -l : listen. As a general idea the listening machine should be started first
 -p : port
 -k : keep open
@@ -1565,7 +1594,7 @@ You can force connection to close after inactivity by using -w 5 switch (wait 5 
 ##VIDEO VLC/MPV STREAMING
 https://wiki.videolan.org/Uncommon_uses/
 
-.B Method 1 - Classic Server - Client
+.I Method 1 - Classic Server - Client
 PC1-Toshiba : $ netcat -l -p 8111 <3071-BRHD-GR-TRAGOUDA.mp4
 #OR           $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat -l -p 8111   #server
 
@@ -1575,7 +1604,7 @@ PC2-Dell    : $ netcat 192.168.1.116 8111 |vlc -            #client
 #Surprisingly this does not work : $ vlc </dev/tcp/192.168.1.116/8111 
 
 
-.B Method 2 - Reversed
+.I Method 2 - Reversed
 PC2-Dell    : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
 PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
 OR $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
