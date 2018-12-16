@@ -17,10 +17,15 @@ echo "\$OPTARG after getopts: $OPTARG - \$OPTIND=$OPTIND"
 
 echo "Shell level parameter \$SHLVL=$SHLVL";echo "\$BASH_SUBSHELL=$BASH_SUBSHELL"
 echo "Just an echo - nothing more to be done here"
-
+echo
 echo "You run this script as \$USER=$USER (this is the value of \$USER variable)"
 echo -n "whoami command returns:  " && whoami
 echo -n "/bin/id returns:  " && id
+echo "the pid (echo \$\$) of this script is : $$"
+echo "the \$PPID (parent pid) is : $PPID"
+echo "top -b -n1 -p \$PPID -p \$\$ returns:" 
+top -b -n1 -p $PPID -p $$ |egrep -B1 "$PPID|$$"
+echo
 echo "Your \$HOME dir is $HOME"
 echo "Your \$PATH is $PATH"
 echo "Numbers of Parameter received= "$#
@@ -70,5 +75,6 @@ echo "you entered $REPLY (this is the value of default \$REPLY var , used to cap
 ##OR 
 ## to strip the alias , get rid of shopt and use just the function:
 ## sed -n "/alias debman/p" .bash_aliases |awk -F="'|}" '{print $2"}"}'
-
-exit
+echo
+echo "Script exits with code 22 (just for fun). Verify it by running  echo \$?"
+exit 22

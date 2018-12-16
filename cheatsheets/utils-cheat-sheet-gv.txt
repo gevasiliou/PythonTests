@@ -1400,6 +1400,9 @@ You need to work with udev , systemd and shell
 udevadm monitor                    #will print on screen udev and kernel events (i.e wifi on/off)
 udevadm info /sys/class/net/wlan0  #print information of the required device
 journalctl
+ls -l /lib/systemd/system 
+ls -l /etc/systemd/system 
+ls -l /run/systemd/system
 
 ##AUTO ENABLE HDMI SOUND WHEN HDMI IS PLUGGED IN
 
@@ -1471,7 +1474,10 @@ Feb 13 02:21:16 debian hdmisound.sh[25807]: connected
 
 ##NETWORKING - WLAN 
 http://reactivated.net/writing_udev_rules.html#example-netif
-Remember that while inotifywait -e modify <file>;do .....;done does not work with /proc or /sys files.
+
+Remember that 
+$while inotifywait -e modify <file>;do .....;done 
+does not work with /proc or /sys files.
 
 .B Read the status:
 cat /sys/class/net/wlan0/operstate 
@@ -1485,11 +1491,26 @@ IP address       HW type     Flags       HW address            Mask     Device
 Settings for wlan0:
 	Link detected: yes
 
-.B Execute a script
-https://unix.stackexchange.com/questions/166473/debian-how-to-run-a-script-on-startup-as-soon-as-there-is-an-internet-connecti
+.HP 
+.B Read status continuously on the ugly way:
+#function wfcheck { 
+  while :; do 
+  read state </sys/class/net/wlan0/operstate; #this sys file has only one line with up/down values 
+  printf "state=$state - pid=$$ -PPID=$PPID";top -b -n1 -p $$ |egrep -B1 "$$|%MEM" |awk '{printf $10 "-"}END{print " "}';
+  sleep 2;done
+}
+# wfcheck
+state=up - pid=5283 -PPID=3292-%MEM-0.1- 
+state=up - pid=5283 -PPID=3292-%MEM-0.1- 
+state=up - pid=5283 -PPID=3292-%MEM-0.1-
 
-Those scripts are executed if up, before up, etc
-ls -l /etc/network
+.B Execute a script if wlan is up
+https://unix.stackexchange.com/questions/166473/debian-how-to-run-a-script-on-startup-as-soon-as-there-is-an-internet-connecti
+cat /lib/systemd/system/NetworkManager-dispatcher.service 
+cat /etc/NetworkManager/dispatcher.d/01-ifupdown           #a shell script that calls if-up / if-down scripts
+
+Those scripts are executed if net is up, before up, down, after down, etc
+#ls -l /etc/network
 total 28
 drwxr-xr-x 2 root root 4096 Oct 20 02:40 if-down.d
 drwxr-xr-x 2 root root 4096 Oct 20 02:29 if-post-down.d

@@ -14,6 +14,8 @@ export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/
 #firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
 export MOZ_USE_XINPUT2=1
 
+source mancolor
+
 function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
@@ -34,8 +36,6 @@ alias maxpower='cpufreq-set -c 0 --min 2000000 --max 9000000 && cpufreq-set -c 1
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #--wrap &'
 #alias yadit='yad --text="$(</dev/stdin)" --center --wrap --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"  # yadit alternative but without scroll bars and buttons
 #alias lsdir='ls -l -d */'
-
-
 
 alias dirsize='df -h / && du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
