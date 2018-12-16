@@ -1390,12 +1390,20 @@ UTILS:MAKE A BOOTABLE CD
 dd bs=4M if=kali-linux-xfce-2017.3-amd64.iso of=/dev/sdb conv=fdatasync
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:AUTO ENABLE HDMI SOUND WHEN HDMI IS PLUGGED IN
+UTILS:EVENTS 
 https://wiki.archlinux.org/index.php/PulseAudio/Examples#Automatically_switch_audio_to_HDMI
+http://reactivated.net/writing_udev_rules.html#example-netif
 
 You need to work with udev , systemd and shell
 
-##1. create a  new rule file 
+.I Usefull Commands 
+udevadm monitor                    #will print on screen udev and kernel events (i.e wifi on/off)
+udevadm info /sys/class/net/wlan0  #print information of the required device
+journalctl
+
+##AUTO ENABLE HDMI SOUND WHEN HDMI IS PLUGGED IN
+
+.B 1. create a  new rule file 
 cat <<EOF > /lib/udev/rules.d/78-hdmi.rules
 KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start hdmi-sound.service"
 EOF
@@ -1405,7 +1413,7 @@ PS: systemctl path may vary. Find it using which systmctl
 PS: To avoid permission issues better to copy an existed rule file: cp 78-sound.rule 78-hdmi.rules
     This will ensure that the new file will have the correct permissions. In any case all rules files seems to have 644 permissions.
 
-##2. Create a .service file. Service files can call sh scripts without problem.
+.B 2. Create a .service file. Service files can call sh scripts without problem.
 cat <<EOF > /etc/systemd/system/hdmi-sound.service
 [Unit]
 Description=hdmi sound hotplug
@@ -1422,7 +1430,7 @@ EOF
 
 chmod 777 /etc/systemd/system/hdmi-sound.service
 
-##3. Copy the file hdmisound.sh to /usr/bin
+.B 3. Copy the file hdmisound.sh to /usr/bin
 cp -iv /home/gv/Desktop/PythonTests/newpcsetup/hdmisound.sh /usr/bin
 
 Or create this file:
@@ -1449,17 +1457,109 @@ exit 0
 EOF
 chmod +x /usr/bin/hdmisound.sh
 
-##4. Reload rules and you are ready
+.B 4. Reload rules and you are ready
 udevadm control --reload-rules
 
-##5. Verify that udev calls the required service using #journalctl and scroll to the end.
+.B 5. Verify that udev calls the required service using #journalctl and scroll to the end.
 You should see something like this close to the end
 Feb 13 02:21:16 debian systemd[1]: Configuration file /etc/systemd/system/hdmi-sound.service is marked executable. Please remove executable permission bits. Proceeding anyway.
 Feb 13 02:21:16 debian systemd[1]: Configuration file /etc/systemd/system/hdmi-sound.service is marked world-writable. Please remove world writability permission bits. Proceeding anyway.
 Feb 13 02:21:16 debian systemd[1]: Started hdmi sound hotplug.
 Feb 13 02:21:16 debian hdmisound.sh[25807]: connected
 
-##6. As an additional check you can look at the file /var/log/hdmi.log
+.B 6. As an additional check you can look at the file /var/log/hdmi.log
+
+##NETWORKING - WLAN 
+http://reactivated.net/writing_udev_rules.html#example-netif
+Remember that while inotifywait -e modify <file>;do .....;done does not work with /proc or /sys files.
+
+.B Read the status:
+cat /sys/class/net/wlan0/operstate 
+up                                  #or down respectively. Works ok with my wifi
+
+cat /proc/net/arp                   #grep 'wlan' /proc/net/arp
+IP address       HW type     Flags       HW address            Mask     Device
+192.168.1.1      0x1         0x2         f0:84:2f:70:cc:81     *        wlan0
+
+/sbin/ethtool wlan0
+Settings for wlan0:
+	Link detected: yes
+
+.B Execute a script
+https://unix.stackexchange.com/questions/166473/debian-how-to-run-a-script-on-startup-as-soon-as-there-is-an-internet-connecti
+
+Those scripts are executed if up, before up, etc
+ls -l /etc/network
+total 28
+drwxr-xr-x 2 root root 4096 Oct 20 02:40 if-down.d
+drwxr-xr-x 2 root root 4096 Oct 20 02:29 if-post-down.d
+drwxr-xr-x 2 root root 4096 Sep 24 20:14 if-pre-up.d
+drwxr-xr-x 2 root root 4096 Dec  4 02:37 if-up.d
+-rw-r--r-- 1 root root  240 Sep 20  2016 interfaces
+drwxr-xr-x 2 root root 4096 Mar 13  2015 interfaces.d
+lrwxrwxrwx 1 root root   12 Sep 20  2016 run -> /run/network
+
+.I Script example 
+.B Make a script into if-up.d directory. This will be called everytime that network interface is up.
+/etc/network/if-up.d# ls -l
+total 24
+-rwxr-xr-x 1 root root  923 Apr 13  2015 avahi-autoipd
+-rwxr-xr-x 1 root root  484 Apr 13  2015 avahi-daemon
+-rwxr-xr-x 1 root root 1685 Jun 30  2016 ethtool
+-rwxr-xr-x 1 root root  124 Dec 15 18:49 greetme
+-rwxr-xr-x 1 root root 4958 Apr  6  2015 mountnfs
+lrwxrwxrwx 1 root root   32 Aug  8 23:50 wpasupplicant -> ../../wpa_supplicant/ifupdown.sh
+
+/etc/network/if-up.d# cat greetme
+#!/bin/sh
+# filename: wlan-up
+
+#if [ "$IFACE" = wlan0 ]; then
+  echo "this is script greetme under if-up.d Directory.wlan0 is up"
+#>>/tmp/wlantest.log
+#fi
+/tmp/wlantest.sh
+
+/etc/network/if-up.d# cat /tmp/wlantest.sh
+gksu -u gv 'yad --text="all good"'
+echo "this is from script /tmp/wlantest.sh"
+
+.B Run & Troubleshoot the script
+Disable wifi and re-enable it to force a reconnection and force if-up.d scripts to execute.
+Since i got no greeting , let's see what might goes wrong.
+Run journalctl and scroll to the last lines - scroll  to the end:
+
+/etc/network/if-up.d# journalctl
+Dec 16 17:26:46 debian avahi-daemon[628]: Registering new address record for 192.168.1.121 on wlan0.IPv4.
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.7904] device (wlan0): state change: secondaries -> activated (reason 'n
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.7964] manager: NetworkManager state is now CONNECTED_LOCAL
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.8684] manager: NetworkManager state is now CONNECTED_SITE
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.8692] policy: set 'CYTA921541' (wlan0) as default for IPv4 routing and 
+Dec 16 17:26:46 debian dhclient[2561]: bound to 192.168.1.121 -- renewal in 21108 seconds.
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.9268] device (wlan0): Activation: successful, device activated.
+Dec 16 17:26:46 debian NetworkManager[636]: <info>  [1544974006.9283] manager: NetworkManager state is now CONNECTED_GLOBAL
+Dec 16 17:26:46 debian dbus-daemon[626]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.f
+Dec 16 17:26:46 debian systemd[1]: Starting Network Manager Script Dispatcher Service...
+Dec 16 17:26:46 debian dbus-daemon[626]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+Dec 16 17:26:46 debian systemd[1]: Started Network Manager Script Dispatcher Service.
+Dec 16 17:26:46 debian nm-dispatcher[2574]: req:1 'up' [wlan0]: new request (1 scripts)
+Dec 16 17:26:46 debian nm-dispatcher[2574]: req:1 'up' [wlan0]: start running ordered scripts...
+Dec 16 17:26:46 debian nm-dispatcher[2574]: req:2 'connectivity-change': new request (1 scripts)
+Dec 16 17:26:47 debian nm-dispatcher[2574]: this is script greetme under if-up.d Directory.wlan0 is up
+Dec 16 17:26:47 debian minissdpd[1014]: setsockopt(udp, IPV6_JOIN_GROUP)(FF02::C, ): Address already in use
+Dec 16 17:26:47 debian minissdpd[1014]: setsockopt(udp, IPV6_JOIN_GROUP)(FF02::C, ): Address already in use
+Dec 16 17:26:48 debian gksu[2615]: cannot open display: 
+Dec 16 17:26:48 debian nm-dispatcher[2574]: this is from script /tmp/wlantest.sh
+Dec 16 17:26:48 debian nm-dispatcher[2574]: this is script greetme under if-up.d Directory.wlan0 is up
+Dec 16 17:26:48 debian gksu[2659]: cannot open display: 
+Dec 16 17:26:48 debian nm-dispatcher[2574]: this is from script /tmp/wlantest.sh
+Dec 16 17:26:48 debian nm-dispatcher[2574]: req:2 'connectivity-change': start running ordered scripts...
+
+Obviously the script greetme was called by networkmanager when wlan0 was up again.
+The text 'this is script greetme...." exists (twice? wtf?) and gksu reports an error related to yad, meaning that the greetme script called without problem
+the script /tmp/wlantest.sh. Moreover the relevant text from /tmp/wlantest.sh is also here (this is from script /tmp....)
+
+No clue why the greetme script run twice. Can be limited to run once using a kind of "flags" saved to a tmp file, i.e echo "hasrun=true" > /tmp/wlanhasrun
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:XORG
