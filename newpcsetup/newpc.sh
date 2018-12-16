@@ -98,8 +98,11 @@ git config credential.helper store #this will store the username/password on the
 }
 
 function sysupgrade {
-echo "copy .bash_aliases to /home/gv" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases /home/gv/ 
-echo "copy .bash_aliases to /root" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases /root/
+for i in /home/gv /root;do
+echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
+echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
+done
+
 echo "make backup of /etc/apt/sources.list" && cp -iv /etc/apt/sources.list /etc/apt/sources.list.backup
 echo "copy sources.list to /etc/apt" && cp -iv /home/gv/Desktop/PythonTests/sources.list /etc/apt/
 echo "copy apt preferences to /etc/apt/" && cp -iv /home/gv/Desktop/PythonTests/preferences /etc/apt/
