@@ -452,7 +452,8 @@ fi
 	echo -e ".ce 2\n#-!#dcat file contents of directory $d\n\n\n-" >/tmp/.__tmpcont
 	find "${d[@]}" $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
 	                                          && [[ $(file "$0") == *"ASCII"* || $(file "$0") == *"empty"* ]] \
-	                                          && echo "$0 --> /tmp/.__tmpconf" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
+	                                          && echo "$0 --> /tmp/.__tmpcont" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
+	                                          && echo "$0 --> /tmp/.__tmpcont" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
 	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics
 	# using find ${d[@]} will work with globbing like file* and also with one entry like a simple directory
 	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#-!#/\.SH /g;G" /tmp/.__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
