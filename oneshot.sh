@@ -1,4 +1,15 @@
 #!/bin/bash
+function abc {
+echo 
+echo "start of abc function (sleep 1)"
+echo "the pid (echo \$\$) of this script is : $$"
+echo "the \$BASHPID/\$! values are :$BASHPID / $!"
+echo "the \$PPID (parent pid) is : $PPID"
+echo "top -b -n1 -p \$PPID -p \$\$ returns:" 
+top -b -n1 -p $PPID -p $$ |egrep -B1 "$PPID|$$"
+echo "end of abc function"
+}
+
 echo "Reading parameters -s and -g using getopt & \$OPTARG"
 echo "\$OPTARG value before getopts: ${OPTARG} - \$OPTIND: $OPTIND"
 while getopts ":s:g:" o; do
@@ -21,7 +32,12 @@ echo
 echo "You run this script as \$USER=$USER (this is the value of \$USER variable)"
 echo -n "whoami command returns:  " && whoami
 echo -n "/bin/id returns:  " && id
+
+abc
+
+echo
 echo "the pid (echo \$\$) of this script is : $$"
+echo "the \$BASHPID/\$! values are :$BASHPID / $!"
 echo "the \$PPID (parent pid) is : $PPID"
 echo "top -b -n1 -p \$PPID -p \$\$ returns:" 
 top -b -n1 -p $PPID -p $$ |egrep -B1 "$PPID|$$"
