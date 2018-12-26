@@ -1643,7 +1643,7 @@ sed "s/from/to/3"       awk '{$0=gensub("from","to",3); print}'
 sed "s/reg[ex]/ZZ/4"    awk '{$0=gensub(/reg[ex]/, "ZZ", 4); print}'
 sed "s/.*=/equ/5"       awk -v var=".*=" '{$0=gensub(var,"equ",5);print}'
 
-##DIFFERENT / CHANGE FS FOR THE SECOND FILE (by Ed)
+##DIFFERENT / CHANGE RS FOR THE SECOND FILE (by Ed Morton)
 
 $ cat file1
 key1,field1,key2,field2
@@ -1663,7 +1663,20 @@ $ awk '{print FNR,$0}' RS=',' file1 RS=';' file2
 4 field5
 
 -------------------------------------------------------------------------------------------------------------------
-AWK:GREP EMULATION MULTIPLE FILES
+AWK:USER DEFINED FUNCTIONS
+
+##USER FUNCTIONS
+$ awk 'function t(num1,num2) { dd=2*ss;return num1*num2; };BEGIN{ss=111;print t(3,9);print dd}'
+27			#value of t
+222			#value of dd,defined in function, printed outside the function
+
+.B Remarks:
+1. Local vars defined inside a function (like var dd) are available in the whole program (outside the function)
+2. Vars defined in program outside of the function (like var ss) are available in the function. 
+   This is why dd is calculated correctly as 2*ss => 2*111
+3. Return of a function can be even string , i.e return "ok" and will work nicely
+
+##GREP EMULATION MULTIPLE FILES
 http://stackoverflow.com/questions/42415826/how-to-get-two-files-having-max-difference-among-a-series-of-files/42419795#42419795
 bash while loop and awk 'NR==FNR{a[$2];next}!($2 in a)' file1 file2 per pair of files = 30 awks
 
