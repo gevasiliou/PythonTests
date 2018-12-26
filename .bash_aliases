@@ -311,14 +311,18 @@ diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s 
 }
 
 function lsdeb () { 
-	echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --nd to exclude directories"
+	echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --down to download deb file "
 	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
-	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-	tmpdeb=$(echo "${tmpdeb: 1:-1}")
-	echo "deb file to list contents: $tmpdeb"
-	if [[ $2 == "--nd" ]];then
-	    dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
+
+	if [[ $2 == "--down" ]];then
+		echo "--down selected"
+		apt-get download $1 && ls -l $1*.deb && dpkg -c $1*.deb && rm -f $1*.deb
+	    #dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
 	else
+		echo "no downloading mode selected-curl will be used"
+		local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
+		tmpdeb=$(echo "${tmpdeb: 1:-1}")
+		echo "deb file to list contents: $tmpdeb"
 	    #dpkg -c <(curl -sL -o- $tmpdeb)
 	    curl -sL -o- $tmpdeb |dpkg -c /dev/stdin
 	fi
