@@ -158,7 +158,7 @@ function down {
 ##	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1) #Prior to Nov17
 ##	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1 || echo "Package: $aptpkg" #prior to Nov17
 #	apt-get download "$aptpkg" 2>/dev/null
-	apt-get download "$rawpkg" 2>/dev/null
+	apt-get download "$rawpkg"
 	pkg="${rawpkg%%/*}" #Nov17: remove the /repository i.e /experimental if exists
 	debname=$(find . -maxdepth 1 -name "$pkg*.deb")
 	echo "Deb Name = $debname"
