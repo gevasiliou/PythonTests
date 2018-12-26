@@ -315,11 +315,12 @@ function lsdeb () {
 	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 	tmpdeb=$(echo "${tmpdeb: 1:-1}")
-	echo "$tmpdeb"
+	echo "deb file to list contents: $tmpdeb"
 	if [[ $2 == "--nd" ]];then
 	    dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
 	else
-	    dpkg -c <(curl -sL -o- $tmpdeb)
+	    #dpkg -c <(curl -sL -o- $tmpdeb)
+	    curl -sL -o- $tmpdeb |dpkg -c /dev/stdin
 	fi
 
 
@@ -428,18 +429,29 @@ links -dump "https://en.wikipedia.org/w/index.php?search=$q" |less
 }
 
 function dircat() { 
-echo "dircat: directory cat - cat files within directory $1, excluding subdirs unless --full is given"
+echo "dircat: directory cat - cat files within directory $1, excluding subdirs. Use --two for entering second level or --full "
 [[ -z $1 ]] && echo "Pass me a directory to cat files" && return 1
-[[ -d $d ]] && local d="$1" || local d=( "$@" ) #If files provided , store them in a array
-#[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return #disabled 24 Sep evening to allow single files
-echo "${d[@]}"
-[[ -d $d ]] && [[ "${d: -1}" != "/" ]] && d="${d}/" #if a directory was given and if last char is not a dash then add a trailing dash
-[[ -d $d ]] && echo "directory to scan and print= $d"
+#printf '%s\n' "$@"  #works ok in cases like dircat /etc/w*
 
-if [[ -d $d ]] && [[ "$2" == "--full" ]];then 
+##[[ -d $1 ]] && local d="$1" || local d=( "$@" ) #If files provided , store them in a array
+
+#[[ ! -d $d ]] && echo "$d   is not a directory - for regular file just use less" && return #disabled 24 Sep evening to allow single files
+unset d; d=( "$@" ); 
+echo "we are going to cat:"
+ls -ld "${d[@]}"
+#printf '%s\n' "${d[@]}"
+read -p "press enter to continue"
+#return
+
+##[[ -d $d ]] && [[ "${d: -1}" != "/" ]] && d="${d}/" #if a directory was given and if last char is not a dash then add a trailing dash
+##[[ -d $d ]] && echo "directory to scan and print= $d"
+
+##if [[ -d $d ]] && 
+if [[ "$2" == "--full" ]];then 
   echo "Will go inside subdirs! Maybe gonna be long time to finish this..." 
   local depth=""
-elif [[ -d $d ]] && [[ "$2" == "--two" ]];then 
+##elif [[ -d $d ]] && [[ "$2" == "--two" ]];then 
+elif [[ "$2" == "--two" ]];then 
   echo "Will go inside subdirs level2! Maybe gonna be long time to finish this..." 
   local depth=" -maxdepth 2"
 else
@@ -453,11 +465,11 @@ fi
 	find "${d[@]}" $depth -type f -exec bash -c '[[ "$0" != "/proc/kmsg" && "$0" != /proc/kpage* && "$0" != *pagemap* ]] \
 	                                          && [[ $(file "$0") == *"ASCII"* || $(file "$0") == *"empty"* ]] \
 	                                          && echo "$0 --> /tmp/.__tmpcont" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
-	                                          && echo "$0 --> /tmp/.__tmpcont" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
+#	                                          && echo "$0 --> /tmp/.__tmpcont" && echo -e "#-!#File: $0\n$(cat "$0")" >>/tmp/.__tmpcont ' {} \;
 	#make sure that file found is an ASCII file to avoid perform cat on binaries and pics
 	# using find ${d[@]} will work with globbing like file* and also with one entry like a simple directory
 	man --nj --nh <(local h=".TH man gv 2017 1.0 dcat";sed "s/^$/\.LP/g; s/^#-!#/\.SH /g;G" /tmp/.__tmpcont |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h")
-	rm -f /tmp/.__tmpcont
+	rm -f /tmp/.__tmpcont && echo "/tmp/.__tmpcont removed successfully" || echo "/tmp/.__tmpcont failed to remove"
 	#Call the man as pager to display files contents. Man formatting is necessary: 
 	#File must be double spaced and empty lines to be replaced with .BR. 
 	#Existed line breaks will be substitued by .LP = new paragraph 
