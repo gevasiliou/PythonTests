@@ -11,7 +11,8 @@ diff file1 file2 : Prints differences of files
 sort file1 file2 fileN: Sorts the files. Can be adjusted to sort on a specific columnt (i.e 1.2 = file 1 column2)
 join file1 file2 : Joins files in a common field
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:MAN 
+UTILS:MAN PAGES & CHEAT SHEETS 
+
 ##CHEAT SHEET TXT 2 MANPAGE FORMATTING
 Read this cheat file with man pages:
 http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
@@ -24,7 +25,7 @@ https://linux.die.net/man/1/help2man
 zcat manpage.gz
 zcat $(man -w grep)
 
-##WORKING COMMAND:
+.B WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
@@ -54,7 +55,7 @@ $ curl -sL -o- http://ftp.gr.debian.org/debian/pool/non-free/a/agrep/agrep_4.17-
 The use of dpkg-deb --fsys-tarfile is required since deb packages when unzipped are constisted of two major subfiles.
 
 .I With downloading deb package
-$ apt download agrep                           ---> Get:1 http://ftp.gr.debian.org/debian jessie/non-free amd64 agrep amd64 4.17-9 [195 kB]
+$ apt download agrep            ---> Get:1 http://ftp.gr.debian.org/debian jessie/non-free amd64 agrep amd64 4.17-9 [195 kB]
 OR 
 $ curl -sLO "http://httpredir.debian.org/debian/pool/main/a/avis/avis_1.2.2-4_all.deb" # curl -O saves the file in CWD
 
@@ -103,7 +104,69 @@ Escape codes used in the above configuration.
 
 ##MAN PAGES IN VIM
 viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
-You can then save the man page as it displayed using :w filename
+Tip: 
+You can then save the man page as it is displayed on screen (like a normal text and not groff file) using 
+:w filename
+
+##CHEAT SHEETS & MAN PAGES ALTERNATIVES
+https://www.ostechnix.com/3-good-alternatives-man-pages-every-linux-user-know/
+
+.B BROPAGES					http://bropages.org/
+gem install bropages		#Requires Ruby
+bro find					#return usage examples
+
+.B CHEAT					https://github.com/chrisallenlane/cheat
+pip install cheat			#Requires Python
+cheat find				#Returns usage examples and cheats
+cheat list				#List of available cheat sheets
+cheat -h					#Help
+
+.B TLDR PAGES				https://github.com/tldr-pages/tldr
+npm install -g tldr			#Requires NodeJS
+tldr find					#Returns usage examples
+tldr --update				#TLDR can be updated
+tldr --list-all			#See all cheat sheets in cache
+
+.B MANLY					https://github.com/carlbordum/manly
+pip install manly			#Python
+manly grep -o				#Returns man page part specific for the flag provided (-o in this case)
+manly find -path
+manly --help
+
+.B CHEAT.SH PAGE 				https://github.com/chubin/cheat.sh
+curl cheat.sh/grep				# grep examples
+curl cheat.sh/~screenshot       # searching for screenshot
+curl cheat.sh/rust/hello        # hello world program in rust. 
+curl cheat.sh/scala/~currying   # look for currying in scala cheat sheets
+curl cheat.sh/~snapshot/r       # look for snapshot in all cheat sheets
+.I Special pages:
+    :help               help page
+    :list               list all cheat sheets
+    :post               how to post new cheat sheet
+    :bash_completion    bash function for tab completion
+    :bash               bash function and tab completion setup
+    :fish               fish function and tab completion setup
+    :zsh                zsh function and tab completion setup
+    :emacs              cheat.sh function for Emacs
+    :emacs-ivy          cheat.sh function for Emacs (uses ivy)
+    :styles             list of color styles
+    :styles-demo        show color styles usage examples
+
+
+.B PINFO					https://github.com/baszoetekouw/pinfo
+An alternative infopages viewer/browser
+apt-get install pinfo
+pinfo sed					#call sed infopage from /usr/share/info/sed.info.gz
+pinfo -m sed 				#use manual page instead infopage. Default action when infopage is not available.
+
+info files look like: /usr/share/info/wget.info.gz
+Locate available info pages: ls -l /usr/share/info/*
+Infopages locations:  /usr/share/info,  /usr/info,  /usr/local/share/info,  /usr/local/info.   and  /opt/info.
+
+Navigate inside infopage using arrows (up/down to scroll, right to enter a submenu, left to go back)
+
+Tip:
+zcat /usr/share/info/sed.info.gz |less   will display the whole info page at once. You can make regex searches using /
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:DEB - TAR FILES
@@ -1029,9 +1092,9 @@ You should see a straight line draw automatically
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SYSTEM INFO
-id -u gv #prints the id of user gv
-w -hs #prints logged in users (gv & root)
-fgconsole #prints tty number = 7. can be used in scripts like tty$(fgconsole)
+id -u gv 			#prints the id of user gv
+w -hs 				#prints logged in users (gv & root)
+fgconsole 			#prints tty number = 7. can be used in scripts like tty$(fgconsole)
 HDMI_STATUS=$(cat /sys/class/drm/card0/*HDMI*/status)
 
 .I UPOWER = Power Manager - freedesktop
@@ -1256,24 +1319,25 @@ journalctl -b -u systemd-suspend
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:MOREUTILS
+
 ##Moreutils
 This is a package with some usefull perl/c utils:
 
 /usr/bin/chronic    ---> runs a command quietly unless it fails
 /usr/bin/combine    ---> a perl utility to print lines from two files using and/or/xor . i.e print if lines are present in file1 and file2
-/usr/bin/errno      ---> look up errno names and descriptions. Run with --list
+/usr/bin/errno      ---> look up errno names and descriptions. Run with --list for a full errors list.
 /usr/bin/ifdatap    ---> get network interface info without parsing ifconfig output
 /usr/bin/ifne       ---> ifne runs the following command if and only if the standard input is not empty. There is also the opposite using -r (reverse) switch 
 /usr/bin/isutf8     ---> check whether files are valid UTF-8
 /usr/bin/lckdo      ---> run a program with a lock held
-/usr/bin/mispipe    ---> 
-/usr/bin/parallel
-/usr/bin/pee
-/usr/bin/sponge     ---> holds the data piped to sponge and prints those data when file is finished. Different to tee.tee prints out whatever comes in
+/usr/bin/mispipe    ---> pipe two commands, returning the exit status of the first
+/usr/bin/parallel	---> run programs in parallel
+/usr/bin/pee		---> Similar to tee but for pipes. Can drive two different commands, i.e cat file1 |pee 'awk "NR==5"' 'awk "NR==2"'
+/usr/bin/sponge     ---> holds the data piped to sponge and prints those data when file is finished. Different to tee, which prints out whatever comes in
 /usr/bin/ts         ---> time stamp input. Usefull in tail -f
-/usr/bin/vidir      ---> edit a directory in editor. Delete a file from editor, and will deleted for real.
-/usr/bin/vipe       ---> pipe editor. Command cat ,,, |vipe |sed will open editor and allows changes before piping to sed
-/usr/bin/zrun
+/usr/bin/vidir      ---> edit (vi) a directory in editor. Delete a file from editor, and file will be deleted FOR REAL by the directory.
+/usr/bin/vipe       ---> pipe editor. Command cat file1 |vipe |sed will open nano to make changes in a tmp file after cat and before to be piped to sed
+/usr/bin/zrun		---> run a program from a compressed archive. i.e zrun cat /usr/share/info/sed.info.gz
 
 See the whole man pages without installing using $debcat moreutils --ind --readable
 
@@ -1292,38 +1356,7 @@ dpkg --dry-run    : global switch that simulates the action choosen. No changes 
 
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:COOL GITHUB PROJECTS
-
-##WEATHER FROM CLI
-https://github.com/chubin/wttr.in
-
-curl wttr.in/Κηφισιά 
-curl wttr.in/'Νέα Ερυθραία'
-
-##CHEATS/HELP ON COMMANDS/LANGUAGES BY CURL
-https://github.com/chubin/cheat.sh
-
-
-curl cheat.sh/grep                # grep examples
-curl cheat.sh/~screenshot         # searching for screenshot
-curl cheat.sh/rust/hello          # hello world program in rust. 
-curl cheat.sh/scala/~currying     # look for currying in scala cheat sheets
-curl cheat.sh/~snapshot/r         # look for snapshot in all cheat sheets
-
-.I Special pages:
-    :help               help page
-    :list               list all cheat sheets
-    :post               how to post new cheat sheet
-    :bash_completion    bash function for tab completion
-    :bash               bash function and tab completion setup
-    :fish               fish function and tab completion setup
-    :zsh                zsh function and tab completion setup
-    :emacs              cheat.sh function for Emacs
-    :emacs-ivy          cheat.sh function for Emacs (uses ivy)
-    :styles             list of color styles
-    :styles-demo        show color styles usage examples
-
-##CLI SERVICES COLLECTION
+UTILS:GITHUB PROJECTS & CLI SERVICES COLLECTION
 https://github.com/chubin/awesome-console-services
 
 .I IP address
@@ -1355,11 +1388,14 @@ curl --upload-file <file> transfer.sh/<filename>
 curl qrenco.de/STRING or echo STRING | curl -F-=\<- qrenco.de — create QR-code for a string (chubin/qrenco.de)
 
 .I Weather
+https://github.com/chubin/wttr.in
+
 curl wttr.in or curl wttr.in/Berlin - the right way to check the weather
+curl wttr.in/'Νέα Ερυθραία'
 finger oslo@graph.no
 
 .I Exchange rates and financial information
-curl rate.sx - get cryptocurrencies exchange rates
+curl rate.sx - get cryptocurrencies exchange rates. Also curl rate.sx/btc or even /btc@100d
 curl moneroj.org - get Monero exchange rate
 
 .I Manuals, cheat sheets and FAQs
@@ -1382,7 +1418,16 @@ At least on of the clients, that you need to access these services, is installed
 curl/curl
 httpie — modern command line HTTP client
 wget
+links	#check the -dump option
+lynx	#check the -dump option
 
+.I View an image from web without downloading
+PS: You need an image viewer to be capable to read from stdin like ImageMagick or feh
+
+curl -s https://www.ipchicken.com/images/main_03.gif |display	#ImageMagick
+curl -s https://www.ipchicken.com/images/main_03.gif |feh -		#Feh
+
+PS2: eog,eom and xfce viewere ristretto do not work with - or /dev/stdin (i.e eom - or eom /dev/stdin
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:MAKE A BOOTABLE CD 
@@ -1476,7 +1521,7 @@ Feb 13 02:21:16 debian hdmisound.sh[25807]: connected
 http://reactivated.net/writing_udev_rules.html#example-netif
 
 Remember that 
-$while inotifywait -e modify <file>;do .....;done 
+while inotifywait -e modify <file>;do .....;done 
 does not work with /proc or /sys files.
 
 .B Read the status:
