@@ -120,8 +120,12 @@ echo "make backup of /etc/apt/sources.list" && cp -iv /etc/apt/sources.list /etc
 echo "copy sources.list to /etc/apt" && cp -iv /home/gv/Desktop/PythonTests/sources.list /etc/apt/
 echo "copy apt preferences to /etc/apt/" && cp -iv /home/gv/Desktop/PythonTests/preferences /etc/apt/
 echo "Updating the system (update && upgrade && dist-upgrade)"
+#we don't need an explicit user confirmation prompt for above cp commamds since cp -i will ask for user confirmation by default. 
+#Option -v in cp stands for verbose = report what you do.
+
 wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add -
 apt-get update && apt-get upgrade --allow-unauthenticated && apt-get dist-upgrade --allow-unauthenticated 
+#Tip: when repos are changed by owners (i.e google INC changed to google LLC) apt-get update will fail. You need to use 'apt upgrade' instead of 'apt-get'.
 } 
 
 function vboxinstall {
