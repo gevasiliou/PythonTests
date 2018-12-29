@@ -10,18 +10,19 @@ if grep '.bash_aliases' /root/.bashrc >&/dev/null
 then 
   echo "/root/.bashrc already imports /root/.bash_aliases"
 else
-  read -p 'Press enter to modify /root/.bashrc to load external aliases file .bash_aliases or s to skip' answer
+  echo "if [ -f ~/.bash_aliases ];then . ~/.bash_aliases;fi needs to be appended to the end of /root/.bashrc" 
+  read -p 'Press enter to modify /root/.bashrc or s to skip' answer
   if [[ "$answer" != "s" ]];then
     echo "if [ -f ~/.bash_aliases ];then . ~/.bash_aliases;fi" >>/root/.bashrc
   else
-    echo "skipped" 
+    echo "modification of /root/.bashrc is skipped" 
   fi
 fi
 
 ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
 ess+=( "kmod" "sysfsutils" )
-ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" )
+ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
@@ -30,7 +31,14 @@ ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake
 
 for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
-if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
+if ! dpkg-query -l "$i" >&/dev/null ;then 
+  read -p "========> Want to install $i [y/n] ? :" an
+  
+  [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
+else 
+  printf '%s\n' " <========= already installed ";
+fi
+
 #dpkg-query -l pkg returns 0 if pkg is installed
 done
 m-a prepare #module assistant : prepare kernel to build extra modules
@@ -40,7 +48,7 @@ wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-ke
 function utils {
 # Finetunning - Utilities
 unset toinst
-toinst=( "perl" "gawk" "sed" "grep" "original-awk" )
+toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" )
 toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" "moreutils" "debian-goodies" )
 toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
@@ -57,7 +65,12 @@ toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qt
 
 for i in "${toinst[@]}";do
 printf '%s ' "=========> Installing pkg $i"
-if ! dpkg-query -l "$i" >&/dev/null ;then printf "\n" && apt-get install "$i";else printf '%s\n' " <========= already installed";fi
+if ! dpkg-query -l "$i" >&/dev/null ;then 
+  read -p "========> Want to install $i [y/n] ? :" an
+  [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
+else 
+  printf '%s\n' " <========= already installed ";
+fi
 #dpkg-query -l pkg returns 0 if pkg is installed
 done
 }
