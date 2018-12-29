@@ -1,6 +1,7 @@
 import pygame #pip install pygame is required first to be run at bash
 import pygame.camera
-import Image #used for display only - not needed for caption
+#import Image #used for display only - not needed for caption
+from PIL import Image
 # http://www.pygame.org/docs/tut/CameraIntro.html
 
 pygame.camera.init()
