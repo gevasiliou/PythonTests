@@ -457,18 +457,27 @@ done
 # bug : virtual packages are missing fields. Better to grab description separately since vpkgs do have a one
 # 
 
-aptshow="$(apt show "${pd[@]}" |sed 's/[()+-~/\]/\*/g')"
-#declare -p aptshow;exit
-aptpolicy="$(apt policy "${pd[@]%/*}" |sed 's/[()+-~/\]/\*/g')" #in array elements like pkg/experimental removes the /* == /experimental
+#aptshow="$(apt show "${pd[@]}" |sed 's/[()+-~/\]/\*/g')"
+aptshow="$(apt show "${pd[@]}" |sed 's|[()+-]|*|g')"
+#for e in "${!aptshow[@]}"; do echo "aptshow[$e]=${aptshow[$e]}";done && exit 
+
+#aptpolicy="$(apt policy "${pd[@]%/*}" |sed 's/[()+-~/\]/\*/g')" #in array elements like pkg/experimental removes the /* == /experimental
+aptpolicy="$(apt policy "${pd[@]%/*}" |sed 's|[()+-]|\*|g')" #in array elements like pkg/experimental removes the /* == /experimental
 declare -A dyn
 #printarray dyn && exitright
 #echo "$aptshow" |grep -B15 -P '\x27'
-#set -x
+set -x
+#dq=$'\x22'
+#eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/^Description:|^State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')"
+#IFS=$'\n'
+eval "$(awk '/^Package:/{printf("%s%s%s","dyn[",$2,"]=\\\x22")};/^Description:|^State:/{$1="";gsub("\x22","\x27");printf("%s%s%s",$0,"|","\\\x22")}' <<<$aptshow )"
 
-eval "$(echo "$aptshow" |awk '/^Package:/{printf "dyn[" $2 "]=\x22"};/^Description:|^State:/{$1="";gsub("\x22","\x27");printf $0 "|" "\x22" "\n"}')"
+for e in "${!dyn[@]}"; do echo "-->dyn[$e]=${dyn[$e]}";done && exit 
 
 #eval $(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1}END{if (is==0) printf " - | " "\x22" "\n"}' )
 eval "$(echo "$aptshow" |awk '/^Package:/{is=0;printf "dyn[" $2 "]+=\x22";pkgNR=NR};/^Installed-Size:/{$1="";printf $0 "|" "\x22" "\n";is=1};/^State:/{printf "-|" "\x22" "\n";is=1}' )"
+
+#for e in "${!dyn[@]}"; do echo "-->dyn[$e]=${dyn[$e]}";done && exit 
 
 #eval echo "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}END{if (ds!=1) printf " - | " "\x22" "\n"}' )"
 eval "$(echo "$aptshow" |awk '/^Package:/{is=0;ds=0;printf "dyn[" $2 "]+=\x22"};/^Download-Size:/{$1="";printf $0 "|" "\x22" "\n";ds=1}/^State:/{printf "-|" "\x22" "\n"}' )"
@@ -482,8 +491,8 @@ eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Ver
 #Better to use apt show since pkg/experimental works in apt show but not in apt policy.
 
 #Get Section
-eval "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Section:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
-
+eval echo "$(echo "$aptshow" |awk '/^Package:/{d=0;printf "dyn[" $2 "]+=\x22" };/^Section:/{d=1;printf $2 "\x22" "\n"}/^State:/{printf " - " "\x22" "\n"}')"
+exit
 #for e in "${!dyn[@]}"; do echo "dyn[$e]=${dyn[$e]}";done && exit 
 
 
