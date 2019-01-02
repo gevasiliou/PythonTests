@@ -1,0 +1,18 @@
+C-PROGRAMMING:CHEATS BY GV
+
+##PIPE A PROGRAM TO GCC 
+$ cat <<EOF |gcc -xc - 
+#include<stdio.h>
+int main(void)
+{
+  printf("hello my friend. What is your name?");
+
+  char nm[20];
+  scanf("%s",&nm);
+  printf("Your name is : %s\n",nm);
+  return 0;
+}
+EOF
+$ ./a.out
+hello my friend. What is your name?George
+Your name is : George
