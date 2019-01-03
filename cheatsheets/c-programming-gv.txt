@@ -16,3 +16,11 @@ EOF
 $ ./a.out
 hello my friend. What is your name?George
 Your name is : George
+
+.B The simpliest approach:
+cat <<EOF |gcc -xc -o test -
+#include <stdio.h>                               
+main() { printf("Hello\n"); }
+EOF
+Compiler will raise a warning about the missing int in front of main , but will compile and will run. 
+The absence of (void) is ok.
