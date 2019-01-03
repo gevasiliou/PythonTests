@@ -5,14 +5,15 @@
 #if [ -f ~/.bash_aliases ]; then
 #    . ~/.bash_aliases
 #fi
+#
 #Remark: .bashrc of user has already above check condition but root .bashrc not.
-#Install it using cp .bash_aliases /home/gv/ and cp .bash_aliases /root/ or cp .bash_aliases $HOME/ (under root terminal)
+# Install it using cp .bash_aliases /home/gv/ and cp .bash_aliases /root/ or cp .bash_aliases $HOME/ (under root terminal)
 # You can import the recent aliases on the fly by running root@debi64:# . ./.bash_aliases
 
 #alias words='/usr/share/dict/words'
+
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/sbin:/sbin:/usr/sbin
-#firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
-export MOZ_USE_XINPUT2=1
+export MOZ_USE_XINPUT2=1 #firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
 
 source mancolor
 
@@ -20,6 +21,7 @@ function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
 
+alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
 alias ipchicken="links -dump www.ipchicken.com |egrep -o '[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}'"
 alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
@@ -31,8 +33,6 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
 alias maxpower='cpufreq-set -c 0 --min 2000000 --max 9000000 && cpufreq-set -c 1 --min 2000000 --max 9000000'
-
-
 alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #--wrap &'
 #alias yadit='yad --text="$(</dev/stdin)" --center --wrap --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"  # yadit alternative but without scroll bars and buttons
 #alias lsdir='ls -l -d */'
@@ -43,11 +43,11 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ &
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y'
 alias printfunctions='set |grep -A2 -e "()"'
-alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #alternative modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
+alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #WiFiReset. Alternative: modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
 #lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
 
-alias lsm='ls -l $@ && cd' #Strange, but cd keeps the $@ and it works.
+alias lsm='ls -l $@ && cd' #ls and move. Strange, but cd keeps the $@ and it works.
 #Trick : ls -l /dir && cd $_ does the same job
 
 
@@ -339,7 +339,7 @@ function debcat () {
 	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
 	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return 1
 	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && lsdeb "$1" && return 0
-	[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
+	#[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
 	echo "$2 selected" && echo
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
     local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[56789][0-9]{6,}\b')
@@ -352,9 +352,9 @@ function debcat () {
 	    unset flist ms loop key
         loop=1
 	    if [[ "$3" == "--all" ]];then
-			flist+=($(curl -L -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
 	    else
-			flist+=($(curl -L -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
+			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
 	    fi
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
 	    while [[ $loop -eq 1 ]]; do
@@ -368,17 +368,23 @@ function debcat () {
 				#read -n1 -p "Display ${flist[$ms]} - Press any key to continue or q to return...   " key && echo
 				echo "proceeding with ${flist[$ms]} "
 				if [[ ${flist[$ms]} =~ "man/man" ]]; then 
-				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |man /dev/stdin 
 				elif [[ ${flist[$ms]: -3} == ".gz" ]]; then
-				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |gunzip -c |sed "1i ${flist[$ms]}" |less
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |gunzip -c |sed "1i ${flist[$ms]}" |less
 				elif [[ ${flist[$ms]: -4} == ".png" ]]; then
 				   pto="$(xdg-mime query default image/png)";ptopure="${pto%%.*}";echo "openning $ptopure"
 				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} | cat - >/tmp/test.png; "$ptopure" /tmp/test.png;rm -f /tmp/test.png
 				elif [[ ${flist[$ms]: -4} == ".jpg" ]]; then
-				   pto="$(xdg-mime query default image/jpg)";ptopure="${pto%%.*}";echo "openning $ptopure"
-				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} | cat - >/tmp/test.jpg; "$ptopure" /tmp/test.jpg;rm -f /tmp/test.jpg
+				   pto="$(xdg-mime query default image/jpg)";
+				   [[ -z "$pto" ]] && pto="$(xdg-mime query default image/jpeg)"; #some systems they don't have a jpg handler but they do have jpeg.
+				   if [[ -z "$pto" ]];then
+				     echo "No handler found for jpg/gpeg images - skipping" 
+				   else
+  				     ptopure="${pto%%.*}";echo "openning $ptopure"
+				     curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} | cat - >/tmp/test.jpg; "$ptopure" /tmp/test.jpg;rm -f /tmp/test.jpg
+				   fi  
 				else 
-				   curl -L -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |sed "1i ${flist[$ms]}" |less
+				   curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${flist[$ms]} |sed "1i ${flist[$ms]}" |less
 				fi
 			fi
 		done
