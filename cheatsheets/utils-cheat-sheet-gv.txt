@@ -1341,6 +1341,46 @@ This is a package with some usefull perl/c utils:
 
 See the whole man pages without installing using $debcat moreutils --ind --readable
 
+--------------------------------------------------------------------------------------------------------------------------
+UTILS:DEVSCRIPTS
+https://packages.debian.org/sid/devscripts
+This is a package with some usefull perl/shell scripts. 
+
+.B Scripts of some interest:
+
+ - annotate-output: run a command and prepend time and stream (O for stdout,E for stderr)
+ - build-rdeps: Searches for all packages that build-depend on a given package.
+ - chdist: tool to easily play with several distributions. 
+ - checkbashisms: check whether a /bin/sh script contains any common bash-specific constructs.
+ - debc: List contents of current package.  Do this after a successful "debuild" to see if the package looks all right.
+ - debchange (abbreviation dch): Modifies debian/changelog and manages version numbers for you.
+ - debdiff: A program which examines two .deb files or two .changes files and reports on any difference found in their file lists.  
+ - desktop2menu: given a freedesktop.org desktop file, generate a skeleton for a menu file. 
+ - dscextract: extract a single file from a Debian source package. 
+ - dscverify: check the signature and MD5 sums of a dsc file against the most current Debian keyring on your system. 
+ - grep-excuses: grep britney's excuses to find out what is happening to your packages. 
+ - list-unreleased: searches for packages marked UNRELEASED in their changelog.
+ - manpage-alert: locate binaries without corresponding manpages. 
+ - mass-bug: mass-file bug reports. 
+ - mk-build-deps: Given a package name and/or control file, generate a binary package which may be installed to satisfy the build-dependencies of the given package. 
+ - namecheck: Check project names are not already taken.
+ - nmudiff: prepare a diff of this version (presumably an NMU against the previously released version (as per the changelog) and submit the diff to the BTS. 
+ - origtargz: fetch the orig tarball of a Debian package from various sources, and unpack it.
+ - plotchangelog: display information from a changelog graphically using gnuplot. 
+ - rc-alert: list installed packages which have release-critical bugs.
+ - rmadison: remotely query the Debian archive database about packages.
+ - suspicious-source: output a list of files which are not common source files. 
+ - tagpending: runs from a Debian source tree and tags bugs that are to be closed in the latest changelog as pending. 
+ - uscan: Automatically scan for and download upstream updates.  
+ - uupdate: Update the package with an archive or patches from an upstream author.  
+ - what-patch: determine what patch system, if any, a source package is using.
+ - whodepends: check which maintainers' packages depend on a package.
+ - who-permits-upload: Retrieve information about Debian Maintainer access control lists. 
+ - who-uploads: determine the most recent uploaders of a package to the Debian archive. 
+ - wnpp-alert: list installed packages which are orphaned or up for adoption.
+ - wnpp-check: check whether there is an open request for packaging or intention to package bug for a package. 
+ - wrap-and-sort: wrap long lines and sort items in packaging files.
+ 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:DPKG
 dpkg-query -l pkg : advises if a programm is installed or not. Returns 0 if installed, 1 if not installed.

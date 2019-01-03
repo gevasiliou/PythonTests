@@ -25,7 +25,7 @@ Option1:
 
     --debian        Search particulary in debian manpages online platform (i.e https://manpages.debian.org/testing/grep). 
                     Your current release is detected (lsb_release -r -s) and man pages for your release are provided.
-                    Combine with --browser to display man page at browser
+                    Combine with --browser to display man page at browser instead of terminal.
 
     --debianlist    Display a list of available man pages (various releases) at i.e http://manpages.debian.org/grep (i.e jessie,stretch,testing, unstable, posix etc). 
                     Combine with --browser to display man page at browser
@@ -46,7 +46,7 @@ Option1:
                     Combine with --browser to display man page at browser
     
 EOF
-#Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tab not)
+#Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
 }	
 
 function apt {
@@ -73,7 +73,7 @@ function apt {
 		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
 #	fi
 	if [[ "$aptresp" == *"Unable to locate package"* ]];then
-		echo "Error. Either wrong package name or other error. Raw output of apt:"
+		echo "Error. Either wrong package name or other error. Raw output of apt-get --print-uris download $pkg:"
 #		apt-get --print-uris download $aptpkg
 		apt-get --print-uris download $pkg
 		exit 1
@@ -82,8 +82,10 @@ function apt {
 	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
 	if [[ $3 == "--manonly" ]]; then
+	echo "--manonly mode selected"
 	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     elif [[ $3 == "--noman" ]]; then
+   	echo "--noman mode selected"
     manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     else
     manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
@@ -632,7 +634,7 @@ function aptcheck {
 [[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
 [[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
-normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Could be buggy if more than one normal user exists
+normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Detect the system normal user. Could be buggy if more than one normal user exists
 case $mode in
 "--apt")apt "$@";;
 "--down")down "$@";;
@@ -658,8 +660,7 @@ exit 1
 # Using process substitution = each process get a named fifo and it is treated as a file. 
 
 :<<manpagealert
-script to display all binaries missing man pages
-
+script to display all binaries missing man pages (script included in devscripts debian pkg)
 Search for files who miss manpages
 http://unix.stackexchange.com/questions/337619/is-there-a-way-to-find-installed-binary-packages-which-dont-have-manpages/337761#337761
 Based on the source code of manpage_alert script, part of devscripts package, this solution works fine:
