@@ -37,7 +37,6 @@ alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #-
 #alias yadit='yad --text="$(</dev/stdin)" --center --wrap --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"  # yadit alternative but without scroll bars and buttons
 #alias lsdir='ls -l -d */'
 
-alias dirsize='df -h / && du -b -h -d1'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ && chown gv:gv /home/gv/.bash_aliases'
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
@@ -70,6 +69,16 @@ alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf 
 
 alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode managed && sleep 1 && ifconfig wlan0 up && sleep 1 && NetworkManager'
 alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
+
+#alias dirsize='df -h / && du -b -h -d1 |sort -rh'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
+function dirsize {
+[[ -z "$1" ]] && d=$PWD || d="$1"	
+echo "Disk Status:"
+df -h /
+echo
+echo "Listing Directory Size of $d : "
+du -b -h -d1 "$d" |sort -rh
+}
 
 function cinema {
 echo "A youtube-dl automation script. Downloads from url, and open mpv to watch the video."
