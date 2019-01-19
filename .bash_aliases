@@ -23,9 +23,12 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 
 killit () {
 [[ -z "$1" ]] && echo "no name given" && return
-kill -9 $(ps -aux |grep "$1" |awk '{print $2}')
-
+echo "those processes will be killed:"
+ps -aux |grep -e "$1" |grep -v 'grep' 
+read -p 'press any key to proceed or press q to quit: ' q
+[[ $q != "q" ]] && kill -9 $(ps -aux |grep -e "$1" |grep -v "grep" |awk '{print $2}') || echo "cancelled"
 }
+
 alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
 alias ipchicken="links -dump www.ipchicken.com |egrep -o '[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}'"
 alias cd..='cd ..'
