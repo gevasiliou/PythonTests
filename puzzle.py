@@ -1,3 +1,7 @@
+#Python 2 Sliding Puzzle
+#Credits : motiQ Research
+# https://www.youtube.com/watch?v=vzzEP_YI424&t=920s
+#
 from Tkinter import *
 from ttk import Entry,Button,OptionMenu
 from PIL import Image,ImageTk
