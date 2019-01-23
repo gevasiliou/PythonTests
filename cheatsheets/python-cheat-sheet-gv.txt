@@ -4,4 +4,13 @@ https://docs.python.org/2/tutorial/
 ##PYTHON CODE FORMAT
 In python code must be written in visual blocks (structured) and identation is the key to separate functions, loops, if-then-else, etc
 
-##OBJECTS 
+##RUN A SCRIPT FROM WEB
+
+.B Python Memory Puzzle
+curl -s https://raw.githubusercontent.com/asweigart/making-games-with-python-and-pygame/master/memorypuzzle/memorypuzzle.py -o- |python -
+
+.B Slide Puzzle
+curl -s https://raw.githubusercontent.com/asweigart/making-games-with-python-and-pygame/master/slidepuzzle/slidepuzzle.py -o- |python -
+
+.B More Python Games
+https://github.com/asweigart/making-games-with-python-and-pygame

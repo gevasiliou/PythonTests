@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64466969-fa3f-484f-96db-10cb297f0e0b" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cheatsheets/python-cheat-sheet-gv.txt" afterPath="$PROJECT_DIR$/cheatsheets/python-cheat-sheet-gv.txt" />
     </list>
     <ignored path="PythonTests.iws" />
     <ignored path=".idea/workspace.xml" />
