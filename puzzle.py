@@ -5,6 +5,7 @@
 from Tkinter import *
 from ttk import Entry,Button,OptionMenu
 from PIL import Image,ImageTk
+from time import sleep
 import random
 import tkFileDialog
 import os
@@ -18,18 +19,22 @@ class Tiles():
         self.moves=0
 
     def add(self,tile):
+        #print "Tiles.add"
         self.tiles.append(tile)
 
     def getTile(self,*pos):
+        print "Tiles.getTile"
         for tile in self.tiles:
             if tile.pos == pos:
                 return tile
 
     def getTileAroundGap(self):
+        print "Tiles.getTileAroundGap"
         gRow,gCol = self.gap.pos
         return self.getTile(gRow,gCol-1),self.getTile(gRow-1,gCol),self.getTile(gRow,gCol+1),self.getTile(gRow+1,gCol)
 
     def changeGap(self,tile):
+        print "Tiles.changeGap"
         try:
             gPos=self.gap.pos
             self.gap.pos=tile.pos
@@ -39,6 +44,7 @@ class Tiles():
             pass
 
     def slide(self,key):
+        print "Tiles.slide"
         left,top,right,down = self.getTileAroundGap()
         if key == 'Up':
             self.changeGap(down)
@@ -51,29 +57,37 @@ class Tiles():
         self.show()
 
     def shuffle(self):
+        print "Tiles.shuffle"
         i=0
-        random.shuffle(self.tiles)
+        #random.shuffle(self.tiles)
         for row in range(self.grid):
             for col in range(self.grid):
                 self.tiles[i].pos=(row,col)
                 i+=1
+        #left,top,right,down = self.getTileAroundGap()
+        #sleep(1)
+        #self.changeGap(top)
+        #sleep(1)
+        #self.changeGap(left)
+        #sleep(1)
+        #self.changeGap(left)
 
     def show(self):
+        print "Tiles.show"
         for tile in self.tiles:
             if self.gap != tile:
                 tile.show()
-
-
+        
     def setGap(self,index):
+        print "Tiles.setGap"
         self.gap = self.tiles[index]
 
     def isCorrect(self):
+        print "Tiles.isCorrect"
         for tile in self.tiles:
             if not tile.isCorrectPos():
                 return False
         return True
-
-
 
 class Tile(Label):
     def __init__(self,parent,image,pos):
@@ -83,9 +97,11 @@ class Tile(Label):
         self.curPos=pos
 
     def show(self):
+        #print "Tile.show"
         self.grid(row=self.pos[0],column=self.pos[1])
 
     def isCorrectPos(self):
+        #print "Tile.isCorrectPos"
         return self.pos == self.curPos
 
 
@@ -106,6 +122,7 @@ class Board(Frame):
         self.bindKeys()
 
     def openImage(self,image):
+        print "Board.openImage"
         image=Image.open(image)
         imageSize=min(image.size)
         if imageSize > self.MAX_BOARD_SIZE:
@@ -115,17 +132,20 @@ class Board(Frame):
         return image
 
     def bindKeys(self):
+        print "Board.bindKeys"
         self.bind_all('<Key-Up>',self.slide)
         self.bind_all('<Key-Down>',self.slide)
         self.bind_all('<Key-Right>',self.slide)
         self.bind_all('<Key-Left>',self.slide)
 
     def slide(self,event):
+        print "Board.slide"
         self.tiles.slide(event.keysym)
         if self.tiles.isCorrect():
             self.win(self.tiles.moves)
 
     def createTiles(self):
+        print "Board.createTiles"
         tiles=Tiles(self.grid)
         for row in range(self.grid):
             for col in range(self.grid):
@@ -148,6 +168,7 @@ class Main():
         self.createWidgets()
 
     def createWidgets(self):
+        print "Main.createWidgets"
         self.mainFrame=Frame(self.parent)
         Label(self.mainFrame,text="Sliding",font=('',50)).pack(padx=10,pady=10)
         frame=Frame(self.mainFrame)
@@ -165,6 +186,7 @@ class Main():
         Button(self.winframe,text='Play Again',command=self.playAgain).pack(padx=10,pady=10)
 
     def start(self):
+        print "Main.start"
         image=self.image.get()
         grid=self.grid.get()
         if os.path.exists(image):
@@ -174,14 +196,17 @@ class Main():
 
 
     def browse(self):
+        print "Main.browse"
         self.image.set(tkFileDialog.askopenfilename(title="Select Image",filetypes=(("jpg File","*.jpg"),("png File","*.png"))))
 
     def win(self,moves):
+        print "Main.win"
         self.board.pack_forget()
         self.winText.set('You win (with {0} moves)'.format(moves))
         self.winframe.pack()
 
     def playAgain(self):
+        print "Main.playAgain"
         self.winframe.pack_forget()
         self.mainFrame.pack()
 
