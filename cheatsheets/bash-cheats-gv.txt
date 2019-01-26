@@ -2124,10 +2124,39 @@ You can disable this behavior using "set -f" , but this command will also disabl
 
 Or you can just run apt list "a*" and this will work fine.
 
-##MORE GLOB OPTIONS
+##GLOB OPTIONS
+  Use shopt -s to enable an option or shopt -u to disable. 
+  shopt option returns the status of the option. shopt alone returns status of all options.
+  Never combine shopt with another command in a single line like $ shopt -s nullglob; echo *.txt
+  shopt should be alone in the alone
+  
 .B globstar
    If set, the pattern ‘**’ used in a filename expansion context will match all files and zero or more directories and subdirectories in full depth
    If the pattern is followed by a ‘/’, only directories and subdirectories match.
+   
+   This for example brings all *.txt files in all subdirs:
+     shopt -s globstart
+     ls **/*.txt
+     #OR
+     f=( **/*.txt )
+     declare -p  f
+     echo "${f#[@]}"  #print the number of files found matching f=( **/*.txt )
+     
+     Count json files per subdirectory, and print each subdir & number of files matching the glob pattern:
+     shopt -s globstar nullglob; 
+     for d in ./ **/; do f=( "$d"*.json); echo "${#f[@]} $d"; done
+
+.B nullglob
+
+   When the glob is not returning any results, the literal glob is returned. 
+   This behavior can screw things in scripts using : f in *.txt (i.e you can not test value of $f with -z = empty)
+   $ echo "Textfiles here:" *.txt
+   Textfiles here: *.txt           #returns *.txt literally if no txt files exists
+
+   Enabling nullglob returns null-nothing.
+   $ shopt -s nullglob
+   $ echo "Textfiles here:" *.txt
+   Textfiles here:                 #if no txt files exists , then returns null, thus [[ -z $f ]] will work ok inside a script
 
 .B dotglob
    If set, Bash includes filenames beginning with ‘.’ in the results of filename expansion. Those files are considered hidden files.
@@ -2224,9 +2253,9 @@ failglob       	off
 
 ##TERMINAL AUTOMATIC RESIZE/READJUST
 To activate: shopt -s checkwinsize
-To deactivate: shopt -u checkwinsiz
+To deactivate: shopt -u checkwinsize
 
-To check: shopt | grep checkwinsize --> You should get checkwinsize    on
+To check: shopt checkwinsize --> You should get checkwinsize    on
 
 "If set, Bash checks the window size after each command and, if necessary, updates the values of LINES and COLUMNS."
 For permanent activation apply shopt -s checkwinsize in your ~/.bashrc.
