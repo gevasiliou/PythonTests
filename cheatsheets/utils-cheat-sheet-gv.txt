@@ -1113,7 +1113,29 @@ Browsing '/sys/class/power_supply/' will drive you to BAT0 and AC0
 /sys/class/power_supply/AC0  ---> link to /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/ACPI0003:00/power_supply/AC0
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:YOUTUBE-DL - WGET - CURL - MPV
+UTILS:WGET & CURL
+##WGET Switches
+-nv						: no verbose
+--content-disposition	: some like http://www.enersys.com/WorkArea/DownloadAsset.aspx?id=301 will save the file with name id=301
+						: using --content-disposition the real file name will be used - usually hidden in the HEAD section of the webpage
+
+##CURL Switches
+-O 			: Keep Remote Name
+-L 			: Follow Redirections
+-J 			: Get Remote Header Name
+-s 			: Silent
+-o filename : output . Used very often like -o - to dump contents on the terminal and then to be piped
+
+##Download Multiple Files by WebSite
+for i in {300..500};do wget -nv --content-disposition http://www.enersys.com/WorkArea/DownloadAsset.aspx?id=$i;done
+Will download all files from webpage with id=300 up to id=500
+
+.I Alternativelly 
+curl -OJL http://....
+-O : Keep Remote Name , -L : Follow Redirections , -J : Get Remote Header Name
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:YOUTUBE-DL - MPV
 https://github.com/rg3/youtube-dl
 
 https://oload.win/stream/5KSeX_DV9Y4~1523564561~176.92.0.0~TRYa2RIQ
