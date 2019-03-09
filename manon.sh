@@ -82,13 +82,13 @@ function apt {
 	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
 	if [[ $3 == "--manonly" ]]; then
-	echo "--manonly mode selected"
-	manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+	  echo "--manonly mode selected"
+	  manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     elif [[ $3 == "--noman" ]]; then
-   	echo "--noman mode selected"
-    manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+   	  echo "--noman mode selected"
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     else
-    manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
 	fi
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
@@ -128,6 +128,74 @@ function apt {
 				echo "Invalid Selection - Try Again"
 			fi
 		fi
+	done
+}
+
+function aptmulti {
+	validmode=1
+	loop=1
+	pkg="$1"
+	echo "package requested: $pkg"
+    resp=( $(apt-get --print-uris download $1 2>&1) )
+    aptresp=( $(printf '%s\n' ${resp[@]} |grep 'http' |sed 's/\x27//g') )
+    echo "apt response"
+    printf '%s\n' "${aptresp[@]}"
+#   declare -p aptresp
+#   exit
+
+    for ((i=0;i<=${#aptresp[@]};i++));do
+      manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
+#      for ((k=0;k<=
+    done
+
+#   aptpkg="${pkg%%/*}"
+#	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
+#	echo "deb file : $deb"
+#	if [[ $3 == "--manonly" ]]; then
+#	  echo "--manonly mode selected"
+#	  manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+#   elif [[ $3 == "--noman" ]]; then
+#   	  echo "--noman mode selected"
+#      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+#   else
+#      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+#	fi
+
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No man pages found in deb package - These are the contents of the $deb:"
+#			curl -sL -o- $deb |dpkg -c /dev/stdin
+			exit 1
+		else
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+		exit
+#		if [[ ${#manpage[@]} -eq 1 ]]; then
+#			echo "One man page found - Display "
+#			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
+#			loop=0
+#		else
+			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+			if [[ $ms == "q" ]]; then
+				echo "exiting"
+				loop=0
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+				echo "Display ${manpage[$ms]}"
+				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+                if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
+				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
+				else 
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
+				fi
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+				echo "out of range - try again"
+			else
+				echo "Invalid Selection - Try Again"
+			fi
+#		fi
 	done
 }
 
@@ -630,13 +698,16 @@ function aptcheck {
 }
 
 #------------------------MAIN PROGRAMM-----------------------------------------------------------------------------------------#
+function main { return; }
 {
 [[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
 [[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 echo "mode selected:  $mode"
 normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" #Detect the system normal user. Could be buggy if more than one normal user exists
+
 case $mode in
 "--apt")apt "$@";;
+"--aptmulti")aptmulti "$@";;
 "--down")down "$@";;
 "--bsd")bsd "$@";;
 "--openbsd")openbsd "$@";;
