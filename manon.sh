@@ -14,15 +14,13 @@ Option1:
                            * If option2 is ommited , default is die.net service
 
     --apt           Debian Specific. Extract and display the man page from the deb package without downloading it. 
-                    All man pages and examples,change logs, info pages, are returned by default
                     Option 2:
-                             --manonly : Return only manpages, and exclude logs,exapmples,etc.
+                             --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc
 
     --aptmulti      Debian Specific. Extract and display the man page from many packages at once(i.e kodi*), without downloading it. 
-                    All man pages and examples,change logs, info pages, are returned by default
                     Option 2:
-                             --manonly : Return only manpages, and exclude logs,exapmples,etc.
+                             --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc
                              
     --down          Debian Specific. Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
@@ -59,6 +57,7 @@ function apt {
 	validmode=1
 	loop=1
 	pkg="$1"
+    [[ "$pkg" =~ "*" ]] && echo "wildmark not accepted; try --aptmulti" && return
 	echo "package requested: $pkg"
 
 	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
@@ -87,14 +86,15 @@ function apt {
     aptpkg="${pkg%%/*}"
 	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
-	if [[ $3 == "--manonly" ]]; then
-	  echo "--manonly mode selected"
-	  manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+	if [[ $3 == "--full" ]]; then
+	  echo "--full mode selected-returning man pages,changelogs,readme,info,examples & docs"
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     elif [[ $3 == "--noman" ]]; then
-   	  echo "--noman mode selected"
+   	  echo "--noman mode selected: only changelogs,readme,info,examples & docs. man pages excluded"
       manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     else
-      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+      #man pages only-default selection
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
 	fi
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
@@ -142,18 +142,20 @@ function aptmulti {
 	loop=1
 	pkg="$1"
 	echo "package requested: $pkg"
-    resp=( $(apt-get --print-uris download $1 2>&1) )
+    resp=( $(apt-get --print-uris download "$1" 2>&1) )
     aptresp=( $(printf '%s\n' ${resp[@]} |grep 'http' |sed 's/\x27//g') )
     echo "apt response"
     printf '%s\n' "${aptresp[@]}"
 #   declare -p aptresp
 #   exit
+    [[ -z "${aptresp[@]}" ]] && echo "nothing found" && return
     declare -A debs
     for ((i=0;i<=${#aptresp[@]};i++));do
-      if [[ $3 == "--manonly" ]];then
-        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) 
-      else
+      if [[ $3 == "--full" ]];then
         manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
+      else
+        #man pages only - default selection
+        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) 
       fi
 
       #script for association between man pages of each deb file (1 deb / many manpages)
@@ -167,20 +169,20 @@ function aptmulti {
 
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
-			echo "No man pages found in deb package - These are the contents of the $deb:"
+			echo "No man pages found in deb package"
 			exit 1
 		else
 			echo "man page found: ${#manpage[@]}"
 			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 #		exit
-		read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+		read -p "Select man pages to display by id or press q to quit : " ms
 		if [[ $ms == "q" ]]; then
 			echo "exiting"
 			loop=0
         elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-            echo "Display ${manpage[$ms]}"
             deb="${debs[${manpage[$ms]}]}"
+            echo "Display ${manpage[$ms]} from $deb"
             #curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
             if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
                 curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
