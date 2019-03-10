@@ -343,8 +343,11 @@ function lsdeb () {
 	    #dpkg -c <(curl -sL -o- $tmpdeb)
 	    curl -sL -o- $tmpdeb |dpkg -c /dev/stdin
 	fi
-
-
+#Alternatives
+#curl -sL -o- 'http://ftp.gr.debian.org/debian/pool/main/k/kodi/kodi-eventclients-wiiremote_17.6+dfsg1-4+b1_amd64.deb' |dpkg-deb --fsys-tarfile /dev/stdin |tar -t
+#tar -t : list contents
+#dpkg-deb --ctrl-tarfile : extract the control information of a deb pkg.
+#dpkg -c by default equals to dpkg-deb --fsys-tarfile
 }
 
 function debcat () {

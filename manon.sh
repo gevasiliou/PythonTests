@@ -165,7 +165,7 @@ function aptmulti {
 
     done
     
-    
+#TODO: include in the man pages the control file (apt show info) from deb using dpkg-deb --ctrl-tarfile     
 
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
