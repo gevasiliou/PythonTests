@@ -18,6 +18,12 @@ Option1:
                     Option 2:
                              --manonly : Return only manpages, and exclude logs,exapmples,etc.
                              --noman   : Exclude man pages and return changelog entries,examples, etc
+
+    --aptmulti      Debian Specific. Extract and display the man page from many packages at once(i.e kodi*), without downloading it. 
+                    All man pages and examples,change logs, info pages, are returned by default
+                    Option 2:
+                             --manonly : Return only manpages, and exclude logs,exapmples,etc.
+                             --noman   : Exclude man pages and return changelog entries,examples, etc
                              
     --down          Debian Specific. Download the deb package (apt-get -d pkg), extract man page and then delete deb package.
                     Option 2:
@@ -142,60 +148,52 @@ function aptmulti {
     printf '%s\n' "${aptresp[@]}"
 #   declare -p aptresp
 #   exit
-
+    declare -A debs
     for ((i=0;i<=${#aptresp[@]};i++));do
-      manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
-#      for ((k=0;k<=
-    done
+      if [[ $3 == "--manonly" ]];then
+        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) 
+      else
+        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
+      fi
 
-#   aptpkg="${pkg%%/*}"
-#	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
-#	echo "deb file : $deb"
-#	if [[ $3 == "--manonly" ]]; then
-#	  echo "--manonly mode selected"
-#	  manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-#   elif [[ $3 == "--noman" ]]; then
-#   	  echo "--noman mode selected"
-#      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-#   else
-#      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-#	fi
+      #script for association between man pages of each deb file (1 deb / many manpages)
+      for k in "${!manpage[@]}";do
+          [[ -z "${debs[${manpage[$k]}]}" ]] && debs["${manpage[$k]}"]="${aptresp[$i]}"
+      done
+
+    done
+    
+    
 
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package - These are the contents of the $deb:"
-#			curl -sL -o- $deb |dpkg -c /dev/stdin
 			exit 1
 		else
 			echo "man page found: ${#manpage[@]}"
 			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
-		exit
-#		if [[ ${#manpage[@]} -eq 1 ]]; then
-#			echo "One man page found - Display "
-#			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
-#			loop=0
-#		else
-			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
-			if [[ $ms == "q" ]]; then
-				echo "exiting"
-				loop=0
-			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-				echo "Display ${manpage[$ms]}"
-				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
-                if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
-				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
-				else 
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
-				fi
-			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
-				echo "out of range - try again"
-			else
-				echo "Invalid Selection - Try Again"
+#		exit
+		read -p "Select man pages to display by id or press a for all  - q to quit : " ms
+		if [[ $ms == "q" ]]; then
+			echo "exiting"
+			loop=0
+        elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+            echo "Display ${manpage[$ms]}"
+            deb="${debs[${manpage[$ms]}]}"
+            #curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
+            if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
+                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
+            elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
+            else 
+			   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
 			fi
-#		fi
+        elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
+            echo "out of range - try again"
+        else
+            echo "Invalid Selection - Try Again"
+        fi
 	done
 }
 
