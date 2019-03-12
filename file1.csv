@@ -1,0 +1,4 @@
+field10,field11,field12,field13
+field20,field21,field22,field 23
+field 30,"field31",'field32',field-33
+#sed -z "s/\n/\r\n/g" file1.csv |cat -vET
