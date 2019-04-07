@@ -41,8 +41,14 @@ fi
 
 #dpkg-query -l pkg returns 0 if pkg is installed
 done
-m-a prepare #module assistant : prepare kernel to build extra modules
-wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add - #add the usually missing videolan public key
+
+esscmds=( "m-a prepare" ) #m-a prepare : module assistant : prepare kernel to build extra modules
+esscmds+=( "wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add" )  - #add the usually missing videolan public key
+
+for k in "${esscmds[@]}";do
+  read -p "========> running command \"$k\" (or press s to skip) " cm
+  [[ $cm != "s" ]] && eval "$k" || echo "===========> skipping execution of command $k <============"
+done
 }
 
 function utils {
