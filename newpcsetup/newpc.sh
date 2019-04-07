@@ -43,7 +43,7 @@ fi
 done
 
 esscmds=( "m-a prepare" ) #m-a prepare : module assistant : prepare kernel to build extra modules
-esscmds+=( "wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add" )  - #add the usually missing videolan public key
+esscmds+=( "wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add" )  #add the usually missing videolan public key
 
 for k in "${esscmds[@]}";do
   read -p "========> running command \"$k\" (or press s to skip) " cm
