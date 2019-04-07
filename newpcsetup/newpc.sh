@@ -117,6 +117,11 @@ git config credential.helper store #this will store the username/password on the
 }
 
 function sysupgrade {
+echo "this will copy .bash_aliases and mancolor to /home/gv and /root"
+echo "moreover, apt sources.list will be tweaked and then update and upgrade will be done"
+read -p "press any key to proceed or s to skip this section" s
+[[ "$s" == "s" ]] && return
+
 for i in /home/gv /root;do
 echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
 echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
