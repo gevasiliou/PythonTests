@@ -33,7 +33,7 @@ ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake
 
 for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
-if ! dpkg-query -l "$i" >&/dev/null ;then 
+if ! dpkg-query -s "$i" >&/dev/null ;then 
   read -p "========> Want to install $i [y/n] ? :" an
   [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
 else 
