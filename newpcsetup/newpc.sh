@@ -19,9 +19,9 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" )
+ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
-ess+=( "kmod" "sysfsutils" )
+ess+=( "kmod" "sysfsutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
@@ -33,7 +33,6 @@ for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
 if ! dpkg-query -l "$i" >&/dev/null ;then 
   read -p "========> Want to install $i [y/n] ? :" an
-  
   [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
 else 
   printf '%s\n' " <========= already installed ";
@@ -55,13 +54,13 @@ function utils {
 # Finetunning - Utilities
 unset toinst
 toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" )
-toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "wget" "vlc" "agrep" "aptitude" "moreutils" "debian-goodies" )
-toinst+=( "transmission" "hexchat" "htop" "hwinfo" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
+toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
+toinst+=( "transmission" "hexchat" "htop" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
 toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
-toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "catfish" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" "okular" )
+toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
+toinst+=( "eog" "shutter" "info" "pinfo" "okular" "catfish" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" )
 toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qttools5-dev" "qttools5-dev-tools" )
 
@@ -83,9 +82,9 @@ done
 
 function tweakwifi {
 #https://www.insomnia.gr/forums/topic/621254-%CF%87%CE%B1%CE%BC%CE%B7%CE%BB%CF%8C-%CF%83%CE%AE%CE%BC%CE%B1-%CF%83%CE%B5-wifi-%CE%BA%CE%AC%CF%81%CF%84%CE%B1-realtek-rtl8723be-%CE%BB%CF%8D%CF%83%CE%B7/
-essentials
+read -p 'tweaking wlan0 adapter (press s to skip section)' tw && [[ "$tw" == "s" ]] && return
 
-echo 'tweaking wlan0 adapter'
+essentials
 module="$(lsmod |egrep -o -m1 'rtl[0-9]+[^ ]*')" &&\
 echo "Current Parameters:" &&\
 param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$param"
