@@ -6,6 +6,8 @@ echo "proceeding as root"
 synclient TapButton1=1 #enable touchpad click if necessary.
 
 function essentials {
+read -p "esseential pkgs installation - press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
+
 if grep '.bash_aliases' /root/.bashrc >&/dev/null
 then 
   echo "/root/.bashrc already imports /root/.bash_aliases"
@@ -51,7 +53,7 @@ done
 }
 
 function utils {
-# Finetunning - Utilities
+read -p "Utilities Installation. press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 unset toinst
 toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" )
 toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
@@ -111,6 +113,11 @@ param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$para
 }
 
 function gitclone {
+echo "This will run the following commands:" 
+echo "git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests"
+echo "git config credential.helper store #this will store the username/password on the next push."
+read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
+
 git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests
 git config credential.helper store #this will store the username/password on the next push.
 }
@@ -118,8 +125,7 @@ git config credential.helper store #this will store the username/password on the
 function sysupgrade {
 echo "this will copy .bash_aliases and mancolor to /home/gv and /root"
 echo "moreover, apt sources.list will be tweaked and then update and upgrade will be done"
-read -p "press any key to proceed or s to skip this section" s
-[[ "$s" == "s" ]] && return
+read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 
 for i in /home/gv /root;do
 echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
@@ -139,8 +145,9 @@ apt-get update && apt-get upgrade --allow-unauthenticated && apt-get dist-upgrad
 } 
 
 function vboxinstall {
-echo "Installing virtualbox guest addition cd"
+echo "Installing virtualbox guest addition cd, but test if essential packages are installed before that. Also better to make a system update first"
 echo "at the end make sure that virtualbox-guest-x11 is installed"
+read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 
 essentials
 
@@ -152,6 +159,7 @@ apt list virtualbox-guest-x11 #just to verify that this utlil is installed
 
 function desktopfiles {
 # all those files usually are not required since pkgs install them during pkg installation
+read -p "desktopfiles installation - press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 [[ ! -f /usr/share/applications/gksu.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/gksu.desktop /usr/share/applications/
 [[ ! -f /usr/share/applications/xce4-appfinder.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/xfce4-appfinder.desktop /usr/share/applications/
 [[ ! -f /usr/share/applications/xce4-terminal.desktop ]] && cp -iv /home/gv/Desktop/PythonTests/newpcsetup/xfce4-terminal.desktop /usr/share/applications/
@@ -162,6 +170,8 @@ function desktopfiles {
 
 function chromeinstall {
 echo "ready to install google-chrome-stable from repos"
+read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
+
 apt-get install google-chrome-stable
 resp=$? #returns 0 on success , 100 in error
 if [[ "$resp" -ne 0 ]];then
@@ -183,6 +193,7 @@ echo "TODO: copying xfce4 panel data for bottom panel"
 }
 
 function hdmisound {
+read -p "hdmisound installation services - press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 if [[ ! -f /lib/udev/rules.d/78-hdmi.rules ]];then
 cat <<EOF >/lib/udev/rules.d/78-hdmi.rules
 KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start hdmi-sound.service"
