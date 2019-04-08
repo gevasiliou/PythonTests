@@ -79,6 +79,9 @@ alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode ma
 alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
 
 #alias dirsize='df -h / && du -b -h -d1 |sort -rh'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
+
+alias changelog='apt-get changelog'
+
 function dirsize {
 [[ -z "$1" ]] && d=$PWD || d="$1"	
 echo "Disk Status:"
