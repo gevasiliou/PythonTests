@@ -118,8 +118,11 @@ echo "git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ 
 echo "git config credential.helper store #this will store the username/password on the next push."
 read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 
-git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests
+mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/PythonTests
+chown -R gv:gv /home/gv/Desktop/PythonTests
 git config credential.helper store #this will store the username/password on the next push.
+git config --global ge.vasiliou@gmail.com
+
 }
 
 function sysupgrade {
