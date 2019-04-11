@@ -121,7 +121,7 @@ read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s"
 mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/PythonTests
 chown -R gv:gv /home/gv/Desktop/PythonTests
 git config credential.helper store #this will store the username/password on the next push.
-git config --global ge.vasiliou@gmail.com
+git config --global user.email ge.vasiliou@gmail.com
 
 }
 
