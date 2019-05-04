@@ -21,7 +21,7 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" )
+ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "ntp" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
 ess+=( "kmod" "sysfsutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
