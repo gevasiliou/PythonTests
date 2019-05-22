@@ -1996,3 +1996,77 @@ Partition /dev/sda3 holds my Windows. You can automount this partition like this
 4. Add to /etc/fstab the following line
 UUID=A25866FE5866D119 /media/MyWin ntfs defaults 0 0
 5. mount -a
+
+##FORTICLIENT VPN - OPENFORTI
+openfortivpn is a free vpn client that can be connected to Fortinet.
+apt install openfortivpn
+
+You need to manually configure the following file:
+nano /etc/openfortivpn/config
+host = ipadressofserver
+port = serverort
+username = yourname
+password = yourpassword
+trusted-cert = e4........................................ce5
+
+The last line (trusted-cert) is not known the very first time you run openfortivpn
+After the first run (/usr/bin/openfortivpn) you will be prompted to include this trusted-cert in your openforti configuration file.
+
+If everything is set up correctly you should see:
+root@debian:/home/gv# openfortivpn
+INFO:   Connected to gateway.
+Two-factor authentication token: 
+INFO:   Authenticated.
+INFO:   Remote gateway has allocated a VPN.
+INFO:   Got addresses: [10.10.10.1], ns [172.20.199.16, 172.20.199.17]
+INFO:   negotiation complete
+INFO:   negotiation complete
+INFO:   Interface ppp0 is UP.
+INFO:   Setting new routes...
+INFO:   Adding VPN nameservers...
+INFO:   Tunnel is up and running.
+PS: To close the connection press ctrl+c
+^CINFO:   Cancelling threads...
+INFO:   Setting ppp interface down.
+INFO:   Restoring routes...
+INFO:   Removing VPN nameservers...
+INFO:   pppd: The link was terminated by the modem hanging up.
+INFO:   Terminated pppd.
+INFO:   Closed connection to gateway.
+INFO:   Logged out.
+
+
+Once connected to vpn, routing should have changed automatically to drive all traffic to vpn tunnel:
+root@debian:/home/gv# ip route show
+default dev ppp0 scope link 
+169.254.0.0/16 dev wlan0 scope link metric 1000 
+192.0.2.1 dev ppp0 proto kernel scope link src 10.10.10.1 
+192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.120 metric 600 
+195.167.101.170 via 192.168.1.1 dev wlan0 
+
+Before vpn , routing was different. First line (default dev) was pointing to wlan0:
+default via 192.168.1.1 dev wlan0 metric 1535 
+169.254.0.0/16 dev wlan0 scope link metric 1000 
+192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.120 metric 600 
+
+Verify vpn connectivity using ping to a valid - known remote IP/server on the vpn side.
+
+##ACCESSING WINDOWS NETWORK LOCATION THROUGH VPN FROM DEBIAN
+https://www.howtogeek.com/176471/how-to-share-files-between-windows-and-linux/
+
+.B Accessing a windows shared location by Debian
+gv@debian:~$ mkdir ~/Desktop/Windows-Share
+gv@debian:~$ sudo mount.cifs //10.5.1.50/H_users/Common /home/gv/Desktop/Windows-Share -o user=ge.vasiliou
+Password for ge.vasiliou@//10.5.1.50/H_users/Common:  *********
+OK, Now just open the Windows-Share folder like any folder in your pc.
+
+Tips: 
+Obiously you need first to establish a valid vpn connection to the remote server
+Better to use IP instead of domain names to be sure that you talk to the correct server.
+Remember that a local server with name i.e alpha, accessed locally in windows with \\alpha, should be accessed remotely using \\alpha.domainname.local
+Also remember that linux doesn't like \\ , but loves // 
+Avoid to use root account when you mount.cifs to be capable to open the sharre as normal user.
+
+##DOWNLOAD A FILE FROM WINDOWS SHARED LOCATION USING DEBIAN
+gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/Users/Drawings/file640.pdf
+Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
