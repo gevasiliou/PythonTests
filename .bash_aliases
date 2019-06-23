@@ -15,7 +15,15 @@
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/sbin:/sbin:/usr/sbin
 export MOZ_USE_XINPUT2=1 #firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
 
-source mancolor
+#source mancolor
+export LESS_TERMCAP_mb=$'\e[1;35m'
+export LESS_TERMCAP_md=$'\e[1;35m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;4;31m'
+
 
 function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
@@ -35,6 +43,7 @@ alias cd..='cd ..'
 alias cd..2='cd .. && cd ..'
 alias cd-='cd $OLDPWD'
 alias nano='nano -lmS' #-l enables line numbers | -m enables mouse support | -S smooth scroll (line by line)
+alias less='less -N' #-N enables line number. Can be used also directly inside less to toggle line numbers on and off
 alias cls='clear'
 alias cp='cp -i'
 alias mv='mv -i'
