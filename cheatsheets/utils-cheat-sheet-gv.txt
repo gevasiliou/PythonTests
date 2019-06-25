@@ -967,12 +967,15 @@ apt-file search showmount   or /bin/showmount #advises which package you need to
 OR JUST 
 apt search showmount --> nfs-common  #or apt-cache search showmount
 
+apt-file list pkg       --> List the contents of pkg
+
 apt --print-uris install pkg   # Returns the names of the .deb packages that will be installed in case of apt install. Works also with apt-get
 apt --print-uris download pkg  # Returns the deb file that apt download pkg would download:
 apt --print-uris download nfs-common  ---> 'http://ftp.gr.debian.org/debian/pool/main/n/nfs-utils/nfs-common_1.3.4-2.1_amd64.deb' nfs-common_1%3a1.3.4-2.1_amd64.deb 230730 SHA256:8fedb6f5d28d521ca6b1623610255c7edf26c011b3c45e07e19e4378902bfab4
 
 apt-mark hold kodi kodi-bin kodi-data kodi-repository-kodi  #hold those packages to avoid updating by apt-get update
 apt-mark unhold pkg # unholds a package. Can be used to unhold all packages like apt-mark unhold $(apt list --installed 2>/dev/null |cut -f1 -d'/')
+apt-mark manual pkg  #sets the manual installed flag for a pkg
 
 apt-get changelog thunar/unstable  #downloads and displays changelog of pkg. 
 Get:1 http://metadata.ftp-master.debian.org thunar 1.8.1-1 Changelog [37.3 kB]
@@ -982,6 +985,11 @@ zless /usr/share/doc/thunar/changelog.Debian.gz    #Dsiplays changelog of instal
 
 apt-file search file     #returns all apt pkgs containing the file
 apt-file list pkgname    #list files installed by pkg. Similar to dpkg -L for not installed pkgs.
+
+.B Ignoring Dependencies that holds/stops the whole apt-get upgrade 
+Open the file /var/lib/dpkg/status, find the pkg that creates the conflict and remove the problematic dependency 
+from the Depends: section 
+
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SIZE OF FILES - DISK USAGE (DU,LS,etc)
