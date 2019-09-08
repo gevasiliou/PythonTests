@@ -348,11 +348,13 @@ function lsdeb () {
 		apt-get download $1 && ls -l $1*.deb && dpkg -c $1*.deb && rm -f $1*.deb
 	    #dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
 	else
-		echo "no downloading mode selected-curl will be used"
+		echo "no downloading selected. curl will be used"
+        echo "apt-get --print-uris download $1 2>&1"
 		local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 		tmpdeb=$(echo "${tmpdeb: 1:-1}")
 		echo "deb file to list contents: $tmpdeb"
 	    #dpkg -c <(curl -sL -o- $tmpdeb)
+        echo "curl -sL -o- $tmpdeb |dpkg -c /dev/stdin"
 	    curl -sL -o- $tmpdeb |dpkg -c /dev/stdin
 	fi
 #Alternatives
