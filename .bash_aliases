@@ -105,13 +105,14 @@ echo "A youtube-dl automation script. Downloads from url, and open mpv to watch 
 echo "Options:"
 echo "  --url=<url> direct video link"
 echo "  --openloadurl=<url> urls with hidden openload video link"
-echo "  --save : keep a local copy of the video in current working directory"
+echo "  --nosave : do not keep local copy of the video in current working directory (default is to save the file)"
 echo "  --getsubs: try to find openload vtt subs file"
+echo "  --vlc: use vlc instead of default mpv. Combine with --buffer=XXX (in MB) to change the default buffer size (100MB)"
 echo
 unset videotowatch subflag movietitle videotowatch suburl subs
 
 if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";return 1;fi	
-if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
+#if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
 if ! which curl >/dev/null;then echo "you need to install curl";return 1;fi	
 
 #[[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
@@ -160,22 +161,46 @@ fi
 # gksu -u gv xdg-open https://www.watch-online.cc/tv-shows/tt0203259/law-and-order-special-victims-unit/season/14/episode/2/
 
 
-#if [[ $2 == "--save" ]];then
-if printf '%s\n' "$@" |fgrep -- '--save' >/dev/null;then 
+#if printf '%s\n' "$@" |fgrep -- '--nosave' >/dev/null;then 
+#  movietitle=""
+#else
   movietitle="$videotowatch"
   movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
-  printf "%s" "--save option given. Local file will be named $movietitle"
+  printf "%s\n" "Local file will be named $movietitle"
   [[ $subflag -eq 1 ]] && moviename="${movietitle%%.*}" && wget --quiet "$suburl" -O "${moviename}.vtt" && printf "%s" " and subs will be named ${moviename}.vtt" 
   #saving vtt subs. Play locally using mpv L* (video and subs start by letter L)
-else
-  movietitle=""
-fi
+#fi
 echo
 
-echo && echo "command to be executed:"
-echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $videotowatch -o- |tee $movietitle |mpv $subs --force-seekable=yes -"
-read -p "press any key to start or press ctrl+c to exit"
-youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |mpv $subs --force-seekable=yes -
+if printf '%s\n' "$@" |fgrep -- '--vlc' >/dev/null;then
+    if printf '%s\n' "$@" |fgrep -- '--buffer' >/dev/null;then 
+      buffsize=$(printf "%s\n" "$@" |grep -- '--buffer=' |sed 's/--buffer=//')
+      buffsize=$((buffsize*1000000))
+    else
+      buffsize=100000000 #100Mbyte default buffer size
+    fi
+    echo "vlc option is given. Buffer Size = $buffsize. Movie Title=$movietitle"
+    read -p "press any key to start or press ctrl+c to exit"
+    youtube-dl -q -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |cat >/dev/null &
+    sleep 30
+    while [ $(find ./"$movietitle" -printf '%s\n') -lt $buffsize ]; do 
+      printf '%s\r' "buffering $(ls -l "$movietitle" |cut -d' ' -f5) out of $buffsize" >/dev/tty;
+      sleep 10;
+    done
+    vlc ./"$movietitle" 2>/dev/null &
+    fg %1
+    
+else
+  echo && echo "command to be executed:"
+  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $videotowatch -o- |tee $movietitle |mpv $subs --force-seekable=yes -"
+  read -p "press any key to start or press ctrl+c to exit"
+  youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |mpv $subs --force-seekable=yes -
+fi
+#alternative with vlc: 
+#youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://1fhjlub.oloadcdn.net/dl/l/iwiyD3ZGlPz7rf_a/lcCbgM8aHTM/Frozen.2013.BluRay.x264.Greek.mp4 -o- |vlc /dev/stdin
+#or |vlc -
+#vlc opens immediattely but this is not a problem. As soon as data arrive they are played on open vlc.
+
 #if --save is not given , $movietitle is empty "" and actually piping to tee "" does nothing.
 
 #youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
