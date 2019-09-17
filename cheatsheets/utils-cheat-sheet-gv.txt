@@ -1912,6 +1912,24 @@ file /boot/efi/EFI/debian/grubx64.efi
 6.2 the nvram entry was properly created.
 efibootmgr --verbose | grep debian
 
+##GRUB - REPAIR FROM WINDOWS
+.I https://itsfoss.com/no-grub-windows-linux/
+When Windows apply a major update it is quite common grub to break.
+In some cases , windows just replace the default boot manager entry in their own boot manager and actually grub is not showing at all, but Windows are loaded by default.
+
+All you need is to modify bootmgr to point to /boot/efi/EFI/Debian
+In windows , open a terminal as administrator and write:
+
+bcdedit /set {bootmgr} path \EFI\debian\grubx64.efi   #tested and works 18.09.2019
+
+Undo: 
+bcdedit /deletevalue {bootmgr} path \EFI\debian\grubx64.efi
+bcdedit /set {bootmgr} path \EFI\Microsoft\Boot\bootmgfw.efi
+
+Non Bootable System (if above steps break the system boot manager)
+See here https://itsfoss.com/no-bootable-device-found-ubuntu/
+and here http://www.wavesys.com/support/cannot-boot-windows-bootable-device-not-found-error-after-initializing-drive-dell-e6x30-syst
+
 ##GRUB - BOOT IN COMMAND LINE
 You can press 'e' when in grub menu and find the line including kernel parameters (usually ro quiet) and add to the end the word single.
 You can also add a custom entry in the grub menu, so this CLI boot will be presented as an option by grub on your next boot.
@@ -1941,7 +1959,7 @@ Searching for grub.cfg returns:
 
 The file grub.cfg under /boot/grub was correct (Debian Generated) but the ubuntu/grub should be changed like this:
 Original file                                                      ---> Modified File
-search.fs_uuid bcd36820-8e94-4134-95ef-8b51f618d397 root hd0,gpt5  ---> search.fs_uuid 78164877-465b-408a-9c0f-3360a317fc42 root hd0,gpt9 
+search.fs_duuid bcd36820-8e94-4134-95ef-8b51f618d397 root hd0,gpt5  ---> search.fs_uuid 78164877-465b-408a-9c0f-3360a317fc42 root hd0,gpt9 
 set prefix=($root)'/boot/grub'                                     ---> preserved and not changed
 configfile $prefix/grub.cfg                                        ---> preserved and not changed
 
@@ -1951,6 +1969,13 @@ Tip: The order of the menu entries in grub.cfg seems that affect the order that 
 Though if you change the grub.cfg , the next 'grub-update' will re-create this file according to /etc/default/grub and according to configuration files present in /etc/grub.d/
 
 In /etc/grub.d directory you can see conf files starting with a number like 10-linux. The number might denote a priority number in grub.cfg generation process by update-grub.
+
+mkdir /mnt/usb
+mount /dev/sdc /mnt/usb
+mkdir /mnt/usb/boot/efi
+mount /dev/sda1 /mnt/usb/boot/efi
+grub-install --force --removable --boot-directory=/mnt/usb/boot /dev/sdc
+
 
 ##BOOT FROM GRUB COMMAND LINE
 Considering that your Debian was installed at /dev/sda9 and grub has crashed badly:
