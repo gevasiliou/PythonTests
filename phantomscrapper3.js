@@ -1,6 +1,9 @@
-var page = require('webpage').create();
-var url = 'http://www.etsy.com/search?q=hello%20kitty';
-
+var page = require('webpage').create(),
+  system = require('system'),
+  t, address;
+//var page = require('webpage').create();
+//var url = 'http://www.etsy.com/search?q=hello%20kitty';
+url = system.args[1];
 page.open(url, function(status) {
     // list all the a.href links in the hello kitty etsy page
     var links = page.evaluate(function() {
