@@ -83,7 +83,25 @@ function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
 
-killit () {
+function asciifrom { 
+[[ $1 == "--help" ]] && echo "usage: asciifrom hex OR asciifrom slashedhex OR asciifrom bin OR asciifrom longbin"
+[[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';
+[[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';
+[[ $1 == "hex" ]] && xxd -r -p
+[[ $1 == "slashedhex" ]] && sed 's/\\x//g' |xxd -r -p
+
+#Alternative: echo "$aa" |sed 's/ //g' |perl -lpe '$_=pack"B*",$_' #does break in cases like 01010000 00011100- works without spaces.
+}
+
+function asciito {
+[[ $1 == "--help" ]] && echo "usage: asciito hex OR asciito slashedhex OR asciito bin OR asciito longbin"
+[[ $1 == "hex" ]] && xxd -p
+[[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'
+[[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits
+[[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces
+}
+
+function killit {
 [[ -z "$1" ]] && echo "no name given" && return
 echo "those processes will be killed:"
 ps -aux |grep -e "$1" |grep -v 'grep' 
