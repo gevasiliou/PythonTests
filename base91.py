@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Base91 encode/decode for Python 2 and Python 3
 # https://github.com/aberaud/base91-python
 # Copyright (c) 2012 Adrien Beraud

@@ -83,22 +83,28 @@ function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
 
-function asciifrom { 
-[[ $1 == "--help" ]] && echo "usage: asciifrom hex OR asciifrom slashedhex OR asciifrom bin OR asciifrom longbin"
-[[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';
-[[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';
-[[ $1 == "hex" ]] && xxd -r -p
-[[ $1 == "slashedhex" ]] && sed 's/\\x//g' |xxd -r -p
-
-#Alternative: echo "$aa" |sed 's/ //g' |perl -lpe '$_=pack"B*",$_' #does break in cases like 01010000 00011100- works without spaces.
+function asciifrom {
+#https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools 
+[[ $1 == "--help" ]] && echo "usage: asciifrom hex OR asciifrom slashedhex OR asciifrom bin OR asciifrom longbin OR asciifrom base64"
+[[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
+[[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
+[[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
+[[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
+#Tip: When input text is like \u48 this is equal to \x48
+[[ $1 == "base64" ]] && base64 -d 
+[[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
+[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 }
 
 function asciito {
-[[ $1 == "--help" ]] && echo "usage: asciito hex OR asciito slashedhex OR asciito bin OR asciito longbin"
-[[ $1 == "hex" ]] && xxd -p
-[[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'
+[[ $1 == "--help" ]] && echo "usage: asciito hex OR asciito slashedhex OR asciito bin OR asciito longbin OR asciito base64"
+[[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
+[[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 [[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . Alternative: perl -lpe '$_=join " ", unpack"(B8)*"'
 [[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
+[[ $1 == "base64" ]] && base64
+[[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
+[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 }
 
 function killit {
