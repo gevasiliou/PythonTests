@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-#Rot13 encryption
-#Usage: echo "foobar" |python rot13.py
-#echo "sbbone" |python rot13.py --decode
-#https://docs.python.org/2/library/codecs.html
+# base64 - 32 and 12 runs better with python2 (just use python)
+# base85 and ascii85 encoding required python3 (run the script using python3 encode.py --...... )
+# if you have plans to use base64/32/16 with Python3 you need to use technique of encode / decode since you need to work with bytes, not plain str (strings)
 import codecs, sys, base64 
 #myline = b'one'
+
+
 
 if len(sys.argv) > 1:
     if sys.argv[1]=="--base64": #this particulary checks arg1.Raises an error if no argv[1] exists.
