@@ -86,7 +86,7 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 function asciifrom {
 #https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
 #https://www.dcode.fr/ascii-85-encoding 
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / base64 / base91 / rot13 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
 [[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
 [[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
@@ -97,17 +97,55 @@ function asciifrom {
 [[ $1 == "base64" ]] && base64 -d 
 [[ $1 == "base85nd" ]] && base85 -n -d         #you need the executable produced by this c program: https://raw.githubusercontent.com/roukaour/ascii85/master/ascii85.c
 [[ $1 == "base85" ]] && base85 -d     #with delimiter . String starts with <~ and finishes with ~> (required by most ascii85
+#base85 using perl (requires apt install libconvert-ascii85-perl
+# echo ..... |perl -mConvert::Ascii85 -lpe '$_ = Convert::Ascii85::decode($_);'
+# echo ..... |perl -mConvert::Ascii85 -lpe '$_ = Convert::Ascii85::encode($_);'
+
 [[ $1 == "ascii85" ]] && sed 's/^/\<\~/g; s/$/\~\>/g' |ascii85 -d   #apt install ruby-ascii85. Runs with just ascii85. Sed adds <~ to the start, ~> in the end
 [[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+#[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+case $1 in 
+"rot13") rot13.py --decode;;
+"rot1") tr 'b-za-aB-ZA-A' 'a-zA-Z';; #Rotates by -1 = 1 letter back => a becomes z. Equivalent to 25 letters in front.
+"rot2") tr 'c-za-bC-ZA-B' 'a-zA-Z';; #-2 letters back (or +24 letters)
+"rot3") tr 'd-za-cD-ZA-C' 'a-zA-Z';; #Ceasar Cipher
+"rot4") tr 'e-za-dE-ZA-D' 'a-zA-Z';;
+"rot5") tr 'f-za-eF-ZA-E' 'a-zA-Z';;
+"rot6") tr 'g-za-fG-ZA-F' 'a-zA-Z';;
+"rot7") tr 'h-za-gH-ZA-G' 'a-zA-Z';;
+"rot8") tr 'i-za-hI-ZA-H' 'a-zA-Z';;
+"rot9") tr 'j-za-iJ-ZA-I' 'a-zA-Z';;
+"rot10") tr 'k-za-jK-ZA-J' 'a-zA-Z';;
+"rot11") tr 'l-za-kL-ZA-K' 'a-zA-Z';;
+"rot12") tr 'm-za-lM-ZA-L' 'a-zA-Z';;
+#"rot13") tr 'n-za-mN-ZA-M' 'a-zA-Z';;
+"rot14") tr 'o-za-nO-ZA-N' 'a-zA-Z';;
+"rot15") tr 'p-za-oP-ZA-O' 'a-zA-Z';;
+"rot16") tr 'q-za-pQ-ZA-P' 'a-zA-Z';;
+"rot17") tr 'r-za-qR-ZA-Q' 'a-zA-Z';;
+"rot18") tr 's-za-rS-ZA-R' 'a-zA-Z';;
+"rot19") tr 't-za-sT-ZA-S' 'a-zA-Z';;
+"rot20") tr 'u-za-tU-ZA-T' 'a-zA-Z';;
+"rot21") tr 'v-za-uV-ZA-U' 'a-zA-Z';;
+"rot22") tr 'w-za-vW-ZA-V' 'a-zA-Z';;
+"rot23") tr 'x-za-wX-ZA-W' 'a-zA-Z';;
+"rot24") tr 'y-za-xY-ZA-X' 'a-zA-Z';;
+"rot25") tr 'z-za-yZ-ZA-Y' 'a-zA-Z';;
+esac
 
-#Jolanda Challenge:
+#Jolanda Challenges:
 #for a string a="VjVLSjZNT1pSTzRKNjVXTlpTSlQyMzNHQkREVVYyUVNCV0ZGNFZWWFZTM0pYNDNDQUlGRjRZRU5PV1JUWDRHU1JPNEo2NVdOQU9ES1pNV05aUkRUTDJZQkFaRFRaNEdDQUhEUlYzM0hCNUZKUDJNQlJOU1JUMzNEQ1JEVVYyUVdCWkRVTjJZUUJFMktSTVdOWlNLVFZWUURCSTJQTjJZSFJPSEo0VlFIQU9GRk5MM0NBSUpKWDNHSEJaS05IRFlCWkREVUYzM0lST0hUUDVHU1JPTUo2M1FKWklGUE41UVZBU01GTkwzVlpTSlRMTVlCWjVGRk5CRUFWREROSDJRSEJFTFVUQkVDUzVGVDY1UUtaSURKSllHUUE1SkY2NTNEU0lFSjYzR0haSUtVVlkzSUJPSlQ2TFlSQlpLSjJMWUhaSU1URkxZWkJaS0pCTVlIQkVISjRNTUFCQTJUUDRHSFpJRlAyNTNXQkVIUDI0M1ZBNUZUUDNFQVpJNEpYWVlIQTVLSkxZV0hTTUxUNE1MPQ=="
 #decoded message is here: echo "$a" |base64 -d |rot13.py |base32 -d
+#
+#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/435511390415317/
+#echo "$a" |asciifrom bin |base32 -d |rev |base85 -n -d
+#
+#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/430777217555401/
+#echo "$a" |asciifrom bin |sed 's/[U+]//g' |asciifrom hex |asciifrom base32 |asciifrom base85nd
 }
 
 function asciito {
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / base64 / base91 / rot13 / base32 / base32hex / base85 / base85nd [NoDelimiter]"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85 / base85nd [NoDelimiter]"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 [[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
@@ -119,8 +157,67 @@ function asciito {
 [[ $1 == "base85" ]] && base85   #using base85.c executable. Equivalent to ruby ascii85 command from pkg ruby-ascii85
 [[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+case $1 in 
+"rot13") rot13.py;;
+"rot1") tr 'a-zA-Z' 'b-za-aB-ZA-A';; #Rotates by +1 , go to next letter (a becomes b) or rotate -25 (25 letters back)
+"rot2") tr 'a-zA-Z' 'c-za-bC-ZA-B';; #Rotates by +2 , go to next 2 letters (a becomes c)
+"rot3") tr 'a-zA-Z' 'd-za-cD-ZA-C';; #Ceasar Cipher - rotate by 3
+"rot4") tr 'a-zA-Z' 'e-za-dE-ZA-D';;
+"rot5") tr 'a-zA-Z' 'f-za-eF-ZA-E';;
+"rot6") tr 'a-zA-Z' 'g-za-fG-ZA-F';;
+"rot7") tr 'a-zA-Z' 'h-za-gH-ZA-G';;
+"rot8") tr 'a-zA-Z' 'i-za-hI-ZA-H';;
+"rot9") tr 'a-zA-Z' 'j-za-iJ-ZA-I';;
+"rot10") tr 'a-zA-Z' 'k-za-jK-ZA-J';;
+"rot11") tr 'a-zA-Z' 'l-za-kL-ZA-K';;
+"rot12") tr 'a-zA-Z' 'm-za-lM-ZA-L';;
+#"rot13") tr 'a-zA-Z' 'n-za-mN-ZA-M';;
+"rot14") tr 'a-zA-Z' 'o-za-nO-ZA-N';;
+"rot15") tr 'a-zA-Z' 'p-za-oP-ZA-O';;
+"rot16") tr 'a-zA-Z' 'q-za-pQ-ZA-P';;
+"rot17") tr 'a-zA-Z' 'r-za-qR-ZA-Q';;
+"rot18") tr 'a-zA-Z' 's-za-rS-ZA-R';;
+"rot19") tr 'a-zA-Z' 't-za-sT-ZA-S';;
+"rot20") tr 'a-zA-Z' 'u-za-tU-ZA-T';;
+"rot21") tr 'a-zA-Z' 'v-za-uV-ZA-U';;
+"rot22") tr 'a-zA-Z' 'w-za-vW-ZA-V';;
+"rot23") tr 'a-zA-Z' 'x-za-wX-ZA-W';;
+"rot24") tr 'a-zA-Z' 'y-za-xY-ZA-X';;
+"rot25") tr 'a-zA-Z' 'z-za-yZ-ZA-Y';;
+esac
 }
+
+function asciirotby {
+case $1 in 
+"+1" | "-25") tr 'a-zA-Z' 'b-za-aB-ZA-A';; #Rotates by +1 , go to next letter (a becomes b) or rotate -25 (25 letters back)
+"+2" | "-24") tr 'a-zA-Z' 'c-za-bC-ZA-B';; #Rotates by +2 , go to next 2 letters (a becomes c)
+"+3" | "-23") tr 'a-zA-Z' 'd-za-cD-ZA-C';; #Ceasar Cipher - rotate by 3
+"+4" | "-22") tr 'a-zA-Z' 'e-za-dE-ZA-D';;
+"+5" | "-21") tr 'a-zA-Z' 'f-za-eF-ZA-E';;
+"+6" | "-20") tr 'a-zA-Z' 'g-za-fG-ZA-F';;
+"+7" | "-19") tr 'a-zA-Z' 'h-za-gH-ZA-G';;
+"+8" | "-18") tr 'a-zA-Z' 'i-za-hI-ZA-H';;
+"+9" | "-17") tr 'a-zA-Z' 'j-za-iJ-ZA-I';;
+"+10" | "-16") tr 'a-zA-Z' 'k-za-jK-ZA-J';;
+"+11" | "-15") tr 'a-zA-Z' 'l-za-kL-ZA-K';;
+"+12" | "-14") tr 'a-zA-Z' 'm-za-lM-ZA-L';;
+"+13" | "-13") tr 'a-zA-Z' 'n-za-mN-ZA-M';;
+"+14" | "-12") tr 'a-zA-Z' 'o-za-nO-ZA-N';;
+"+15" | "-11") tr 'a-zA-Z' 'p-za-oP-ZA-O';;
+"+16" | "-10") tr 'a-zA-Z' 'q-za-pQ-ZA-P';;
+"+17" | "-9") tr 'a-zA-Z' 'r-za-qR-ZA-Q';;
+"+18" | "-8") tr 'a-zA-Z' 's-za-rS-ZA-R';;
+"+19" | "-7") tr 'a-zA-Z' 't-za-sT-ZA-S';;
+"+20" | "-6") tr 'a-zA-Z' 'u-za-tU-ZA-T';;
+"+21" | "-5") tr 'a-zA-Z' 'v-za-uV-ZA-U';;
+"+22" | "-4") tr 'a-zA-Z' 'w-za-vW-ZA-V';;
+"+23" | "-3") tr 'a-zA-Z' 'x-za-wX-ZA-W';;
+"+24" | "-2") tr 'a-zA-Z' 'y-za-xY-ZA-X';;
+"+25" | "-1") tr 'a-zA-Z' 'z-za-yZ-ZA-Y';;
+esac
+}
+
 function binnegate { 
 	sed 's/0/A/g; s/1/0/g; s/A/1/g'  #for a binary format of 01010101 returns 10101010
 }
