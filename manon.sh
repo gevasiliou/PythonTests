@@ -13,7 +13,7 @@ Option1:
                            --manhenet    Skip die.net and mankier.com and look directly in man.he.net
                            * If option2 is ommited , default is die.net service
 
-    --apt           Debian Specific. Extract and display the man page from the deb package without downloading it. 
+    --apt           [DEFAULT MODE] Debian Specific. Extract and display the man page from the deb package without downloading it. 
                     Option 2:
                              --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc

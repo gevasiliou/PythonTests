@@ -84,28 +84,45 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 }
 
 function asciifrom {
-#https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools 
-[[ $1 == "--help" ]] && echo "usage: asciifrom hex OR asciifrom slashedhex OR asciifrom bin OR asciifrom longbin OR asciifrom base64"
+#https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
+#https://www.dcode.fr/ascii-85-encoding 
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / base64 / base91 / rot13 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
 [[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
 [[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
 [[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
 #Tip: When input text is like \u48 this is equal to \x48
+[[ $1 == "base32" ]] && base32 -d            #included in coreutils and basez pkg
+[[ $1 == "base32hex" ]] && base32hex -d      #part of basez package
 [[ $1 == "base64" ]] && base64 -d 
+[[ $1 == "base85nd" ]] && base85 -n -d         #you need the executable produced by this c program: https://raw.githubusercontent.com/roukaour/ascii85/master/ascii85.c
+[[ $1 == "base85" ]] && base85 -d     #with delimiter . String starts with <~ and finishes with ~> (required by most ascii85
+[[ $1 == "ascii85" ]] && sed 's/^/\<\~/g; s/$/\~\>/g' |ascii85 -d   #apt install ruby-ascii85. Runs with just ascii85. Sed adds <~ to the start, ~> in the end
 [[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+
+#Jolanda Challenge:
+#for a string a="VjVLSjZNT1pSTzRKNjVXTlpTSlQyMzNHQkREVVYyUVNCV0ZGNFZWWFZTM0pYNDNDQUlGRjRZRU5PV1JUWDRHU1JPNEo2NVdOQU9ES1pNV05aUkRUTDJZQkFaRFRaNEdDQUhEUlYzM0hCNUZKUDJNQlJOU1JUMzNEQ1JEVVYyUVdCWkRVTjJZUUJFMktSTVdOWlNLVFZWUURCSTJQTjJZSFJPSEo0VlFIQU9GRk5MM0NBSUpKWDNHSEJaS05IRFlCWkREVUYzM0lST0hUUDVHU1JPTUo2M1FKWklGUE41UVZBU01GTkwzVlpTSlRMTVlCWjVGRk5CRUFWREROSDJRSEJFTFVUQkVDUzVGVDY1UUtaSURKSllHUUE1SkY2NTNEU0lFSjYzR0haSUtVVlkzSUJPSlQ2TFlSQlpLSjJMWUhaSU1URkxZWkJaS0pCTVlIQkVISjRNTUFCQTJUUDRHSFpJRlAyNTNXQkVIUDI0M1ZBNUZUUDNFQVpJNEpYWVlIQTVLSkxZV0hTTUxUNE1MPQ=="
+#decoded message is here: echo "$a" |base64 -d |rot13.py |base32 -d
 }
 
 function asciito {
-[[ $1 == "--help" ]] && echo "usage: asciito hex OR asciito slashedhex OR asciito bin OR asciito longbin OR asciito base64"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / base64 / base91 / rot13 / base32 / base32hex / base85 / base85nd [NoDelimiter]"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 [[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
 #Alternative: perl -lpe '$_=join " ", unpack"(B8)*"'
 [[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
+[[ $1 == "base32" ]] && base32         #included in coreutils and basez pkg
+[[ $1 == "base32hex" ]] && base32hex   #part of basez package
 [[ $1 == "base64" ]] && base64
+[[ $1 == "base85" ]] && base85   #using base85.c executable. Equivalent to ruby ascii85 command from pkg ruby-ascii85
+[[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
+}
+function binnegate { 
+	sed 's/0/A/g; s/1/0/g; s/A/1/g'  #for a binary format of 01010101 returns 10101010
 }
 
 function killit {
