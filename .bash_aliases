@@ -86,12 +86,13 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 function asciifrom {
 #https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
 #https://www.dcode.fr/ascii-85-encoding 
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
 [[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
 [[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
 [[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
 #Tip: When input text is like \u48 this is equal to \x48
+[[ $1 == "octal" ]] && sed 's/^/\\0/g; s/ /\\0/g' |echo -e $(</dev/stdin)
 [[ $1 == "base32" ]] && base32 -d            #included in coreutils and basez pkg
 [[ $1 == "base32hex" ]] && base32hex -d      #part of basez package
 [[ $1 == "base64" ]] && base64 -d 
@@ -145,12 +146,13 @@ esac
 }
 
 function asciito {
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85 / base85nd [NoDelimiter]"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / base32 / base32hex / base85 / base85nd [NoDelimiter]"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 [[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
 #Alternative: perl -lpe '$_=join " ", unpack"(B8)*"'
 [[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
+[[ $1 == "octal" ]] && od -b |awk '{$1="";print}' |sed 's/^ //g'
 [[ $1 == "base32" ]] && base32         #included in coreutils and basez pkg
 [[ $1 == "base32hex" ]] && base32hex   #part of basez package
 [[ $1 == "base64" ]] && base64
