@@ -84,10 +84,16 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 }
 
 function asciifrom {
+#https://tools.ietf.org/html/rfc4648
+#https://en.wikipedia.org/wiki/Base32
 #https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
+#https://www.linuxnix.com/convert-binaryhex-oct-decimal-linuxunix/
 #https://www.dcode.fr/ascii-85-encoding 
 #echo $((base#number)) : https://phoxis.org/2012/07/12/builtin-bash-any-base-to-decimal-conversion/
-#TODO : base62, base36
+#TODO : base62, base36 , Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
+#Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
+#MD5, SHA-1 , SHA-256, etc : https://cryptii.com/pipes/md5-hash
+#substitution cipher: http://practicalcryptography.com/ciphers/simple-substitution-cipher/
 [[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85 / base58 / base26-1 [start from 1] / base26-0 [start from 0]"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
 [[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
@@ -153,7 +159,7 @@ esac
 }
 
 function asciito {
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58 / base26-1"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 [[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
@@ -167,6 +173,8 @@ function asciito {
 [[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
 [[ $1 == "base58" ]] && base58  && echo
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
+[[ $1 == "base26-1" ]] && sed 's/./& /g' |sed 's/j/10/g; s/k/11/g; s/l/12/g; s/m/13/g; s/n/14/g; s/o/15/g; s/p/16/g; s/q/17/g; s/r/18/g; s/s/19/g; s/t/20/g; s/u/21/g; s/v/22/g; s/w/23/g; s/x/24/g; s/y/25/g; s/z/26/g;' | sed 's/a/1/g; s/b/2/g; s/c/3/g; s/d/4/g; s/e/5/g; s/f/6/g; s/g/7/g; s/h/8/g; s/i/9/g'
+
 ##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 case $1 in 
 #"rot13") rot13.py;;
@@ -232,6 +240,53 @@ esac
 function binnegate { 
 	sed 's/0/A/g; s/1/0/g; s/A/1/g'  #for a binary format of 01010101 returns 10101010
 }
+
+function bin2dec {
+#different from bin2ascii (asciifrom bin) which converts binary to hex and then hex to ascii
+
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done	|perl -pe 's/\n/ /g'
+echo
+}
+
+function dec2bin {
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=2; ibase=10; $line" |bc;done	|perl -pe 's/\n/ /g'
+echo
+}
+#--------------------------------------------------------------------------
+function bin2hex {
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=16; ibase=2; $line" |bc;done	|perl -pe 's/\n/ /g'
+echo
+}
+
+function hex2bin {
+tr 'a-z' 'A-Z' |perl -pe 's/ /\n/g' |while read -r line;do echo "obase=2; ibase=16; $line" |bc;done	|perl -pe 's/\n/ /g'
+# .... | sed -r 's/.{8}/& /g' #every 8 chars insert a space
+echo
+}
+#--------------------------------------------------------------------------
+function dec2ascii {
+#no direct method available- you go from dec to octal and then from octal to ascii
+perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o" $line);done |perl -pe 's/\n/ /g'
+echo
+}
+
+function ascii2dec {
+asciito bin|bin2dec
+}
+#--------------------------------------------------------------------------
+
+function dec2hex {
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=16; ibase=10; $line" |bc;done	|perl -pe 's/\n/ /g'	
+}
+
+function hex2dec {
+#bc can not handle lower case chars.
+#also 
+tr 'a-z' 'A-Z' |perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=16; $line" |bc;done	|perl -pe 's/\n/ /g'	
+}
+
+#--------------------------------------------------------------------------
+
 
 function killit {
 [[ -z "$1" ]] && echo "no name given" && return
