@@ -90,7 +90,10 @@ function asciifrom {
 #https://www.linuxnix.com/convert-binaryhex-oct-decimal-linuxunix/
 #https://www.dcode.fr/ascii-85-encoding 
 #echo $((base#number)) : https://phoxis.org/2012/07/12/builtin-bash-any-base-to-decimal-conversion/
-#TODO : base62, base36 , Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
+#TODO : 
+# bacon , base62, base36 , z-base32, Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
+# https://pypi.org/project/enigmamachine/
+#Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
 #Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
 #MD5, SHA-1 , SHA-256, etc : https://cryptii.com/pipes/md5-hash
 #substitution cipher: http://practicalcryptography.com/ciphers/simple-substitution-cipher/
@@ -244,7 +247,7 @@ function binnegate {
 function bin2dec {
 #different from bin2ascii (asciifrom bin) which converts binary to hex and then hex to ascii
 
-perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done	|perl -pe 's/\n/ /g'
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done
 echo
 }
 
@@ -266,7 +269,7 @@ echo
 #--------------------------------------------------------------------------
 function dec2ascii {
 #no direct method available- you go from dec to octal and then from octal to ascii
-perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o" $line);done |perl -pe 's/\n/ /g'
+perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done
 echo
 }
 
@@ -284,9 +287,11 @@ function hex2dec {
 #also 
 tr 'a-z' 'A-Z' |perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=16; $line" |bc;done	|perl -pe 's/\n/ /g'	
 }
-
 #--------------------------------------------------------------------------
 
+function ascii2hex {
+	hexit |awk '(!(NR%2 == 0))'
+}
 
 function killit {
 [[ -z "$1" ]] && echo "no name given" && return
