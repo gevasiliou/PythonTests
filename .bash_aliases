@@ -91,7 +91,9 @@ function asciifrom {
 #https://www.dcode.fr/ascii-85-encoding 
 #echo $((base#number)) : https://phoxis.org/2012/07/12/builtin-bash-any-base-to-decimal-conversion/
 #TODO : 
-# bacon , base62, base36 , z-base32, Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
+# bacon , https://base62.io/
+# base62, https://mothereff.in/bacon
+# base36 , z-base32, Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
 # https://pypi.org/project/enigmamachine/
 #Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
 #Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
@@ -99,8 +101,14 @@ function asciifrom {
 #substitution cipher: http://practicalcryptography.com/ciphers/simple-substitution-cipher/
 [[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85 / base58 / base26-1 [start from 1] / base26-0 [start from 0]"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
+#asciifrom bin returns the ascii letters corresponding to the binary input.
+#actually binary number is converted to hex number and hex number is converted to corresponding ascii letter 
 [[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
 [[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
+#Remark: xxd -r -p returns the ascii text from the given hex valuer.
+#for example echo "3635" |xxd -r -p  --> 65 = ascii char 6 (hex 0x36) and ascii char 5 (hex 0x35) and not the number 65.
+#this is why we call it asciifrom hex. If you try to convert the number 65 (decimal) to hex , then it's hex value is 41. 
+#or for hex number 41, the decimal number is 65. This is done with dec2hex and hex2dec functions which treats input as numbers.
 [[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
 #Tip: When input text is like \u48 this is equal to \x48
 [[ $1 == "octal" ]] && sed 's/^/\\0/g; s/ /\\0/g' |echo -e $(</dev/stdin)
@@ -118,8 +126,45 @@ function asciifrom {
 [[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
 #[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "base26-1" ]] && sed 's/10/j/g; s/11/k/g; s/12/l/g; s/13/m/g; s/14/n/g; s/15/o/g; s/16/p/g; s/17/q/g; s/18/r/g; s/19/s/g; s/20/t/g; s/21/u/g; s/22/v/g; s/23/w/g; s/24/x/g; s/25/y/g; s/26/z/g;' | sed 's/1/a/g; s/2/b/g; s/3/c/g; s/4/d/g; s/5/e/g; s/6/f/g; s/7/g/g; s/8/h/g; s/9/i/g'
-
 [[ $1 == "base26-0" ]] && sed 's/9/j/g; s/10/k/g; s/11/l/g; s/12/m/g; s/13/n/g; s/14/o/g; s/15/p/g; s/16/q/g; s/17/r/g; s/18/s/g; s/19/t/g; s/20/u/g; s/21/v/g; s/22/w/g; s/23/x/g; s/24/y/g; s/25/z/g;' | sed 's/0/a/g; s/1/b/g; s/2/c/g; s/3/d/g; s/4/e/g; s/5/f/g; s/6/g/g; s/7/h/g; s/8/i/g'
+
+if [[ $1 == "combo" ]];then
+        g="$(</dev/stdin)";
+        echo "base64 -id"; 
+        echo "$g" |base64 -id;
+        echo "base64 -id | base64 -id"; 
+        echo "$g" |base64 -id |base64 -id;
+        read -p 'next';
+        echo "base64 -id| base32 -id";
+        echo "$g" |base64 -id |base32 -id;
+        read -p 'next';
+        echo "base64 -id| base85 -id";
+        echo "$g" |base64 -id |base85 -ind;
+        read -p 'next';
+        echo "base32 -id";
+        echo "$g" |base32 -id;
+        echo "base32 -id| base64 -id";
+        echo "$g" |base32 -id |base64 -id;
+        read -p 'next';
+        echo "base32 -id| base32 -id";
+        echo "$g" |base32 -id |base32 -id;
+        read -p 'next';
+        echo "base32 -id| base85 -ind";
+        echo "$g" |base32 -id |base85 -ind;
+        read -p 'next';
+        echo "base85 -ind";
+        echo "$g" |base85 -ind;
+        echo "base85 -ind| base64 -id";
+        echo "$g" |base85 -ind |base64 -id;
+        read -p 'next';
+        echo "base85 -ind| base32 -id";
+        echo "$g" |base85 -ind |base32 -id;
+        read -p 'next';
+        echo "base85 -ind| base85 -ind";
+        echo "$g" |base85 -ind |base85 -ind;
+        read -p 'next';
+fi
+
 case $1 in 
 #"rot13") rot13.py --decode;;
 "rot1") tr 'b-za-aB-ZA-A' 'a-zA-Z';; #Rotates by -1 = 1 letter back => a becomes z. Equivalent to 25 letters in front.
@@ -159,6 +204,14 @@ esac
 #
 #https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/430777217555401/
 #echo "$a" |asciifrom bin |sed 's/[U+]//g' |asciifrom hex |asciifrom base32 |asciifrom base85nd
+
+#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/440351073264682/
+#1): 00110100 00110011 00110011 00110011 
+#2): 43330263430213231302631313025303 (asciifrom bin of input)
+#3): 36352033322031303420393720393920 (rev of step2)
+#4): 65 32 104 97 99 107 101 114 32 (ascii chars from hex - treat step3 as hex number)
+#5): Output (decimals of step4 to ascii)
+#echo "$a" |asciifrom bin |rev |sed 's/../& /g' |hex2dec |dec2ascii |perl -pe 's/\n//g' |dec2ascii |perl -pe 's/\n//g'
 }
 
 function asciito {
@@ -245,7 +298,14 @@ function binnegate {
 }
 
 function bin2dec {
+#this converts a number expressed in binary format to decimal number and not to it's ascii equivalent.
 #different from bin2ascii (asciifrom bin) which converts binary to hex and then hex to ascii
+#example:
+#echo "00110110 00110011" |asciifrom bin  ---> 63        = the corresponding ascii letters 6 and 3
+#echo "00110110 00110011" |bin2hex        ---> 36 33     = bin numbers converted to hex numbers. In any case 0x36 equals to ascii letter 6 and 0x35 equals to ascii letter 5
+#echo "00110110 00110011" |bin2dec        ---> 54 51     = bin numbers converted to decimal numbers. In any case decimal number 54 corresponds to ascii letter 6 
+#echo "54 51" |dec2hex                    ---> 36 33     = dec number 54 equals to hex number 36 and dec 51 equals to hex 33
+
 
 perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done
 echo
@@ -257,6 +317,7 @@ echo
 }
 #--------------------------------------------------------------------------
 function bin2hex {
+#number converting , not bin to ascii but bin number to hex number.
 perl -pe 's/ /\n/g' |while read -r line;do echo "obase=16; ibase=2; $line" |bc;done	|perl -pe 's/\n/ /g'
 echo
 }
@@ -268,7 +329,9 @@ echo
 }
 #--------------------------------------------------------------------------
 function dec2ascii {
-#no direct method available- you go from dec to octal and then from octal to ascii
+#no direct method available- you go from dec number to octal number and then from octal number to ascii letter
+#echo "54 51" |dec2ascii   --->  6 3    =  ascii letter 6 and ascii letter 3. Not the number 63. echo 54 51 |dec2hex returns hex number 36 33 
+
 perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done
 echo
 }
