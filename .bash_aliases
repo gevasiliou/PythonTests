@@ -230,7 +230,7 @@ function asciito {
 [[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
 [[ $1 == "base58" ]] && base58  && echo
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "base26-1" ]] && sed 's/./& /g' |sed 's/j/10/g; s/k/11/g; s/l/12/g; s/m/13/g; s/n/14/g; s/o/15/g; s/p/16/g; s/q/17/g; s/r/18/g; s/s/19/g; s/t/20/g; s/u/21/g; s/v/22/g; s/w/23/g; s/x/24/g; s/y/25/g; s/z/26/g;' | sed 's/a/1/g; s/b/2/g; s/c/3/g; s/d/4/g; s/e/5/g; s/f/6/g; s/g/7/g; s/h/8/g; s/i/9/g'
+[[ $1 == "base26-1" ]] && sed 's/./& /g' |sed -r 's/j|J/10/g; s/k|K/11/g; s/l|L/12/g; s/m|M/13/g; s/n|N/14/g; s/o|O/15/g; s/p|P/16/g; s/q|Q/17/g; s/r|R/18/g; s/s|S/19/g; s/t|T/20/g; s/u|U/21/g; s/v|V/22/g; s/w|W/23/g; s/x|X/24/g; s/y|Y/25/g; s/z|Z/26/g;' | sed -r 's/a|A/1/g; s/b|B/2/g; s/c|C/3/g; s/d|D/4/g; s/e|E/5/g; s/f|F/6/g; s/g|G/7/g; s/h|H/8/g; s/i|I/9/g'
 
 ##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 case $1 in 
