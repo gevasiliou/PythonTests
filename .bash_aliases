@@ -84,6 +84,7 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 }
 
 function asciifrom {
+#https://gchq.github.io/CyberChef
 #https://tools.ietf.org/html/rfc4648
 #https://en.wikipedia.org/wiki/Base32
 #https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
