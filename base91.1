@@ -1,0 +1,57 @@
+.TH BASE91 1 "November 2006" "base91 0.6.0" basE91
+.SH NAME
+base91, b91enc, b91dec \- basE91 encode/decode data
+.SH SYNOPSIS
+.B base91
+.RI [ OPTION "]... [" FILE ]
+.SH DESCRIPTION
+Convert binary data in FILE to plain ASCII text (or vice versa), writing to
+standard output. With no FILE, or when FILE is \-, read standard input.
+.TP
+.BR \-d ", " \-\-decode
+decode data (default for
+.BR b91dec );
+all non\-alphabet characters (such as newlines) are ignored
+.TP
+.BI "\-m " SIZE
+use maximum SIZE bytes of main memory for buffers (default 64K);
+SIZE may be followed by a multiplicative suffix:
+.I K
+1024,
+.I M
+1024*1024
+.TP
+.BR \-o ", " \-\-output =\fIFILE\fR
+write result to FILE instead of standard output
+.TP
+.BR \-v ", " \-\-verbose
+run in verbose mode and write some statistics to standard error;
+use it twice to increase verbosity
+.TP
+.BR \-w ", " \-\-wrap =\fICOLS\fR
+wrap encoded lines after COLS characters (default 76);
+use 0 to disable line wrapping (default for
+.BR b91enc )
+.TP
+.B \-\-help
+prints out the available program options
+.TP
+.B \-\-version
+output version information and exit
+.PP
+basE91 is an advanced method for encoding binary data as ASCII characters. It
+is similar to UUencode or base64, but is more efficient. The overhead produced
+by basE91 depends on the input data. It amounts at most to 23% (versus 33% for
+base64) and can range down to 14%, which typically occurs on 0\-byte blocks.
+This makes basE91 very useful for transferring larger files over binary
+insecure connections like e\-mail or terminal lines.
+.SH AUTHOR
+Written by Joachim Henke.
+.SH "REPORTING BUGS"
+Report bugs to <j\-o@users.sourceforge.net>.
+.SH COPYRIGHT
+Copyright (c) 2000\-2006 Joachim Henke
+.SH "SEE ALSO"
+base64(1), uuencode(1)
+
+http://base91.sourceforge.net/
