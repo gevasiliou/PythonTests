@@ -503,10 +503,47 @@ PS: If you try to set ORS=RS="multi Record separators here" it does not work. Pr
 
 
 Tip:
-Es[ecially in Fields Splitting, you can apply a kind of ternary if at printf : for (k=1;k<=NF,k++) printf("%s%s",$k,(k==NF)?ORS:OFS)
+Especially in Fields Splitting, you can apply a kind of ternary if at printf : for (k=1;k<=NF,k++) printf("%s%s",$k,(k==NF)?ORS:OFS)
 
 Remark:
 It seems that RS accepts OR in regex in format RS=",|\n" but ORS accepts regex but not OR;thus ORS=RS=regex fails if OR is given
+
+
+##RS TRICKS
+You can define a global RS in the very beginning using awk -v RS="-", but you also can declare RS inside BEGIN{...}.
+But you can also define RS in the end of awk command, just before file to be parsed.
+like awk '1' RS="-" file1.txt
+
+The tricky part is that you can define different RS for diffent input files.
+For example awk '1' file1 RS=">" file2 , will use default RS for parsing file1 and will use ">" as a separator for file2.
+Quite usefull when you want to isolate blocks of input, separated by a kind of header.
+
+Compare:
+echo "$a"
+1-2-3
+echo "$b"
+>1>2>3
+
+awk '1' <(echo "$a") <(echo "$b")
+1-2-3
+>1>2>3
+
+awk '1' <(echo "$a") RS=">" <(echo "$b")
+1-2-3
+
+1
+2
+3
+
+awk '1' RS="-" <(echo "$a") RS=">" <(echo "$b")
+1
+2
+3
+
+
+1
+2
+3
 
 ----------------------------------------------------------------------------------------------------------------
 AWK:PRINT WITH IF CONDITION
