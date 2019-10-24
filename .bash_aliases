@@ -215,6 +215,14 @@ esac
 #4): 65 32 104 97 99 107 101 114 32 (ascii chars from hex - treat step3 as hex number)
 #5): Output (decimals of step4 to ascii)
 #echo "$a" |asciifrom bin |rev |sed 's/../& /g' |hex2dec |dec2ascii |perl -pe 's/\n//g' |dec2ascii |perl -pe 's/\n//g'
+
+#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/444441176189005/
+#1.) 00111000 00110010 00111000 00111000 00110100 00110101
+#2.) 828845884 844575810 593174889 1131292774 1126903354
+#3.) 1g/<2W4B#[!iCn(fC+.:VE+AaqE+q'QOBJgI#HuT]
+#4.) ;flS`@;^!rEa`p#Gp$gB+EV:.+CT;4+E(j7BPD!kDJ(RE8TZ(bDf0
+#5.) Solution ..
+#echo "$a" |asciifrom bin |dec2hex |asciifrom hex |rev |base85 -nd
 }
 
 function asciito {
