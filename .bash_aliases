@@ -91,9 +91,11 @@ function asciifrom {
 #https://www.dcode.fr/ascii-85-encoding 
 #echo $((base#number)) : https://phoxis.org/2012/07/12/builtin-bash-any-base-to-decimal-conversion/
 #TODO : 
-# bacon , https://base62.io/
-# base62, https://mothereff.in/bacon
-# base36 , z-base32, Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
+# bacon , https://mothereff.in/bacon
+# base62, https://base62.io/
+# base36 , https://www.dcode.fr/base-36-cipher
+# z-base32, 
+# Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
 # https://pypi.org/project/enigmamachine/
 #Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
 #Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
