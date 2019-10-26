@@ -229,10 +229,12 @@ function asciito {
 [[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58 / base26-1"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
-[[ $1 == "bin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
-#Alternative: perl -lpe '$_=join " ", unpack"(B8)*"'
+
+[[ $1 == "bin" ]] && perl -lpe '$_=join " ", unpack"(B8)*"'
+#bin alternative xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
 [[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
 [[ $1 == "octal" ]] && od -b |awk '{$1="";print}' |sed 's/^ //g'
+
 [[ $1 == "base32" ]] && base32         #included in coreutils and basez pkg
 [[ $1 == "base32hex" ]] && base32hex   #part of basez package
 [[ $1 == "base64" ]] && base64
