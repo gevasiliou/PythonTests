@@ -115,11 +115,11 @@ function asciifrom {
 [[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
 #Tip: When input text is like \u48 this is equal to \x48
 [[ $1 == "octal" ]] && sed 's/^/\\0/g; s/ /\\0/g' |echo -e $(</dev/stdin)
-[[ $1 == "base32" ]] && base32 -d            #included in coreutils and basez pkg
-[[ $1 == "base32hex" ]] && base32hex -d      #part of basez package
-[[ $1 == "base64" ]] && base64 -d 
-[[ $1 == "base85nd" ]] && base85 -n -d         #you need the executable produced by this c program: https://raw.githubusercontent.com/roukaour/ascii85/master/ascii85.c
-[[ $1 == "base85" ]] && base85 -d     #with delimiter . String starts with <~ and finishes with ~> (required by most ascii85
+[[ $1 == "base32" ]] && base32 -id            #included in coreutils and basez pkg
+[[ $1 == "base32hex" ]] && base32hex -g -d      #part of basez package. -g : ignore garbage in input
+[[ $1 == "base64" ]] && base64 -id 
+[[ $1 == "base85nd" ]] && base85 -ind         #you need the executable produced by this c program: https://raw.githubusercontent.com/roukaour/ascii85/master/ascii85.c
+[[ $1 == "base85" ]] && base85 -id     #with delimiter . String starts with <~ and finishes with ~> (required by most ascii85
 [[ $1 == "base58" ]] && base58 -d && echo #apt install base58
 #base85 using perl (requires apt install libconvert-ascii85-perl
 # echo ..... |perl -mConvert::Ascii85 -lpe '$_ = Convert::Ascii85::decode($_);'
