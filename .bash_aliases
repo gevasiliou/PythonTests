@@ -320,7 +320,7 @@ function bin2dec {
 #echo "54 51" |dec2hex                    ---> 36 33     = dec number 54 equals to hex number 36 and dec 51 equals to hex 33
 
 
-perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done
+perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done |perl -pe 's/\n/ /g'
 echo
 }
 
