@@ -18,9 +18,9 @@ def to_bin(data):
 
 def encode(image_name, secret_data):
     # read the image
-    print("function encode, proceed with",image_name,",",secret_data)
-    image = cv2.imread(image_name)
-    print(image)
+    print("function encode, proceed with",image_name,",secret dara:",secret_data)
+    image = cv2.imread(image_name) #image should be png with RGB. Don't rely on image extension. Verify that you deal with a real PNG using dile myimage.png. 
+    #print("image:",image)  #unquote for debuging
     # maximum bytes to encode
     n_bytes = image.shape[0] * image.shape[1] * 3 // 8
     print("[*] Maximum bytes to encode:", n_bytes)
@@ -62,6 +62,7 @@ def decode(image_name):
     print("[+] Decoding...")
     # read the image
     image = cv2.imread(image_name)
+    #print('image:',image)
     binary_data = ""
     for row in image:
         for pixel in row:
