@@ -116,6 +116,7 @@ function asciifrom {
 [[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
 #Tip: When input text is like \u48 this is equal to \x48
 [[ $1 == "octal" ]] && sed 's/^/\\0/g; s/ /\\0/g' |echo -e $(</dev/stdin)
+[[ $1 == "dec" ]] && perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done |perl -pe 's/\n/ /g'
 [[ $1 == "base32" ]] && base32 -id            #included in coreutils and basez pkg
 [[ $1 == "base32hex" ]] && base32hex -g -d      #part of basez package. -g : ignore garbage in input
 [[ $1 == "base64" ]] && base64 -id 
@@ -235,7 +236,7 @@ function asciito {
 #bin alternative xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
 [[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
 [[ $1 == "octal" ]] && od -b |awk '{$1="";print}' |sed 's/^ //g'
-
+[[ $1 == "dec" ]] && perl -lpe '$_=join " ", unpack"(B8)*"' | perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done |perl -pe 's/\n/ /g' && echo #asciito bin|bin2dec
 [[ $1 == "base32" ]] && base32         #included in coreutils and basez pkg
 [[ $1 == "base32hex" ]] && base32hex   #part of basez package
 [[ $1 == "base64" ]] && base64
@@ -244,7 +245,7 @@ function asciito {
 [[ $1 == "base58" ]] && base58  && echo
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "base26-1" ]] && sed 's/./& /g' |sed -r 's/j|J/10/g; s/k|K/11/g; s/l|L/12/g; s/m|M/13/g; s/n|N/14/g; s/o|O/15/g; s/p|P/16/g; s/q|Q/17/g; s/r|R/18/g; s/s|S/19/g; s/t|T/20/g; s/u|U/21/g; s/v|V/22/g; s/w|W/23/g; s/x|X/24/g; s/y|Y/25/g; s/z|Z/26/g;' | sed -r 's/a|A/1/g; s/b|B/2/g; s/c|C/3/g; s/d|D/4/g; s/e|E/5/g; s/f|F/6/g; s/g|G/7/g; s/h|H/8/g; s/i|I/9/g'
-
+[[ $1 == "base26-0" ]] && sed 's/./& /g' |sed -r 's/j|J/9/g; s/k|K/10/g; s/l|L/11/g; s/m|M/12/g; s/n|N/13/g; s/o|O/14/g; s/p|P/15/g; s/q|Q/16/g; s/r|R/17/g; s/s|S/18/g; s/t|T/19/g; s/u|U/20/g; s/v|V/21/g; s/w|W/22/g; s/x|X/23/g; s/y|Y/24/g; s/z|Z/25/g;' | sed -r 's/a|A/0/g; s/b|B/1/g; s/c|C/2/g; s/d|D/3/g; s/e|E/4/g; s/f|F/5/g; s/g|G/6/g; s/h|H/7/g; s/i|I/8/g'
 ##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 case $1 in 
 #"rot13") rot13.py;;
@@ -346,7 +347,7 @@ function dec2ascii {
 #no direct method available- you go from dec number to octal number and then from octal number to ascii letter
 #echo "54 51" |dec2ascii   --->  6 3    =  ascii letter 6 and ascii letter 3. Not the number 63. echo 54 51 |dec2hex returns hex number 36 33 
 
-perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done
+perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done |perl -pe 's/\n/ /g'
 echo
 }
 
