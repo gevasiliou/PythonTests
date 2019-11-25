@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+/*The best book ever for C beginners:  An Introduction to C & GUI Programming by Simon Long */
 int multiple; //global variable 
 
 int sum_and_diff (int a, int b, int *sum, int *diff)
