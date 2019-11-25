@@ -2476,3 +2476,16 @@ Obviously, it can only be applied to background jobs, because you cannot enter i
 
 `nohup` disconnects the process from the terminal, redirects its output to nohup.out and shields it from SIGHUP. 
 One of the effects (the naming one) is that the process won't receive any sent SIGHUP. It is completely independent from job control and could in principle be used also for foreground jobs (although that's not very useful).
+
+BASH:TRICKS
+##FOR LOOP TRICKS
+Since bash is purely based on C, you are allowed to use the following tricky for usage:
+
+for ((i=1,b=9;i<=10,b>=5;i++,b--)) do echo "$i-$b";done
+1-9
+2-8
+3-7
+4-6
+5-5
+
+Inside For Loop, you can initialize/check/increase more than one variables , separated by comma.
