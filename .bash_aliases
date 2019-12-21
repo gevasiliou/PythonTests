@@ -44,7 +44,7 @@ alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #-
 #alias lsdir='ls -l -d */'
 
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
-alias gitcancel='git reset --hard HEAD~;' #cancels the last (not pushed) commit. You can also cancel 2 commits at once: git reset --hard HEAD~2
+alias gitcancel='read -p "are you sure? [y/n]: " p;case "$p" in "y") git reset --hard HEAD~;;esac' #cancels the last local commit. You can also cancel 2 commits at once: git reset --hard HEAD~2
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ && chown gv:gv /home/gv/.bash_aliases'
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade '
