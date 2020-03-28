@@ -1031,7 +1031,6 @@ aptitude --help
 --with(out)-recommends     Specify whether or not to treat recommends as strong dependencies.
 -S fname        Read the aptitude extended status info from fname.
 
-
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:SIZE OF FILES - DISK USAGE (DU,LS,etc)
 du reports by default size of directories. Can be combined with -a to report also size of files (by default directories sizes is reported)
@@ -2147,9 +2146,7 @@ gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/
 Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:CRYPTOGRAPHY
-
-##HIDE DATA IN IMAGES
+UTILS:HIDE DATA IN IMAGES
 There are tools that can be used to hide data or texts or even a whole image within another image (hat's off to Jolanda)
 Such programs are:
 * steghide
