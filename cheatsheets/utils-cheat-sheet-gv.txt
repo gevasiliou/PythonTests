@@ -934,6 +934,13 @@ git log : all the commits will be shown. Most recent goes on top.
 git log -p -2 : gets only the last 2 commits
 git log --stat : statistics about commits, like file changed . Also can be combined with --name-only.
 
+git diff CommitIdNew-CommitIdOld like git diff 24226b9..3acf35c
+Commit ids are advised in both git pull and git send
+In git send:
+   3acf35c..0774f59  master -> master
+in git pull:
+There is a relevant reference similar to git send.
+
 ##GIT SHOW FILES IN COMMIT
 git show : see the last commit in details
 git show --name-only : lists only file names changed
