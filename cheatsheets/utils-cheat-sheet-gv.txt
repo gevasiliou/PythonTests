@@ -1571,12 +1571,29 @@ sudo apt install libav-tools
 avconv -i 'Asia - Silent Nation.ape' -id3v2_version 3 -codec:a libmp3lame -b:a 320k 'Asia-Silent.Nation.mp3'
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:MAKE A BOOTABLE CD 
-
+UTILS:DD COPY
+.B MAKE A BOOTABLE CD USING DD
 dd bs=4M if=kali-linux-xfce-2017.3-amd64.iso of=/dev/sdb conv=fdatasync   #tested and worked fine
 
 .I not tested alternative:
 dd if=debian-live-9.5.0-amd64-cinnamon+nonfree.iso of=/dev/sdb bs=4M; sync
+
+.B COPY USB STICK TO ANOTHER STICK BITWISE
+https://superuser.com/questions/1041163/how-do-i-clone-a-usb-stick-including-partitions
+
+dd if=/dev/source of=/dev/target bs=1M
+
+This was used and worked fine to copy a live boot kali usb stick (version 2017.03) from /dev/sdb to /dev/sdc.
+Worked fine, even though that original usb stick had two hidden partitions (by Kali Live Image).
+
+.I ALTERNATIVE: CREATE AN IMAGE FIRST AND BURN THE IMAGE
+Alternatively you could create an image first, making creation of multiple copies easier:
+
+dd if=/dev/source of=/home/me/image.img bs=1M
+dd if=/home/me/image.img of=/dev/target bs=1M
+
+This solution was not tested by me....
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:EVENTS 
 https://wiki.archlinux.org/index.php/PulseAudio/Examples#Automatically_switch_audio_to_HDMI
