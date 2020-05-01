@@ -1,0 +1,1404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY appversion "0.22.0">
+<!ENTITY manrevision "1.9">
+<!ENTITY date "March 2015">
+<!ENTITY app "gparted">
+<!ENTITY appname "GParted">
+<!-- Information about the entities:
+       Use the appversion entity to specify the version of the application.
+       Use the manrevision entity to specify the revision number of this manual.
+       Use the date entity to specify the release date of this manual.
+       Use the app entity to specify the command name of the application.
+       Use the appname entity to specify the formal name of the application.
+  -->]>
+<!-- Remember to update the revision history -->
+<!--
+      To generate a single html file of this document, use the command:
+        xmlto html-nochunks gparted.xml
+
+      To test this document in a viewer, use the command:
+        gnome-help file:/full-path-to-gparted.xml
+ -->
+<!-- ============= Document Header =================================== -->
+<?db.chunk.max_depth 4?>
+<article id="gparted" lang="sv">
+<!-- Please do not change the id. -->
+<!-- For translations, change lang to appropriate code -->
+  <articleinfo>
+    <title>Handbok för GParted</title>
+    <publisher>
+      <publishername>GParted-projektet</publishername>
+    </publisher>
+
+    <abstract role="description">
+      <para>GParted är GNOME-partitionsredigeraren för att skapa, organisera om och ta bort diskpartitioner. GParted låter dig ändra organisationen på partitioner utan att förstöra innehållet på dessa partitioner.</para>
+    </abstract>
+
+    <copyright>
+      <year>2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015</year>
+      <holder>Curtis Gedak</holder>
+    </copyright>
+    <copyright>
+      <year>2014, 2015</year>
+      <holder>Mike Fleetwood</holder>
+    </copyright><copyright><year>2006, 2008, 2009, 2010</year><holder>Daniel Nylander (po@danielnylander.se)</holder></copyright><copyright><year>2015</year><holder>Josef Andersson (josef.andersson@fripost.org)</holder></copyright>
+
+<!-- translators: uncomment this:
+    <copyright>
+      <year>2009</year>
+      <holder>ME-THE-TRANSLATOR (Latin translation)</holder>
+    </copyright>
+-->
+
+    <legalnotice>
+      <para>Tillstånd ges för att kopiera, distribuera och/eller ändra detta dokument under villkoren för GNU Free Documentation License, version 1.2 eller någon senare version som publicerats av Free Software Foundation; utan några oföränderliga avsnitt, inga framsidestexter och inga baksidestexter,. Du kan hitta en kopia av GFDL på denna <ulink type="help" url="ghelp:fdl">länk</ulink> eller på <ulink type="http" url="http://www.fsf.org/licensing/licenses/fdl.html"/> eller filen COPYING-DOCS som distribueras med denna handbok.</para>
+    </legalnotice>
+
+    <authorgroup>
+      <author role="maintainer">
+        <firstname>Curtis</firstname>
+        <surname>Gedak</surname>
+        <affiliation>
+          <orgname>GParted-projektet</orgname>
+          <address>
+            <email>gedakc@users.sf.net</email>
+          </address>
+        </affiliation>
+      </author>
+      <author role="developer">
+        <firstname>Mike</firstname>
+        <surname>Fleetwood</surname>
+        <affiliation>
+          <orgname>GParted-projektet</orgname>
+          <address>
+            <email>mike.fleetwood@googlemail.com</email>
+          </address>
+        </affiliation>
+      </author>
+
+<!-- This is appropriate place for other contributors: translators,
+     maintainers,  etc. Commented out by default.
+      <othercredit role="translator">
+        <firstname>Latin</firstname>
+        <surname>Translator 1</surname>
+        <affiliation>
+          <orgname>Latin Translation Team</orgname>
+          <address> <email>translator@gnome.org</email> </address>
+        </affiliation>
+        <contrib>Latin translation</contrib>
+      </othercredit>
+-->
+    </authorgroup>
+
+<!-- According to GNU FDL, revision history is mandatory if you are -->
+<!-- modifying/reusing someone else's document.  If not, you can omit it. -->
+    <revhistory>
+      <revision>
+        <revnumber>Handbok för GParted v1.9</revnumber>
+        <date>Mars 2015</date>
+        <revdescription>
+          <para role="author">Curtis Gedak &amp; Mike Fleetwood</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.22.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.8</revnumber>
+        <date>September 2014</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.20.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.7</revnumber>
+        <date>Februari 2014</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.18.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.6</revnumber>
+        <date>December 2013</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.17.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.5</revnumber>
+        <date>September 2013</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.16.2 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.4</revnumber>
+        <date>Februari 2012</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.12.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.3</revnumber>
+        <date>Januari 2011</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.8.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.2</revnumber>
+        <date>Juni 2010</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.6.0 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.1</revnumber>
+        <date>Juli 2009</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.4.6 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v1.0</revnumber>
+        <date>Januari 2009</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.4.2 av GParted</para>
+        </revdescription>
+      </revision>
+      <revision>
+        <revnumber>Handbok för GParted v0.3.9</revnumber>
+        <date>September 2008</date>
+        <revdescription>
+          <para role="author">Curtis Gedak</para>
+          <para role="publisher">GParted-projektet</para>
+          <para role="annotations">Beskriver version 0.3.9 av GParted</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+
+    <releaseinfo>Denna handbok beskriver version 0.22.0 av GParted</releaseinfo>
+
+    <legalnotice>
+      <title>Återkoppling</title>
+      <para>För att rapportera ett fel eller föreslå någonting angående programmet <application>gparted</application> eller denna handbok, följ anvisningarna på <ulink type="http" url="http://gparted.org/bugs.php"/>.</para>
+<!-- Translators may also add here feedback address for translations -->
+    </legalnotice>
+
+  </articleinfo>
+
+<!-- ============= Document Body ===================================== -->
+<!-- ============= Introduction ====================================== -->
+  <sect1 id="gparted-introduction">
+    <title>Introduktion</title>
+    <para>Programmet <application>gparted</application> är GNOME-partitionsredigeraren för att skapa, organisera om och ta bort diskpartitioner.</para>
+    <para>En diskenhet kan delas upp i en eller flera partitioner. Programmet <application>gparted</application> låter dig ändra partitionsordningen på en diskenhet samtidigt som partitionens innehåll kvarstår.</para>
+    <para>Med <application>gparted</application> så kan du genomföra följande åtgärder: <itemizedlist>
+        <listitem>
+          <para>Skapa en partitionstabell på en diskenhet.</para>
+        </listitem>
+        <listitem>
+          <para>Aktivera och inaktivera partitionsflaggor såsom boot och hidden.</para>
+        </listitem>
+        <listitem>
+          <para>Genomför åtgärder med partitioner såsom att skapa, ta bort, ändra storlek, flytta, kontrollera, etikettera, kopiera och klistra in.</para>
+        </listitem>
+      </itemizedlist></para>
+    <caution>
+      <para>Att redigera partitioner kan potentiellt orsaka DATAFÖRLUST.</para>
+      <para>Programmet <application>gparted</application> är designat för att låta dig redigera partitioner med liten risk för dataförlust. Programmet är noggrant testat och används av GParteds projektteam. Men, dataförlust kan uppstå på grund av programfel, hårdvaruproblem eller strömproblem.</para>
+      <para>Du kan minska risken för dataförlust genom att inte montera eller avmontera partitioner utanför programmet <application>gparted</application> medan <application>gparted</application> körs.</para>
+      <para>Du rekommenderas att SÄKERHETSKOPIERA dina DATA innan du använder programmet <application>gparted</application>.</para>
+    </caution>
+  </sect1>
+  
+<!-- ============= Getting Started =================================== -->
+  <sect1 id="gparted-getting-started">
+    <title>Komma igång</title>
+    <para>
+    </para>
+
+<!-- ============= To Start gparted ================================== -->
+    <sect2 id="gparted-to-start">
+      <title>Starta gparted</title>
+      <para>Du kan starta <application>gparted</application> på följande sätt:</para>
+      <variablelist>
+        <varlistentry>
+          <term><guimenu>Program</guimenu>-menyn</term>
+          <listitem>
+            <para>Välj <menuchoice><guisubmenu>Systemverktyg</guisubmenu><guimenuitem>GParted partitionsredigerare</guimenuitem></menuchoice>.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Kommandorad</term>
+          <listitem>
+            <para>Kör följande kommando: <command>gparted</command></para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+      <para>Vid uppstart kommer <application>gparted</application> att söka av din dator efter diskenheter.</para>
+    </sect2>
+
+<!-- ============= When You Start gparted ============================ -->
+    <sect2 id="gparted-when-you-start">
+
+      <title>Fönstret i gparted</title>
+      <para>När du startar <application>gparted</application> kommer följande fönster att visas:</para>
+
+      <!-- ==== Figure ==== -->
+      <!-- The GNOME Documentation Project recommends a maximum image
+           width of 510 pixels.
+           http://library.gnome.org/devel/gdp-style-guide/stable/screenshot-4.html.en
+      -->
+      <figure id="gparted-window">
+        <title>gparted-fönster</title>
+        <screenshot>
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/gparted_window.png" format="PNG"/>
+              </imageobject>
+            <textobject>
+              <phrase>Visar gparteds huvudfönster.</phrase>
+            </textobject>
+          </mediaobject>
+        </screenshot>
+      </figure>
+
+      <para><application>gparted</application>-fönstret innehåller följande element:</para>
+      <variablelist>
+        <varlistentry>
+          <term>Menyrad</term>
+          <listitem>
+            <para>Menyerna i menyraden innehåller alla kommandon du behöver för att arbeta med diskenheter och partitioner i <application>gparted</application>.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Verktygsfält</term>
+          <listitem>
+            <para>Verktygsfältet innehåller en underordnad del kommandon du kan komma åt från menyraden.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Grafiska området</term>
+          <listitem>
+            <para>Det grafiska området innehåller den visuella representationen av partitionerna på den valda diskenheten.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Textområde</term>
+          <listitem>
+            <para>Textområdet innehåller textlistan för partitionerna på den valda diskenheten.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Statusrad</term>
+          <listitem>
+            <para>Statusraden visar information om aktuell <application>gparted</application>-aktivitet eller antalet kvarstående åtgärder.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Enhetsinformationspanel</term>
+          <listitem>
+            <para>Enhetsinformationspanelen visar detaljer om den valda diskenheten.</para>
+            <para>Som standard visas inte panelen för enhetsinformation. För att visa panelen för enhetsinformation välj <menuchoice><guimenu>Visa</guimenu><guimenuitem>Enhetsinformation</guimenuitem></menuchoice>.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>Panel för väntande åtgärder</term>
+          <listitem>
+            <para>Panelen för väntande åtgärder visar den aktuella listan av partitionsåtgärder i kön.</para>
+            <para>Som standard visas inte panelen för väntande åtgärder när det finns 0 väntande åtgärder. För att visa panelen för väntande åtgärder välj <menuchoice><guimenu>Visa</guimenu><guimenuitem>Väntande åtgärder</guimenuitem></menuchoice>.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+      <para>När du vänsterklickar i något visningsområde väljer du en partition att använda för partitionsredigeringsåtgärder.</para>
+      <para>När du högerklickar i något visningsområde visar programmet en popup-meny. Popup-menyn innehåller de vanligaste åtgärderna för partitionsredigering.</para>
+
+      <para>Likt andra GNOME-program kan åtgärder i <application>gparted</application> utföras på flera olika sätt: med menyn, med verktygsfältet eller med snabbkommandon.</para>
+    </sect2>
+
+<!-- ============= To Specify Devices on the Command Line ============ -->
+    <sect2 id="gparted-run-from-cmd-line">
+      <title>Körning av gparted från en kommandorad</title>
+      <para>Du kan köra <application>gparted</application> från en kommandorad och ange en eller flera diskenheter.</para>
+      <para>För att arbeta med flera diskenheter från en kommandorad, skriv in följande kommando och tryck sedan <keycap>Retur</keycap>:</para>
+      <para>
+      <screen><prompt>$</prompt><command>gparted <replaceable>/sökväg-till-din-enhet1 /sökväg-till-din-enhet2</replaceable></command></screen>
+      </para>
+    </sect2>
+  </sect1>
+
+<!-- ============= Usage ============================================= -->
+<!-- ============= Viewing File System Support ======================= -->
+  <sect1 id="gparted-usage">
+    <title>Att visa filsystemsstöd</title>
+      <para>För att visa de åtgärder som stöds för filsystem välj: <menuchoice><guimenu>Visa</guimenu><guimenuitem>Filsystemsstöd</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Filsystemsstöd</guilabel>.</para>
+      <para>Om du har installerat program medan <application>gparted</application> körs, klicka <guibutton>Sök igen efter åtgärder som stöds</guibutton> för uppdatera diagrammet. Programmet uppdaterar visningen av diagrammet.</para>
+      <para>För att stänga dialogen <guilabel>Filsystemsstöd</guilabel> klicka på knappen <guibutton>Stäng</guibutton>.</para>
+  </sect1>
+
+<!-- ============= Working With Devices ============================== -->
+  <sect1 id="gparted-devices">
+    <title>Arbeta med enheter</title>
+
+<!-- ============= To Select a Device ================================ -->
+    <sect2 id="gparted-select-device">
+      <title>Välja en enhet</title>
+      <para>För att välja en diskenhet, välj: <menuchoice><guimenu>GParted</guimenu><guimenuitem>Enheter</guimenuitem></menuchoice> och välj en enhet från listan. Programmet visar enhetspartitionens layout i <application>gparted</application>-fönstret.</para>
+    </sect2>
+
+<!-- ============= To View Device Information ======================== -->
+    <sect2 id="gparted-view-device-information">
+      <title>Att visa enhetsinformation</title>
+      <para>För att visa information om en diskenhet: <orderedlist>
+          <listitem>
+            <para>Välj en diskenhet. Se <xref linkend="gparted-select-device"/>.</para>
+          </listitem>
+          <listitem>
+            <para>Välj: <menuchoice><guimenu>Visa</guimenu><guimenuitem>Enhetsinformation</guimenuitem></menuchoice>. Programmet öppnar en sidopanel i <application>gparted</application>-fönstret och visar information om enheten.</para>
+         </listitem>
+       </orderedlist></para>
+      <para>För att stänga sidopanelen <guilabel>Enhetsinformation</guilabel> avmarkera: <menuchoice><guimenu>Visa</guimenu><guimenuitem>Enhetsinformation</guimenuitem></menuchoice>.</para>
+    </sect2>
+
+<!-- ============= To Refresh a Device =============================== -->
+    <sect2 id="gparted-refresh-device">
+      <title>Uppdatera alla enheter</title>
+      <para>För att uppdatera alla diskenheter, välj: <menuchoice><guimenu>GParted</guimenu><guimenuitem>Uppdatera enheter</guimenuitem></menuchoice>. Programmet söker av alla diskenheter och uppdaterar enhetspartitionens layout i <application>gparted</application>-fönstret.</para>
+    </sect2>
+
+<!-- ============= To Create a New Partition Table =================== -->
+    <sect2 id="gparted-create-partition-table">
+      <title>Skapa en ny partitionstabell</title>
+      <para>För att skapa en ny partitionstabell på en diskenhet: <orderedlist>
+          <listitem>
+            <para>Välj en diskenhet. Se <xref linkend="gparted-select-device"/>.</para>
+          </listitem>
+          <listitem>
+            <para>Välj: <menuchoice><guimenu>Enhet</guimenu><guimenuitem>Skapa partitionstabell</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Skapa partitionstabell på <replaceable>/sökväg-till-enhet</replaceable></guilabel>.</para>
+          </listitem>
+          <listitem>
+            <para>Välj alternativt en annan partitionstabelltyp från listan.</para>
+            <note>
+              <para>Standardtypen för partitionstabeller är <guimenuitem>msdos</guimenuitem> för diskar mindre än 2 Tebibyte i storlek (med antagande att sektorstorlek är 512 byte) och <guimenuitem>gpt</guimenuitem> för diskar på 2 Tebibyte och större.</para>
+              <para>Se <xref linkend="gparted-specify-partition-type"/> för <guimenuitem>msdos</guimenuitem> begränsningar för partitionstabeller.</para>
+            </note>
+            <note>
+              <para>För att använda en disk utan en partitionstabell, välj <guimenuitem>loop</guimenuitem> för att skapa en virtuell partition som täcker disken. Formatera sedan till det önskade filsystemet.</para>
+              <para>Se <xref linkend="gparted-format-partition"/> för att formatera en virtuell partition med ett filsystem.</para>
+            </note>
+            <caution>
+              <para>Flera operativsystem känner igen partitionstabellerna <guimenuitem>gpt</guimenuitem> och <guimenuitem>msdos</guimenuitem>, men känner inte igen alla typer av filsystem. Avsaknaden av att känna igen filsystem betyder att användning av en disk utan partitionstabell innebär en större risk. Exempelvis, en del operativsystem kan fråga efter att formatera en opartitionerad disk om filsystemet inte känns igen.</para>
+            </caution>
+          </listitem>
+          <listitem>
+            <para>Klicka <guibutton>Verkställ</guibutton> för att skapa den nya partitionstabellen. Programmet skriver den nya partitionstabellen till diskenheten. Programmet uppdaterar enhetens partitionslayout i <application>gparted</application>-fönstret.</para>
+          </listitem>
+        </orderedlist></para>
+      <caution>
+        <para>VARNING: Detta kommer att RADERA ALL DATA på HELA DISKENHETEN.</para>
+        <para>Om du av olycksskäl råkar skriva över din partitionstabell, se <xref linkend="gparted-recover-partition-table"/>.</para>
+      </caution>
+    </sect2>
+
+<!-- ============= To Attempt Data Rescue =================== -->
+    <sect2 id="gparted-attempt-data-rescue">
+      <title>Försöka att rädda data</title>
+      <para>För att försöka med dataräddning från en diskenhet: <orderedlist>
+          <listitem>
+            <para>Välj en diskenhet. Se <xref linkend="gparted-select-device"/>.</para>
+          </listitem>
+          <listitem>
+            <para>Välj: <menuchoice><guimenu>Enhet</guimenu><guimenuitem>Försök att rädda data</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Sök efter filsystem på <replaceable>/sökväg-till-enhet</replaceable></guilabel>.</para>
+          </listitem>
+          <listitem>
+            <para>Klicka <guibutton>OK</guibutton> för att starta en hel diskavsökning.</para>
+            <tip>
+              <para>Stora diskenheter kan ta en väldigt lång tid av söka av. Om du inte har tid att vänta på en hel diskavsökning, klicka på <guibutton>Avbryt</guibutton>.</para>
+            </tip>
+            <note>
+              <para>Högst fyra partitioner med filsystem kan upptäckas. Om du vill upptäcka mer än fyra partitioner och återställa partitionstabellen, se <xref linkend="gparted-recover-partition-table"/>.</para>
+            </note>
+          </listitem>
+          <listitem>
+            <para>När en hel diskavsökning är färdig visas en av två möjliga dialoger: <itemizedlist>
+                <listitem>
+                  <para>
+                  <guilabel>Inga filsystem funna på <replaceable>/sökväg-till-enhet</replaceable></guilabel>
+                  </para>
+                  <para>Om inga filsystem hittas har du andra alternativ för att försöka rädda dina data. Programmet <application>photorec</application> är designat för att hjälpa till att återställa många olika typer av förlorade filer. För mer information om <application>photorec</application>, se <ulink type="http" url="http://www.cgsecurity.org/wiki/PhotoRec"/>.</para>
+                  <para>Klicka <guibutton>OK</guibutton> för att stänga dialogrutan och avsluta försöket att rädda data.</para>
+                </listitem>
+                <listitem>
+                  <para>
+                  <guilabel>Filsystem funna på <replaceable>/sökväg-till-enhet</replaceable></guilabel>
+                  </para>
+                  <para>Om filsystem hittas visas varje filsystem i en lista tillsammans med knappen <guibutton>Visa</guibutton>. Dialogen kommer att indikera om det finns datainkonsekvenser. Inkonsekvenser i data kan hindra dig från att se data.</para>
+                </listitem>
+              </itemizedlist></para>
+          </listitem>
+          <listitem>
+            <para>För att rädda data, använd följande steg för varje filsystem: <orderedlist numeration="upperalpha">
+                <listitem>
+                  <para>Klicka <guibutton>Visa</guibutton> för att montera och visa filsystemet. Din standardfilhanterare öppnas och visar en skrivskyddad filsystemsvy.</para>
+                  <note>
+                    <para>Om dialogen <guilabel>Kan inte öppna standardfilhanteraren</guilabel> visas kommer du att behöva öppna en filhanterare och navigera till monteringspunkten för filsystemet.</para>
+                    <para>Monteringspunkten visas i dialogen, till exempel ”/tmp/gparted-roview-XXXXXX”.</para>
+                    <para>Klicka <guibutton>OK</guibutton> för att stänga dialogen <guilabel>Kan inte öppna standardfilhanteraren</guilabel>.</para>
+                  </note>
+                </listitem>
+                <listitem>
+                  <para>Använd filhanteraren för att kopiera dina data till annan lagringsmedia.</para>
+                </listitem>
+                <listitem>
+                  <para>När du är färdig med kopiering av dina data, stäng filhanteraren.</para>
+                </listitem>
+              </orderedlist></para>
+          </listitem>
+          <listitem>
+            <para>När du är klar med att rädda data, klicka <guibutton>Stäng</guibutton> för att avsluta dataräddningsförsöket. Programmet avmonterar filsystem som hade monterats för visning. Programmet söker sedan om alla diskenheter och uppdaterar enhetens partitionslayout i fönstret <application>gparted</application>.</para>
+          </listitem>
+        </orderedlist></para>
+    </sect2>
+
+  </sect1>
+
+<!-- ============= Working with Partitions =========================== -->
+  <sect1 id="gparted-partitions">
+    <title>Arbeta med partitioner</title>
+
+<!-- ============= Basic Partition Actions =========================== -->
+    <sect2 id="gparted-basic-partition-actions">
+      <title>Grundläggande partitionsåtgärder</title>
+      <para>Åtgärderna kommer inte att ändra partitioner på din diskenhet.</para>
+
+<!-- ============= To Select a Partition ============================= -->
+      <sect3 id="gparted-select-partition">
+        <title>Välja en partition</title>
+        <para>För att välja en partition, använd en av följande: <itemizedlist>
+            <listitem>
+              <para>Klicka på en partition i det grafiska visningsområdet.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka på en partition i textvisningsområdet.</para>
+            </listitem>
+          </itemizedlist></para>
+        <para>Programmet markerar partitionen i både det grafiska visningsområdet och textområdesarean i fönstret<application>gparted</application>.</para>
+        <note>
+          <para>Partitionsåtgärder som att ta bort, flytta, kopiera, formatera, kontrollera, namnge och ofta även att ändra storlek kräver att partitionen inte är monterad. Se <xref linkend="gparted-unmount-partition"/>.</para>
+        </note>
+      </sect3>
+
+<!-- ============= To Select Unallocated Space ======================= -->
+      <sect3 id="gparted-select-unallocated">
+        <title>Välja ej allokerat utrymme</title>
+        <para>För att välja oallokerat utrymme, använd en av följande: <itemizedlist>
+            <listitem>
+              <para>Klicka på <guilabel>oallokerat</guilabel> i det grafiska visningsområdet.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka på <guilabel>oallokerat</guilabel> i textvisningsområdet.</para>
+            </listitem>
+          </itemizedlist></para>
+        <para>Programmet markerar det oallokerade utrymmet i både det grafiska visningsområdet och textvisningsområdet i fönstret <application>gparted</application>.</para>
+        <tip>
+          <para>Om du inte har några diskenheter med oallokerat utrymme kan du prova följande:</para>
+          <itemizedlist>
+            <listitem>
+              <para>Lägg till en ny diskenhet till din dator.</para>
+            </listitem>
+            <listitem>
+              <para>Minska en partition som innehåller oallokerat utrymme. Se <xref linkend="gparted-resize-partition"/>.</para>
+            </listitem>
+          </itemizedlist>
+        </tip>
+      </sect3>
+
+<!-- ============= To View Partition Information ===================== -->
+    <sect3 id="gparted-view-partition-information">
+        <title>Visa partitionsinformation</title>
+        <para>För att visa information om en partition: <orderedlist>
+            <listitem>
+              <para>Markera en partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Information</guimenuitem></menuchoice>. Programmet öppnar en dialog <guilabel>Information om <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+        <para>För att stänga dialogen <guilabel>Information om <replaceable>/sökväg-till-partition</replaceable></guilabel>, klicka <guibutton>Stäng</guibutton>.</para>
+      </sect3>
+
+<!-- ============= To Mount a Partition ============================== -->
+      <sect3 id="gparted-mount-partition">
+        <title>Montera en partition</title>
+        <para>För att montera en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Montera</guimenuitem></menuchoice> och välj en monteringspunkt från listan. Programmet monterar partitionen på monteringspunkten och uppdaterar enhetens partitionslayout i <application>gparted</application>-fönstret.</para>
+            </listitem>
+          </orderedlist></para>
+        <note>
+          <para>Om <menuchoice><guimenu>Partition</guimenu><guimenuitem>Montera</guimenuitem></menuchoice> inte är synligt vet inte <application>gparted</application> var partitionen ska monteras.</para>
+        </note>
+      </sect3>
+
+<!-- ============= To Unmount a Partition ============================ -->
+      <sect3 id="gparted-unmount-partition">
+        <title>Avmontera en partition</title>
+        <para>För att avmontera en partition: <orderedlist>
+            <listitem>
+              <para>Välj en monterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Avmontera</guimenuitem></menuchoice>. Programmet avmonterar partitionen från monteringspunkten och uppdaterar enhetens partitionslayout i fönstret <application>gparted</application>.</para>
+            </listitem>
+          </orderedlist></para>
+        <tip>
+          <para>Om <menuchoice><guimenu>Partition</guimenu><guimenuitem>Avmontera</guimenuitem></menuchoice> inte lyckas används förmodligen partitionen.</para>
+          <para>För att alla partitioner ska vara avmonterade och vara tillgängliga för partitionsredigering, starta från en live-cd och använd <application>gparted</application>. Se <xref linkend="gparted-acquire-livecd"/></para>
+        </tip>
+      </sect3>
+
+    </sect2>
+<!-- ============= End of Basic Partition Actions ==================== -->
+
+<!-- ============= Intermediate Partition Actions ==================== -->
+    <sect2 id="gparted-intermediate-partition-actions">
+      <title>Mellanliggande partitionsåtgärder</title>
+      <para>Dessa åtgärder kommer att ändra partitioner på din diskenhet. Åtgärderna modifierar inte start eller slut på dina befintliga partitioner.</para>
+
+<!-- ============= Creating a New Partition ========================== -->
+      <sect3 id="gparted-create-new-partition">
+        <title>Skapa en ny partition</title>
+        <para>För att skapa en ny partition: <orderedlist>
+            <listitem>
+              <para>Välj ett oallokerat utrymme på diskenheten. Se <xref linkend="gparted-select-unallocated"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Ny</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Skapa ny partition</guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange storlek och plats för partitionen. Se <xref linkend="gparted-specify-partition-size-and-location"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Specificera justeringen för partitionen. Se <xref linkend="gparted-specify-partition-alignment"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange partitionstyp. Se <xref linkend="gparted-specify-partition-type"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange partitionens filsystemtyp. Se <xref linkend="gparted-specify-partition-file-system"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Specificera etiketten för partitionens filsystem. Se <xref linkend="gparted-specify-partition-file-system-label"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Lägg till</guibutton> för att lägga till åtgärden skapa partition till åtgärdskön. Programmet visar åtgärden skapa partition i panelen <guilabel>Väntande åtgärder</guilabel> i <application>gparted</application>-fönstret.</para>
+            </listitem>
+          </orderedlist></para> 
+      </sect3>
+
+<!-- ============= To Delete a Partition ============================= -->
+      <sect3 id="gparted-delete-partition">
+        <title>Ta bort en partition</title>
+        <para>För att ta bort en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Ta bort</guimenuitem></menuchoice>. Programmet visar åtgärden ta bort partition i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+        <caution>
+          <para>Om du tar bort en logisk partition kommer att alla befintliga logiska partitioner efter den borttagna logiska partitionen få ändrade enhetsnamn.</para>
+          <para>Exempelvis, en utökad partition innehåller fyra logiska partitioner A, B, C och D. Dessa logiska partitioner används av operativsystemet enligt följande:</para>
+          <itemizedlist>
+            <listitem>
+              <para>Partition A som /dev/sda5.</para>
+            </listitem>
+            <listitem>
+              <para>Partition B som /dev/sda6.</para>
+            </listitem>
+            <listitem>
+              <para>Partition C som /dev/sda7.</para>
+            </listitem>
+            <listitem>
+              <para>Partition D som /dev/sda8.</para>
+            </listitem>
+          </itemizedlist>
+          <para>Om partition B tas bort kommer återstående logiska partitioner att kommas åt av operativsystemet enligt följande:</para>
+          <itemizedlist>
+            <listitem>
+              <para>Partition A som /dev/sda5.</para>
+            </listitem>
+            <listitem>
+              <para>Partition C som /dev/sda6. Observera ändringen i enhetsnamnet.</para>
+            </listitem>
+            <listitem>
+              <para>Partition D som /dev/sda7. Observera ändringen i enhetsnamnet.</para>
+            </listitem>
+          </itemizedlist>
+          <para>Ändringar i ett enhetsnamn kan orsaka problem om en partition är monterad med ett enhetsnamn. Du kan undvika problemet genom att använda filsystemsetiketten eller Universally Unique Identifier (UUID) för partitionen när den monteras.</para>
+          <para>Ändringar i ett enhetsnamn kan negativt påverka följande filer: <itemizedlist>
+              <listitem>
+                <para>/etc/fstab - Innehåller en lista över filsystem att montera.</para>
+              </listitem>
+              <listitem>
+                <para>/boot/grub/menu.lst - Innehåller operativsystemets uppstartsinstruktioner för starthanteraren <application>grub</application>.</para>
+              </listitem>
+            </itemizedlist></para>
+        </caution>
+        <note>
+          <para>Diskar med <guimenuitem>loop</guimenuitem> eller <guimenuitem>inga</guimenuitem> partitionstabeller innehåller inte en partitionstabell eller partitioner. Ett filsystem på en disk utan en partitionstabell representeras i GParted av en virtuell partition.</para>
+          <para>För att ta bort filsystemet och virtuella partitioner, välj att formatera till <guimenuitem>rensad</guimenuitem>.</para>
+          <para>Se <xref linkend="gparted-format-partition"/>.</para>
+        </note>
+      </sect3>
+
+<!-- ============= To Name a Partition =============================== -->
+      <sect3 id="gparted-name-partition">
+        <title>Namnge en partition</title>
+        <note>
+          <para>Namngivning av partitioner är endast tillgängligt med GUID-partitionstabeller (GPT).</para>
+          <para>Se också <xref linkend="gparted-create-partition-table"/>.</para>
+        </note>
+        <para>För att ange namnet på en partition:</para>
+          <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Namnge partition</guimenuitem></menuchoice>. Programmet öppnar dialogen <guilabel>Ange partitionsnamn på <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Skriv in ett partitionsnamn i textrutan <guilabel>Namn</guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>OK</guibutton>. Programmet visar åtgärden ange partitionsnamn i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist>
+      </sect3>
+
+<!-- ============= To Format a Partition ============================= -->
+      <sect3 id="gparted-format-partition">
+        <title>Formatera en partition</title>
+        <para>För att formatera en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Formatera till</guimenuitem></menuchoice> och välj en typ av filsystem från listan. Programmet visar åtgärden formatera partition i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+              <para>Se <xref linkend="gparted-specify-partition-file-system"/> för betydelsen av filsystemstypen <guimenuitem>cleared</guimenuitem>.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= To Set a Partition File System Label ============== -->
+      <sect3 id="gparted-setting-partition-file-system-label">
+        <title>Ange etikett för partitionens filsystem</title>
+        <para>För att ange en etikett eller ett volymnamn för ett filsystem i en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Namnge filsystem</guimenuitem></menuchoice>. Programmet öppnar dialogen <guilabel>Ange filsystemsetikett för <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange ett etikettnamn i textrutan <guilabel>Etikett</guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>OK</guibutton>. Programmet visar åtgärden ange filsystemsetikett i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= To Change a Partition's UUID ========================== -->
+      <sect3 id="gparted-changing-partition-uuid">
+        <title>Att ändra en partitions UUID</title>
+        <para>För att ändra en partitions globala unika identifierare (UUID): <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Ny UUID</guimenuitem></menuchoice>. Programmet visar åtgärden ange ett nytt slumpmässigt UUID i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+              <warning>
+                <para>Att ändra UUID kan göra produktaktiveringsnyckeln för Windows (WPA) ogiltig.</para>
+                <para>På FAT- och NTFS-filsystem används volymens serienummer som ett UUID. Att ändra volymens serienummer på Windows systempartition, normalt C:, kommer att ogiltigförklara WPA-nyckeln. En ogiltig WPA-nyckel kommer att förhindra inloggning tills att du åter har aktiverat Windows.</para>
+                <para>I ett försök att undvika att göra WPA-nyckeln ogiltig sätts endast halva UUID till ett nytt slumpmässigt värde på NTFS-filsystem. På FAT-filsystem är inte denna förberedelse möjlig.</para>
+                <para>WPA-nyckeln borde inte påverkas av att ändra UUID för datapartitioner eller flyttbara mediapartitioner. I undantagsfall kan en partition som är tillgänglig vid uppstart vara ett undantagsfall för denna regel.</para>
+              </warning>
+              <warning>
+                <para>Att ändra UUID när det inte behövs kan orsaka så att ett GNU/Linux-system misslyckas med att starta, eller misslyckas med att montera ett filsystem.</para>
+                <para>Att ändra ett UUID är bara nödvändigt efter en kopiering av en partition. UUID-ändringen behövs för att förhindra dubblerade UUID:n när både källa och kopia av partitionen används på samma dator.</para>
+                <para>Om start- eller monteringsproblem uppstår kan du behöva redigera konfigurationsfiler som /etc/fstab och generera om grub-menyn för att försäkra dig om att rätt UUID är angivet.</para>
+              </warning>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= Specifying Partition Details ====================== -->
+      <sect3 id="gparted-specify-partition-details">
+        <title>Specificera partitionsdetaljer</title>
+        <para>Att specificera partitionsdetaljer är användbart vid åtgärder som skapa, storleksändra och flytta.</para>
+
+<!-- ============= To Specify a Partition Size and Location ========== -->
+        <sect4 id="gparted-specify-partition-size-and-location">
+          <title>Att ange partitionsstorlek och plats</title>
+          <para>För att ange storlek och plats för partitionen använd en eller en kombination av följande: <itemizedlist>
+              <listitem>
+                <para>Klicka-och-håll pilen vid någon av det grafiska områdets sidor. Dra pilen vänster eller höger inom visningsområdet.</para>
+              </listitem>
+              <listitem>
+                <para>Klicka-och-håll mitten av partitionen i grafiska området. Dra partitionen vänster eller höger inom visningsområdet.</para>
+              </listitem>
+              <listitem>
+                <para>Klicka på snurrknappens pilar eller skriv in siffervärden för att justera följande fält: <itemizedlist>
+                    <listitem>
+                      <para>
+                      <guilabel>Föregående fritt utrymme</guilabel>
+                      </para>
+                    </listitem>
+                    <listitem>
+                      <para>
+                      <guilabel>Ny storlek</guilabel>
+                      </para>
+                    </listitem>
+                    <listitem>
+                      <para>
+                      <guilabel>Efterföljande fritt utrymme</guilabel>
+                      </para>
+                    </listitem>
+                  </itemizedlist></para>
+              </listitem>
+            </itemizedlist></para>
+          <para>Programmet uppdaterar både det grafiska området och siffrorna bredvid de tre fältetiketterna.</para>
+        </sect4>
+
+<!-- ============= To Specify a Partition Alignment ================== -->
+        <sect4 id="gparted-specify-partition-alignment">
+          <title>Att ange partitionsjustering</title>
+          <para>För att ange partitionsjustering, klicka på pilknappen <guilabel>Justera till</guilabel> och välj från listan.</para>
+          <itemizedlist>
+            <listitem>
+              <para>Använd <guilabel>MiB</guilabel>-justering för moderna operativsystem. Denna inställning justerar partitioner till att börja och sluta på precisa mebibyte-gränser (1,048,576 byte). MIB-justering ger förbättrade prestanda vid användning i RAID-system och med SSD-diskar som exempelvis USB-flashminnesenheter.</para>
+            </listitem>
+            <listitem>
+              <para>Använd <guilabel>Cylinder</guilabel>-justering för att behålla kompatibilitet med operativsystem släppta före år 2000 som exempelvis DOS. Denna inställning justerar partitioner till att börja och sluta på diskcylindergränser.</para>
+              <tip>
+                <para>Värdena Cylinder/Huvud/Sektor rapporterade av moderna diskenheter har inte längre en direkt fysisk motsvarighet till data sparad på diskenheten. Det är därför inte längre giltigt att använda denna justering för att uppnå bättre prestanda.</para>
+              </tip>
+            </listitem>
+            <listitem>
+              <para>Använd <guilabel>Ingen</guilabel> endast om du har djup kunskap om diskstruktur, partitionstabeller och startposter. Denna inställning placerar partitionsgränser relativt till slutet av närmast föregående partition på diskenheten. Denna inställning garanterar inte reservation av utrymmet som krävs för startposter.</para>
+            </listitem>
+          </itemizedlist>
+        </sect4>
+
+<!-- ============= To Specify a Partition Type ======================= -->
+        <sect4 id="gparted-specify-partition-type">
+          <title>Ange partitionstyp</title>
+          <para>För att ange partitionstypen, klicka på pilknappen <guilabel>Skapa som</guilabel> och välj från listan.</para>
+          <note>
+            <para>Partitionstabellen msdos begränsar partitioner enligt följande: <itemizedlist>
+                <listitem>
+                  <para>Högst fyra primära partitioner.</para>
+                </listitem>
+                <listitem>
+                  <para>Maximalt tre primära partitioner och en utökad partition.</para>
+                  <para>Den utökade partitionen kan innehålla flera logiska partitioner. En del GNU/Linux-distributioner stödjer som mest att komma åt 15 partitioner på en diskenhet.</para>
+                </listitem>
+                <listitem>
+                  <para>Högsta storlek för en partition är 2 Tebibyte med en sektorstorlek på 512 byte. Partitionen måste också börja inom de första 2 Tebibyten för diskenheten.</para>
+                </listitem>
+              </itemizedlist></para>
+          </note>
+          <tip>
+            <para>Primära partitioner ger bättre dataåterhämtning eftersom partitionsgränserna lagras på kända ställen på diskenheten.</para>
+          </tip>
+        </sect4>
+
+<!-- ============= To Specify a Partition File System ================ -->
+        <sect4 id="gparted-specify-partition-file-system">
+          <title>Att ange filsystem för partitionen</title>
+          <para>För att ange filsystemstyp för partitionen, klicka på pilknappen <guilabel>Filsystem</guilabel> och välj från listan.</para>
+          <note>
+            <para>Följande är exempel på användning för några filsystem: <itemizedlist>
+                <listitem>
+                  <para>Filsystemen <guimenuitem>ext2</guimenuitem>, <guimenuitem>ext3</guimenuitem> och <guimenuitem>ext4</guimenuitem> kan användas för att installera GNU/Linux och för data.</para>
+                </listitem>
+                <listitem>
+                  <para><guimenuitem>linux-swap</guimenuitem> kan användas med GNU/Linux för att öka det virtuella minnet i din dator.</para>
+                </listitem>
+                <listitem>
+                  <para>Filsystemen <guimenuitem>fat16</guimenuitem> och <guimenuitem>fat32</guimenuitem> kan användas för att dela data mellan fria och kommersiella operativsystem.</para>
+                </listitem>
+                <listitem>
+                  <para><guimenuitem>cleared</guimenuitem> kan användas för att rensa befintliga filsystemssignaturer och försäkra att partitionen känns igen som tom.</para>
+                </listitem>
+                <listitem>
+                  <para><guimenuitem>unformatted</guimenuitem> kan användas för bara skapa en partition utan att skriva ett filsystem.</para>
+                </listitem>
+              </itemizedlist></para>
+          </note>
+        </sect4>
+
+<!-- ============= To Specify a Partition Label ====================== -->
+        <sect4 id="gparted-specify-partition-file-system-label">
+          <title>Ange etikett för partitionens filsystem</title>
+          <para>För att specificera filsystemsetikett i partitionen, också känd som volymetikett, skriv in ett etikettnamn i textrutan <guilabel>Etikett</guilabel>.</para>
+          <tip>
+            <para>Filsystemsetiketter kan användas för att hjälpa dig att komma ihåg vad som lagras i partitionen.</para>
+            <para>Unika etiketter kan användas för att montera filsystem med operativsystem GNU/Linux.</para>
+          </tip>
+        </sect4>
+
+      </sect3>
+<!-- ============= End of Specifying Partition Details =============== -->
+
+    </sect2>
+<!-- ============= End of Intermediate Partition Actions ============= -->
+
+<!-- ============= Advanced Partition Actions ======================== -->
+    <sect2 id="gparted-advanced-partition-actions">
+      <title>Avancerade partitionsåtgärder</title>
+      <para>Dessa åtgärder kommer att ändra partitioner på din diskenhet. Dessa åtgärder kan ändra start- eller slutgränserna på dina befintliga partitioner. Dessa åtgärder kan orsaka att operativsystem misslyckas med att starta.</para>
+
+<!-- ============= To Resize a Partition ============================= -->
+      <sect3 id="gparted-resize-partition">
+        <title>Ändra storlek på en partition</title>
+        <para>Storleksändra och flytta en partition kan utföras med en enda <application>gparted</application>-åtgärd.</para>
+        <para>För att ändra storlek på en partition: <orderedlist>
+            <listitem>
+              <para>Markera en partition. Se <xref linkend="gparted-select-partition"/>.</para>
+              <tip>
+                <para>Avmonterade eller inaktiva partitioner möjliggör flest alternativ för storleksändring.</para>
+                <para>Stöd finns för att storleksändra monterade eller annars aktiva partitioner. Stödet är oftast begränsat endast till att öka storlek.</para>
+              </tip>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Ändra storlek/Flytta</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Ändra storlek/Flytta <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Justera storleken på partitionen. Se <xref linkend="gparted-specify-partition-size-and-location"/>.</para>
+              <tip>
+                <para>Om du inte vill att början på en befintlig partition ska flyttas, ändra inte värdet <guilabel>Ledigt utrymme före</guilabel>. Om partitionen är monterad eller annars aktiv kommer du inte att kunna ändra värdet <guilabel>Ledigt utrymme före</guilabel>.</para>
+              </tip>
+            </listitem>
+            <listitem>
+              <para>Ange justeringen för partitionen. Se See <xref linkend="gparted-specify-partition-alignment"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Ändra storlek/Flytta</guibutton>. Programmet visar åtgärden ändra storlek/flytta i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Undersök åtgärden som lades till i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+              <para>Om åtgärden involverar en flyttåtgärd, fundera på följande: <itemizedlist>
+                  <listitem>
+                    <para>Att flytta kan ta lång tid på sig att slutföras.</para>
+                  </listitem>
+                  <listitem>
+                    <para>Om partitionen är en startpartition för ett operativsystem kommer en flyttåtgärd kanske orsaka att operativsystemet inte startar.</para>
+                  </listitem>
+                </itemizedlist></para>
+              <para>Om du inte är förberedd på att vänta eller att fixa potentiella startproblem för operativsystem kanske du vill ångra åtgärden. Se <xref linkend="gparted-undo-last-operation"/>.</para>
+            </listitem>
+          </orderedlist></para>
+        <tip>
+          <para>För att utöka eller flytta en partition måste oallokerat utrymme finnas närliggande till partitionen.</para>
+          <para>Om du ökar en logisk partition måste det oallokerade utrymmet vara inom den utökade partitionen.</para>
+          <para>Om du utökar en primärpartition får inte det oallokerade utrymmet vara inom den utökade partitionen.</para>
+          <para>Du kan flytta oallokerat utrymme till att vara inuti eller utanför den utökade partitionen genom att storleksändra den utökade partitionens gränser.</para>
+        </tip>
+        <tip>
+          <para>För att förbättra förmågan att minska NTFS-partitionen kan du fundera på en eller fler av följande: <itemizedlist>
+              <listitem>
+                <para>Defragmentera filsystemet.</para>
+                <para>Att starta i säkert läge med det kommersiella operativsystem som använder NTFS kan förbättra förmågan att defragmentera filsystemet. För att komma in i säkert läge, tryck <keycap>F8</keycap> medan din dator startar operativsystemet.</para>
+              </listitem>
+              <listitem>
+                <para>Kontrollera partitionen efter fel med följande kommando: <screen><prompt>C:&gt; </prompt><command>chkdsk</command> /f /r</screen> Kom ihåg att starta om till det kommersiella operativsystemet som använder NTFS för låta kommandot <command>chkdsk</command> köra.</para>
+              </listitem>
+              <listitem>
+                <para>Inaktivera temporärt växlingsfilen. Växlingsfilen tar upp en fast plats på partitionen som defragmenteringen inte kan flytta.</para>
+              </listitem>
+              <listitem>
+                <para>Flytta tillfälligt stora filer till en annan partition eller diskenhet. Stora filer definieras som större än några hundra Megabyte (MB).</para>
+              </listitem>
+              <listitem>
+                <para>Försäkra dig om en säker avstängning av det kommersiella operativsystemet som använder NTFS innan du storleksändrar NTFS-partitionen</para>
+              </listitem>
+              <listitem>
+                <para>Lämna minst 10 procent oanvänt utrymme i NTFS-partitionen. Om du krymper partitionen för mycket kommer det kommersiella operativsystemet att ha svårigheter att fungera normalt.</para>
+              </listitem>
+              <listitem>
+                <para>Starta om två gånger till det kommersiella operativsystemet som använder NTFS efter att ha krympt NTFS-partitionen.</para>
+              </listitem>
+            </itemizedlist></para>
+        </tip>
+      </sect3>
+
+<!-- ============= To Move a Partition =============================== -->
+      <sect3 id="gparted-move-partition">
+        <title>Flytta en partition</title>
+        <para>Att flytta om och storleksändra en partition kan utföras med en enda <application>gparted</application>-åtgärd.</para>
+        <para>För att flytta en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Ändra storlek/Flytta</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Ändra storlek/Flytta <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Justera platsen för partitionen. Se <xref linkend="gparted-specify-partition-size-and-location"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange justeringen för partitionen. Se See <xref linkend="gparted-specify-partition-alignment"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Ändra storlek/Flytta</guibutton>. Programmet visar åtgärden ändra storlek/flytta i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+        <tip>
+          <para>Om partitionen är en startpartition för ett operativsystem kanske inte operativsystemet startar efter att flyttåtgärden är tillämpad.</para>
+          <para>Om operativsystemet misslyckas med att starta, se <xref linkend="gparted-fix-operating-system-boot-problems"/>.</para>
+        </tip>
+      </sect3>
+
+<!-- ============= To Copy and Paste a Partition ===================== -->
+      <sect3 id="gparted-copy-and-paste-partition">
+        <title>Kopiera och klistra in en partition</title>
+        <para>För att kopiera en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Kopiera</guimenuitem></menuchoice>. Programmet markerar partitionen som källpartition.</para>
+            </listitem>
+          </orderedlist></para>
+        <para>För att klistra in en partition: <orderedlist>
+            <listitem>
+              <para>Välj ett oallokerat utrymme på en diskenhet. Se <xref linkend="gparted-select-unallocated"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Klistra in</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Klistra in <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+            </listitem>
+            <listitem>
+              <para>Om du vill kan du justera storleken och platsen för partitionen. Se <xref linkend="gparted-specify-partition-size-and-location"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Om du vill kan du specificera justeringen för partitionen. Se <xref linkend="gparted-specify-partition-alignment"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Klistra in</guibutton>. Programmet visar åtgärden kopiera partition i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+        <caution>
+          <para>Partitionens kopia har samma filsystemsetikett och globala unika identifierare (UUID) som källpartitionen. Detta kan orsaka problem vid uppstart eller när monteringsåtgärder använder filsystemsetiketten eller UUID:t för att identifiera partitionen.</para>
+          <para>Problemet är att operativsystemet slumpmässigt kommer att montera antingen källan eller kopian av partitionen. Till exempel, vid den första monteringsåtgärden kanske källan blir monterad. Vid nästa monteringsåtgärd kommer kopian kanske att monteras. Över tid kommer den slumpmässiga ordningen av partitionsmonteringen göra att filer mystiskt verkar försvinna eller visas beroende på vilken partition som monterats. Slumpmässig montering av källan eller kopian av partitionen kan också orsaka allvarlig datakorruption eller dataförlust.</para>
+          <para>För att undvika problemet rekommenderas att du gör en av följande: <itemizedlist>
+              <listitem>
+                <para>Efter att du har köat eller tillämpat kopieringsåtgärden: <orderedlist>
+                    <listitem>
+                      <para>Ändra UUID för antingen källan eller kopian av partitionen. See <xref linkend="gparted-changing-partition-uuid"/>.</para>
+                    </listitem>
+                    <listitem>
+                      <para>Om filsystemsetiketten inte är tom, ändra då filsystemsetiketten för antingen källan eller kopian av partitionen. Se <xref linkend="gparted-setting-partition-file-system-label"/>.</para>
+                    </listitem>
+                  </orderedlist></para>
+              </listitem>
+              <listitem>
+                <para>Efter att du tillämpat kopieringsåtgärden, tagit bort eller formaterat om källpartitionen.</para>
+              </listitem>
+              <listitem>
+                <para>Använd en annan metod för att försäkra dig om att källpartitionen och partitionskopian inte används på samma dator samtidigt. Till exempel, om kopian av partitionen är på en separat disk, ta då bort disken från datorn.</para>
+              </listitem>
+            </itemizedlist></para>
+        </caution>
+      </sect3>
+
+<!-- ============= To Manage Partition Flags ========================= -->
+      <sect3 id="gparted-manage-partition-flags">
+        <title>Hantera partitionsflaggor</title>
+        <para>För att hantera partitionsflaggor: <orderedlist>
+            <listitem>
+              <para>Markera en partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Hantera flaggor</guimenuitem></menuchoice>. Programmet öppnar dialogen <guilabel>Hantera flaggor på<replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+              <para>
+                <itemizedlist>
+                  <listitem>
+                    <para>För att aktivera en flagga, välj kryssrutan bredvid flaggan. Programmet skriver den aktiverade flaggan till partitionen och uppdaterar dialogen <guilabel>Hantera flaggor på <replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+                  </listitem>
+                  <listitem>
+                    <para>För att inaktivera en flagga, kryssa ur rutan bredvid flaggan. Programmet skriver den inaktiverade flaggan till partitionen och uppdaterar dialogen <guilabel>Hantera flaggor<replaceable>/sökväg-till-partition</replaceable></guilabel>.</para>
+                  </listitem>
+                </itemizedlist>
+              </para>
+              <note>
+                <para><guimenuitem>Hantera flaggor</guimenuitem> är endast tillgängligt för diskar med partitionstabeller. Diskar med partitionstabellerna <guimenuitem>loop</guimenuitem> eller <guimenuitem>none</guimenuitem> innehåller inte en partitionstabell och har inte partitionsflaggor.</para>
+                <para>Se <xref linkend="gparted-view-device-information"/> för att visa typ av partitionstabell.</para>
+              </note>
+            </listitem>
+          </orderedlist></para>
+        <para>För att stänga dialogen <guilabel>Hantera flaggor på <replaceable>/sökväg-till-partition</replaceable></guilabel> klicka <guibutton>Stäng</guibutton>.</para>
+        <note>
+          <para>En beskrivning över flaggor i en msdos-partition följer: <itemizedlist>
+              <listitem>
+                <para>Boot används av en del kommersiella operativsystems starthanterare. Startflaggan indikerar att partitionen är aktiv eller startbar. Endast en partition på en diskenhet kan vara aktiv.</para>
+              </listitem>
+              <listitem>
+                <para>Diag används för att indikera att partitionen används för diagnostik / återhämtning.</para>
+              </listitem>
+              <listitem>
+                <para>Hidden används av en del kommersiella operativsystem. Flaggan hidden gör partitionen osynlig för operativsystemet.</para>
+              </listitem>
+              <listitem>
+                <para>LBA används av några kommersiella operativsystems starthanterare. LBA-flaggan indikerar att åtkomst till partitionen ska ske med Logical Block Addressing (LBA) istället för Cylinder-Head-Sector (CHS)-adressering.</para>
+              </listitem>
+              <listitem>
+                <para>LVM används för att indikera att partitionen används av en logisk volymhanterare (LVM).</para>
+              </listitem>
+              <listitem>
+                <para>Palo används av starthanteraren Precision Architecture - Reduced Instruction Set Computing (PA-RISC), palo.</para>
+              </listitem>
+              <listitem>
+                <para>Prep används för att indikera startpartitionen på Power Performance Computing (PowerPC)-hårdvara.</para>
+              </listitem>
+              <listitem>
+                <para>RAID används för att indikera att partitionen används i en Redundant Array of Inexpensive Disks (RAID).</para>
+              </listitem>
+            </itemizedlist></para>
+        </note>
+        <note>
+          <para>En beskrivning över flaggor i en gpt-partitionstabell följer: <itemizedlist>
+              <listitem>
+                <para>Atvrecv används för att indikera en Apple TV Recovery-partition.</para>
+              </listitem>
+              <listitem>
+                <para>BIOS_GRUB indikerar en BIOS-startpartition, ofta använd av starthanterararen GRUB 2.</para>
+              </listitem>
+              <listitem>
+                <para>Boot används av en del kommersiella operativsystems starthanterare. Startflaggan indikerar att partitionen är aktiv eller startbar. Endast en partition på en diskenhet kan vara aktiv.</para>
+              </listitem>
+              <listitem>
+                <para>Diag indikerar att partitionen används för diagnostik eller återhämtning.</para>
+              </listitem>
+              <listitem>
+                <para>Hidden används av en del kommersiella operativsystem. Flaggan hidden gör partitionen osynlig för operativsystemet.</para>
+              </listitem>
+              <listitem>
+                <para>HP-service används för att indikera en Hewlett Packard-servicepartition.</para>
+              </listitem>
+              <listitem>
+                <para>Legacy_boot används av en del speciell programvara för att indikera att partitionen kan vara startbar.</para>
+              </listitem>
+              <listitem>
+                <para>LVM indikerar att partitionen används av en logisk volymhanterare (LVM).</para>
+              </listitem>
+              <listitem>
+                <para>Msftres används för att indikera en Microsoft Reserved-partition.</para>
+              </listitem>
+              <listitem>
+                <para>RAID indikerar att partition används i en Redundant Array of Inexpensive Disks (RAID).</para>
+              </listitem>
+            </itemizedlist></para>
+        </note>
+      </sect3>
+
+<!-- ============= To Check a Partition ============================== -->
+      <sect3 id="gparted-Check-partition">
+        <title>Kontrollera en partition</title>
+        <para>Att kontrollera en partition kommer att försöka att finna och fixa problem i filsystemet. Att kontrollera en partition försöker att öka filsystemet för att fylla partitionen.</para>
+        <para>För att kontrollera en partition: <orderedlist>
+            <listitem>
+              <para>Välj en omonterad partition. Se <xref linkend="gparted-select-partition"/>.</para>
+            </listitem>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Partition</guimenu><guimenuitem>Kontrollera</guimenuitem></menuchoice>. Programmet visar åtgärden kontrollera partition i panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= End of Advanced Partition Actions ================= -->
+    </sect2>
+
+<!-- ============= Working with the Operation Queue ================== -->
+    <sect2 id="gparted-operation-queue">
+      <title>Arbeta med åtgärdskön</title>
+
+<!-- ============= To Undo Last Operation ============================ -->
+      <sect3 id="gparted-undo-last-operation">
+        <title>Ångra senaste åtgärden</title>
+        <para>För att ångra den senaste åtgärden i åtgärdskön välj: <menuchoice><guimenu>Redigera</guimenu><guimenuitem>Ångra den senaste åtgärden</guimenuitem></menuchoice>. Programmet tar bort den senaste åtgärden från kön visad i panelen <guilabel>Väntande åtgärder</guilabel>. Om det inte finns några åtgärder kvar i kön stänger programmet panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+      </sect3>
+
+<!-- ============= To Clear All Operations =========================== -->
+      <sect3 id="gparted-clear-all-operations">
+        <title>Tömning av alla åtgärder</title>
+        <para>För att rensa alla åtgärder i åtgärdskön, välj: <menuchoice><guimenu>Redigera</guimenu><guimenuitem>Töm alla åtgärder</guimenuitem></menuchoice>. Programmet tar bort alla åtgärder från kön och stänger panelen <guilabel>Väntande åtgärder</guilabel>.</para>
+      </sect3>
+
+<!-- ============= To Apply All Operations =========================== -->
+      <sect3 id="gparted-apply-all-operations">
+        <title>Verkställande av alla åtgärder</title>
+        <para>För att verkställa alla åtgärder: <orderedlist>
+            <listitem>
+              <para>Välj: <menuchoice><guimenu>Redigera</guimenu><guimenuitem>Verkställ alla åtgärder</guimenuitem></menuchoice>. Programmet visar dialogen <guilabel>Verkställ åtgärder på enhet</guilabel>.</para>
+              <caution>
+                <para>Att redigera partitioner har potential att orsaka DATAFÖRLUST. Du rekommenderas att ta säkerhetskopior av dina data innan du verkställer dina redigeringsåtgärder för partitionen.</para>
+              </caution>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Verkställ</guibutton>. Programmet visar dialogen <guilabel>Verkställ väntande åtgärder</guilabel>. Programmet tillämpar varje väntande åtgärd i den ordning du skapade åtgärderna. Programmet visar en statusuppdatering när varje åtgärd är slutförd. <itemizedlist>
+                  <listitem>
+                    <para>För att visa mer information, klicka <guibutton>Detaljer</guibutton>. Programmet visar fler detaljer om åtgärder.</para>
+                    <para>För att visa mer information om stegen i varje åtgärd, klicka på pilknappen bredvid varje steg.</para>
+                  </listitem>
+                  <listitem>
+                    <para>För att stoppa åtgärderna medan de körs, klicka <guibutton>Avbryt</guibutton>. Programmet visar en inaktiverad knapp <guibutton>Tvinga avslut (5)</guibutton> och räknar ned i fem sekunder.</para>
+                    <note>
+                      <para><guibutton>Avbryt</guibutton> instruerar programmet att stoppa eller rulla tillbaka åtgärderna för att försäkra dataintegritet.</para>
+                    </note>
+                    <para>Om åtgärderna inte har stoppat efter fem sekunder aktiverar programmet knappen <guibutton>Tvinga avslut</guibutton>.</para>
+                    <para>För att tvinga åtgärderna att stoppa, klicka <guibutton>Tvinga avslut</guibutton>. Programmet visar en varningsdialog.</para>
+                    <para>Klicka <guibutton>Fortsätt åtgärd</guibutton> för att låta rulla tillbaka-åtgärderna att färdigställas, eller klicka <guibutton>Avbryt åtgärd</guibutton> för att avbryta rulla tillbaka-åtgärderna.</para>
+                    <warning>
+                      <para><guibutton>Avbryt åtgärder</guibutton> avslutar de säkra rulla tillbaka-åtgärderna och kan orsaka ALLVARLIG filsystemsskada och dataförlust. Du rekommenderas att klicka <guibutton>Fortsätt åtgärd</guibutton> för att låta rulla tillbaka färdigställas.</para>
+                    </warning>
+                    <para>När programmet är färdig med åtgärderna visar det knappen <guibutton>Spara detaljer</guibutton> och knappen <guibutton>Stäng</guibutton>.</para>
+                  </listitem>
+                </itemizedlist></para>
+            </listitem>
+            <listitem>
+              <para>Om du vill spara detaljerna från att ha tillämpat alla åtgärder, klicka <guibutton>Spara detaljer</guibutton>. Programmet visar dialogen <guilabel>Spara detaljer</guilabel>. <orderedlist numeration="loweralpha">
+                  <listitem>
+                    <para>Om du vill ändra standardfilnamnet, skriv in ett filnamn i textrutan <guilabel>Namn</guilabel>.</para>
+                  </listitem>
+                  <listitem>
+                    <para>Om du vill spara en fil i en mapp annat än /root, klicka <guibutton>Bläddra efter andra mappar</guibutton>. Programmet visar en filsystemsnavigator.</para>
+                    <para>Använd filsystemsnavigatorn för att välja en mapp.</para>
+                  </listitem>
+                  <listitem>
+                    <para>Klicka <guibutton>Spara</guibutton> för att spara filen. Programmet sparar detaljfilen.</para>
+                  </listitem>
+                </orderedlist></para>
+              <caution>
+                <para>Om du använder <application>gparted</application> från en live-cd existerar root-filsystemet i RAM-minnet. Alla filer sparade till live-cd:ns root-filsystem kommer att gå förlorade när du stänger av datorn.</para>
+                <para>Om du sparade gparted-detaljerna till live-cd:ns root-filsystem behöver du kopiera filen till bestående lagring. Exempel på bestående lagring är en hårddisk eller ett USB-flashminne.</para>
+              </caution>
+            </listitem>
+            <listitem>
+              <para>Klicka <guibutton>Stäng</guibutton>. Programmet stänger dialogen <guilabel>Verkställer väntande åtgärder</guilabel>. Programmet söker av alla diskenheter och uppdaterar enhetens partitionslayout i fönstret <application>gparted</application>.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= End of Working with the Operation Queue =========== -->
+    </sect2>
+
+  </sect1>
+
+<!-- ============= Acquiring GParted on Live CD ====================== -->
+  <sect1 id="gparted-acquire-livecd">
+    <title>Få tag i GParted på Live-cd</title>
+    <para>En live-cd är en cd-skiva som innehåller ett startbart operativsystem. En live-cd gör det möjligt att låta dig starta din dator från cd-skivan.</para>
+    <para>Att använda <application>gparted</application> från en live-cd har följande fördelar: <itemizedlist>
+        <listitem>
+          <para>Du kan redigera alla dina partitioner eftersom partitionerna inte är monterade.</para>
+        </listitem>
+        <listitem>
+          <para>Du kan redigera partitioner på datorer som inte har ett startbart operativsystem.</para>
+        </listitem>
+      </itemizedlist></para>
+    <para>Programmet <application>gparted</application> är tillgängligt på många live-cd distributioner.</para>
+    <para>Du kan hämta en live-cd-avbild innehållandes <application>gparted</application> från följande webbplatser: <itemizedlist>
+        <listitem>
+          <para>GParted live-cd <ulink type="http" url="http://gparted.org/livecd.php"/></para>
+        </listitem>
+        <listitem>
+          <para>Systemräddnings-cd <ulink type="http" url="http://www.sysresccd.org"/></para>
+        </listitem>
+      </itemizedlist></para>
+    <tip>
+      <para>Avbilden GParted live-cd kan skrivas till ett USB-flashminne.</para>
+      <para>Om din dator kan starta från en Universal Serial Bus (USB) kanske du föredrar att starta och använda <application>gparted</application> från ett USB-flashminne.</para>
+    </tip>
+    <tip>
+      <para>För att undvika att slösa en tom cd vid bränning av en cd-avbild, se följande tips:</para>
+      <itemizedlist>
+        <listitem>
+          <para>Försäkra dig om att kontrollsumman för den hämtade filen matchar kontrollsumman angiven på hämtningssidan.</para>
+        </listitem>
+        <listitem>
+          <para>Bränn .iso-filen som en avbild till den tomma cd-skivan. Om du bränner .iso-filen som data till en tom cd-skiva kommer den inte att starta i din dator.</para>
+        </listitem>
+      </itemizedlist>
+    </tip>
+  </sect1>
+
+<!-- ============= Fixing Operating System Boot Problems ============= -->
+  <sect1 id="gparted-fix-operating-system-boot-problems">
+    <title>Att fixa startproblem för operativsystemet</title>
+    <para>Din dator kan misslyckas med att starta ett operativsystem när du utför en av följande åtgärder: <itemizedlist>
+        <listitem>
+          <para>Ta bort en partition.</para>
+        </listitem>
+        <listitem>
+          <para>Flytta en partition.</para>
+        </listitem>
+        <listitem>
+          <para>Att installera ett annat operativsystem och skriva över Master Boot Record (MBR).</para>
+        </listitem>
+      </itemizedlist></para>
+    <para>Som tur är kan problemen med att starta oftast fixas.</para>
+    <para>Om din dator använder starthanteraren GRUB, se <xref linkend="gparted-fix-grub-boot-problem"/> för att återställa förmågan att starta.</para>
+    <para>Om din dator inte använder GRUB rekommenderas du att se dokumentationen för din starthanterare för att lära dig hur du ska fixa problemet. Du kan konsultera <ulink type="http" url="http://gparted.org/faq.php">GParted FAQ</ulink>, eller <ulink type="http" url="http://gparted.org/forum.php">forumet för GParted</ulink>. Du kan också söka på Internet för att se hur andra har löst problemet.</para>
+
+<!-- ============= Fixing GRUB Boot Problem ========================== -->
+    <sect2 id="gparted-fix-grub-boot-problem">
+      <title>Rätta till uppstartsproblem med GRUB</title>
+      <para>Grand Unified Boot loader (GRUB) används av många GNU/Linux-distributioner. För att fixa GRUB-startproblem börjar du med att bestämma vilken major-version av GRUB som används.</para>
+      <para>Det finns två major-versioner av GRUB: <itemizedlist>
+          <listitem>
+            <para>GRUB, också känd som GRUB 2, täcker version 1.98 och högre. GRUB 2 fungerar både med GUID-partitionstabeller (GPT) och msdos-partitionstabeller.</para>
+          </listitem>
+          <listitem>
+            <para>GRUB Legacy, traditionellt känt som GRUB, täcker version 0.9x och tidigare. GRUB Legacy fungerar endast med msdos-partitionstabeller.</para>
+          </listitem>
+        </itemizedlist></para>
+      <para>GRUB 2 används som standard i följande GNU/Linux-distributioner: <itemizedlist>
+          <listitem>
+            <para>CentOS 7 och högre</para>
+          </listitem>
+          <listitem>
+            <para>Debian 6 (Squeeze) och högre</para>
+          </listitem>
+          <listitem>
+            <para>Fedora 16 (Verne) och högre</para>
+          </listitem>
+          <listitem>
+            <para>openSUSE 12.2 och högre</para>
+          </listitem>
+          <listitem>
+            <para>Ubuntu 9.10 (Karmic Koala) och högre</para>
+          </listitem>
+        </itemizedlist></para>
+      <para>Om du är osäker på huruvida din dator använder GRUB 2 eller GRUB Legacy kan du prova att söka efter svaret på Internet.</para>
+
+<!-- ============= To Restore GRUB 2 ================================= -->
+      <sect3 id="gparted-restore-grub-2">
+        <title>Att återställa starthanteraren GRUB 2</title>
+        <para>Utför följande steg för att återställa starthanteraren GRUB 2: <orderedlist>
+            <listitem>
+              <para>Starta upp från live-media som Gparted Live eller din GNU/Linux distributionsavbild. Öppna ett terminalfönster.</para>
+            </listitem>
+            <listitem>
+              <para>Bestäm vilken partition som innehåller /-filsystemet för din GNU/Linux-distribution.</para>
+              <para>Använd GParted för att lista partitioner på din diskenhet. Håll utkik efter partitioner som innehåller ditt GNU/Linux /-filsystem. Linux-partitionen kommer mest sannolikt att använda ett filsystem som ext2, ext3, ext4 eller btrfs.</para>
+              <note>
+                <para>Om /-partitionen är på LVM måste en logisk volymhanterare vara aktiv. LVM kan startas med kommandot: <screen><prompt># </prompt><command>vgchange</command> -a y</screen></para>
+                <para>Med LVM, är motsvarigheten mot en diskpartition en logisk volym. Logiska volymer kan listas med kommandot: <screen><prompt># </prompt><command>lvscan</command></screen></para>
+              </note>
+              <note>
+                <para>Om /-partitionen är på RAID, måste RAID vara aktiv. Linux mjukvaru-RAID kan startas med kommandot: <screen><prompt># </prompt><command>mdadm</command> --assemble --scan</screen></para>
+              </note>
+            </listitem>
+            <listitem>
+              <para>Skapa en monteringspunktskatalog för att ange (som root): <screen><prompt># </prompt><command>mkdir</command> /tmp/minkatalog</screen></para>
+            </listitem>
+            <listitem>
+              <para>Montera /-partitionen på katalogen för monteringspunkten. Till exempel, anta att /-filsystemet finns på partitionen /dev/sda5. Ange (som root): <screen><prompt># </prompt><command>mount</command> <replaceable>/dev/sda5</replaceable> /tmp/minkatalog</screen></para>
+            </listitem>
+            <listitem>
+              <para>Om du har en separat /boot-partition, till exempel på /dev/sda3, krävs ett extra steg. Montera /boot-partition på /tmp/minkatalog/boot genom att ange (som root): <screen><prompt># </prompt><command>mount</command> <replaceable>/dev/sda3</replaceable> /tmp/minkatalog/boot</screen></para>
+              <note>
+                <para>Om du inte vet huruvida du har en separat boot-partition har du det antagligen inte och kan ignorera detta steg.</para>
+              </note>
+            </listitem>
+            <listitem>
+              <para>Förbered att ändra root-miljön genom att ange (som root): <screen><prompt># </prompt><command>mount</command> --bind /dev /tmp/minkatalog/dev</screen><screen><prompt># </prompt><command>mount</command> --bind /proc /tmp/minkatalog/proc</screen><screen><prompt># </prompt><command>mount</command> --bind /sys /tmp/minkatalog/sys</screen></para>
+            </listitem>
+            <listitem>
+              <para>Ändra root-miljön genom att ange (som root): <screen><prompt># </prompt><command>chroot</command> /tmp/minkatalog</screen></para>
+            </listitem>
+            <listitem>
+              <para>Ominstallera GRUB 2 på boot-enheten. Observera att enhetsnamnet används och inte partitionsnamnet. Till exempel, om /-partitionen är /dev/sda5 är enheten /dev/sda.</para>
+              <para>För Debian, Ubuntu och härstammande GNU/Linux-distributioner, ange kommandot (som root): <screen><prompt># </prompt><command>grub-install</command> <replaceable>/dev/sda</replaceable></screen></para>
+              <para>För CentOS, Fedora, openSUSE och härstammande GNU/Linux-distributioner, ange kommandot (som root): <screen><prompt># </prompt><command>grub2-install</command> <replaceable>/dev/sda</replaceable></screen></para>
+            </listitem>
+            <listitem>
+              <para>Avsluta chroot-miljön genom att ange (som root): <screen><prompt># </prompt><command>exit</command></screen></para>
+            </listitem>
+            <listitem>
+              <para>Starta om din dator.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+
+<!-- ============= To Restore GRUB Legacy ============================ -->
+      <sect3 id="gparted-restore-grub-legacy">
+        <title>Återställa starthanteraren GRUB Legacy</title>
+        <para>Utför följande steg för att återställa starthanteraren GRUB Legacy <orderedlist>
+            <listitem>
+              <para>Starta upp från live-media som exempelvis din GNU/Linux distributionsavbild. Öppna ett terminalfönster.</para>
+              <note>
+                <para>Live-media måste innehålla starthanteraren GRUB Legacy. Om din GNU/Linux-distribution använder GRUB Legacy kommer också distributionens Live-media att innehålla GRUB Legacy.</para>
+              </note>
+            </listitem>
+            <listitem>
+              <para>Starta programmet <application>grub</application> från kommandoraden (som root). <screen><prompt># </prompt><command>grub</command></screen></para>
+            </listitem>
+            <listitem>
+              <para>Ta reda på var <application>grub</application> stage1 finns genom ett av följande:</para>
+              <para>Om mappen /boot lagras i /-partitionen, använd kommandot: <screen><prompt>grub&gt; </prompt><command>find</command> /boot/grub/stage1</screen> Om mappen /boot lagras i en partition annat än /-partitionen, använd kommandot: <screen><prompt>grub&gt; </prompt><command>find</command> /grub/stage1</screen></para>
+              <para>Utdata från kommandot <command>find</command> kan se ut som följande: <screen><computeroutput> <replaceable>(hd0,0)</replaceable></computeroutput></screen> Om mer än en rad listas i kommandots utdata behöver du bestämma vilken enhet du använder för <application>grub</application>.</para>
+            </listitem>
+            <listitem>
+              <para>Ange root-enhet för <application>grub</application> genom att ange enheten som returneras av kommandot <command>find</command>. <screen><prompt>grub&gt; </prompt>root <replaceable>(hd0,0)</replaceable></screen></para>
+            </listitem>
+            <listitem>
+              <para>Ominstallera <application>grub</application> genom att ange enheten som returneras av kommandot <command>find</command> command. <screen><prompt>grub&gt; </prompt>setup <replaceable>(hd0,0)</replaceable></screen></para>
+            </listitem>
+            <listitem>
+              <para>Avsluta <application>grub</application>. <screen><prompt>grub&gt; </prompt>quit</screen></para>
+            </listitem>
+            <listitem>
+              <para>Starta om din dator.</para>
+            </listitem>
+          </orderedlist></para>
+      </sect3>
+    </sect2>
+
+<!-- ============= End of Fixing Operating System Boot Problems ====== -->
+  </sect1>
+
+<!-- ============= Recovering Partition Tables ======================= -->
+  <sect1 id="gparted-recover-partition-table">
+    <title>Återställa partitionstabeller</title>
+    <para>Om du olyckligtvis råkade att skriva över din partitionstabell finns det en chans att du kan återställa den.</para>
+    <para>Programmet <application>testdisk</application> är designat att hjälpa till att få tillbaka förlorade partitioner. För mer information om <application>testdisk</application>, se <ulink type="http" url="http://www.cgsecurity.org/wiki/TestDisk"/>.</para>
+    <para>Programmet <application>testdisk</application> finns inkluderat på varje Live-CD som listas i <xref linkend="gparted-acquire-livecd"/></para>
+  </sect1>
+
+</article>

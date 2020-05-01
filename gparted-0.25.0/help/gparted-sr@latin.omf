@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Kurtis Gedak)</creator>
+    <creator>(Majk Flitvud)</creator>
+    <maintainer>(Kurtis Gedak)</maintainer>
+    <title>Uputstvo Gparteda</title>
+    <date>Septembar 2008</date>
+    <version identifier="Uputstvo Gparteda v.0.3.9" date="Septembar 2008"/>
+    <subject category="GNOME|Applications|System Tools"/>
+    <description>
+      Gparted je Gnomov uređivač particija za stvaranje, reorganizovanje i brisanje particija na disku. Gparted vam omogućava da izmenite organizaciju particije i u isto vreme čuva sadržaj particije.
+    </description>
+    <type>manual</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/local/share/gnome/help/gparted/sr@latin/gparted.xml"/>
+    <language code="sr@latin"/>
+    <relation seriesid="64567bbe-6003-11dd-8e86-848351b2d6c2"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Curtis Gedak"/>
+  </resource>
+</omf>

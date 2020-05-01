@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Curtis Gedak)</creator>
+    <creator>(Mike Fleetwood)</creator>
+    <maintainer>(Curtis Gedak)</maintainer>
+    <title>Manual do GParted</title>
+    <date>Setembro de 2008</date>
+    <version identifier="Manual do GParted v0.3.9" date="Setembro de 2008"/>
+    <subject category="GNOME|Applications|System Tools"/>
+    <description>
+      O GParted é um editor de partições do GNOME para criação, reorganização e exclusão de partições em disco. O GParted permite que você altere a organização das partições enquanto preserva o conteúdo das mesmas.
+    </description>
+    <type>manual</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/local/share/gnome/help/gparted/pt_BR/gparted.xml"/>
+    <language code="pt_BR"/>
+    <relation seriesid="64567bbe-6003-11dd-8e86-848351b2d6c2"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Curtis Gedak"/>
+  </resource>
+</omf>

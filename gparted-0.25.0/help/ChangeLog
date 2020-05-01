@@ -1,0 +1,204 @@
+2009-04-20  Mario Blättermann  <mariobl@gnome.org>
+
+	* de/de.po: Updated German translation.
+
+2009-04-17  Curtis Gedak  <gedakc@gmail.com>
+
+        * *: This ChangeLog is no longer used.
+
+	     On April 17, 2009, the source code repository was converted
+	     from svn to git.  ChangeLogs are seldom used with git.
+	
+	     For a detailed list of changes in only the help directory, 
+	     use 'git log -- help' from the top level source directory.
+
+2009-04-02  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.4.4
+	  ===================================================
+
+2009-03-28  Leonardo Ferreira Fontenelle  <leonardof@gnome.org>
+
+	* pt_BR/pt_BR.po: Updated and vastly reviewed/improved the Brazilian
+	Portuguese translation.
+
+2009-03-20  Mario Blättermann  <mariobl@svn.gnome.org>
+	
+	* de/figures/*: Added screenshot.
+	* de/de.po: Marked screenshot as translated.
+
+2009-02-21  Mario Blättermann  <mariobl@svn.gnome.org>
+
+	* de/de.po: Updated German translation.
+
+2009-02-14  Jorge Gonzalez  <jorgegonz@svn.gnome.org>
+
+	* es/es.po: Updated Spanish translation.
+
+2009-02-13  Jorge Gonzalez  <jorgegonz@svn.gnome.org>
+
+	* es/es.po: Updated Spanish translation
+
+2009-02-12  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.4.3
+	  ===================================================
+
+2009-02-11  Luca Ferretti  <elle.uca@libero.it>
+
+	* it/it.po: Updated Italian translation by Milo Casagrande.
+
+2009-02-06  Mario Blättermann  <mariobl@svn.gnome.org>
+
+	* de/de.po: Updated German translation.
+	* de/figures: Added folder for upcoming screenshots.
+
+2009-02-05  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.4.2
+	  ===================================================
+
+2009-02-05  Jonh Wendell  <jwendell@gnome.org>
+
+	* pt_BR/pt_BR.po: Updated Brazilian Portuguese translation by Fabrício Godoy.
+	* pt_BR/figures: Added pt_BR screenshot.
+
+2009-02-01  Luca Ferretti  <elle.uca@libero.it>
+
+	* it/it.po: Updated Italian translation by Milo Casagrande.
+	* it/figures/*png: Added Italian screenshot.
+
+2009-02-01  Jorge Gonzalez  <jorgegonz@svn.gnome.org>
+
+	* es/es.po: Updated Spanish translation. 
+	* es/figures/*.png: Added Spanish screenshot.
+
+2009-01-24  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/gparted.xml: Added NTFS tip about reboot after chkdsk command.
+
+2009-01-21  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/gparted.xml: Fixed technical error.
+	  - Should read maximum of 15 partitions, not 15 logical partitions.
+	
+2009-01-20  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/figures/gparted_window.png,
+	  C/gparted.xml: Wrote application help manual
+	  - Closes GParted bug #329584
+
+2009-01-12  Curtis Gedak  <gedakc@gmail.com>
+
+	* figures: Deleted directory
+	* C/figures: Created directory
+
+2008-12-27  Jorge Gonzalez  <jorgegonz@svn.gnome.org> 
+
+	* es.po: Updated Spanish translation. 
+
+2008-12-21  Theppitak Karoonboonyanan  <thep@linux.thai.net>
+
+	* th/th.po: Added Thai translation by Pongpichit Panna.
+	* Makefile.am: Added 'th' to DOC_LINGUAS.
+
+2008-12-19  Leonardo Ferreira Fontenelle  <leonardof@gnome.org>
+
+	* pt_BR/pt_BR.po: Fixed grammar in Brazilian Portuguese translation.
+	Thanks to Marco de Freita for spotting the error.
+
+2008-12-19  Leonardo Ferreira Fontenelle  <leonardof@gnome.org>
+
+	* Makefile.am: Added pt_BR to DOC_LINGUAS.
+	* pt_BR/pt_BR.po: Added Brazilian Portuguese translation. Contributed
+	by Fabrício Godoy.
+
+2008-12-05  Mario Blättermann  <mariobl@svn.gnome.org>
+
+	* de/de.po: Updated German translation.
+
+2008-12-02  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/gparted.xml: Removed doubled space in front of fdl link.
+	  - Closes GParted bug #561756
+
+2008-11-29  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.4.1
+	  ===================================================
+
+2008-11-28  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.4.0
+	  ===================================================
+
+2008-09-25  Daniel Nylander <po@danielnylander.se>
+
+	* sv/sv.po: Updated Swedish translation.
+
+2008-09-19  Mario Blättermann  <mariobl@svn.gnome.org>
+
+	* de/de.po: Added German translation.
+	* Makefile.am: Added de to DOC_LINGUAS.
+
+2008-09-14  Luca Ferretti  <elle.uca@libero.it>
+
+	* it/it.po: Added Italian translation by Milo Casagrande.
+	* Makefile.am: Added it to DOC_LINGUAS.
+
+2008-09-12  Curtis Gedak  <gedakc@gmail.com>
+
+	* gparted-0.3.9
+	  ===================================================
+
+2008-09-12  Jorge Gonzalez  <joregegonz@svn.gnome.org> 
+
+	* es/es.po: Updated Spanish translation.   
+
+2008-09-01  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/legal.xml: Deleted file
+	  - The translation for the GFDL license should occur once only,
+	    not for each and every project or application that uses the
+	    license.
+	  - Closes GParted bug #550047
+
+	* Makefile.am,
+	  C/Makefile.am: Removed legal.xml reference
+
+	* C/gparted.xml: Removed legal.xml appendix
+	  - Updated legal notice
+
+2008-08-31  Jorge Gonzalez  <jorgegonz@svn.gnome.org>
+
+	* es/es.po: Added Spanish translation.
+	* Makefile.am: Added es to DOC_LINGUAS.
+
+2008-08-08  Daniel Nylander <po@danielnylander.se>
+
+	* sv/sv.po: Added Swedish translation.
+	* Makefile.am: Added sv to DOC_LINGUAS.
+
+2008-08-05  Curtis Gedak  <gedakc@gmail.com>
+
+	* C/Makefile.am: Created initial makefile
+
+	* C/legal.xml: Added license file
+
+	* C/gparted.xml: Created initial (mostly empty) help manual
+
+	* C: Created directory to contain English help manual files
+
+	* figures: Created directory to contain images for manual
+
+	* gparted.omf.in: Created base Object Metadata Framework file
+
+	* Makefile.am: Created top level makefile
+
+	* ChangeLog: Created ChangeLog file to track GParted Manual changes
+	  - *********************************
+	    Prepare for future GParted Manual
+	    *********************************
+	  - See "Migrating to GNOME Documentation Build Utilities"
+	  http://library.gnome.org/devel/gnome-doc-make/0.12/migrating.html.en
+	    

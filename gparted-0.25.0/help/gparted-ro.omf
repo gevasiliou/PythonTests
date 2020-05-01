@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Curtis Gedak)</creator>
+    <creator>(Mike Fleetwood)</creator>
+    <maintainer>(Curtis Gedak)</maintainer>
+    <title>Gparted - Manualul utilizatorului</title>
+    <date>Septembrie 2008</date>
+    <version identifier="GParted - Manualul utilizatorului V0.3.9" date="Septembrie 2008"/>
+    <subject category="GNOME|Applications|System Tools"/>
+    <description>
+      GParted este editorul de partiții GNOME pentru crearea, reorganizarea și ștergerea partițiilor de disc. GParted vă permite să modificați organizarea partițiilor păstrând conținutul acestora.
+    </description>
+    <type>manual</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/local/share/gnome/help/gparted/ro/gparted.xml"/>
+    <language code="ro"/>
+    <relation seriesid="64567bbe-6003-11dd-8e86-848351b2d6c2"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Curtis Gedak"/>
+  </resource>
+</omf>

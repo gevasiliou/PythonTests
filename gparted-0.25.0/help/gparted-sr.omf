@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Куртис Гедак)</creator>
+    <creator>(Мајк Флитвуд)</creator>
+    <maintainer>(Куртис Гедак)</maintainer>
+    <title>Упутство Гпартеда</title>
+    <date>Септембар 2008</date>
+    <version identifier="Упутство Гпартеда в.0.3.9" date="Септембар 2008"/>
+    <subject category="GNOME|Applications|System Tools"/>
+    <description>
+      Гпартед је Гномов уређивач партиција за стварање, реорганизовање и брисање партиција на диску. Гпартед вам омогућава да измените организацију партиције и у исто време чува садржај партиције.
+    </description>
+    <type>manual</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/local/share/gnome/help/gparted/sr/gparted.xml"/>
+    <language code="sr"/>
+    <relation seriesid="64567bbe-6003-11dd-8e86-848351b2d6c2"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Curtis Gedak"/>
+  </resource>
+</omf>

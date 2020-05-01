@@ -1,0 +1,144 @@
+This file is part of GParted
+Copyright (C) 2004, 2005, 2006
+	Bart Hakvoort
+Portions Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+	Curtis Gedak
+Portions Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+	Mike Fleetwood
+
+This file may be modified and/or distributed without restriction.  This is
+not an invitation to misrepresent who contributed to GParted.
+
+NOTE:  Remember to list significant contributors in the Help --> About
+       credits.   A significant contribution is defined as:
+
+       1)  Major patch or new functionality added which exceeds 15 lines of
+           non-trivial code.
+
+       2)  Three or more minor patches, where a minor patch is defined as
+           less than 15 lines of code.
+-------------------------------------------------------------------------------
+
+We need to keep track of copyright (see the Maintainer HOWTO on www.gnu.org).
+
+Names are listed in alphabetical order by first name.
+
+Albert Young		<youngac3@gmail.com>
+	* Wrote patch to prevent hang labeling FAT if illegal chars in label
+
+Bart Harkvoort		<gparted@users.sourceforge.net>
+	* Original author of GParted.
+	* Created and maintained up to official 0.3.3 release and
+	  the unofficial 0.3.4 release.
+
+Colin Watson		<cjwatson@debian.org>
+	* Wrote find /dev/mapper devices when not using libparted discovery patch
+
+Curtis Gedak		<gedakc@users.sourceforge.net>
+	* Created SWRaid.h, SWRaid.cc to support Linux software RAID devices.
+	* Created DMRaid.h, DMRaid.cc to support /dev/mapper dmraid devices.
+	* Created ext4.h, ext4.cc to support ext4 file systems
+	* Created FS_Info.h, FS_Info.cc
+	* Rewrote read_label functionality for hfs
+	* Wrote create, read_label, and check_repair functionality for hfs+
+	* Wrote read_label functionality for fat16 and fat32 file systems
+	* Wrote following Utils:: methods:
+		regexp_label(), fat_compliant_label(),
+		create_mtoolsrc_file(), delete_mtoolsrc_file,
+		trim(), cleanup_cursor(), get_lang()
+	* Wrote partition write_label functionality
+	* Created Dialog_Partion_Label.h, Dialog_Partition_Label.cc
+	* Created OperationLabelPartition.h, OperationLabelPartition.cc
+	* Maintained from official 0.3.5 release onward
+
+Denis Sirotkin		<fechiny@gmail.com>
+	* Wrote small patch to avoid crash when rescanning devices
+
+Dmitriy Motitskiy	<dmotitskiy@gmail.com>
+	* Wrote small patch to fix crash on startup with Russian language
+
+Jan Claeys			<devel@janc.be>
+	* Wrote small patch to work around mkdosfs faulty entire disk detection
+
+Jérôme Dumesnil		<jerome.dumesnil@gmail.com>
+	* Wrote patch to merge actions -- method Win_GParted::Merge_Operations().
+
+Joan Lledó			<joanlluislledo@gmail.com>
+	* Created Dialog_Rescue_Data.h, Dialog_Rescue_Data.cc to attempt data rescue.
+	* Wrote patch to add attempt data rescue for lost partitions.
+
+Luca Bruno			<lucab@debian.org>
+	* Created btrfs.h, btrfs.cc to support btrfs file system.
+	* Wrote patch for initial btrfs support.
+
+Markus Elfring		<elfring@users.sourceforge.net>
+	* Wrote patch to change some local Dialog attributes to variables
+	* Wrote small patch to delete unnecessary null pointer checks
+	* Wrote small patch to add complete quoting for macro parameters
+
+Martin Pitt			<martin.pitt@ubuntu.com>
+	* Wrote patch to install signal handler to clean up automount disabling FDI
+
+Mathieu Dupuy		<deronnax@gmail.com>
+	* Wrote small patch to improve filling argument vector
+
+Matthias Gehre		<m.gehre@gmx.de>
+	* Wrote patch to cleanup GParted_Core global variables
+
+Michael Monreal		<michael.monreal@gmx.net>
+	* Wrote small patch to implement themed app icon in hicolor
+
+Michael Zimmermann	<sigmaepsilon92@gmail.com>
+	* Wrote patch to add support for GPT partition names
+
+Mike Fleetwood		<mike.fleetwood@googlemail.com>
+	* Wrote small patches to improve reiser4 label support
+	* Wrote patch to remove redundant code for trimming labels
+	* Wrote patch set to add LVM PV read-write support
+	* Wrote patch to prevent crash if ESC pressed in dialogs with number entry
+	* Wrote patch set to show when partition size differs from file system size
+	* Wrote small patch for writing linux-swap labels
+	* Wrote small patches for reading and writing btrfs volume labels
+	* Wrote patch to use new btrfs multi-tool command first
+	* wrote patches for initial LVM PV support.
+	* Created nilfs2.h, nilfs2.cc to support nilfs2 file system.
+	* Created lvm2_pv.h, lvm2_pv.cc to support Logical Volume Management.
+	* Created LVM2_PV_Info.h, LVM2_PV_Info.h for LMV data cache.
+
+Patrick Verner		<exodusrobot@yahoo.com>
+	* Created f2fs.h, f2fs.cc to support f2fs file system.
+
+Phillip Susi		<psusi@cfl.rr.com>
+	* Wrote patch to display dialog pop-up for libparted exceptions
+	* Wrote patch set to refactor code enabling commands to be spawned asynchronously
+	* Created PipeCapture.h, PipeCapture.cc to capture spawned command output
+	* Created Copy_Blocks.h, Copy_Blocks.cc to copy blocks of disk data
+
+Rogier Goossens		<goossens.rogier@gmail.com>
+	* Wrote patch to support changing file system UUIDs.
+	* Created OperationChangeUUID.h, OperationChangeUUID.cc to support changing UUIDs.
+	* Wrote small patch to fix detection of multiple SW RAID (md) devices
+
+Sebastian Kraft		<kraft.sebastian@gmail.com>
+	* Designed Tango theme icons
+
+Seth Heeren			<sgheeren@gmail.com>
+	* Wrote small patch to improve GParted_Core::get_filesystems and prevent crashes
+	* Wrote several small patches to fix memory leaks and valgrind errors
+	* Wrote method replacement patch to simplify Utils::cleanup_cursor
+
+Seth Hunter			<hunter@ll.mit.edu>
+	* Wrote small patch to fix create partition off by one sector
+
+Sinlu Bes			<e80f00@gmail.com>
+	* Wrote patch to restrict label length based on file system
+	* Performed significant investigative effort for GPT partition name support
+
+Stephen Kirkby		<mail@stephenkirkby.co.uk>
+	* Wrote small patch to reverse umount order in xfs::copy
+
+Vincent Untz		<vuntz@gnome.org>
+	* Wrote small patch to correctly link to gthread
+
+Wrolf Courtney		<wrolf@wrolf.net>
+	* Wrote patch to display logical volumes in LVM2 partition volume group

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <id type="desktop">gparted.desktop</id>
+  <licence>GFDL</licence>
+  <description>
+    <p>GParted is a free partition editor for graphically managing your disk partitions.</p>
+    <p xml:lang="ar">مُقسِّم‌ج هو محرّر أقسام حرّ لإدارة أقسام القرص رسوميًا.</p>
+    <p xml:lang="bs">GParted je besplatan uređivač za grafičko upravljanje dijeljenjem diska.</p>
+    <p xml:lang="cs">GParted je svobodný editor oddílů sloužící ke správě diskových oddílů v grafickém prostředí.</p>
+    <p xml:lang="da">GParted er et frit grafisk partitionsprogram for dine diskpartitioner.</p>
+    <p xml:lang="de">GParted ist ein freies Partitionierungswerkzeug zur grafischen Verwaltung Ihrer Laufwerkspartitionen</p>
+    <p xml:lang="el">Το GParted είναι ένας δωρεάν επεξεργαστής κατάτμησης για την γραφική διαχείριση των κατατμήσεων στο δίσκο σας.</p>
+    <p xml:lang="es">GParted es un editor de particiones libre para gestionar gráficamente las particiones del disco.</p>
+    <p xml:lang="fi">GParted on sovellus levyjen ja osioiden hallintaan. GParted on vapaa ohjelmisto.</p>
+    <p xml:lang="fr">GParted est un éditeur libre pour gérer des partitions de disques.</p>
+    <p xml:lang="gd">'S e deasaiche pàirteachaidh an-asgaidh a tha sa GParted gus pàirteachaidhean nan diosga agad a stiùireadh gu grafaigeach.</p>
+    <p xml:lang="gl">GParted é un editor de particións libre para a xestión gráfica das particións do seu disco.</p>
+    <p xml:lang="hu">A GParted egy szabad partíciószerkesztő lemezpartíciók grafikus kezelésére.</p>
+    <p xml:lang="id">GParted adalah penyunting partisi bebas untuk mengelola partisi disk Anda secara grafis.</p>
+    <p xml:lang="is">GParted er frjáls disksneiðastjóri til að sýsla myndrænt með disksneiðar.</p>
+    <p xml:lang="it">GParted è un editor di partizioni grafico per gestire i propri dischi.</p>
+    <p xml:lang="kk">GParted - бұл диск бөлімдерін графикалық түрде басқаруға арналған тегін қолданба.</p>
+    <p xml:lang="ko">GParted는 디스크 파티션을 시각적으로 관리하는 무료 파티션 편집기입니다.</p>
+    <p xml:lang="lt">GParted yra laisvas skirsnių redaktorius grafiniam disko skirsnių tvarkymui.</p>
+    <p xml:lang="lv">GParted ir brīvs nodalījumu redaktors disku nodalījumu grafiskai pārvaldībai.</p>
+    <p xml:lang="nb">GParted er et gratis grafisk verktøy for å redigere og administrere partisjoner.</p>
+    <p xml:lang="nl">GParted is een gratis partitiebewerker voor het grafisch beheren van uw schijfpartities.</p>
+    <p xml:lang="pa">ਜੀਪਾਰਟਡ ਤੁਹਾਡੇ ਡਿਸਕ ਪਾਰਟੀਸ਼ਨਾਂ ਦੇ ਪ੍ਰਬੰਧ ਵਾਸਤੇ ਗਰਾਫੀਕਲ ਰੂਪ ਵਿੱਚ ਵਰਤਣ ਲਈ ਮੁਫ਼ਤ/ਮੁਕਤ ਪਾਰਟੀਸ਼ਨ ਐਡੀਟਰ ਹੈ।</p>
+    <p xml:lang="pl">GParted to edytor partycji będący wolnym oprogramowaniem, służący do graficznego zarządzania partycjami dysku.</p>
+    <p xml:lang="pt">O GParted é um editor de partições livre que lhe permite gerir graficamente as suas partições de disco.</p>
+    <p xml:lang="pt_BR">GParted é um editor de partições livre para gerenciamento gráfico de suas partições de disco.</p>
+    <p xml:lang="ro">GParted este un editor de partiții liber pentru a administra în mod grafic partițiile dumneavoastră de disc.</p>
+    <p xml:lang="ru">GParted — бесплатный редактор разделов с графическим управлением.</p>
+    <p xml:lang="sk">GParted je bezplatný editor oddielov na grafické spravovanie oddielov na vašom disku.</p>
+    <p xml:lang="sr">Гпартед је слободан уређивач партиција за графичко управљање партицијама вашег диска.</p>
+    <p xml:lang="sr@latin">Gparted je slobodan uređivač particija za grafičko upravljanje particijama vašeg diska.</p>
+    <p xml:lang="sv">GParted är en fri partitionsredigerare för att grafiskt hantera dina diskpartitioner.</p>
+    <p xml:lang="th">GParted เป็นเครื่องมือแก้ไขพาร์ทิชันเสรีสำหรับจัดการพาร์ทิชันในดิสก์ของคุณในแบบกราฟิก</p>
+    <p xml:lang="tr">GParted; disk bölümlerinizi görsel olarak yönetmenize olanak tanıyan, ücretsiz bir bölümleme düzenleyicisidir.</p>
+    <p xml:lang="uk">GParted — безплатний редактор розділів для графічного керування розділами дисків.</p>
+    <p xml:lang="zh_HK">GParted 是自由的分割區編輯器，可以用圖形化介面管理你的磁碟分割區。</p>
+    <p xml:lang="zh_TW">GParted 是自由的分割區編輯器，可以用圖形化介面管理您的磁碟分割區。</p>
+    <p>With GParted you can resize, copy, label, and move partitions without data loss. These actions enable you to grow or shrink your C: drive, create space for new operating systems, or attempt data rescue from lost partitions.</p>
+    <p xml:lang="ar">يمكنك باستخدام مُقسِّم‌ج تغيير سعة الأقسام ونسخها وتسميتها وكذلك نقلها دون فقد البيانات. هذه الإجراءات تمكّنك من توسيع/تقليص قرص C:‎ لديك، أو إنشاء مساحة لأنظمة تشغيل جديدة أو محاولة إنقاذ البيانات من الأقسام المفقودة.</p>
+    <p xml:lang="bs">Sa GParted možete lagano promjeniti veličinu, kopirati, označiti, i pomjeriti particiju bez gubljenja podataka. Ovi koraci vam omogućiju da povečate ili smanjite svoj C: uređaj, kreirate prostor za novi operativni sistem, ili pokušati vratiti izgubljene podatke sa particije.</p>
+    <p xml:lang="cs">S pomocí aplikace GParted můžete měnit velikost, kopírovat, nastavovat návěští a přesouvat oddíly bez ztráty dat. Pomocí těchto funkcí můžete například zvětšit nebo zmenšit svůj disk C:, vytvořit místo pro nové operační systémy nebo zkusit zachránit data ze ztracených oddílů.</p>
+    <p xml:lang="da">Med GParted kan du ændre størrelse, kopiere, navngive og flytte partitioner uden datatab. Disse handlinger gør, at du kan forøge og formindske dit C:-drev, oprette plads til nye operativsystemer eller forsøge at redde data fra mistede partitioner.</p>
+    <p xml:lang="de">GParted kann ohne Datenverlust Partitionen vergrößern/verkleinern, kopieren, umbenennen und verschieben. Somit können Sie Ihr C:-Laufwerk vergrößern/verkleinern, Platz für weitere Betriebssysteme schaffen und eine Datenrettung auf verlorenen Partitionen versuchen.</p>
+    <p xml:lang="el">Με το GParted μπορείτε να αυξομειώσετε, να αντιγράψετε, να ορίσετε ετικέτες, και να μετακινήσετε κατατμήσεις χωρίς απώλεια δεδομένων. Οι ενέργειες αυτές σας δίνουν τη δυνατότητα να αυξηθεί ή να συρρικνωθεί ο δίσκος C:, να δημιουργηθεί χώρος για νέα λειτουργικά συστήματα, ή να γίνει προσπάθεια διάσωσης των δεδομένων από χαμένες κατατμήσεις.</p>
+    <p xml:lang="es">Con GParted puede redimensionar, copiar, etiquetar y mover particiones sin perder datos. Estas acciones le permiten ampliar o reducir su unidad C:, crear espacio para sistemas operativos nuevos o intentar recuperar datos de particiones perdidas.</p>
+    <p xml:lang="fi">GPartedin avulla voit tehdä erilaisia toimenpiteitä osioille, esimerkiksi muuttaa kokoa, kopioida, nimetä ja siirtää. Voit halutessasi kasvattaa tai pienentää osion kokoa, luoda vapaata tilaa uudelle käyttöjärjestelmälle tai yrittää palauttaa tietoja poistetuilta osioilta.</p>
+    <p xml:lang="fr">GParted permet de redimensionner, copier, étiqueter et déplacer des partitions sans perte de données. Avec ces actions, vous pouvez agrandir ou réduire le disque principal, faire de la place pour de nouveaux systèmes d'exploitation ou tenter de récupérer des données à partir de partitions perdues.</p>
+    <p xml:lang="gd">'S urrainn gus meud no leubail ùr a thoirt air pàirteachaidhean, lethbhreacan a dhèanamh dhiubh agus an gluasad gun dàta a chall le GParted. 'S urrainn dhut an draibh C: agad a mheudachadh no a lùghdachadh, rum a chruthachadh airson siostaman-obrachaidh ùra no feuchainn ri dàta aiseag o phàirteachaidhean caillte leis na gnìomhan seo.</p>
+    <p xml:lang="gl">Con GParted pode redimensionar, copiar, etiquetar e mover particións sen perda de datos. Estas accións permítenlle agrandar ou reducir a súa unidade C:, crear espazo para novos sistemas operativos ou tentar recuperar datos de particións perdidas.</p>
+    <p xml:lang="hu">A GParteddel adatvesztés nélkül átméretezheti, másolhatja, címkézheti és áthelyezheti a partíciókat. Ezek a műveletek lehetővé teszik a C: meghajtó növelését vagy zsugorítását, helycsinálást új operációs rendszereknek, vagy adatmentés megkísérlését elveszett partíciókról.</p>
+    <p xml:lang="id">Dengan GParted Anda dapat mengubah ukuran, menyalin, melabeli, dan memindah partisi tanpa kehilangan data. Aksi-aksi ini memungkinkan Anda memperbesar atau memperkecil drive C: Anda, membuat ruang bagi sistem operasi baru, atau mencoba menyelamatkan data dari partisi yang hilang.</p>
+    <p xml:lang="is">Með GParted getur þú breytt stærð, afritað, merkt og fært til disksneiðar, án þess að tapa neinum gögnum. Þessar aðgerðir gera þér kleift að stækka eða minnka C: drifið, búa til pláss fyrir ný stýrikerfi, eða að reyna björgun gagna af týndum disksneiðum.</p>
+    <p xml:lang="it">Con GParted è possibile ridimensionare, copiare, assegnare etichette e spostare partizioni senza perdita di dati. Queste azioni consentono di incrementare o diminuire la dimensione del disco C:, creare spazio per nuovi sistemi operativi o tentare il ripristino dei dati da partizioni danneggiate o perse.</p>
+    <p xml:lang="kk">GParted көмегімен сіз деректерді жоғалтпай-ақ бөлімдер өлшемдерін өзгертіп, оларды көшіріп, белгі қойып немесе жылжыта аласыз. Бұл әрекеттер көмегімен сіз өзіңіздің C: дискінің өлшемін кішірейтіп, жаңа операциялық жүйе үшін орынды босата аласыз, немесе жоғалған бөлімдерден деректерді қалпына келтіру талабын жасай аласыз.</p>
+    <p xml:lang="ko">GParted로 데이터 손실 없이 파티션의 크기를 조절하거나, 복사하거나, 명칭을 붙이거나, 옮길 수 있습니다. C: 드라이브의 크기를 늘이거나 줄이고, 새 운영체제의 공간을 만들거나 잃어버린 파티션에서의 데이터 복구를 시도할 수 있습니다.</p>
+    <p xml:lang="lt">Su GParted galite keisti skirsnių dydį, kopijuoti bei žymėti neprarasdami duomenų. Šie veiksmai leidžia padidinti arba sumažinti C: diską, sukurti vietos naujoms operacinėms sistemoms ar bandyti išgelbėti duomenis iš prarastų skirsnių.</p>
+    <p xml:lang="lv">Ar GParted jūs varat nodalījumus kopēt, marķēt, mainīt to izmērus, nezaudējot datus. Šīs darbības jums ļauj palielināt vai samazināt C: disku, atvēlēt vietu jaunām operētājsistēmām vai mēģināt atgūt datus no zaudētiem nodalījumiem.</p>
+    <p xml:lang="nb">Med GParted kan du endre størrelse, kopiere, navngi og flytte partisjoner uten tap av data. Disse handlingene gjør deg i stand til å vokse eller krympe C: -stasjonen, lage plass til nye operativsystemer, eller forsøke dataredning fra tapte partisjoner.</p>
+    <p xml:lang="nl">Met GParted kunt u partities vergroten of verkleinen, kopiëren, van een naam voorzien, en verplaatsen zonder verlies van gegevens. Deze handelingen stellen u in staat uw C:-schijf groter of kleiner te maken, ruimte te creëren voor andere besturingssystemen, of een poging te doen tot dataherstel van verloren partities.</p>
+    <p xml:lang="pl">Za pomocą programu GParted można zmieniać rozmiar, kopiować, zmieniać etykiety i przenosić partycje bez utraty danych. Te działania umożliwiają zwiększanie lub zmniejszanie dysku C: i tworzenie miejsca dla nowych systemów operacyjnych, a także można próbować odzyskać dane z utraconych partycji.</p>
+    <p xml:lang="pt">Com o GParted pode redimensionar, copiar, rotular e mover partições sem perdas de dados. Estas ações permitem-lhe aumentar ou diminuir o seu disco C:, criar espaço para um novo sistema operativo ou tentar recuperar dados de partições perdidas.</p>
+    <p xml:lang="pt_BR">Com GParted você pode redimensionar, copiar, rotular e mover partições se perda de dados. Essas ações permitem que você aumente ou reduza seu drive C:, cria espaço para novos sistemas operacionais ou tente recuperar dados de partições perdidas.</p>
+    <p xml:lang="ro">Cu GParted puteți redimensiona, copia, eticheta, sau muta partiții fără a pierde date. Aceste acțiuni vă permit să expandați sau micșorați partiția C:, să creați spațiu pentru un sisteme noi de operare, sau să încercați recuperări de date de pe partiții pierdute.</p>
+    <p xml:lang="ru">С помощью GParted можно изменять размер, копировать, устанавливать метку и перемещать разделы без потери данных. Эти действия позволяют увеличивать или уменьшать диск «C:», для создания свободного пространства для новых операционных систем. Также GParted позволяет восстановить данные с потерянных разделов.</p>
+    <p xml:lang="sk">S programom GParted môžete zmeniť veľkosť, kopírovať, označiť a premiestniť oddiely bez straty údajov. Tieto akcie vám umožňujú zväčšiť alebo zmenšiť vašu jednotku C:, vytvoriť miesto pre nové operačné systémy, alebo sa pokúsiť zachrániť údaje zo stratených oddielov.</p>
+    <p xml:lang="sr">Са Гпартедом можете да промените величину, умножите, поставите натпис, и да преместите партиције без губитка података. Ове радње вам омогућавају да повећате или да умањите ваш „C:“ уређај, да направите места за нове оперативне системе, или да покушате да спасите податке са изгубљених партиција.</p>
+    <p xml:lang="sr@latin">Sa Gpartedom možete da promenite veličinu, umnožite, postavite natpis, i da premestite particije bez gubitka podataka. Ove radnje vam omogućavaju da povećate ili da umanjite vaš „C:“ uređaj, da napravite mesta za nove operativne sisteme, ili da pokušate da spasite podatke sa izgubljenih particija.</p>
+    <p xml:lang="sv">Med GParted kan du ändra storlek, kopiera, namnge och flytta partitioner utan att förlora data. Åtgärderna möjliggör att du kan utöka eller krympa din C:-disk, skapa utrymme för nya operativsystem, eller försöka att rädda data från förlorade partitioner.</p>
+    <p xml:lang="th">ด้วย GParted คุณสามารถปรับขนาด, คัดลอก, ตั้งชื่อ, และย้ายพาร์ทิชันได้โดยไม่สูญเสียข้อมูล การกระทำเหล่านี้ทำให้คุณสามารถขยายหรือลดขนาดไดรว์ C: ของคุณได้, สามารถสร้างที่ว่างสำหรับระบบปฏิบัติการใหม่ได้, หรือพยายามกู้ข้อมูลจากพาร์ทิชันที่สูญหาย</p>
+    <p xml:lang="tr">GParted ile disk bölümlerinizi veri kaybı olmaksızın yeniden boyutlandırabilir, kopyalayabilir, etiketleyebilir ve taşıyabilirsiniz. Bu eylemler C: sürücünüzü büyütmenize veya küçültmenize, yeni işletim sistemleri için yer açmanıza ya da kayıp bölümlerden veri kurtarmayı denemenize olanak tanır.</p>
+    <p xml:lang="uk">За допомогою GParted можна змінювати розмір, мітки і переміщати розділи без втрати даних. Ці дії дозволяють збільшувати або скорочувати розмір розділів, створювати місце для нових операційних систем, намагатись відновити дані з втрачених розділів.</p>
+    <p xml:lang="zh_HK">使用 GParted 你可以改變分割區的容量、複製、標籤、移動分割區而不致遺失資料。這些動作可以讓你增加或縮減你的 C: 磁碟機，建立額外的空間給新的作業系統，或是做為遺失分割區的資料救援。</p>
+    <p xml:lang="zh_TW">使用 GParted 您可以改變分割區的容量、複製、標籤、移動分割區而不致遺失資料。這些動作可以讓您增加或縮減您的 C: 磁碟機，建立額外的空間給新的作業系統，或是做為遺失分割區的資料救援。</p>
+    <p>GParted works with many file systems including: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="ar">يعمل مُقسِّم‌ج مع العديد من أنظمة الملفات، منها: btrfs، و ext2، و ext3، و ext4، و fat16، و fat32، و hfs، و +hfs، و linux-swap، و lvm2 pv، و nilfs2، و ntfs، و reiserfs، و reiser4، و ufs و xfs.</p>
+    <p xml:lang="bs">GParteda radi sa mnogim sistemskim datotekama, uključujući: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="cs">GParted pracuje s řadou různých souborových systémů, včetně: Btrfs, ext2, ext3, ext4, FAT16, FAT32, HFS, HFS+, Linux-Swap, LVM2 PV, NILFS2, NTFS, ReiserFS, Reiser4, UFS a XFS.</p>
+    <p xml:lang="da">GParted fungerer med mange filsystemer inklusive: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs og xfs.</p>
+    <p xml:lang="de">GParted arbeitet mit vielen Dateisystemen, u.a.:: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs und xfs.</p>
+    <p xml:lang="el">GParted συνεργάζεται με πολλά συστήματα αρχείων, συμπεριλαμβανομένων: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, και xfs.</p>
+    <p xml:lang="es">GParted funciona con la mayoría de los sistemas de archivos, incluyendo btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, y xfs.</p>
+    <p xml:lang="fi">GParted tukee seuraavia tiedostojärjestelmiä: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs ja xfs.</p>
+    <p xml:lang="fr">GParted fonctionne avec de nombreux systèmes de fichiers, dont : btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs et xfs.</p>
+    <p xml:lang="gd">Cuiridh GParted taic ri iomadh siostam-fhaidhlichean, a' gabhail a-steach: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs agus xfs.</p>
+    <p xml:lang="gl">GParted funciona con moitos sistemas de ficheiros incluíndo: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, e xfs.</p>
+    <p xml:lang="hu">A GParted számos fájlrendszerrel működik, beleértve: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs és xfs.</p>
+    <p xml:lang="id">GParted bekerja dengan banyak sistem berkas termasuk: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, dan xfs.</p>
+    <p xml:lang="is">GParted virkar með mörgum tegundum skráakerfa: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, og xfs.</p>
+    <p xml:lang="it">GParted è in grado di lavorare con diversi tipi di file system: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs e xfs.</p>
+    <p xml:lang="kk">GParted көптеген файлдық жүйелермен жұмыс жасайды, олар: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, және xfs.</p>
+    <p xml:lang="ko">GParted는 btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs 등의 수많은 파일 시스템에서 동작합니다.</p>
+    <p xml:lang="lt">GParted veikia su daug failų sistemų, tokių kaip: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, ir xfs.</p>
+    <p xml:lang="lv">GParted srādā ar daudzām datņu sistēmām, tai skaitā  btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="nb">GParted arbeider med mange filsystemer, inkludert: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs og xfs.</p>
+    <p xml:lang="nl">GParted kan omgaan met vele bestandssystemen waaronder: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="pa">GParted ਕਈ ਫਾਇਲ ਸਿਸਟਮਾਂ ਨਾਲ ਕੰਮ ਕਰਦਾ ਹੈ: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, ਅਤੇ xfs</p>
+    <p xml:lang="pl">Program GParted działa z wieloma systemami plików, w tym: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs i xfs.</p>
+    <p xml:lang="pt">O GParted funciona com muitos sistemas de ficheiros, incluindo:  btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, e xfs.</p>
+    <p xml:lang="pt_BR">GParted funciona com muitos sistemas de arquivos, incluindo: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs e xfs.</p>
+    <p xml:lang="ro">GParted funcționează cu multe sisteme de fișiere incluzând: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="ru">GParted работает со многими файловыми системами, включая: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, а также xfs.</p>
+    <p xml:lang="sk">Program GParted pracuje s mnohými súborovými systémami vrátane: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="sr">Гпартед ради са многим системима датотека укључујући: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="sr@latin">Gparted radi sa mnogim sistemima datoteka uključujući: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, and xfs.</p>
+    <p xml:lang="sv">GParted fungerar med många filsystem: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, och xfs.</p>
+    <p xml:lang="th">GParted ทำงานได้กับระบบแฟ้มหลายแบบ รวมถึง: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, และ xfs</p>
+    <p xml:lang="tr">GParted, şunlar da dahil olmak üzere birçok dosya sistemi ile çalışır: btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs ve xfs.</p>
+    <p xml:lang="uk">GParted працює з з багатьма файловими системами, зокрема:btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, lvm2 pv, nilfs2, ntfs, reiserfs, reiser4, ufs, xfs.</p>
+    <p xml:lang="zh_HK">GParted 可用於許多檔案系統，包含：btrfs、ext2、ext3、ext4、fat16、fat32、hfs、hfs+、linux-swap、lvm2 pv、nilfs2、ntfs、reiserfs、reiser4、ufs 與 xfs。</p>
+    <p xml:lang="zh_TW">GParted 可用於許多檔案系統，包含：btrfs、ext2、ext3、ext4、fat16、fat32、hfs、hfs+、linux-swap、lvm2 pv、nilfs2、ntfs、reiserfs、reiser4、ufs 與 xfs。</p>
+  </description>
+  <url type="homepage">http://gparted.org</url>
+  <screenshots>
+    <screenshot type="default">http://gparted.org/appdata/gparted-main-window.png</screenshot>
+  </screenshots>
+  <updatecontact>gedakc@users.sf.net</updatecontact>
+  <project_group>GNOME</project_group>
+</application>

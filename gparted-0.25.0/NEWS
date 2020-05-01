@@ -1,0 +1,2096 @@
+============================
+GParted 0.25.0  (2016-01-18)
+============================
+
+Release Notes
+-------------
+  The big news with this GParted release is the addition of progress
+  bars for checking and resizing ext2/3/4 partitions and for resizing
+  ntfs partitions.  Other changes include bug fixes and language
+  translation updates.
+
+### Key changes include:
+
+  * Add progress bar during additional ext2/3/4 and ntfs operations
+  * Enhance SWRaid member detection and file system clearing
+  * Always use blkid file system detection before libparted
+
+Bug Fixes
+---------
+  * Add progress bar during additional ext2/3/4 and ntfs operations (#467925)
+  * Enhance SWRaid member detection and file system clearing (#756829)
+  * Always use blkid file system detection before libparted (#757781)
+  * Rework Dialog_Partition_New::Get_New_Partition() (#757671)
+  * Fix missing "old end" value in detail log of en_CA translation (#756878)
+  * Make about dialog website link non-clickable (#758131)
+  * Fix temporary path name of new partitions (#759488)
+  * Fix partition names sometimes shown as file system labels (#759972)
+  * Revert tarball compression back to gzip (#760099)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Phillip Susi, Mike Fleetwood and
+  Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  de(Mario Blättermann, Wolfgang Stöggl), is(Sveinn í Felli),
+  nl(Hannie Dumoleyn), pt_BR(Rafael Fontenelle), sr(Мирослав Николић),
+  sr@latin(Miroslav Nikolić), tr(Kaan Özdinçer, Muhammet Kara, Necdet Yücel)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.24.0  (2015-10-27)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes enhancements, bug fixes and
+  language translation updates.
+
+### Key changes include:
+
+  * Display list of Logical Volumes in Partition Information dialog
+  * Add ZFS file system detection
+  * Add recognition of NVME devices
+  * Prevent hang labeling FAT16/32 if illegal chars in label
+  * Avoid core dump if invalid or non-existent device on command line
+
+Bug Fixes
+---------
+  * Add ZFS file system detection (#752862)
+  * Update documentation of GParted software dependencies (#753436)
+  * Configuration issues when using non-system location of libparted (#753525)
+  * Display list of Logical Volumes in Partition Information dialog (#754649)
+  * Add recognition of NVME devices (#755022)
+  * Updates to FileSystem:: and Utils::execute_command() functions (#754684)
+  * Fix issue with copy, reformat source logical partition and paste (#754827)
+  * Refactor operation merging (#755214)
+  * Prevent hang labeling FAT16/32 if illegal chars in label (#755608)
+    - Upper case FAT16/32 label per MS technet bb490925
+  * Enable C++11 compilation when using glibmm 2.45.40 and later (#756035)
+  * Check disks passed on command line are useable (#755495)
+  * Avoid core dump if invalid or non-existent device on command line (#756434)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Wrolf Courtney, Albert Young, and
+  Mike Fleetwood.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), de(Wolfgang Stöggl), es(Daniel Mustieles),
+  fi(Jiri Grönroos), fr(Alexandre Franke, Claude Paroz), hu(Balázs Úr),
+  id(Andika Triwidada), it(Milo Casagrande), ko(Seong-ho Cho),
+  lt(Aurimas Černius), lv(Rūdolfs Mazurs), nb(Kjartan Maraas),
+  pl(Piotr Drąg), pt(Pedro Albuquerque), pt_BR(Rafael Fontenelle),
+  ro(Daniel Șerbănescu), ru(Stas Solovey), sk(Dušan Kazik),
+  sv(Anders Jonsson), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * Blkid command should be considered mandatory as it is required to
+    detect a number of file systems which libparted doesn't detect.
+
+
+============================
+GParted 0.23.0  (2015-08-03)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes enhancements, bug fixes and
+  language translation updates.
+
+### Key changes include:
+
+  * Add partition name to create dialog and enable online naming
+    (relevant for GPT partitioned disk)
+  * Show serial number in device information
+  * Add support for btrfs set new file system UUID
+  * Prevent UI hang when resizing FAT16/32, HFS and HFS+ file systems
+
+Bug Fixes
+---------
+  * Only set LVM partition flag on tables which support it (#746204)
+  * Add partition name to create dialog and enable online naming (#746214)
+  * Fix some operations fail after paste into existing partition (#746559)
+  * Fix FileSystem object memory leaks in init_filesystems (#749036)
+  * Fix arcane cylinder size adjustment when copying and resizing (#749867)
+  * Reduce the amount of copying of partition objects (#750168)
+  * Refactor LVM2_PV_Info module interface and cache representation (#750582)
+    - Adjust pointers to prevent crash resizing a logical partition (#752587)
+  * Show serial number in device information (#751251)
+  * Add support for btrfs set new file system UUID(#751337)
+  * Prevent UI hang when resizing FAT16/32, HFS and HFS+ file systems (#737022)
+  * Add translation comments for code section setting partition flag (#752901)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  ca(Jordi Mas), cs(Marek Černocký), de(Wolfgang Stöggl),
+  es(Daniel Mustieles), fr(Alexandre Franke), gd(GunChleoc),
+  hu(Gábor Kelemen, Balázs Úr), is(Sveinn í Felli), it(Milo Casagrande),
+  kk(Baurzhan Muftakhidinov), pa(A S Alam), pl(Piotr Drąg),
+  pt_BR(Enrico Nicoletto), ro(Daniel Șerbănescu), ru(Stas Solovey),
+  sk(Dušan Kazik), sv(Josef Andersson, Anders Jonsson),
+  th(Akom Chotiphantawanon)
+
+Dependencies (new/updated)
+--------------------------
+  * hdparm command is required for optional display serial number device
+    information.
+  * btrfs-progs version >= 4.1 June 2015 package is required for
+    optional set new btrfs UUID.
+
+
+============================
+GParted 0.22.0  (2015-03-23)
+============================
+
+Release Notes
+-------------
+  The big news with this release of GParted is support for
+  unpartitioned whole disk drives.  With unpartitioned drive support,
+  GParted can now recognize and also format disk devices that do not
+  contain a partition table.  Another new feature is support for GPT
+  partition names.  This feature enables setting and viewing names on
+  GPT partitions.  Also included are bug fixes and language
+  translation updates.
+
+### Key changes include:
+
+  * Add read and write support for unpartitioned whole disk devices
+  * Add read and write support for GPT partition names
+
+Bug Fixes
+---------
+  * Add support for GPT partition names (#741424)
+    - Fix double quote error creating XFS file systems (#744108)
+  * Make swap usage match figures reported by swapon -s (#742647)
+  * Correct dialog title displaying libparted exceptions (#743825)
+  * GParted cannot recognise LVM signature on unpartitioned drive (#741430)
+  * Nilfs2 file system is unusable on RHEL/CentOS 6 (#742741)
+  * Add unpartitioned drive read-write support (#743181)
+  * If available use udisks2-inhibit to prevent automounting (#745349)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Michael Zimmermann,
+  Phillip Susi, and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  bs(Samir Ribic), cs(Marek Černocký), de(Wolfgang Stöggl),
+  el(Maria Mavridou, Γιάννης Κουτσούκος), es(Daniel Mustieles),
+  fr(Alexandre Franke), hu(Balázs Úr), is(Sveinn í Felli),
+  it(Marco Ciampa, Milo Casagrande), kk(Baurzhan Muftakhidinov),
+  lt(Aurimas Černius), nl(Hannie Dumoleyn), pl(Piotr Drąg),
+  pt_BR(Enrico Nicoletto), ru(Stas Solovey), sk(Dušan Kazik),
+  sv(Josef Andersson), tr(Muhammet Kara), uk(Daniel Korostil),
+  zh_TW(Cheng-Chia Tseng)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.21.0  (2015-01-26)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes enhancements, bug fixes and
+  language translation updates.  One fix involves an error introduced
+  in 0.15.0 whereby GParted's internal block copy has an off by one
+  sector bug when the source is before the destination; and the copy
+  is performed backwards from high block to low block.  The problem
+  results in incorrect last sectors in partitions.
+
+### Key changes include:
+
+  * Fix off by one sector error in GParted internal block copy
+  * Add support for ext4 on RHEL/CentOS 5.x
+  * Remove unnecessary duplicate actions when resizing a partition
+
+Bug Fixes
+---------
+  * Fix off by one sector error in GParted internal block copy (#742920)
+  * Add support for ext4 on RHEL/CentOS 5.x (#738706)
+  * Add ReFS file system detection (#738471)
+  * Use pkg-config to check for version of libparted (#740004)
+  * Remove unnecessary duplicate actions when resizing a partition (#741211)
+  * Correctly capitalise GNOME in the Manual and man page (#739805)
+  * Allow creation of reiser4 file systems on Linux 3.x (#742511)
+  * Add keywords in .desktop file to improve application discovery
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Phillip Susi and
+  Richard Hughes.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), de(Wolfgang Stöggl), es(Daniel Mustieles),
+  fi(Timo Jyrinki), fr(Alexandre Franke), hu(Balázs Úr),
+  it(Milo Casagrande), kk(Baurzhan Muftakhidinov), pl(Piotr Drąg),
+  pt_BR(Rafael Ferreira, Enrico Nicoletto), sr(Мирослав Николић),
+  sr@latin(Miroslav Nikolić), sv(Anders Jonsson), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.20.0  (2014-10-20)
+============================
+
+Release Notes
+-------------
+  This release of GParted improves resizing multi-device btrfs file
+  systems.  Also included are language translation updates.
+
+### Key changes include:
+
+  * Include devid when resizing multi-device btrfs file systems
+  * Add GRUB 2 restoration steps to help manual
+
+Bug Fixes
+---------
+  * Fix devid needed when resizing multi-device btrfs file systems (#723842)
+  * Fix warnings and missing label with btrfs-progs 3.12 and 3.14 (#733601)
+  * Fix ./configure is successful even when C++ compiler is missing (#732803)
+  * Add GRUB 2 restoration steps to help manual (#734376)
+  * Cleanup autoconf configure.ac and related files (#734718)
+    - All fat16 and fat32 moves performed by GParted internal algorithm
+  * Autodetect parted online partition resizing capability (#734076)
+    - Tidy up autoconf check for --disable-doc and --enable-libparted-dmraid
+  * Prevent automake warning about deprecated INCLUDES (#735742)
+  * Reduce display flashing when refreshing devices (#696149)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), es(Daniel Mustieles), de(Wolfgang Stöggl),
+  fr(Claude Paroz), gd(GunChleoc), hu(Balázs Úr),
+  id(Andika Triwidada), it(Milo Casagrande), nl(Hannie Dumoleyn),
+  pl(Piotr Drąg), pt(Tiago S, Duarte Loreto), pt_BR(Enrico Nicoletto),
+  sk(Dušan Kazik), sr(Мирослав Николић), sr@latin(Miroslav Nikolić),
+  sv(Josef Andersson)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.19.1  (2014-07-15)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes a critical bug fix for a potential
+  crash.  The crash is rare, but if the crash happens while applying
+  operations then data loss might occur.  Also included are language
+  translation updates.
+
+### Key changes include:
+
+  * Prevent crash caused by cross thread write after free in _OnReadable()
+
+Bug Fixes
+---------
+  * Prevent cross thread write after free in _OnReadable() (#731752)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood.
+
+Translations (new/updated)
+--------------------------
+  ar(Safa Alfulaij, Abderrahim Kitouni), de(Wolfgang Stöggl),
+  el(MarMav, Tom Tryfonidis), es(Daniel Mustieles), it(Milo Casagrande),
+  pt_BR(Rafael Ferreira), ro(Daniel Șerbănescu), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.19.0  (2014-06-10)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes some important bug fixes and
+  language translation updates.
+
+### Key changes include:
+
+  * Refactor OperationDetail to address random crash behavior
+  * Make partition information dialog viewable on 800x600 screens
+
+Bug Fixes
+---------
+  * Refactor OperationDetail to address random crash behavior (#729139)
+  * Make partition information dialog viewable on 800x600 screens (#690542)
+  * Use e2image to move/copy ext[234] file systems (#721516)
+  * Prevent GLib-CRITICAL Source ID not found warning messages (#729800)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Phillip Susi,
+  Piotr Drąg, and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), da(Joe Hansen), de(Jan Simon), es(Daniel Mustieles),
+  fr(Alexandre Franke), gd(GunChleoc), id(Andika Triwidada), ko(Seong-ho Cho),
+  lv(Rūdolfs Mazurs), pl(Piotr Drąg), pt_BR(Rafael Ferreira), tr(Muhammet Kara)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.18.0  (2014-02-19)
+============================
+
+Release Notes
+-------------
+  This release of GParted fixes a resize/move problem introduced in
+  0.16.2 that set partition size smaller than ext2/3/4, ntfs, and
+  reiserfs file systems in certain situations.  Also included are bug
+  fixes and language translation updates.
+
+### Key changes include:
+
+  * Fix partition size less than ext2/3/4, ntfs, reiserfs file system
+  * Prevent crash when creating new partition on disk with loop label
+
+Bug Fixes
+---------
+  * Fix partition size less than ext2/3/4, ntfs, reiserfs file system (#723543)
+  * Fix default partition table can not handle > 2 TiB disks (#711098)
+  * Prevent crash when creating new partition on disk with loop label (#721988)
+  * Replace obsolete FSF postal address in copyright notices (#721565)
+  * Make file system support dialog viewable on 800x600 screens (#342682)
+  * Add BitLocker disk encryption detection (#723232)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Phillip Susi,
+  Daniel Mustieles, and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), el(Dimitris Spingos), es(Daniel Mustieles),
+  fr(Claude Paroz), gd(GunChleoc), gl(Fran Diéguez), hu(Gabor Kelemen),
+  ko(Seong-ho Cho), lt(Aurimas Černius), sr(Мирослав Николић),
+  sr@latin(Miroslav Nikolić), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.17.0  (2013-12-09)
+============================
+
+Release Notes
+-------------
+  This release of GParted adds the ability to perform online resizing
+  for systems that support this capability.  Also included are bug
+  fixes and language translation updates.
+
+### Key changes include:
+
+  * Add support for online resize
+    - requires patched version of libparted, kernel >= 3.6, and a config flag
+    - See README for more details
+  * Recognize Linux Swap Suspend and Software RAID partitions
+  * Fix busy detection for Linux Software RAID and extended partitions
+  * Fix systemctl runtime mask to prevent automounting partitions
+
+Bug Fixes
+---------
+  * Add support for online resize (#694622)
+  * Fix usage of swap space is not reported (#708107)
+  * Turn on resize2fs progress bar (#709276)
+  * Fix systemctl runtime mask to prevent automounting partitions (#708378)
+  * Stop using deprecated method free_colors() (part of #652044)
+  * Stop using deprecated widget alignment enumerators (part of #652044)
+  * Recognize Linux Swap Suspend and Software RAID partitions (#709640)
+    - Prevent GParted starting stopped Linux Software RAID arrays
+  * Fix busy detection for Linux Software RAID and extended partitions (#712633)
+  * Make partition information dialog warnings selectable (#705596)
+  * Change default file system to ext4 with fall back to ext3/2 (#711114)
+  * Add an AppData file (#709164)
+    - Thanks to Piotr Drąg for making the AppData file translatable
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Phillip Susi,
+  Richard Hughes, and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), de(Christian Kirbach), fr(Claude Paroz),
+  it(Milo Casagrande), lv(Rūdolfs Mazurs), ml(Anish Sheela),
+  pl(Piotr Drąg), pt_BR(Rafael Ferreira), ro(Daniel Șerbănescu),
+  tr(Muhammet Kara), zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+Dependencies (new/updated)
+--------------------------
+  * Optionally enable the capability to perform online resizes by
+    using configure flag --enable-online-resize if and only if you
+    have an "online-resize" patched version of libparted and Linux
+    kernel >= 3.6.
+
+
+============================
+GParted 0.16.2  (2013-09-18)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes some important bug fixes and
+  language translation updates.
+
+### Key changes include:
+
+  * Fix crash if click apply before pending operations fully displayed
+  * Fix FAT16/32 labels are sometimes shown corrupted
+  * Fix regression - linux-swap resize broken
+  * Fix to not hide the progress of the tools used - ntfsresize
+
+Bug Fixes
+---------
+  * Fix crash if click apply before pending operations fully displayed (#699452)
+  * Enable .desktop prompt for root on default openSUSE installation (#699626)
+  * Fix FAT16/32 labels are sometimes shown corrupted (#700228)
+    - Combine duplicate code for fat16/fat32
+  * Fix setting the backup boot sector when resizing NTFS (#701075)
+    - Requires a future version of ntfs-3g with enhanced ntfsresize
+    - Enables whole partition use when resizing ext2/3/4, ntfs and reiserfs
+  * Set NTFS minimum partition size to 2 MiB (#697848)
+  * Make include guards unique (#539297)
+    - Remove unused read-only functionality from internal block copy
+  * Ensure running GParted is named correctly under GNOME Shell (#705323)
+  * Clear btrfs file system super block mirror copies too (#705426)
+  * Prepare for btrfs tools using IEC prefix multipliers (#706914)
+  * Add create_with_label flag to FS structure (#701569)
+  * Inhibit systemd automounting (#701676)
+    - Only permit one GParted instance to run at a time
+  * Stop using "locate" for gnome-doc-utils check in autogen.sh (#702040)
+  * Fix name changes in dosfstools 3.0.18+ breaking FAT16/32 support (#704629)
+  * Fix to not hide the progress of the tools used - ntfsresize (#697662)
+  * Fix regression - linux-swap resize broken (#706604)
+  * Update Help Manual with GPT flags and Force Cancel button (#707070)
+  * Add missing colon to label in en_CA translation (#685735)
+  * Ensure active tense of mount menu option in en_CA translation (#694700)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Sinlu Bes and
+  Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), da(Joe Hansen), el(Dimitris Spingos),
+  es(Daniel Mustieles), fi(Jiri Grönroos, Ville-Pekka Vainio),
+  fr(Claude Paroz), gl(Fran Diéguez), id(Andika Triwidada),
+  ja(OKANO Takayoshi), ko(Seong-ho Cho), pt_BR(Enrico Nicoletto),
+  ru(Yuri Myasoedov), sk(Dušan Kazik), sr(Мирослав Николић),
+  sr@latin(Мирослав Николић), th(Akom Chotiphantawanon), uk(Daniel Korostil),
+  zh_TW(Chao-Hsiung Liao)
+
+Dependencies (new/updated)
+--------------------------
+  * Optionally configure to use xdg-su if gksudo, gksu, and kdesudo are
+    not installed
+
+
+============================
+GParted 0.16.1  (2013-04-30)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes another critical bug fix for a
+  potential crash that might cause loss of data while moving or
+  copying a partition.  We strongly recommend that all users of
+  GParted 0.15.0 and 0.16.0 upgrade to GParted 0.16.1 to avoid data
+  loss.
+
+### Key changes include:
+
+  * Avoid another crash in GParted when moving or copying partitions
+  * Fix GParted doesn't compile on RHEL / CentOS 5.9
+
+Bug Fixes
+---------
+  * Avoid another crash in GParted when moving or copying partitions (#697727)
+  * Fix GParted doesn't compile on RHEL / CentOS 5.9 (#695279)
+  * Recognise HFSX variant as an HFS+ file system (#698876)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Phillip Susi and Mike Fleetwood.
+
+Translations (new/updated)
+--------------------------
+  None.
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.16.0  (2013-04-24)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes a critical bug fix for a crash that
+  might cause loss of data while moving or copying a partition.  We
+  strongly recommend that all users of GParted 0.15.0 upgrade to
+  GParted 0.16.0 to avoid data loss.  Also included are bug fixes,
+  enhancements and language translation updates.
+
+### Key changes include:
+
+  * Avoid crash in GParted when moving or copying partitions
+  * Fix GParted scans forever blank disk in virtual machine
+  * Add support for f2fs file system
+
+Bug Fixes
+---------
+  * Avoid crash in GParted when moving or copying partitions (#697727)
+  * Fix GParted scans forever blank disk in virtual machine (#697518)
+  * Add support for f2fs file system (#695396)
+  * Improve clearing of file system signatures (#688882)
+  * Fix absolutely full ntfs reported as error (#697946)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Mike Fleetwood, Patrick Verner,
+  Phillip Susi, and Curtis Gedak
+
+Translations (new/updated)
+--------------------------
+  ca(Pau Iranzo), ca@valencia(Carles Ferrando, Pau Iranzo),
+  cs(Marek Černocký), de(Christian Kirbach, Wolfgang Stöggl),
+  es(Nicolás Satragno, Daniel Mustieles), fr(Claude Paroz), hu(Gabor Kelemen),
+  it(Milo Casagrande), lt(Aurimas Černius), pl(Piotr Drąg),
+  pt_BR(Rafael Ferreira), po(Piotr Drąg), ro(Daniel Șerbănescu),
+  sl(Matej Urbančič, Martin Srebotnjak), sr(Мирослав Николић),
+  sr@latin(Miroslav Nikolić), tr(Muhammet Kara)
+
+Dependencies (new/updated)
+--------------------------
+  * f2fs-tools package is required for optional f2fs support.
+
+
+============================
+GParted 0.15.0  (2013-03-19)
+============================
+
+Release Notes
+-------------
+  The big news with this release is the ability to track live updates
+  of command execution progress.  This should help with determining
+  the status of long running commands by enabling users to see the
+  live command output in the details section of the apply operations
+  window.  This new ability is implemented by a fundamental code
+  change that spawns commands to run asynchronously.  Also included in
+  this release are bug fixes and language translation updates.
+
+### Key changes include:
+
+  * Live tracking of command progress output in the details log
+  * Move operations are twice as fast as prior versions
+  * Proper cancel support added
+  * Volume label length now based on file system type
+  * Unallocated space is selected by default
+  * New key bindings added:
+    - Insert     --> New Partition
+    - Ctrl+Enter --> Apply All Operations
+
+Bug Fixes
+---------
+  * Refactor to use asynchronous command execution (#685740) which includes:
+    - Remove move read-only simulation pass (#696013)
+    - Remove temporary mtoolsrc file used in fat16/32 labelling and UUID
+    - Cleanup duplicate code for common file system methods
+    - Combine duplicate code for ext2/ext3/ext4
+    - Check file system after reverting partition table when move canceled
+    - Add proper cancel support for current and pending operations (#601239)
+    - Fix interrupting a format leaves partition in-use (#403487)
+    - Fix details log does not expand to the available vertical space (#602635)
+    - Increase width of details log display to include status icons (#662722)
+    - Select unallocated space by default (#667365)
+  * Make partition label length dependent on the file system type (#689318)
+  * Avoid reading trailing junk for a reiser4 label
+  * Improve argument vector usage (#689689)
+  * Prevent crash when using an unknown locale (#692049)
+  * Work around faulty "complete disks" detection in mkdosfs (#693955)
+  * Fix move primary partition right to left shrinks partition 1 MiB (#695078)
+
+Code Credits
+------------
+  Code enhancements are courtesy of Phillip Susi, Mike Fleetwood,
+  Sinlu Bes, Jan Claeys, Mathiue Dupuy, and Curtis Gedak.
+
+Translations (new/updated)
+--------------------------
+  ca(Pau Iranzo), cs(Marek Černocký), da(Joe Hansen),
+  de(Christian Kirbach, Mario Blättermann), es(Daniel Mustieles),
+  fr(Claude Paroz), he(Yaron Shahrabani), hu(Gabor Kelemen),
+  lt(Aurimas Černius), nl(Paulus Santané), pl(Piotr Drąg),
+  pt(António Lima), pt_BR(Enrico Nicoletto), ro(Daniel Șerbănescu),
+  ru(Yuri Myasoedov), sl(Matej Urbančič), sr(Мирослав Николић),
+  sr@latin(Miroslav Nikolić), sk(Dušan Kazik), tr(Muhammet Kara)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.14.1  (2012-12-12)
+============================
+
+Release Notes
+-------------
+  This release of GParted includes some important bug fixes and some
+  language translation updates.
+
+### Key changes include:
+
+  * Fix Linux software RAID device detection
+  * Fix logical partition grow overlaps extended partition end
+
+Bug Fixes
+---------
+  * Make GParted recognise reading blank file system labels (#685656)
+    - Thanks to Mike Fleetwood for this patch set
+  * Treat reiser4 label "<none>" as meaning blank (#688760)
+    - Thanks to Mike Fleetwood for this small patch
+  * Fix Linux software RAID device detection (#678379)
+  * Fix logical partition grow overlaps extended partition end (#686668)
+  * Use kdesudo on KDE, as gksu is not installed by default (#687813)
+  * Cleanup - remove lp_device and lp_disk from GParted_Core (#683149)
+    - Thanks to Matthias Gehre for this patch set
+
+Translations (new/updated)
+--------------------------
+  de(Christian Kirbach, Wolfgang Stöggl), el(Dimitris Spingos),
+  lv(Rūdolfs Mazurs), nn(Yngve Spjeld Landro, Åsmund Skjæveland),
+  sk(Dušan Kazik), zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+Dependencies (new/updated)
+--------------------------
+  * Optionally configure to use kdesudo if gksu is not installed
+  * mdadm no longer required for Linux software RAID detection
+
+
+============================
+GParted 0.14.0  (2012-10-10)
+============================
+
+Release Notes
+-------------
+  The big news with this release of GParted is the ability to move,
+  resize, check, create, and delete physical volumes under Logical
+  Volume Management (lvm2 pv).  Also included are bug fixes and
+  language translation updates.
+
+### Key changes include:
+
+  * Add LVM PV read-write support
+  * Fix crash when pressing Esc in dialogs with number entry
+
+Bug Fixes
+---------
+  * Add LVM PV read-write support (#670171)
+    - Thanks to Mike Fleetwood for this 20 piece patch set
+  * Fix crash when pressing Esc in dialogs with number entry (#682658)
+    - Ubuntu launchpad #375095
+    - Thanks to Mike Fleetwood for this small patch
+  * Ignore invalid reiserfs UUIDs (#684115) which includes:
+    - Switch to using debugreiserfs to read the UUID
+    - Switch to using jfs_tune to read the UUID
+    - Update file system specific validation of RFC 4122 UUIDs for
+      btrfs, ext2, ext3, ext4, jfs, linux_swap, nilfs2, reiser4,
+      reiserfs, and xfs.
+    - Switch to using debugfs.reiser4 to read the label
+    - Thanks to Mike Fleetwood for this patch set
+ * Fix mounted file system size and usage determination for ext2/3/4 (#683255)
+    - Thanks to Mike Fleetwood for this patch set
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), es(Daniel Mustieles), fr(Claude Paroz),
+  gl(Fran Diéguez, Leandro Regueiro), hu(Gabor Kelemen),
+  id(Andika Triwidada), it(Milo Casagrande), ko(Seong-ho Cho),
+  lt(Aurimas Černius), ml(Ani Peter), pl(Piotr Drąg), pt_BR(Djavan Fagundes),
+  sl(Matej Urbančič), sr(Мирослав Николић), sr@latin(Мирослав Николић),
+  th(Akom Chotiphantawanon), uk(Daniel Korostil), zh_HK(Chao-Hsiung Liao),
+  zh_TW(Chao-Hsiung Liao)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.13.1  (2012-08-08)
+============================
+
+Release Notes
+-------------
+  This release of GParted fixes a failure to mount rescued file
+  systems larger than 2 GiB or file systems that start after the
+  initial 2 GiB of the disk device.  Also includes language
+  translations updates.
+
+### Key changes include:
+
+  * Fix failure creating read-only view of rescued file systems
+
+Bug Fixes
+---------
+  * Fix failure creating read-only view of rescued file systems (#680740)
+    - Thanks to Joan Lledó for this small patch
+
+Translations (new/updated)
+--------------------------
+  de(Christian Kirbach), el(Tom Tryfonidis), kk(Baurzhan Muftakhidinov),
+  lt(Aurimas Černius), nn(Yngve Spjeld Landro, Åsmund Skjæveland),
+  pt_BR(Enrico Nicoletto), sr(Мирослав Николић), sr@latin(Мирослав Николић),
+  zh_CN(Wylmer Wang)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.13.0  (2012-07-13)
+============================
+
+Release Notes
+-------------
+  This release of GParted adds the ability to show if partition size
+  differs from file system size.  This new feature enables you to
+  identify unallocated space within a partition and can suggest how
+  you can put this space to good use.  Also included are bug fixes
+  and language translation updates.
+
+### Key changes include:
+
+  * Show difference if partition size differs from file system size
+  * Avoid end partition overlap when resizing extended partition
+
+Bug Fixes
+---------
+  * Show difference if partition size differs from file system size (#499202)
+    - Thanks to Mike Fleetwood for this significant patch set
+  * Avoid end partition overlap when resizing extended partition (#678831)
+  * Provide credit in About dialog for significant contributions (#678486)
+  * Fix spelling mistakes en_CA translation (#676598, #677964, #678362)
+
+Translations (new/updated)
+--------------------------
+  ar(Ahmad Gharbeia), bg(Alexander Shopov), en_CA(Curtis Gedak),
+  es(Daniel Mustieles), id(Andika Triwidada), it(Milo Casagrande),
+  lv(Rūdolfs Mazurs), nl(Rogier Goossens), po(Piotr Drąg),
+  ru(Aleksej Kabanov), sk(Pavol Klačanský), sl(Matej Urbančič),
+  zh_CN(Wylmer Wang)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.12.1  (2012-04-09)
+============================
+
+Release Notes
+-------------
+  This release enables GParted to use the new file system resize
+  library (for FAT16/32 and HFS/+) available with parted 3.1.  Also
+  included are bug fixes and language translation updates.
+
+### Key changes include:
+
+  * Enable new file system resize library available with parted-3.1
+  * Handle more than 15 partitions on a disk device with parted-3.1
+  * Ensure space for EBR when resizing Extended partition
+  * Ensure Align to MiB does not overlap following partition
+
+Bug Fixes
+---------
+  * Enable minimal file system resize API (FAT and HFS* only) (#668281)
+    - Requires libparted-3.1+
+    - Thanks go to Jim Meyering for returning FAT16/32 and HFS/+
+      file system resizing ability in a new library with parted 3.1.
+  * Properly handle more than 15 partitions on a disk (#632345)
+    - Requires libparted-3.1+
+  * Ensure space for EBR when resizing Extended partition (#664050)
+  * Improve reiser4 file system uuid reading method
+    - Thanks to Mike Fleetwood for this small patch
+  * Fix uninitialised read when pasting into an existing partition (#672654)
+    - Thanks to Mike Fleetwood for this small patch
+  * Fix for FS size & flags becoming unknown after change UUID (#673245)
+      & Fix for FS flags becoming unknown after change label
+    - Thanks to Rogier Goossens for these patches
+  * Fix attempt data rescue fail to open read-only view (#673246)
+    - Thanks to Joan Lledó for this small patch
+  * Add requested partition details to log if resize/move fails
+  * Use cached method first to read UUID to shorten device scan time
+  * Rework Align to MiB adjustments to end sector of partition
+  * Ensure Align to MiB does not overlap following partition (#661744)
+  * Fix two typos in en_CA translation (#670097)
+  * Fix typographical error in en_CA translation (#672359)
+
+Translations (new/updated)
+--------------------------
+  ar(Khaled Hosny), cs(Marek Černocký), da(Ask H. Larsen),
+  de(Mario Blättermann), es(Daniel Mustieles), fa(Arash Mousavi),
+  fr(Claude Paroz), gl(Fran Diéguez), it(Milo Casagrande),
+  lt(Algimantas Margevičius), lv(Rudolfs Mazurs), ml(Anish A),
+  nb(Kjartan Maraas), pl(Piotr Drąg), pt_BR(Gabriel Speckhahn),
+  ro(Daniel Șerbănescu), sl(Matej Urbančič), sr(Мирослав Николић),
+  sr@latin(Мирослав Николић), sv(Daniel Nylander), te(Sasi Bhushan Boddepalli),
+  uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.12.0  (2012-02-21)
+============================
+
+Release Notes
+-------------
+  This release of GParted adds some exciting new features, and
+  includes bug fixes and language translation updates.
+
+### Key changes include:
+
+  * Add support for nilfs2 including resizing
+  * Add ability to change UUID
+  * Add read-only support for LVM PVs
+  * Enable GPT expansion when growing RAID
+
+Bug Fixes
+---------
+  * Add support for nilfs2 including resizing (#642842)
+    - Requires libparted 2.4+ or utils-linux 2.20+ for nilfs2 detection
+    - Requires nilfs-utils 2.1+ and Linux 3.0+ for nilfs2 resize support
+    - Thanks to Mike Fleetwood for these patches
+  * Prevent unitialized OperationDetail member access
+    - Thanks to Mike Fleetwood for this small patch
+  * Create common methods for mount and umount in btrfs, jfs, nilfs2, and xfs
+    - Thanks to Mike Fleetwood for these patches
+  * Add read-only support for LVM PVs (#160787)
+    - Thanks to Mike Fleetwood for these patches
+  * Don't ignore any errors resizing btrfs on Linux >= 3.2 (#669389)
+    - Thanks to Mike Fleetwood for these patches
+  * Display pop-up dialog on libparted exceptions
+    - Fixes Bug #566935 - Unable to expand GPT partition when growing RAID
+    - Thanks to Phillip Susi for this patch
+  * Reduce graphic processing requirement for pulse bar
+    - Debian #499193 - gparted: 100% cpu usage
+    - Debian #519764 - gparted: Lots of animation makes use over SSH
+                       X-tunnel slow
+  * Add support to change UUID (#667278)
+    - Thanks to Rogier Goossens for these patches
+  * Fix detection of multiple SW RAID (md) devices (#668486)
+    - Thanks to Rogier Goossens for this small patch
+  * Fix build to correctly link to gthread (#667412)
+    - Thanks to Vincent Untz for this small patch
+  * Fix long scan problem when BIOS floppy setting incorrect (#667511)
+    - Ubuntu launchpad #910379
+  * Enhance documentation for UUIDs and copying partitions (#608308)
+  * Fix en_CA parameter missing percent sign translation error (#660180)
+  * Avoid warning display when moving start of extended partition
+  * Increase FAT32 minimum size to 33 MiB (#668491)
+  * Fix regression when shrinking, moving and copying swap (#670017)
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), da(Joe Hansen), de(Mario Blättermann, Christian Kirbach),
+  es(Daniel Mustieles), fr(Bruno Brouard), gl(Fran Diéguez),
+  hu(Gabor Kelemen), ja(Jiro Matsuzawa), kk(Baurzhan Muftakhidinov),
+  ml(Anish A), nb(Kjartan Maraas), pl(Piotr Drąg), pt(António Lima),
+  ru(Yuri Myasoedov), sl(Matej Urbančič), sr(Мирослав Николић),
+  sr@latin(Мирослав Николић), te(Praveen Illa)
+
+Dependencies (new/updated)
+--------------------------
+  * nilfs-utils package is required for optional nilfs2 support.
+    - nilfs2 resizing requires nilfs-utils 2.1+ and Linux 3.0+.
+  * ntfs-3g advanced release version >= 2012.1.15AR is required to change
+    NTFS UUID
+    - requires new ntfslabel options --new-serial and --new-half-serial.
+    - NOTE:  ntfs-3g stable 2012.1.15 does not yet support changing NTFS UUID
+
+
+============================
+GParted 0.11.0  (2011-12-13)
+============================
+
+Release Notes
+-------------
+  This release of GParted adds some volume label improvements, and
+  includes bug fixes and language translation updates.
+
+### Key changes include:
+
+  * Display ext2/3/4, ntfs, and btrfs unicode volume labels properly
+  * Add labelling of btrfs file systems
+  * Enable XFS copy to new smaller partition
+
+Bug Fixes
+---------
+  * Display ext2/3/4 unicode volume labels properly (#662537)
+  * Display ntfs unicode volume labels properly
+    - Ubuntu launchpad #614994
+  * Fix FAT16/32 label displayed as uppercase (#625337)
+  * Add labelling of btrfs file systems (#663207)
+    - Thanks to Mike Fleetwood for small patch
+    - Requires btrfs-tools package yet-to-be-released (> Oct 25, 2011)
+  * Fix btrfs volume label reading (#663590)
+    - Thanks to Mike Fleetwood for small patch
+  * Enable XFS copy to new smaller partition (#663806)
+    - Thanks to Stephen Kirkby for small reverse umount order patch
+  * Use newer btrfs multi-tool control command first (#663884)
+    - Thanks to Mike Fleetwood for this patch
+  * Avoid redundant file system maximize actions (#663980)
+
+Translations (new/updated)
+--------------------------
+  cs(Marek Černocký), da(Joe Hansen), ru(Andrey Germanov),
+  sr(Мирослав Николић), sr@latin(Мирослав Николић), uk(Daniel Korostil),
+  zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.10.0  (2011-11-01)
+============================
+
+Release Notes
+-------------
+  This release of GParted adds a few new features, and includes bug
+  fixes and language translation updates.
+
+### Key changes include:
+
+  * Merge overlapping operations
+  * Add ability to resize btrfs file systems
+  * Add detection of exfat file systems
+
+Bug Fixes
+---------
+  * Merge overlapping operations (#438573)
+    - Thanks to Jérôme Dumesnil for this patch
+  * Fix compile error with older gcc (#662174)
+  * Add ability to resize btrfs file systems (#661715)
+  * Add detection of exfat file systems (#639760)
+
+Translations (new/updated)
+--------------------------
+  bg(Alexander Shopov), de(Mario Blättermann), en_GB(Bruce Cowan),
+  es(Daniel Mustieles), fr(Claude Paroz), gl(Fran Dieguez),
+  hu(Gabor Kelemen), it(Milo Casagrande),
+  lt(Algimantas Margevičius, Aurimas Černius), lv(Rudolfs Mazurs),
+  pl(Piotr Drąg), pt_BR(Djavan Fagundes, Antonio Fernandes C. Neto),
+  ru(Yuri Myasoedov), sl(Matej Urbančič), sv(Daniel Nylander, Matej Urbančič),
+  tr(Muhammet Kara)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.9.1   (2011-09-19)
+============================
+
+Release Notes
+-------------
+  This release of GParted contains bug fixes and language translation
+  updates.
+
+### Key changes include:
+
+  * Fix NTFS partition resize fail problem
+  * Fix some compiler warnings
+
+Bug Fixes
+---------
+  * Fix NTFS partition resize fail problem (#655215)
+  * Fix some compiler warnings
+  * Change some code attributes to local variables (#634090)
+    - Thanks to Markus Elfring for this patch
+  * Fix typo in string: director --> directory (#657744)
+    - Thanks to Tiffany Antopolski for this small patch
+
+Translations (new/updated)
+--------------------------
+  ar(Abdalrahim G. Fakhouri), cs(Marek Černocký), da(Kenneth Nielsen),
+  de(Mario Blättermann), en_CA(Tiffany Antopolski), es(Daniel Mustieles),
+  fr(Bruno Brouard, Alexandre Franke), gl(Fran Diéguez), hu(Gabor Kelemen),
+  it(Milo Casagrande), lv(Rudolfs Mazurs), pl(Piotr Drąg),
+  po(Pavol Klačanský), pt(António Lima), pt_BR(André Gondim),
+  ru(Yuri Myasoedov), sk(Pavol Klačanský), sl(Matej Urbančič),
+  sr(Мирослав Николић), sr@latin(Мирослав Николић), sv(Daniel Nylander),
+  tr(Muhammet Kara), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.9.0   (2011-07-18)
+============================
+
+Release Notes
+-------------
+  The most significant change in this release is the ability to
+  compile and link with libparted 3.0.
+
+  GParted retains full functionality when compiled and linked with
+  libparted versions prior to 3.0, for example libparted-2.4.
+
+  Because Parted 3.0 removed some file system specific functionality,
+  the following abilities are lost or changed when GParted is compiled
+  and linked with libparted 3.0:
+
+    * Unable to grow and shrink FAT16 and FAT32 file systems
+    * Unable to shrink HFS and HFS+ file systems
+    * Unable to determine used and unused sectors in HFS and HFS+ file
+      systems
+    * Unable to erase file system signatures on partition create and
+      format
+    * FAT16 and FAT32 file system moves performed internally by
+      GParted instead of by libparted
+
+### Other key changes include:
+
+  * Fix size off by one sector with unrecognized disk label
+  * Fix GParted crashes with assertion (head_size <= 63)
+    - Requires libparted-2.4 or higher
+
+Bug Fixes
+---------
+  * Enable compile and link with libparted 3.0 (#651559)
+  * Fix size off by one sector with unrecognized disk label (#649444)
+  * Fix GParted crashes with assertion (head_size <= 63)
+    - Requires libparted-2.4 or higher
+    - Ubuntu launchpad #545911
+  * Fix typo "on on " -> "on" (#650793)
+    - Thanks go to Gabor Kelemen for this small patch
+  * Improve English grammar: amount -> number (#650237)
+
+Translations (new/updated)
+--------------------------
+  ca(Gil Forcada), cs(Marek Černocký), da(Ask H. Larsen),
+  de(Mario Blättermann), es(Daniel Mustieles), fa(Arash Mousavi),
+  fr(Claude Paroz), he(Yaron Shahrabani), hu(Gabor Kelemen),
+  it(Milo Casagrande), lt(Aurimas Černius), pl(Piotr Drąg),
+  pt_BR(Luana Campos Ferreira), ru(Yuri Myasoedov), sl(Matej Urbančič),
+  sr(Мирослав Николић), sr@latin(Мирослав Николић), sv(Daniel Nylander),
+  tr(Şenol Korkmaz, Muhammet Kara), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+============================
+GParted 0.8.1   (2011-05-23)
+============================
+
+Release Notes
+-------------
+  This release of GParted further improves motherboard BIOS RAID
+  support and includes bug fixes, and language translation updates.
+
+### Key changes include:
+
+  * Remove all usage of kpartx to avoid partition entry duplicates
+  * Add configure option --enable-libparted-dmraid
+
+Bug Fixes
+---------
+  * Remove all usage of kpartx to avoid partition entry duplicates
+    - Ubuntu launchpad #719129
+  * Add configure option --enable-libparted-dmraid
+    - Ubuntu launchpad #719129
+    - Thanks go to Phillip Susi for help with this idea
+  * Ensure graphical error message displayed when run by non-root user
+    - Ubuntu launchpad #696937
+  * Simplify command output cleanup implementation
+    - Thanks go to Seth Heeren for this method replacement patch
+  * Enable unmount of partition with apostrophe in label
+    - Ubuntu launchpad #151796
+
+Translations (new/updated)
+--------------------------
+  ar(Khaled Hosny), bg(Alexander Shopov), da(Ask H. Larsen),
+  eo(Kristjan SCHMIDT), fa(Arash Mousavi),
+  fr(Claude Paroz, Julien Hardelin, Vincent Blut), hu(Gabor Kelemen),
+  it(Milo Casagrande), lv(Rudolfs Mazurs, Peteris Krisjanis),
+  nl(Hannie Dumoleyn), pl(Piotr Drąg),
+  pt_BR(Luana Campos Ferreira, Djavan Fagundes),
+  ro(Daniel Șerbănescu, Lucian Adrian Grijincu), ru(Yuri Myasoedov),
+  te(Praveen Illa, krishnababu k), uk(Daniel Korostil)
+
+Dependencies (new/updated)
+--------------------------
+  * kpartx package is not used.
+
+
+============================
+GParted 0.8.0   (2011-02-15)
+============================
+
+Release Notes
+-------------
+  The GParted team is proud to announce a new feature to attempt data
+  rescue for lost partitions.
+
+  This new feature uses the gpart command to guess the partition
+  table.  Discovered file systems can be mounted read-only so that you
+  can copy data to other media.
+
+  Also included in this release are bug fixes, and language
+  translation updates.
+
+### Key changes include:
+
+  * Add attempt data rescue for lost partitions
+  * Fix paste destination partition smaller than source
+  * Prevent visual disk display area from disappearing
+
+Bug Fixes
+---------
+  * Add attempt data rescue for lost partitions (#171215)
+    - Requires gpart
+    - Thanks go to Joan Lledó for the patch implementing this new feature
+  * Fix paste destination partition smaller than source (#639393)
+  * Fix minor cylinder alignment rounding error (size < 1 cylinder)
+  * Add possible causes for failure to detect or read file systems
+  * Increase robustness of help manual launch
+  * Prevent visual disk display area from disappearing
+    - Ubuntu launchpad #583746
+  * Update help manual with new feature to attempt data rescue
+  * Minor updates to man page
+
+Translations (new/updated)
+--------------------------
+  ar(Khaled Hosny), cs(Marek Černocký), da(Ask H. Larsen),
+  de(Mario Blättermann), es(Daniel Mustieles, Paulo E Ojeda, Jorge González),
+  et(Mattias Põldaru), fr(Claude Paroz, Bruno Brouard), gl(Fran Diéguez),
+  he(Yaron Shahrabani), id(Andika Triwidada), it(Milo Casagrande),
+  kk(Baurzhan Muftakhidinov), pt(António Lima), ru(Yuri Myasoedov),
+  sl(Matej Urbančič), sr(Мирослав Николић), sr@latin(Мирослав Николић),
+  sv(Daniel Nylander), zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+  Also includes ro(Daniel Șerbănescu) update which had not yet been
+  committed to master git branch.
+
+Dependencies (new/updated)
+--------------------------
+  * gpart package is required for attempt data rescue
+  * a default file manager is used, if available, for attempt data
+    rescue to display discovered file systems.
+
+
+============================
+GParted 0.7.1   (2010-12-13)
+============================
+
+Release Notes
+-------------
+  This release of GParted further improves motherboard BIOS RAID
+  support and includes bug fixes, and language translation updates.
+
+### Key changes include:
+
+  * Fix incorrect dmraid partition path name
+  * Handle characters like spaces in mount points
+
+Bug Fixes
+---------
+  * Fix incorrect dmraid partition path name (#634553)
+  * Handle characters like spaces in mount points (#629592)
+  * Enhance to work with mount points defined by uuid or label
+  * Fix MBR does not reflect the GPT partition map (#586910)
+    - Requires libparted-2.3 or higher
+  * Fix Spanish translation of help manual fails XML validation (#633492)
+  * Fix German translation of help manual fails XML validation (#633587)
+
+Translations (new/updated)
+--------------------------
+  cs(Adrian Guniš), ca@valencia(Carles Ferrando), de(Mario Blättermann),
+  eu(Inaki Larranaga Murgoitio), he(Yaron Shahrabani), nb(Kjartan Maraas),
+  ro(Lucian Adrian Grijincu)
+
+Dependencies (new/updated)
+--------------------------
+  * no change.
+
+
+====================
+0.7.0   (2010-10-29)
+====================
+NOTES
+	This release of GParted adds initial support for the btrfs
+	file system, and fixes two critical bugs.  Also included are
+	other bug fixes and language translation updates.
+
+	Key changes include:
+	  - Add initial support for btrfs
+	  - Fix crash at start with glibmm-ERROR
+	  - Fix crash moving more than one logical partition right
+
+BUG FIXES
+	* Add initial support for btrfs (#571170)
+	  - Thanks go to Luca Bruno for this big patch
+	* Fix gparted crash at start with glibmm-ERROR
+	  - Crash due to using ustring for file system signature recognition
+	  - Ubuntu launchpad #609477
+	  - Ubuntu launchpad #617885
+	  - Thanks go to Seth Heeren for this small patch
+	* Fix crash moving more than one logical partition right (#628863)
+	* Fix several memory leaks and valgrind errors (#631201)
+	  - Thanks go to Seth Heeren for this small patch
+	* Remove unnecessary null pointer checks (#539092)
+	  - Thanks go Markus Elfring for this small patch
+	* Insert additional translator comments (#631684)
+	* Fix partitions moved or copied are 1 MiB larger (#632478)
+	* Skip move/copy action because linux swap contains no data (#589555)
+	  - Ubuntu launchpad #401228
+	* Ensure 1 MiB reserved when moving partition to start of disk
+
+TRANSLATIONS (new/updated)
+	* bg(Alexander Shopov), da(Ask H. Larsen),
+	  de(Mario Blättermann, Christian Kirbach), es(Jorge González),
+	  et(Mattias Põldaru), gl(Fran Diéguez), fr(Claude Paroz),
+	  hu(Gabor Kelemen), id(Andika Triwidada), kk(Baurzhan Muftakhidinov),
+	  lt(Aurimas Černius, Žygimantas Beručka), nb(Kjartan Maraas),
+	  pa(A S Alam), pl(Piotr Drąg, Tomasz Dominikowski),
+	  pt(António Lima), pt_BR(Antonio Fernandes C. Neto),
+	  sl(Matej Urbančič), uk(Maxim V. Dziumanenko),
+	  zh_CN(Aron Xu, Yunqiang Su), zh_HK(Chao-Hsiung Liao, Wei-Lun Chao),
+	  zh_TW(Chao-Hsiung Liao, Wei-Lun Chao)
+
+DEPENDENCIES (new/updated)
+	* btrfs-tools package is required for optional btrfs support.
+
+
+====================
+0.6.4   (2010-10-01)
+====================
+NOTES
+	This release of GParted fixes a regression introduced with the
+	previous version.  The problem introduced was that when
+	partitions were created using MiB alignment, the resulting
+	partition was 1 MiB larger in size than requested.
+
+	Key changes include:
+	  - Fix partitions created using MiB alignment are 1 MiB larger
+
+BUG FIXES
+	* Fix partitions created using MiB alignment are 1 MiB larger (#631026)
+
+TRANSLATIONS (new/updated)
+	* none.
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.6.3   (2010-09-23)
+====================
+NOTES
+	This release of GParted improves motherboard BIOS RAID support
+	and includes bug fixes, and language translation updates.
+
+	Key changes include:
+	  - Fix problems listing and working with fake RAID devices
+	  - Prevent swapon and mount if partition is in operation queue
+	  - Prevent partition table creation if partitions are active
+
+BUG FIXES
+	* Add labelling of linux-swap (#626325)
+	  - Thanks go to Mike Fleetwood for this small patch
+	* Prevent swapon and mount if partition is in operation queue (#611431)
+	* Prevent partition table creation if partitions are active
+	  - Ubuntu launchpad #503125
+	* Ensure partition path name is compatible with dmraid (#622217)
+	  - Ubuntu launchpad #600729
+	* Remove dependency on kpartx for fake RAID support
+	  - Ubuntu launchpad #554582
+	* Warn partition move queued that might break boot process (#627199)
+	* Fix MiB mismatch when graphically moving logical partition (#628554)
+	* Fix paste destination partition smaller than source (#626946)
+	* Fix size reduced by 1 MiB if created after cylinder aligned partition
+	* Complete quoting for parameters in configure.in file (#622598)
+	  - Thanks go to Markus Elfring for this small patch
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Guniš, Marek Černocký), da(Ask H. Larsen),
+	  de(Christian Kirbach, Mario Blättermann), es(Jorge González),
+	  et(Mattias Põldaru), fr(Nicolas Repentin, Bruno Brouard),
+	  he(Yaron Shahrabani), hu(Gabor Kelemen), id(Dirgita),
+	  it(Milo Casagrande), ja(Takayuki KUSANO), kk(Baurzhan Muftakhidinov),
+	  pl(Piotr Drąg), pt(António Lima), pt_BR(Carlos José Pereira),
+	  sl(Matej Urbančič), sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* kpartx package no longer required for fake RAID support.
+
+
+====================
+0.6.2   (2010-08-01)
+====================
+NOTES
+	This release of GParted includes important bug fixes, and
+	language translation updates.
+
+	Key changes include:
+	  - Re-enable MiB partition alignment option
+	  - Fix problem with logical partition move overwriting EBR
+
+BUG FIXES
+	* Re-enable MiB partition alignment option
+	* Fix problem with logical partition move overwriting EBR (#623630)
+	* Ensure original partition boundaries kept on rollback of failed move
+	* If available use both udisks and hal-lock to prevent auto-mounting
+
+TRANSLATIONS (new/updated)
+	* cs(Petr Kovar, Marek Černocký), es(Jorge González),
+	  el(Dimitris Tsiolis), kk(Baurzhan Muftakhidinov), zh_CN(Aron Xu)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.6.1   (2010-07-08)
+====================
+NOTES
+	This is an important bug fix release for two critical bugs
+	found in GParted.  Also included are some language translation
+	updates.
+
+	Key changes include:
+	  - Fix crash moving partition when size is a multiple of 16 MiB
+	  - Disable MiB alignment temporarily until bug #623630 can be fixed.
+
+	    Bug #623630 is a problem where moving logical partitions using
+	    the new MiB alignment feature might overwrite the Extended Boot
+	    Record of another logical partition.  This causes an invalid
+	    partition table with a wrong signature.
+
+BUG FIXES
+	* Fix crash moving partition when size is a multiple of 16 MiB (#623697)
+	* Disable MiB alignment temporarily until bug #623630 can be fixed.
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Guniš), gl(Fran Diéguez), he(Yaron Shahrabani)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.6.0   (2010-06-18)
+====================
+NOTES
+	The GParted team is proud to announce this release brings
+	support for devices with sector sizes greater than 512 bytes.
+
+	For the last three decades, 512 byte sector sizes have been
+	the norm and many tools, including GParted, were hard coded to
+	assume this sector size.
+
+	Also included in this release are bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Add support for devices with sector sizes > 512 bytes
+	  - Add alignment option to align to MiB
+	  - Set _default_ alignment to align to MiB
+
+	Known issues:
+	  When used with libparted versions 2.3 and lower on devices with
+	  sector sizes > 512 bytes:
+	  - hfs/hfs+: used/unused space not detected
+	  - hfs/hfs+: shrink file system not available
+
+BUG FIXES
+	* Add support for devices with sector sizes > 512 bytes (#607165)
+	* Add align to MiB option and make it the default (#617409)
+	* Enable copy to work on computers with only 128 MiB RAM (#613430)
+	* Fix mkswap error "UUID parsing failed" when resizing with no UUID
+	  - Debian Bug #573836
+	* Handle devkit-disks command being renamed to udisks on Dec. 2009
+	  - GParted Bug #324220 comment 62, Ubuntu launchpad #588530
+	* Convert git log entries for Makefile generated ChangeLog
+	* Clean up progress bar current status after copy/move action
+
+TRANSLATIONS (new/updated)
+	* ar(Khaled Hosny), cs(Petr Kovar, Adrian Guniš), da(Ask H. Larsen),
+	  de(Mario Blättermann), el(Dimitris Tsiolis), es(Jorge González),
+	  eu(Inaki Larranaga Murgoitio), fi(Timo Jyrinki),
+	  fr(Claude Paroz, Bruno Brouard), gl(Fran Diéguez),
+	  hu(Gabor Kelemen), it(Milo Casagrande),
+	  lt(Žygimantas Beručka, Aurimas Černius, Gintautas Miliauskas),
+	  nb(Kjartan Maraas), pl(Piotr Drąg), pt(António Lima),
+	  pt_BR(André Gondim, Vladimir Melo, Djavan Fagundes), ro(Adi Roiban),
+	  sl(Matej Urbančič), uk(Maxim V. Dziumanenko),
+	  zh_HK(Cheng-Chia Tseng, Chao-Hsiung Liao),
+	  zh_TW(Cheng-Chia Tseng, Chao-Hsiung Liao)
+
+DEPENDENCIES (new/updated)
+	* Support for sector sizes > 512 bytes requires libparted
+	  version 2.2 or higher.
+	* Previously missed dependency for DMRAID:
+	  - if available, either udevinfo or udevadm will be used
+	    to query the udev name.
+
+
+====================
+0.5.2   (2010-03-08)
+====================
+NOTES
+	This release of GParted includes bug fixes, and language translation
+	updates.
+
+	Key changes include:
+	  - Fix bug when copying huge (> 100 GB) NTFS partition never finishes
+	  - Disable extended partition option for GPT disks
+
+BUG FIXES
+	* Fix bug when copying huge NTFS partition never finishes (#575324)
+	* Indicate required software if unable to read file system (#576908)
+	* Disable extended option for non-MSDOS and non-DVH disk types (#583906)
+	* Add check if partition table re-read work around code is needed
+	* Fix problem building gparted on OpenSUSE 11.1 (#608065)
+	* Make partition "New" label available for translation (#610540)
+	* Enable removal of msftres flag on GPT disk (#518439)
+	  - Requires libparted-2.0 or higher
+	* Set HFS/HFS+ partition identifier to proper value (#568867)
+	  - Requires libparted-2.2 or higher
+
+TRANSLATIONS (new/updated)
+	* bg(Alexander Shopov), cs(Marek Černocký, Adrian Guniš, Petr Kovar),
+	  de(Mario Blättermann), en_GB(Bruce Cowan), es(Jorge González),
+	  fr(Claude Paroz), gl(Fran Diéguez), hu(Gabor Kelemen), pl(Piotr Drąg),
+	  lv(Rūdolfs Mazurs, Peteris Krisjanis), pt(António Lima),
+	  pt_BR(Henrique P. Machado, Djavan Fagundes), sl(Matej Urbančič),
+	  sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.5.1   (2010-01-25)
+====================
+NOTES
+	This release of GParted includes some very important bug fixes
+	in addition to language translation updates.
+
+	Key changes include:
+	  - Work around partition resizing problems with newer udev and kernels
+	  - Avoid crashes by ignoring devices with sector size > 512 bytes
+
+BUG FIXES
+	* Work around to partition resizing problems (#604298)
+	  - Thanks to François Dupoux and Steven Shiau for their help
+	* Ensure return code is passed up through commit() method
+	* Avoid crash by ignoring devices with sector size > 512 bytes (#595309)
+	  - Thanks to Jan Claeys for initial small patch
+	* Capture libparted messages if invalid partition table found (#337244)
+	* Fix problem reading some FAT32 partitions (#605175)
+
+TRANSLATIONS (new/updated)
+	* ar(Khaled Hosny), bg(Alexander Shopov),
+	  cs(Adrian Guniš, Marek Černocký, Petr Kovar), da(Ask H. Larsen),
+	  de(Mario Blättermann, Jan Janssen), eu(Inaki Larranaga Murgoitio),
+	  en_GB(Bruce Cowan), es(Jorge González), fr(Claude Paroz),
+	  gl(Anton Méixome), hu(Gabor Kelemen), it(Milo Casagrande),
+	  pt_BR(Djavan Fagundes, Antonio Fernandes C. Neto),
+	  ro(Lucian Adrian Grijincu, Adi Roiban), sl(Matej Urbančič),
+	  sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.5.0   (2009-12-02)
+====================
+NOTES
+	This release of GParted adds support for Linux software RAID.
+
+	RAID systems now supported include:
+	  - Hardware RAID
+	  - Motherboard BIOS RAID (also known as Fake RAID - dmraid)
+	  - Linux Software RAID (mdadm)
+
+	Key changes include:
+	  - Add auto detection of Linux software RAID devices
+	  - Re-enable ability to paste into an existing partition
+	  - Ensure parted-1.9.0 is patched if using with GParted
+
+BUG FIXES
+	* Add auto detection of Linux software RAID devices
+	* GNOME Goal: Correct desktop files (#600048)
+	* GNOME Goal: Replace gnome-open with gtk_show_uri (#600046)
+	* Found cause of NTFS volume bigger than device size (#601574)
+	  - Ensure parted-1.9.0 is patched if using with GParted
+	  - Thanks go to François Dupoux for discovering the required patch
+	* Re-enable ability to paste into an existing partition (#582101)
+
+TRANSLATIONS (new/updated)
+	* bg(Krasimir Chonov), cs(Adrian Guniš), da(Ask H. Larsen),
+	  es(Jorge González), fr(Claude Paroz), hu(Gabor Kelemen),
+	  it(Milo Casagrande), pt(António Lima), pt_BR(Djavan Fagundes),
+	  sl(Matej Urbančič), sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* For Linux software RAID support, the following command is required:
+	  - mdadm
+
+
+====================
+0.4.8   (2009-11-02)
+====================
+NOTES
+	This release of GParted includes bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Ensure no pending operations before creating partition table
+	  - Improve dmraid device and name recognition
+	  - Add support for devicekit-disks device automount prevention
+	  - Fix problem finding symbolic link device mount points
+
+BUG FIXES
+	* Rework logic to find symbolic link device mount points (#582687)
+	* Minor string fixes (#597686)
+	  - Thanks go to Bruce Cowan for the small patch
+	* Remove repeated titles in progress dialog (#589558)
+	* Change field labels to sentence capitalization (#583885)
+	* Add padding to progress dialog window
+	* Improve feedback when creating or pasting partition (#579266)
+	* Ensure no pending operations before creating partition table (#583896)
+	* Remove unable to re-read partition table warning (#599078)
+	* Improve dmraid device and name recognition
+
+TRANSLATIONS (new/updated)
+	* ar(Khaled Hosny), de(Mario Blättermann), en_GB(Bruce Cowan),
+	  es(Jorge González), fr(Claude Paroz), is(Sveinn í Felli),
+	  it(Milo Casagrande), pt(António Lima),
+	  pt_BR(André Gondim, Djavan Fagundes), sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.4.7   (2009-10-09)
+====================
+NOTES
+	This release of GParted includes some bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Fixed new partition creation size off by one sector (#596552)
+	  - Improved recognition of dmraid devices
+
+BUG FIXES
+	* Added logic to find symbolic link device mount points (~#582687)
+	* Made set_used_sectors method less meddlesome for FAT16/32 (~#569921)
+	* Fixed new partition creation size off by one sector (#596552)
+	  - Thanks to Seth Hunter for the small patch
+	* Improved recognition of dmraid devices
+	* Enhanced to compile with libparted two digit version (e.g., 2.0)
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Guniš), en_GB(Bruce Cowan), eu(Inaki Larranaga Murgoitio),
+	  pl(Piotr Drąg)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.4.6   (2009-08-05)
+====================
+NOTES
+	This release of GParted includes bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Removed requirement for xxd for ntfs move or paste action
+	  - Enhanced for new linux-swap "filesystem" types from parted-1.9.0
+
+BUG FIXES
+	* Removed requirement for xxd for ntfs move or paste action (n/a)
+	* Enhanced for new linux-swap "filesystem" types from parted-1.9.0 (n/a)
+	* Reduced chance of accidental new partition creation (#576374)
+	* Enhanced file parsing to handle tabs properly (#582687)
+	* Made .gitignore gparted* mask more specific (#587065)
+	* Placed translator comment in the proper location (#590415)
+
+TRANSLATIONS (new/updated)
+	* ar(Khaled Hosny), br(Denis Arnaud), ca(David Planella),
+	  da(Ask Hjorth Larsen), de(Mario Blättermann), es(Jorge Gonzalez),
+	  et(Mattias Põldaru, Priit Laes),
+	  fr(Julien Hardelin and Claude Paroz), hu(Gabor Kelemen),
+	  it(Milo Casagrande), lt(Žygimantas Beručka), pa(A S Alam),
+	  pt(António Lima), pt_BR(Djavan Fagundes), sv(Daniel Nylander),
+	  zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+DEPENDENCIES (new/updated)
+	* xxd (part of vim-common) is no longer required.
+
+
+====================
+0.4.5   (2009-05-08)
+====================
+NOTES
+	This release of GParted includes some bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Improved crypt-luks detection
+	  - Improved dmraid device detection
+
+BUG FIXES
+	* Improved crypt-luks detection (#578300)
+	* Improved dmraid device detection by checking udev if needed (n/a)
+	* Enhanced to search for udevadm if udevsettle not found (n/a)
+	  - Thanks to Lorenzo Cogotti aka Micia for this tip.
+	* Improved UUID detection to fall back to vol_id if available (n/a)
+	* Improved file system detection with fall back to vol_id (n/a)
+
+TRANSLATIONS (new/updated)
+	* ca(David Planella), de(Christian Kirbach, Mario Blättermann),
+	  es(Jorge Gonzalez), kk(Baurzhan Muftakhidinov)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.4.4   (2009-04-02)
+====================
+NOTES
+	This big news for this release of GParted is the addition of
+	support for dmraid devices, also known as ATA-RAID, or Fake RAID.
+
+	Key changes include:
+	  - Added support for /dev/mapper dmraid devices
+	  - Added recognition of /dev/mmcblk* SD/MMC devices
+	  - Enhanced resize/move to only move start if space before changed
+
+BUG FIXES
+	* Added support for /dev/mapper dmraid devices (#317262)
+	* Added recognition of /dev/mmcblk* SD/MMC devices (#564985)
+	* Enhanced resize to only move start if space before changed (#571151)
+	* Maintained label and UUID when resizing swap (#575585)
+	* Added detection of LUKS encrypted partitions (#490740)
+	* Added detection of btrfs file system (part of #571170)
+	  - Thanks to Luca Bruno for initial btrfs support patch.
+	* Improved new comments for translators (#576956)
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Guniš), da(Ask H. Larsen, Per Kongstad),
+	  de(Mario Blättermann, Jochen Skulj), es(Jorge Gonzalez),
+	  eu(Inaki Larranaga Murgoitio), fr(Claude Paroz), gl(Suso Baleato),
+	  hu(Gabor Kelemen), it(Milo Casagrande),
+	  ja(Hideki Yamane, Mitsuya Shibata), lv(Raivis Dejus),
+	  pa(A S Alam), pt(António Lima),
+	  pt_BR(Djavan Fagundes, Vladimir Melo, Leonardo Ferreira Fontenelle),
+	  ru(Yuriy Myasoedov), sk(Pavol Klačanský), sv(Daniel Nylander),
+	  zh_CN(Whistler)
+
+DEPENDENCIES (new/updated)
+	* For dmraid support, the following three commands are required:
+	  - dmsetup
+	  - dmraid
+	  - kpartx
+	* For GNU/Linux distribution dmraid support, the following are required:
+	  - kernel built with Device Mapping and Mirroring.  From menuconfig,
+	    it is under Device Drivers -> <something> (RAID & LVM).
+	  - dmraid drive arrays activated on boot (e.g., dmraid -ay).
+
+
+====================
+0.4.3   (2009-02-12)
+====================
+NOTES
+	This release of GParted includes bug fixes, and language translation
+	updates.
+
+	Key changes include:
+	  - Corrected name of lock taken by hal-lock
+	    (The lock is needed to prevent automounting of file systems)
+	  - Fixed crash on startup with some languages
+
+BUG FIXES
+	* Corrected name of lock taken by hal-lock (#571347)
+	  - Thanks to Alain Kalker for discovering this mistake.
+	  - Thanks to Jonas Pedersen for reporting this mistake upstream.
+	* Fixed crash on startup with Russian language (#570855)
+	  - Thanks to Dmitriy Motitskiy for small patch.
+
+TRANSLATIONS (new/updated)
+	* de(Mario Blättermann), it(Milo Casagrande)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.4.2   (2009-02-05)
+====================
+NOTES
+	The big news for this GParted release is support for ext4 file systems,
+	and the addition of an application help manual.
+
+	Key changes include:
+	  - Added support for ext4 file system
+	    - Support for ext4 is built into version 2.6.28 of the Linux kernel
+	    - e2fsprogs version 1.41.0 or higher required
+	  - Created application help manual
+	  - Updated gparted manual page
+	  - Made text beside field labels selectable (i.e., copy/paste UUID)
+	  - Added lvm2 physical volume detection
+	  - Reduced file system information disk reads to improve performance
+	  - Fixed application crash when saving details and locale not set
+	  - Enhanced copy/paste checks when MBR/EBR involved
+
+BUG FIXES
+	* Added additional category to desktop file (#568937)
+	* Created application help manual (#329584)
+	* Reworded caution message when applying operations (#564952)
+	* Recognized linux-swap(new)/(old) as linux-swap (#419515)
+	* Improved text for libparted not found error message (#565682)
+	* Added support for ext4 file system (#503112)
+	* Removed doubled space in front of fdl license link (#556114)
+	* Added lvm2 physical volume detection (small part of #160787)
+
+TRANSLATIONS (new/updated)
+	* ca(David Planella), cs(Adrian Gunis), de(Mario Blättermann),
+	  el(Evgenia Petoumenou), es(Jorge Gonzalez), fr(Claude Paroz),
+	  it(Milo Casagrande), pl(Tomasz Dominikowski),
+	  pt_BR(Fábio Nogueira, Fabrício Godoy, Leonardo Gregianin,
+	        Leonardo Ferreira Fontenelle, Djavan Fagundes),
+	  sk(Pavol Klačanský), sv(Daniel Nylander),
+	  th(Pongpichit Panna, Theppitak Karoonboonyanan)
+
+DEPENDENCIES (new/updated)
+	* e2fsprogs v1.41.0 or higher required for ext4 file system support
+
+
+====================
+0.4.1   (2008-11-29)
+====================
+NOTES
+	This release of GParted rolls back /dev/mapper/* detection.
+
+	The problem was that all /dev/mapper/* entries were added to the
+	device list including LVM partitions.  This was confusing behaviour
+	to GParted users, and in my opinion it was better to roll back
+	this change.
+
+	A work-around for /dev/mapper/* device detection is available by
+	passing the device names to gparted on the command line.
+	E.g.,
+	     gparted /dev/mapper/device-name
+
+	Thanks to François Dupoux for identifying this problem early, and
+	working towards a resolution.
+
+BUG FIXES
+	* Reopened bug - no longer sees /dev/mapper/* devices (#556114)
+
+TRANSLATIONS (new/updated)
+	* no change.
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+====================
+0.4.0   (2008-11-28)
+====================
+NOTES
+	This release of GParted includes some new features in addition to
+	bug fixes, and language translation updates.
+
+	Key changes include:
+	  - Improved read label performance with blkid cached results
+	  - Added read UUID support
+	  - Enforced FAT16/32 compliant volume labels (11 char max)
+	  - Fixed destination too small on copy and paste partition
+	  - Added status bar message updates while scanning devices
+	  - Moved Features entry from menu GParted to View
+	  - Renamed Features dialog to File System Support
+	  - Prevented paste into an existing partition
+	  - Added --disable-doc configure flag to stop building help docs
+
+BUG FIXES
+	* Enabled device passing with gnome-desktop-item-launch (#561495)
+	* Added explanation to Features dialog (#353104)
+	* Trimmed some information from Features dialog (#342682)
+	* Renamed button for improved clarity (#561350)
+	* Enabled full toolbar display for longer languages (#561068)
+	* Fixed destination too small on copy and paste (#556058)
+	* Removed warning reading mounted reiser4 file system (#380546)
+	* Enhanced to recognize /dev/mapper/* devices (#556114)
+	  Thanks to Colin Watson for the patch.
+	* Enhanced gparted_details.htm to pass XHTML validator (#525347)
+	  Thanks to Markus Elfring for the small patch.
+	* Implemented themed application icon (#350894)
+	  Thanks to Sebastian Kraft for the icons.
+	  Thanks to Michael Monreal for the small patch.
+
+TRANSLATIONS (new/updated)
+	* ca(David Planella), cs(Adrian Gunis),
+	  de(Jochen Skulj and Mario Blättermann),
+	  es(Jorge Gonzalez and Milton Galo Patricio), fi(Ilkka Tuohela),
+	  fr(Robert-André Mauchin and Claude Paroz),
+	  gl(Ignacio Casal Quinteiro), hu(Gabor Kelemen),
+	  it(Milo Casagrande and Ubuntu-it),
+	  pt_BR(Carlos Eduardo Santos, Vladimir Melo, and Djavan Fagundes),
+	  sk(Pavol Klačanský), sv(Daniel Nylander), uk(Vitovt),
+	  zh_HK(Chao-Hsiung Liao), zh_TW(Chao-Hsiung Liao)
+
+DEPENDENCIES (new/updated)
+	* blkid command required to read file system UUIDs.
+	  blkid is part of e2fsprogs.
+
+
+====================
+0.3.9   (2008-09-12)
+====================
+NOTES
+	This release of GParted includes some new features in addition to
+	bug fixes, and language translation updates.
+
+	Key changes include:
+	  - Reduced time to move or copy partitions
+	  - Added ability to create and check hfs+ file systems
+
+BUG FIXES
+	* Enhanced block size algorithm to reduce move and copy times (#546423)
+	* Fixed display overwrite problem with % complete messages (#532574)
+	* Added code hooks for future GParted Manual (#329584)
+	* Enhanced to use gksu to invoke gparted if available (#381557)
+	* Added further check for hald daemon if hal-lock is found (#543730)
+	* Removed unnecessary task of translating GFDL license (#550047)
+
+TRANSLATIONS (new/updated)
+	* ar(Djihed Afifi), cs(Adrian Guniš), es(Jorge Gonzalez),
+	  eu(Inaki Larranaga Murgoitio), fi(Ilkka Tuohela), gu(Ankit Patel),
+	  nl(Tino Meinen), pt_BR(Djavan Fagundes), sk(Pavol Klačanský),
+	  sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* hfsprogs package required to create or check hfs+ file systems.
+	* vol_id command required to read hfs and hfs+ volume labels.
+
+
+====================
+0.3.8   (2008-07-10)
+====================
+NOTES
+	This release of GParted consists of bug fixes, and language
+	translation updates.
+
+	Key changes include:
+	  - Corrected errors in "Round to cylinders" boundary math
+	  - Added "Round to cylinders" check box for copy and move/resize
+	  - Enhanced to parse devices from /proc/partitions if file exists
+	  - Fixed problem with command line devices being ignored
+	  - Removed absolute requirement for hal-lock
+
+BUG FIXES
+	* Fixed problem with no devices being detected (#363340)
+	* Reduced time for scanning all devices (#453555)
+	* Fixed problem with incorrect BIOS setting for floppy drives (351753)
+	* Fixed partition resizing that incorrectly became a move too (432525)
+	* Corrected problem where some disk space was unassignable (525137)
+	* Fixed action incorrectly recognized for move/resize (438570)
+	* Added proper plural handling for po files (315291)
+	* Changed wording of root privilege required warning (534072)
+	* Fixed three grammatical errors (#533637)
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Gunis, Lucas Lommer), es(Jorge Gonzalez),
+	  nl(Tino Meinen), pl(Wadim Dziedzic), pt_BR(Djavan Fagundes),
+	  sk(Pavol Klačanský), sv(Daniel Nylander), lt.po(Gintautas Miliauskas)
+
+DEPENDENCIES (new/updated)
+	* hal-lock absolute requirement removed.  The gparted script will
+	  search for and use hal-lock only if it is found in the path.
+
+
+====================
+0.3.7   (2008-04-29)
+====================
+NOTES
+	This GParted release consists of bug fixes, and language translation
+	updates.
+
+	Key changes include:
+	  - Fixed bug for partition sizes greater than or equal to 1 TeraByte
+	  - Created gparted manual page
+	  - Implemented hal-lock to prevent gnome automounting of partitions
+
+BUG FIXES
+	* Corrected math in partition creation/resize dialogs that prevented
+	  operations on partition sizes >= 1 TB (#524948)
+	* Implemented hal-lock to prevent partition automounting (#324220)
+	  - gparted script calls hal-lock which calls gpartedbin executable
+	  - thanks to Deji Akingunola for hal-lock idea
+	* Added manual page documentation (subset of bug #329584)
+	* Changed Set Disklabel menu to Create Partition table,
+	  improved disk erasure warnings, and removed double
+	  confirmation (#422070)
+	* Improved readability of text for translators in Create Partition
+	  Table dialog (#529063)
+	* Adjusted desktop entries to align with specifications (#518975)
+	* Updated gparted.desktop to align with Human Interface
+	  Guidelines (#440012)
+	* Moved gparted install to sbin instead of bin (#509495)
+	* Added MAINTAINERS file (#524276)
+	  - thanks to Marcel Telka for committing file to repository
+	* Enhanced to use po/LINGUAS for LINGUAS (#467459)
+	  - thanks to Christian Persch for small patch
+	* Ensured hour portion of time is always displayed (#438590)
+	* Removed text color hard coding (#413810)
+	* Aligned README file with GNU coding standards (#529625)
+
+TRANSLATIONS (new/updated)
+	* cs(Adrian Gunis), es(Jorge Gonzalez), hu(Gabor Kelemen),
+	  nl(Tino Meinen), sk(Pavol Klačanský)
+
+DEPENDENCIES (new/updated)
+	* hal-lock used by gparted script to acquire device locks
+
+
+====================
+0.3.6   (2008-03-26)
+====================
+NOTES
+	GParted now has support for partition labels (also known as
+	volume labels).  To change partition labels, use the GParted
+	menu option "Partition -> Label".
+
+	Full partition label support (read and write) is available for
+	the following file systems:
+	     ext2, ext3, fat16, fat32, jfs, ntfs, reiserfs, and xfs.
+
+	Partial support (set volume label on filesystem creation only)
+	is available for:
+	     hfs, linux-swap, and reiser4.
+
+BUG FIXES
+	* Added partition label (volume label) support (#338528)
+	* Fixed maximum path length (#481768)
+
+TRANSLATIONS (new/updated)
+	* eu(Inaki Larranaga Murgoitio), he(Mark Krapivner),
+	  hu(Gabor Kelemen), ne(Pawan Chitrakar), sk(Pavol Klačanský)
+
+	* Added two files for tranlation
+	  - src/Dialog_Partition_Label.cc
+	  - src/OperationLabelPartition.cc
+
+DEPENDENCIES (new/updated)
+	* mtools package required to read and write fat16 and fat32 labels.
+	* vol_id command required to read linux-swap labels.
+
+
+====================
+0.3.5   (2007-02-04)
+====================
+NOTES
+	This release is the first one from a new set of project
+	maintainers (Laurent de Trogoff, and Curtis Gedak).  The
+	release includes changes from the unofficial 0.3.4 release as
+	well as bug fixes, and language translations.
+
+	*Many Thanks* go to Bart Hakvoort.
+	Without Bart's work, there would be no GParted.
+
+BUG FIXES
+	* Applied debian patch 04_Win_GParted.cc.diff (#470387)
+	  - Fixed "crashes when rescanning devices after any operation"
+	  - Thanks to Denis Sirotkin for this patch.
+	* Applied debian patch 03_fdi_robustification.patch (#324220)
+	  - Installed a signal handler for cleaning up the automount disabling
+	    FDI, so that it will be cleaned up on program crashes, too.
+	  - Thanks to Martin Pitt for this improved patch.
+	* Applied debian patch 02_fix-build-failure-with-g++-4.3.patch
+	  - Fix build failures with g++-4.3.
+
+TRANSLATIONS (new/updated)
+	* ar(Djihed Afifi), ca(David Planella),
+	  eu(Inaki Larranaga Murgoitio), fi(Ilkka Tuohela),
+	  he(Yair Hershkovitz), ko(Changwoo Ryu),
+	  lt(Gintautas Miliauskas), mk(Jovan Naumovski),
+	  oc(Yannig Marchegay), pa(Amanpreet Singh Alam),
+	  pt_BR(Djavan Fagundes), ru(Yuri Myasoedov),
+	  si(Danishka Navin), sv(Daniel Nylander), sv(Daniel Nylander)
+
+DEPENDENCIES (new/updated)
+	* no change.
+
+
+================================================
+0.3.4 (unofficial) TO 0.0.1 (first test release)
+================================================
+NOTES
+	All of the GParted releases prior to gparted-0.3.5 were created
+	by Bart Hakvoort.  Bart is the original author of GParted.
+	This NEWS file was not updated during the previous releases.

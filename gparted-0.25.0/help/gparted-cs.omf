@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Curtis Gedak)</creator>
+    <creator>(Mike Fleetwood)</creator>
+    <maintainer>(Curtis Gedak)</maintainer>
+    <title>Příručka k aplikaci GParted</title>
+    <date>září 2008</date>
+    <version identifier="Příručka V0.3.9 k aplikaci GParted" date="září 2008"/>
+    <subject category="GNOME|Applications|System Tools"/>
+    <description>
+      GParted je editor diskových oddílů pro GNOME (Gnome PARTition EDitor) sloužící k vytváření, změnám a mazaní diskových oddílů. Umožňuje měnit uspořádání oddílů při zachování jejich obsahu.
+    </description>
+    <type>manual</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/local/share/gnome/help/gparted/cs/gparted.xml"/>
+    <language code="cs"/>
+    <relation seriesid="64567bbe-6003-11dd-8e86-848351b2d6c2"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Curtis Gedak"/>
+  </resource>
+</omf>

@@ -1,0 +1,1240 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gparted\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-01-02 04:45+0000\n"
+"PO-Revision-Date: 2007-03-25 23:43+0530\n"
+"Last-Translator: yangka <yanang_ka@hotmail.com>\n"
+"Language-Team: Dzongkha <pgeyleg@dit.gov.bt>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2;plural=(n!=1)\n"
+"X-Poedit-Language: Dzongkha\n"
+"X-Poedit-Country: Bhutan\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../gparted.desktop.in.h:1
+#: ../src/Win_GParted.cc:1135
+msgid "GNOME Partition Editor"
+msgstr "ཇི་ནོམ་བར་བཅད་ཞུན་དགཔ།"
+
+#. ==== GUI =========================
+#: ../gparted.desktop.in.h:2
+#: ../src/Win_GParted.cc:66
+#: ../src/Win_GParted.cc:1011
+#: ../src/Win_GParted.cc:1132
+msgid "GParted"
+msgstr "ཇི་པར་ཊེཊི།"
+
+#: ../src/Dialog_Base_Partition.cc:56
+msgid "Free Space Preceding (MiB):"
+msgstr "བར་སྟོང་སྦོམ་ཤོས་(ཨེམ་ཨའི་བི་):"
+
+#. add spinbutton_size
+#: ../src/Dialog_Base_Partition.cc:65
+msgid "New Size (MiB):"
+msgstr "ཚད་གསརཔ་(ཨེམ་ཨའི་བི་):"
+
+#. add spinbutton_after
+#: ../src/Dialog_Base_Partition.cc:72
+msgid "Free Space Following (MiB):"
+msgstr "བར་སྟོང་འོག་གི་ (ཨེམ་ཨའི་བི་):"
+
+#: ../src/Dialog_Base_Partition.cc:159
+msgid "Resize"
+msgstr "ཚད་བསྐྱར་བཟོ།"
+
+#: ../src/Dialog_Base_Partition.cc:159
+#: ../src/Win_GParted.cc:218
+msgid "Resize/Move"
+msgstr "ཚད་བསྐྱར་བཟོ་/སྤོ།"
+
+#: ../src/Dialog_Base_Partition.cc:176
+msgid "Minimum Size: %1 MiB"
+msgstr "ཉུང་མཐའི་ཚད་: %1 ཨེམ་ཨའི་བི།"
+
+#: ../src/Dialog_Base_Partition.cc:177
+msgid "Maximum Size: %1 MiB"
+msgstr "མང་མཐའི་ཚད་: %1 ཨེམ་ཨའི་བི།"
+
+#: ../src/Dialog_Disklabel.cc:25
+#: ../src/Dialog_Disklabel.cc:44
+msgid "Set Disklabel on %1"
+msgstr "%1 གུ་ལུ་ཌིཀསི་གི་ཁ་ཡིག་ གཞི་སྒྲིག་འབད།"
+
+#: ../src/Dialog_Disklabel.cc:48
+msgid "A disklabel is a piece of data stored at a well known place on the disk, that indicates where each partition begins and how many sectors it occupies."
+msgstr "ཌིཀསི་གི་ཁ་ཡིག་འདི་ ཡོངས་གྲགས་ཅན་གྱི་ས་གནས་ཌིཀསི་གུ་ གནད་སྡུད་གསོག་འཇོག་འབད་དེ་ཡོད་པའི་པིསི་ཅིག་ཨིནམ་དང་དེ་གིས་ བར་བཅད་རེ་རེ་ག་སྟེ་ལུ་འགོ་བཙུགསཔ་ཨིན་ན་དང་དུམ་ཚན་ག་དེམ་ཅིག་དབང་འོང་ག་ བརྡ་སྟོན་འབདཝ་ཨིན།"
+
+#: ../src/Dialog_Disklabel.cc:50
+msgid "You need a disklabel if you want to create partitions on this disk."
+msgstr "ཁྱོད་ཀྱིས་ཌིཀསི་འདི་གུ་བར་བཅད་གསར་བསྐྲུན་འབད་ནི་ཨིན་པ་ཅིན་ ཌིཀསི་གི་ཁ་ཡིག་དགོ"
+
+#: ../src/Dialog_Disklabel.cc:52
+msgid "By default GParted creates an msdos disklabel."
+msgstr "སྔོན་སྒྲིག་ ཇི་པར་ཊེཊི་གིས་ ཨེམ་ཨེསི་ཌི་ཨོ་ཨེསི་ ཌིཀསི་གི་ཁ་ཡིག་གསར་བསྐྲུན་འབདཝ་ཨིན།"
+
+#: ../src/Dialog_Disklabel.cc:59
+msgid "Advanced"
+msgstr "མཐོ་རིམ།"
+
+#: ../src/Dialog_Disklabel.cc:67
+msgid "Select new labeltype:"
+msgstr "ཁ་ཡིག་གི་དབྱེ་བ་གསརཔ་ སེལ་འཐུ་འབད་:"
+
+#: ../src/Dialog_Disklabel.cc:83
+msgid "WARNING: Creating a new disklabel will erase all data on %1!"
+msgstr "ཉེན་བརྡ་:ཌིཀསི་གི་ཁ་ཡིག་གསརཔ་གསར་བསྐྲུན་འབད་ནི་གིས་ %1 གི་གུ་ཡོད་པའི་གནད་སྡུད་ཆ་མཉམ་ཀྲེག་གཏང་འོང་!"
+
+#: ../src/Dialog_Disklabel.cc:89
+#: ../src/DialogFeatures.cc:36
+#: ../src/Win_GParted.cc:1730
+msgid "Create"
+msgstr "གསར་བསྐྲུན།"
+
+#: ../src/Dialog_Partition_Copy.cc:35
+msgid "Paste %1"
+msgstr "%1 སྦྱར།"
+
+#. TO TRANSLATORS: dialogtitle, looks like Information about /dev/hda3
+#: ../src/Dialog_Partition_Info.cc:31
+msgid "Information about %1"
+msgstr "%1 གི་སྐོར་ལས་ བརྡ་དོན།"
+
+#: ../src/Dialog_Partition_Info.cc:48
+msgid "Warning:"
+msgstr "ཉེན་བརྡ་:"
+
+#. filesystem
+#. filesystems to choose from
+#: ../src/Dialog_Partition_Info.cc:151
+#: ../src/Dialog_Partition_New.cc:100
+msgid "Filesystem:"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་:"
+
+#. size
+#: ../src/Dialog_Partition_Info.cc:161
+#: ../src/Win_GParted.cc:409
+msgid "Size:"
+msgstr "ཚད་:"
+
+#. used
+#: ../src/Dialog_Partition_Info.cc:177
+msgid "Used:"
+msgstr "ལག་ལེན་འཐབ་ཡོདཔ་:"
+
+#. unused
+#: ../src/Dialog_Partition_Info.cc:191
+msgid "Unused:"
+msgstr "ལག་ལེན་མ་འཐབ་ཡོདཔ་:"
+
+#: ../src/Dialog_Partition_Info.cc:208
+msgid "Flags:"
+msgstr "ཟུར་རྟགས་ཚུ་:"
+
+#. path
+#: ../src/Dialog_Partition_Info.cc:224
+#: ../src/Win_GParted.cc:417
+msgid "Path:"
+msgstr "འགྲུལ་ལམ་:"
+
+#: ../src/Dialog_Partition_Info.cc:238
+msgid "Status:"
+msgstr "གནས་ཚད་:"
+
+#: ../src/Dialog_Partition_Info.cc:245
+msgid "Busy (At least one logical partition is mounted)"
+msgstr "ཁོམ་མེད་(ཉུང་མཐའ་རང་ གཏན་ཚིགས་ཀྱི་བར་བཅད་གཅིག་སྦྱར་བརྩེགས་འབད་ནུག་)།"
+
+#: ../src/Dialog_Partition_Info.cc:247
+msgid "Active"
+msgstr "ཤུགས་ལྡན།"
+
+#: ../src/Dialog_Partition_Info.cc:249
+msgid "Mounted on %1"
+msgstr "%1 གུ་ སྦྱར་བརྩེགས་འབད་ནུག"
+
+#: ../src/Dialog_Partition_Info.cc:253
+msgid "Not busy (There are no mounted logical partitions)"
+msgstr "དལཝ་(སྦྱར་བརྩེགས་འབད་ཡོད་པའི་གཏན་ཚིགསཀྱི་བར་བཅད་མེད་)།"
+
+#: ../src/Dialog_Partition_Info.cc:255
+msgid "Not active"
+msgstr "ཤུགས་ལྡན་མ་ཡིན་པ།"
+
+#: ../src/Dialog_Partition_Info.cc:257
+msgid "Not mounted"
+msgstr "སྦྱར་བརྩེགས་མ་འབདཝ།"
+
+#. first sector
+#: ../src/Dialog_Partition_Info.cc:266
+msgid "First Sector:"
+msgstr "དུམ་ཚན་དང་པ་:"
+
+#. last sector
+#: ../src/Dialog_Partition_Info.cc:276
+msgid "Last Sector:"
+msgstr "མཇུག་གི་དུམ་ཚན་:"
+
+#. total sectors
+#: ../src/Dialog_Partition_Info.cc:286
+#: ../src/Win_GParted.cc:470
+msgid "Total Sectors:"
+msgstr "དུམ་ཚན་བསྡོམས་:"
+
+#. TO TRANSLATORS: dialogtitle
+#: ../src/Dialog_Partition_New.cc:26
+msgid "Create new Partition"
+msgstr "བར་བཅད་གསརཔ་ གསར་བསྐྲུན་འབད།"
+
+#. checkbutton..
+#: ../src/Dialog_Partition_New.cc:34
+msgid "Round to cylinders"
+msgstr "སི་ལིན་ཌརསི་ལུ་སྐོར་ཐེངས།"
+
+#. TO TRANSLATORS: used as label for a list of choices.   Create as: <optionmenu with choices>
+#: ../src/Dialog_Partition_New.cc:66
+msgid "Create as:"
+msgstr "བཟུམ་སྦེ་ གསར་བསྐྲུན་འབད་:"
+
+#. fill partitiontype menu
+#: ../src/Dialog_Partition_New.cc:71
+#: ../src/OperationCreate.cc:73
+msgid "Primary Partition"
+msgstr "གཞི་རིམ་བར་བཅད།"
+
+#: ../src/Dialog_Partition_New.cc:72
+#: ../src/OperationCreate.cc:76
+#: ../src/OperationDelete.cc:75
+msgid "Logical Partition"
+msgstr "གཏན་ཚིགས་ཅན་གྱི་བར་བཅད།"
+
+#: ../src/Dialog_Partition_New.cc:73
+#: ../src/OperationCreate.cc:79
+msgid "Extended Partition"
+msgstr "རྒྱ་བསྐྱེད་ཅན་གྱི་བར་བཅད།"
+
+#: ../src/Dialog_Partition_New.cc:160
+msgid "New Partition #%1"
+msgstr "བར་བཅད་གསརཔ་ #%1།"
+
+#: ../src/Dialog_Partition_Resize_Move.cc:73
+msgid "Resize/Move %1"
+msgstr "%1 ཚད་བསྐྱར་བཟོ་/སྤོ་བཤུད་འབད།"
+
+#: ../src/Dialog_Partition_Resize_Move.cc:78
+msgid "Resize %1"
+msgstr "%1 ཚད་བསྐྱར་བཟོ་འབད།"
+
+#: ../src/Dialog_Progress.cc:32
+#: ../src/Dialog_Progress.cc:44
+msgid "Applying pending operations"
+msgstr "བསྣར་བའི་བཀོལ་སྤྱོད་ཚུ་ འཇུག་སྤྱོད་འབད་བའི་བསྒང་།"
+
+#: ../src/Dialog_Progress.cc:46
+msgid "Applying all listed operations."
+msgstr "ཐོ་བཀོད་འབད་ཡོད་པའི་བཀོལ་སྤྱོད་ཚུ་ཆ་མཉམ་ འཇུག་སྤྱོད་འབད་བའི་བསྒང་།"
+
+#: ../src/Dialog_Progress.cc:48
+msgid "Depending on the amount and type of operations this might take a long time."
+msgstr "བཀོལ་སྤྱོད་འདི་གི་མ་ཉུང་དང་དབྱེ་བ་དང་བསྟུན་ཏེ་ དུས་ཚོད་རིངམ་འགོར་འོང་།"
+
+#: ../src/Dialog_Progress.cc:61
+msgid "Completed Operations:"
+msgstr "མཇུག་བསྡུ་ཡོད་པའི་བཀོལ་སྤྱོད་ཚུ་:"
+
+#: ../src/Dialog_Progress.cc:101
+msgid "Details"
+msgstr "རྒྱས་བཤད་ཚུ།"
+
+#: ../src/Dialog_Progress.cc:199
+msgid "%1 of %2 operations completed"
+msgstr "%2 ཀྱི་ནང་ལས་ %1 བཀོལ་སྤྱོད་ཚུ་མཇུག་བསྡུ་ཡོདཔ།"
+
+#. add save button
+#: ../src/Dialog_Progress.cc:230
+msgid "_Save Details"
+msgstr "རྒྱས་བཤད་ཚུ་ སྲུངས།(_S)"
+
+#: ../src/Dialog_Progress.cc:239
+msgid "Operation canceled"
+msgstr "བཀོལ་སྤྱོད་ ཆ་མེད་བཏང་ཡི།"
+
+#: ../src/Dialog_Progress.cc:253
+msgid "All operations succesfully completed"
+msgstr "བཀོལ་སྤྱོད་ཆ་མཉམ་ མཐར་འཁྱོལ་སྦེ་མཇུག་བསྡུ་ཡི།"
+
+#: ../src/Dialog_Progress.cc:256
+msgid "%1 warnings"
+msgstr "%1 ཉེན་བརྡ་ཚུ།"
+
+#: ../src/Dialog_Progress.cc:268
+msgid "An error occurred while applying the operations"
+msgstr "བཀོལ་སྤྱོད་ལུ་འཇུག་སྤྱོད་འབད་བའི་བསྒང་ འཛོལ་བ་ཅིག་བྱུང་ནུག"
+
+#: ../src/Dialog_Progress.cc:273
+msgid "See the details for more information."
+msgstr "བརྡ་དོན་ཁ་གསལ་གྱི་དོན་ལུ་ རྒྱས་བཤད་ཚུ་བལྟ།"
+
+#: ../src/Dialog_Progress.cc:274
+msgid "IMPORTANT"
+msgstr "གལ་ཅན།"
+
+#: ../src/Dialog_Progress.cc:275
+msgid "If you want support, you need to provide the saved details!"
+msgstr "ཁྱོད་ལུ་རྒྱབ་སྐྱོར་དགོ་པ་ཅིན་ ཁྱོད་ཀྱིས་ སྲུང་བཞག་འབད་ཡོད་པའི་རྒྱས་བཤད་ཚུ་བྱིན་དགོཔ་ཨིན།!"
+
+#: ../src/Dialog_Progress.cc:277
+msgid "See %1 for more information."
+msgstr "བརྡ་དོན་ཁ་གསལ་གྱི་དོན་ལུ་ %1 བལྟ།"
+
+#: ../src/Dialog_Progress.cc:310
+msgid "Are you sure you want to cancel the current operation?"
+msgstr "ཁྱོད་ཀྱིས་ད་ལྟོའི་བཀོལ་སྤྱོད་འདི་ འཐད་རི་འབའ་རི་ཆ་མེད་གཏང་ནི་ཨིན་ན?"
+
+#: ../src/Dialog_Progress.cc:316
+msgid "Canceling an operation may cause SEVERE filesystem damage."
+msgstr "བཀོལ་སྤྱོད་ཆ་མེད་གཏང་ནི་གིས་ ཡིག་སྣོད་རིམ་ལུགས་ལུ་གནོད་རྐྱེན་འཚབས་ཆེན་སྦེ་འབྱུང་འོང་།"
+
+#: ../src/Dialog_Progress.cc:318
+msgid "Continue Operation"
+msgstr "བཀོལ་སྤྱོད་འཕྲོ་མཐུད།"
+
+#: ../src/Dialog_Progress.cc:319
+msgid "Cancel Operation"
+msgstr "བཀོལ་སྤྱོད་ཆ་མེད་གཏང་།"
+
+#: ../src/Dialog_Progress.cc:332
+msgid "Save Details"
+msgstr "རྒྱས་བཤད་ཚུ་ སྲུངས།"
+
+#: ../src/DialogFeatures.cc:27
+msgid "Features"
+msgstr "ཁྱད་རྣམ།"
+
+#: ../src/DialogFeatures.cc:33
+#: ../src/TreeView_Detail.cc:35
+msgid "Filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས།"
+
+#: ../src/DialogFeatures.cc:34
+msgid "Detect"
+msgstr "སྐྱོན་འཛིན།"
+
+#: ../src/DialogFeatures.cc:35
+msgid "Read"
+msgstr "ལྷག"
+
+#: ../src/DialogFeatures.cc:37
+msgid "Grow"
+msgstr "ཡར་བསྐྱེད།"
+
+#: ../src/DialogFeatures.cc:38
+msgid "Shrink"
+msgstr "བསྐུམ།"
+
+#: ../src/DialogFeatures.cc:39
+msgid "Move"
+msgstr "སྤོ།"
+
+#: ../src/DialogFeatures.cc:40
+msgid "Copy"
+msgstr "འདྲ་བཤུས།"
+
+#: ../src/DialogFeatures.cc:41
+msgid "Check"
+msgstr "ཞིབ་དཔྱད།"
+
+#: ../src/DialogFeatures.cc:42
+msgid "Read Label"
+msgstr "ཁ་ཡིག་བཏགས་ནི་ལྷག"
+
+#: ../src/DialogFeatures.cc:57
+msgid "Available"
+msgstr "འཐོབ་ཆོག་ཆོག"
+
+#: ../src/DialogFeatures.cc:63
+msgid "Not Available"
+msgstr "འཐོབ་ཆོགཔ་མིན་འདུག"
+
+#: ../src/DialogManageFlags.cc:31
+#: ../src/DialogManageFlags.cc:36
+msgid "Manage flags on %1"
+msgstr "%1 གུ་ ཟུར་རྟགས་འཛིན་སྐྱོང་འཐབ།"
+
+#: ../src/GParted_Core.cc:204
+msgid "unrecognized"
+msgstr "ངོ་མ་ཤེསཔ།"
+
+#: ../src/GParted_Core.cc:259
+msgid "A partition cannot have a length of %1 sectors"
+msgstr "བར་བཅད་ལུ་ རིང་ཚད་ %1 ས་ཁོངས་ཚུ་ འོང་མི་ཚུགསཔ་ཨིན།"
+
+#: ../src/GParted_Core.cc:267
+msgid "A partition with used sectors (%1) greater than it's length (%2) is not valid"
+msgstr "ཁོ་རའི་རིང་ཚད་ (%2) ལས་སྦོམ་མི་ དེས་སྤྱོད་བཏང་ཡོད་པའི་ས་ཁོངས་ (%1) ཚུ་དང་བཅས་པའི་བར་བཅད་འདི་ ནུས་ཅན་མེན། "
+
+#: ../src/GParted_Core.cc:330
+msgid "libparted messages"
+msgstr "ལིབ་པར་ཊེཌི་འཕྲིན་དོན་ཚུ།"
+
+#. no filesystem found....
+#: ../src/GParted_Core.cc:688
+msgid "Unable to detect filesystem! Possible reasons are:"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་ སྐྱོན་འཛིན་འབད་མ་ཚུགས་! སྲིད་པའི་རྒྱུ་མཚན་འདི་ཚུ་ཡང་:"
+
+#: ../src/GParted_Core.cc:690
+msgid "The filesystem is damaged"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འདི་ མེདཔ་བཏང་ནུག"
+
+#: ../src/GParted_Core.cc:692
+msgid "The filesystem is unknown to GParted"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འདི་ ཇི་པར་ཊེཊི་གིས་མི་ཤེས།"
+
+#: ../src/GParted_Core.cc:694
+msgid "There is no filesystem available (unformatted)"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འཐོབ་མི་ཚུགས་(རྩ་སྒྲིག་མ་འབདཝ་)།"
+
+#: ../src/GParted_Core.cc:790
+msgid "Unable to find mountpoint"
+msgstr "སྦྱར་བརྩེག་འབད་ས་ འཚོལ་མ་ཐོབ།"
+
+#: ../src/GParted_Core.cc:808
+msgid "Unable to read the contents of this filesystem!"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འདི་གི་ནང་དོན་ཚུ་ ལྷག་མ་ཚུགས་!"
+
+#: ../src/GParted_Core.cc:810
+msgid "Because of this some operations may be unavailable."
+msgstr "གནད་དོན་འདི་ལུ་བརྟེན་ཏེ་ བཀོལ་སྤྱོད་ལ་ལོ་ཅིག་ཐོབ་མི་ཚུགས་འོང་།"
+
+#: ../src/GParted_Core.cc:918
+msgid "create empty partition"
+msgstr "བར་བཅད་སྟོངམ་ གསར་བསྐྲུན་འབད།"
+
+#: ../src/GParted_Core.cc:986
+#: ../src/GParted_Core.cc:2021
+msgid "path: %1"
+msgstr "འགྲུལ་ལམ་:%1།"
+
+#: ../src/GParted_Core.cc:987
+#: ../src/GParted_Core.cc:2022
+msgid "start: %1"
+msgstr "འགོ་བཙུགས་:%1།"
+
+#: ../src/GParted_Core.cc:988
+#: ../src/GParted_Core.cc:2023
+msgid "end: %1"
+msgstr "མཇུག་བསྡུ་:%1།"
+
+#: ../src/GParted_Core.cc:989
+#: ../src/GParted_Core.cc:2024
+msgid "size: %1 (%2)"
+msgstr "ཚད་:%1(%2)"
+
+#: ../src/GParted_Core.cc:1018
+#: ../src/linux_swap.cc:58
+#: ../src/xfs.cc:230
+msgid "create new %1 filesystem"
+msgstr "%1 ཡིག་སྣོད་རིམ་ལུགས་གསརཔ་ གསར་བསྐྲུན་འབད།"
+
+#: ../src/GParted_Core.cc:1051
+msgid "delete partition"
+msgstr "བར་བཅད་བཏོན་གཏང་།"
+
+#: ../src/GParted_Core.cc:1119
+msgid "moving requires old and new length to be the same"
+msgstr "གཅིག་པ་འོང་ནིའི་དོན་ལུ་ སྤོ་བཤུད་འབད་ནི་དེ་གི་ རིང་ཚད་རྙིངམ་དང་གསརཔ་དགོཔ་ཨིན།"
+
+#: ../src/GParted_Core.cc:1136
+msgid "rollback last change to the partitiontable"
+msgstr "བར་བཅད་ཐིག་ཁྲམ་འདི་ལུ་མཇུག་བསྒྱུར་བཅོས་རྒྱབ་སྒྲིལ་སྒོར།"
+
+#: ../src/GParted_Core.cc:1165
+msgid "move filesystem to the left"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འདི་ གཡོན་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/GParted_Core.cc:1167
+msgid "move filesystem to the right"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་འདི་ གཡས་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/GParted_Core.cc:1170
+msgid "move filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་སྤོ།"
+
+#: ../src/GParted_Core.cc:1172
+msgid "new and old filesystem have the same positition. skipping this operation"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་རྙིངམ་དང་གསརཔ་གཉིས་ཆ་རང་ལུ་ གནས་ས་གཅིག་པ་ཡོདཔ་ཨིན། འ་ནི་བཀོལ་སྤྱོད་འདི་གོམ་འགྱོ་དོ།"
+
+#: ../src/GParted_Core.cc:1191
+msgid "perform real move"
+msgstr "སྤོ་བཤུད་ངོ་མ་ལཱ་འགན་འགྲུབ།"
+
+#: ../src/GParted_Core.cc:1233
+msgid "using libparted"
+msgstr "ལིབ་པར་ཊེཌི་ ལག་ལེན་འཐབ་ནི།"
+
+#: ../src/GParted_Core.cc:1273
+msgid "resizing requires old and new start to be the same"
+msgstr "ཚད་བསྐྱར་བཟོ་འབད་ནི་དེ་གིས་ གཅིག་པ་འོང་ནིའི་དོན་ལུ་ འགོ་བཙུགས་གསརཔ་དང་རྙིངམ་དགོཔ་ཨིན།"
+
+#: ../src/GParted_Core.cc:1338
+msgid "resize/move partition"
+msgstr "ཚད་བཅར་བཟོ་འབད།/བར་བཅད་སྤོ།"
+
+#: ../src/GParted_Core.cc:1341
+msgid "move partition to the right"
+msgstr "བར་བཅད་འདི་ གཡས་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/GParted_Core.cc:1344
+msgid "move partition to the left"
+msgstr "བར་བཅད་འདི་ གཡོན་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/GParted_Core.cc:1347
+msgid "grow partition from %1 to %2"
+msgstr "%1 ལས་ %2 ཚུན་ བར་བཅད་ཡར་བསྐྱེད།"
+
+#: ../src/GParted_Core.cc:1350
+msgid "shrink partition from %1 to %2"
+msgstr " %1 ལས་ %2 ཚུན་ བར་བཅད་བསྐུམ།"
+
+#: ../src/GParted_Core.cc:1353
+msgid "move partition to the right and grow it from %1 to %2"
+msgstr "བར་བཅད་འདི་གཡས་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ %1 ལས་ %2 ཚུན་ཡར་བསྐྱེད་འབད།"
+
+#: ../src/GParted_Core.cc:1356
+msgid "move partition to the right and shrink it from %1 to %2"
+msgstr "བར་བཅད་འདི་གཡས་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ དེ་ %1 ལས་ %2 ཚུན་ བསྐུམ།"
+
+#: ../src/GParted_Core.cc:1359
+msgid "move partition to the left and grow it from %1 to %2"
+msgstr "བར་བཅད་འདི་གཡོན་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ དེ་ %1 ལས་ %2 ཚུན་ཡར་བསྐྱེད་འབད།"
+
+#: ../src/GParted_Core.cc:1362
+msgid "move partition to the left and shrink it from %1 to %2"
+msgstr "བར་བཅད་འདི་ གཡོན་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ %1 ལས་ %2 ཚུན་ བསྐུམ།"
+
+#: ../src/GParted_Core.cc:1377
+msgid "new and old partition have the same size and position. skipping this operation"
+msgstr "བར་བཅད་གསརཔ་དང་རྙིངམ་གཉིས་ཆ་རང་ལུ་ ཚད་དང་གནས་ས་གཅིག་པ་ཡོདཔ་ཨིན། འ་ནི་བཀོལ་སྤྱོད་གོམ་འགྱོ་དོ།"
+
+#: ../src/GParted_Core.cc:1387
+msgid "old start: %1"
+msgstr "རྙིངམ་ འགོ་བཙུགས་:%1"
+
+#: ../src/GParted_Core.cc:1388
+msgid "old end: %1"
+msgstr "རྙིངམ་ མཇུག་བསྡུ་:%1"
+
+#: ../src/GParted_Core.cc:1389
+msgid "old size: %1 (%2)"
+msgstr "ཚད་རྙིངམ་: %1(%2)"
+
+#: ../src/GParted_Core.cc:1444
+#: ../src/GParted_Core.cc:2102
+msgid "new start: %1"
+msgstr "གསརཔ་ འགོ་བཙུགས་:%1"
+
+#: ../src/GParted_Core.cc:1445
+#: ../src/GParted_Core.cc:2103
+msgid "new end: %1"
+msgstr "གསརཔ་ མཇུག་བསྡུ་:%1"
+
+#: ../src/GParted_Core.cc:1446
+#: ../src/GParted_Core.cc:2104
+msgid "new size: %1 (%2)"
+msgstr "ཚད་གསརཔ་:%1(%2)"
+
+#: ../src/GParted_Core.cc:1470
+msgid "shrink filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་ བསྐུམ།"
+
+#: ../src/GParted_Core.cc:1474
+msgid "grow filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་ ཡར་བསྐྱེད།"
+
+#: ../src/GParted_Core.cc:1477
+msgid "resize filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་ཚད་ བསྐྱར་བཟོ་འབད།"
+
+#: ../src/GParted_Core.cc:1480
+msgid "new and old filesystem have the same size. skipping this operation"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་གསརཔ་དང་རྙིངམ་གཉིས་ཆ་རང་ལུ་ ཚད་གཅིག་པ་ཡོདཔ་ཨིན། འ་ནི་བཀོལ་སྤྱོད་གོམ་འགྱོ་དོ།"
+
+#: ../src/GParted_Core.cc:1515
+msgid "grow filesystem to fill the partition"
+msgstr "བར་བཅད་བཀང་ནིའི་དོན་ལུ་ ཡིག་སྣོད་རིམ་ལུགས་ཡར་བསྐྱེད་འབད།"
+
+#: ../src/GParted_Core.cc:1520
+msgid "growing is not available for this filesystem"
+msgstr "འ་ནི་ཡིག་སྣོད་རིམ་ལུགས་འདི་ལུ་ ཡར་བསྐྱེད་འབད་ནི་འདི་འཐོབ་ཆོགཔ་མེདཔ་ཨིན།"
+
+#: ../src/GParted_Core.cc:1539
+msgid "the destination is smaller than the sourcepartition"
+msgstr "འབྱུང་ཁུངས་བར་བཅད་ལས་ འགྲོ་ཡུལ་འདི་ཆུངམ་ཨིན། "
+
+#: ../src/GParted_Core.cc:1553
+msgid "copy filesystem of %1 to %2"
+msgstr "%1 ལས་ %2 གི་ ཡིག་སྣོད་རིམ་ལུགས་འདྲ་བཤུས་བརྐྱབ།"
+
+#: ../src/GParted_Core.cc:1597
+msgid "perform readonly test"
+msgstr "ལྷག་ཙམ་བརྟག་ཞིབ་ལཱ་འགན་འགྲུབ།"
+
+#: ../src/GParted_Core.cc:1645
+msgid "using internal algorithm"
+msgstr "ནང་འཁོད་ཨཱལ་གོ་རི་དམ་ལག་ལེན་འཐབ་ནི།"
+
+#: ../src/GParted_Core.cc:1647
+msgid "read %1 sectors"
+msgstr "%1 ས་ཁོངས་ཚུ་ལྷག"
+
+#: ../src/GParted_Core.cc:1647
+msgid "copy %1 sectors"
+msgstr "%1 ས་ཁོངས་ཚུ་འདྲ་བཤུས་བརྐྱབ།"
+
+#: ../src/GParted_Core.cc:1649
+msgid "finding optimal blocksize"
+msgstr "ལེབ་དུམ་ཚད་གང་དྲག་འཚོལ་ཞིབ་འབད་ནི།"
+
+#: ../src/GParted_Core.cc:1691
+msgid "%1 seconds"
+msgstr "%1 སྐར་མ།"
+
+#: ../src/GParted_Core.cc:1703
+msgid "optimal blocksize is %1 sectors (%2)"
+msgstr "ལེབ་དུམ་ཚད་གང་དྲག་འདི་ %1 ས་ཁོངས་ཚུ་ (%2) ཨིན།"
+
+#: ../src/GParted_Core.cc:1720
+msgid "%1 sectors read"
+msgstr "%1 ས་ཁོངས་ཚུ་ལྷག"
+
+#: ../src/GParted_Core.cc:1720
+msgid "%1 sectors copied"
+msgstr "%1 ས་ཁོངས་ཚུ་འདྲ་བཤུས་རྐྱབས་ཡོདཔ།"
+
+#: ../src/GParted_Core.cc:1731
+msgid "rollback last transaction"
+msgstr "མཇུག་གི་སྤྲོད་ལེན་ལོག་བསྒྲིལ།"
+
+#: ../src/GParted_Core.cc:1758
+msgid "check filesystem on %1 for errors and (if possible) fix them"
+msgstr "འཛོལ་བའི་དོན་ལུ་ %1 གུ་ ཡིག་སྣོད་རིམ་ལུགས་ཞིབ་དཔྱད་འབད་ དེ་ལས་(འབད་ཚུགས་པ་ཅིན་)དེ་ཚུའི་དཀའ་ངལ་སེལ།"
+
+#: ../src/GParted_Core.cc:1766
+msgid "checking is not available for this filesystem"
+msgstr "འ་ནི་ཡིག་སྣོད་རིམ་ལུགས་འདི་ལུ་ ཞིབ་དཔྱད་འབད་ནི་འདི་ འཐོབ་ཆོགཔ་མིན་འདུག"
+
+#: ../src/GParted_Core.cc:1792
+msgid "set partitiontype on %1"
+msgstr " %1 གུ་ལུ་ བར་བཅད་དབྱེ་བ་གཞི་སྒྲིག་འབད།"
+
+#: ../src/GParted_Core.cc:1814
+msgid "new partitiontype: %1"
+msgstr "བར་བཅད་དབྱེ་བ་གསརཔ་: %1"
+
+#: ../src/GParted_Core.cc:1841
+msgid "%1 of %2 read (%3 remaining)"
+msgstr "%2 གི་ %1 ལྷག (ལྷག་ལུས་ %3)"
+
+#: ../src/GParted_Core.cc:1841
+msgid "%1 of %2 copied (%3 remaining)"
+msgstr "%2 གི་ %1 འདྲ་བཤུས་རྐྱབས་ཡོདཔ། (ལྷག་ལུས་ %3)"
+
+#: ../src/GParted_Core.cc:1847
+#: ../src/GParted_Core.cc:1942
+msgid "%1 of %2 read"
+msgstr "%2 གི་ %1 ལྷག "
+
+#: ../src/GParted_Core.cc:1847
+#: ../src/GParted_Core.cc:1942
+msgid "%1 of %2 copied"
+msgstr "%2 གི་ %1 འདྲ་བཤུས་རྐྱབས་ཡོདཔ།"
+
+#: ../src/GParted_Core.cc:1865
+msgid "read %1 sectors using a blocksize of %2 sectors"
+msgstr "%2 ས་ཁོངས་ཚུའི་ལེབ་དུམ་ཚད་ལག་ལེན་འཐབ་ཀྱིས་ཐོག་ལས་ %1 ས་ཁོངས་ཚུ་ལྷག"
+
+#: ../src/GParted_Core.cc:1868
+msgid "copy %1 sectors using a blocksize of %2 sectors"
+msgstr "%2 ས་ཁོངས་ཚུའི་ ལེབ་དུམ་ཚད་ལག་ལེན་འཐབ་ཀྱིས་ཐོག་ལས་ %1 ས་ཁོངས་ཚུ་འདྲ་བཤུས་བརྐྱབ།"
+
+#: ../src/GParted_Core.cc:1987
+msgid "Error while writing block at sector %1"
+msgstr "ས་ཁོངས་ %1 གུ་ལུ་ སྡེབ་ཚན་འབྲི་པའི་སྐབས་སུ་འཛོལ་བ།"
+
+#: ../src/GParted_Core.cc:1990
+msgid "Error while reading block at sector %1"
+msgstr "ས་ཁོངས་ %1 གུ་ལུ་ སྡེབ་ཚན་ལྷབ་པའི་སྐབས་སུ་ འཛོལ་བ།"
+
+#: ../src/GParted_Core.cc:2000
+msgid "calibrate %1"
+msgstr "%1 ཚད་རྟགས་བཀལ་ནི།"
+
+#: ../src/GParted_Core.cc:2047
+msgid "calculate new size and position of %1"
+msgstr " %1 གི་ ཚད་དང་གནས་ས་གསརཔ་རྩིས་སྟོནམ་ཨིན།"
+
+#: ../src/GParted_Core.cc:2051
+msgid "requested start: %1"
+msgstr "ཞུ་བ་འབད་ཡོད་པའི་ འགོ་བཙུགས་: %1"
+
+#: ../src/GParted_Core.cc:2052
+msgid "requested end: %1"
+msgstr "ཞུ་བ་འབད་ཡོད་པའི་ མཇུག་བསྡུ་: %1"
+
+#: ../src/GParted_Core.cc:2053
+msgid "requested size: %1 (%2)"
+msgstr "ཞུ་བ་འབད་ཡོད་པའི་ཚད། : %1 (%2) "
+
+#: ../src/GParted_Core.cc:2176
+msgid "updating bootsector of %1 filesystem on %2"
+msgstr "%2 གུ་ལུ་ %1 ཡིག་སྣོད་རིམ་ལུགས་ཀྱི་ བུཊི་ས་ཁོངས་དུས་མཐུནམ་བཟོ་དོ།"
+
+#: ../src/HBoxOperations.cc:45
+#: ../src/Win_GParted.cc:152
+msgid "_Undo Last Operation"
+msgstr "_ མཇུག་གི་བཀོལ་སྤྱོད་འདི་འབད་བཤོལ། "
+
+#: ../src/HBoxOperations.cc:50
+#: ../src/Win_GParted.cc:158
+msgid "_Clear All Operations"
+msgstr "_བཀོལ་སྤྱོད་ཚུ་ཆ་མཉམ་རང་བསལ།"
+
+#: ../src/HBoxOperations.cc:55
+#: ../src/Win_GParted.cc:163
+msgid "_Apply All Operations"
+msgstr "_བཀོལ་སྤྱོད་ཚུ་ཆ་མཉམ་ འཇུག་སྤྱོད་འབད།"
+
+#: ../src/OperationCopy.cc:36
+msgid "copy of %1"
+msgstr "%1 གི་འདྲ་བཤུས།"
+
+#. TO TRANSLATORS: looks like  Copy /dev/hda4 to /dev/hdd (start at 250 MiB)
+#: ../src/OperationCopy.cc:78
+msgid "Copy %1 to %2 (start at %3)"
+msgstr "%1 འདི་ %2 ལུ་འདྲ་བཤུས་རྐྱབས་(%3 ལུ་འགོ་བཙུགས་)།"
+
+#. TO TRANSLATORS: looks like  Copy /dev/hda4 to /dev/hdd1
+#: ../src/OperationCopy.cc:86
+msgid "Copy %1 to %2"
+msgstr "%1 འདི་ %2 ལུ་འདྲ་བཤུས་རྐྱབས།"
+
+#. TO TRANSLATORS: looks like  Check and repair filesystem (ext3) on /dev/hda4
+#: ../src/OperationCheck.cc:38
+msgid "Check and repair filesystem (%1) on %2"
+msgstr "%1 གུ་ %2 ཞིབ་དཔྱད་འབད་ནི་དང་ཡིག་སྣོད་ཚུའི་རིམ་ལུགས་ཉམས་བཅོས་འབད།"
+
+#. TO TRANSLATORS: looks like   Create Logical Partition #1 (ntfs, 345 MiB) on /dev/hda
+#: ../src/OperationCreate.cc:86
+msgid "Create %1 #%2 (%3, %4) on %5"
+msgstr "%5 གི་གུ་ལུ་ %1 #%2 (%3, %4) གསར་བསྐྲུན་འབད།"
+
+#. TO TRANSLATORS: looks like   Delete /dev/hda2 (ntfs, 345 MiB) from /dev/hda
+#: ../src/OperationDelete.cc:80
+msgid "Delete %1 (%2, %3) from %4"
+msgstr "%4 ནང་ལས་ %1 (%2, %3) བཏོན་གཏང་།"
+
+#. TO TRANSLATORS: looks like  Format /dev/hda4 as linux-swap
+#: ../src/OperationFormat.cc:58
+msgid "Format %1 as %2"
+msgstr "%1 འདི་ %2 འབད་རྩ་སྒྲིག་འབད།"
+
+#: ../src/OperationResizeMove.cc:75
+msgid "resize/move %1"
+msgstr "ཚད་བསྐྱར་བཟོ་/%1 སྤོ།"
+
+#: ../src/OperationResizeMove.cc:77
+msgid "new and old partition have the same size and positition. continuing anyway"
+msgstr "བར་བཅད་གསརཔ་དང་རྙིངམ་གཉིས་ཆ་རང་ལུ་ ཚད་དང་གནས་ས་གཅིག་པ་ཡོདཔ་ཨིན། ག་དེ་སྦེ་ཨིན་རུང་ འཕྲོ་མཐུད་དོ།"
+
+#: ../src/OperationResizeMove.cc:81
+msgid "Move %1 to the right"
+msgstr "%1 འདི་ གཡས་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/OperationResizeMove.cc:84
+msgid "Move %1 to the left"
+msgstr "%1 འདི་ གཡོན་ཁ་ཐུག་ལུ་སྤོ།"
+
+#: ../src/OperationResizeMove.cc:87
+msgid "Grow %1 from %2 to %3"
+msgstr "%2 ལས་ %3 ཚུན་ %1 ཡར་བསྐྱེད།"
+
+#: ../src/OperationResizeMove.cc:90
+msgid "Shrink %1 from %2 to %3"
+msgstr "%2 ལས་ %3 ཚུན་ %1 བསྐུམ།"
+
+#: ../src/OperationResizeMove.cc:93
+msgid "Move %1 to the right and grow it from %2 to %3"
+msgstr "%1 འདི་ གཡས་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ %2 ལས་ %3 ཚུན་ ཡར་བསྐྱེད་འབད།"
+
+#: ../src/OperationResizeMove.cc:96
+msgid "Move %1 to the right and shrink it from %2 to %3"
+msgstr "%1 འདི་ གཡས་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ དེ་ %2 ལས་ %3 ཚུན་ བསྐུམ།"
+
+#: ../src/OperationResizeMove.cc:99
+msgid "Move %1 to the left and grow it from %2 to %3"
+msgstr "%1 གཡོན་ཁ་ཐུག་ལུ་སྤོ་ཞིནམ་ལས་ དེ་ %2 ལས་ %3 ཚུན་ཡར་བསྐྱེད་འབད།"
+
+#: ../src/OperationResizeMove.cc:102
+msgid "Move %1 to the left and shrink it from %2 to %3"
+msgstr "%1འདི་ གཡོན་ཁ་ཐུག་ལས་སྤོ་ཞིནམ་ལས་ དེ་  %2 ལས་ %3 ཚུན་ བསྐུམ།"
+
+#. append columns
+#: ../src/TreeView_Detail.cc:34
+msgid "Partition"
+msgstr "བར་བཅད།"
+
+#: ../src/TreeView_Detail.cc:36
+msgid "Mountpoint"
+msgstr "སྦྱར་བརྩེག་འབད་ས།"
+
+#: ../src/TreeView_Detail.cc:37
+msgid "Label"
+msgstr "ཁ་ཡིག་བཏགས་ནི།"
+
+#: ../src/TreeView_Detail.cc:38
+msgid "Size"
+msgstr "ཚད།"
+
+#: ../src/TreeView_Detail.cc:39
+msgid "Used"
+msgstr "ལག་ལེན་འཐབ་ཡོདཔ།"
+
+#: ../src/TreeView_Detail.cc:40
+msgid "Unused"
+msgstr "ལག་ལེན་མ་འཐབ་ཡོདཔ།"
+
+#: ../src/TreeView_Detail.cc:41
+msgid "Flags"
+msgstr "ཟུར་རྟགས་ཚུ།"
+
+#: ../src/Utils.cc:110
+msgid "unallocated"
+msgstr "སྤྲོད་མ་བཞགཔ།"
+
+#: ../src/Utils.cc:111
+msgid "unknown"
+msgstr "མ་ཤེསཔ།"
+
+#: ../src/Utils.cc:112
+msgid "unformatted"
+msgstr "རྩ་སྒྲིག་མ་འབད་ཡོདཔ།"
+
+#: ../src/Utils.cc:127
+msgid "used"
+msgstr "ལག་ལེན་འཐབ་ཡོདཔ།"
+
+#: ../src/Utils.cc:128
+msgid "unused"
+msgstr "ལག་ལེན་མ་འཐབ་ཡོདཔ།"
+
+#: ../src/Utils.cc:143
+msgid "%1 B"
+msgstr "%1 བི།"
+
+#: ../src/Utils.cc:148
+msgid "%1 KiB"
+msgstr "%1 ཀེ་ཨའི་བི།"
+
+#: ../src/Utils.cc:153
+msgid "%1 MiB"
+msgstr "%1 ཨེམ་ཨའི་བི།"
+
+#: ../src/Utils.cc:158
+msgid "%1 GiB"
+msgstr " %1ཇི་ཨའི་བི།"
+
+#: ../src/Utils.cc:163
+msgid "%1 TiB"
+msgstr "%1 ཊི་ཨའི་བི།"
+
+#: ../src/Win_GParted.cc:133
+msgid "_Refresh Devices"
+msgstr "_ཐབས་འཕྲུལ་ཚུ་ཡང་སེལ་འབད།"
+
+#: ../src/Win_GParted.cc:139
+msgid "_Devices"
+msgstr "_ཐབས་འཕྲུལ་ཚུ།"
+
+#: ../src/Win_GParted.cc:143
+msgid "_Show Features"
+msgstr "_ཁྱད་རྣམ་ཚུ་སྟོན།"
+
+#: ../src/Win_GParted.cc:147
+msgid "_GParted"
+msgstr "ཇི་པར་ཊེཊི།(_G)"
+
+#: ../src/Win_GParted.cc:166
+msgid "_Edit"
+msgstr "ཞུན་དག(_E)"
+
+#: ../src/Win_GParted.cc:171
+msgid "Device _Information"
+msgstr "ཐབས་འཕྲུལ་_བརྡ་དོན།"
+
+#: ../src/Win_GParted.cc:173
+msgid "Pending _Operations"
+msgstr "བཀོལ་སྤྱོད་ཚུ་_བསྣར།"
+
+#: ../src/Win_GParted.cc:174
+msgid "_View"
+msgstr "མཐོང་སྣང་།(_V)"
+
+#: ../src/Win_GParted.cc:178
+msgid "_Set Disklabel"
+msgstr "_ཌིཀསི་ཁ་ཡིག་བཏགས་ནི་གཞི་སྒྲིག་འབད།"
+
+#: ../src/Win_GParted.cc:180
+msgid "_Device"
+msgstr "ཐབས་འཕྲུལ།(_D)"
+
+#: ../src/Win_GParted.cc:184
+msgid "_Partition"
+msgstr "བར་བཅད།(_P)"
+
+#: ../src/Win_GParted.cc:193
+msgid "_Help"
+msgstr "གྲོགས་རམ།(_H)"
+
+#: ../src/Win_GParted.cc:207
+msgid "Create a new partition in the selected unallocated space"
+msgstr "སེལ་འཐུ་འབད་ཡོད་པའི་སྤྲོད་མ་བཞག་པའི་བར་སྟོང་ནང་ལུ་ བར་བཅད་གསརཔ་ཅིག་གསར་བསྐྲུན་འབད།"
+
+#: ../src/Win_GParted.cc:212
+msgid "Delete the selected partition"
+msgstr "སེལ་འཐུ་འབད་ཡོད་པའི་བར་བཅད་ བཏོན་གཏང་།"
+
+#: ../src/Win_GParted.cc:222
+msgid "Resize/Move the selected partition"
+msgstr "སེལ་འཐུ་འབད་ཡོད་པའི་བར་བཅད་ ཚད་བསྐྱར་བཟོ་/སྤོ་བཤུད་འབད།"
+
+#: ../src/Win_GParted.cc:231
+msgid "Copy the selected partition to the clipboard"
+msgstr "སེལ་འཐུ་འབད་ཡོད་པའི་བར་བཅད་འདི་ འཛིན་པང་ལུ་ འདྲ་བཤུས་རྐྱབས།"
+
+#: ../src/Win_GParted.cc:236
+msgid "Paste the partition from the clipboard"
+msgstr "འཛིན་པང་ནང་ལས་བར་བཅད་ སྦྱར།"
+
+#: ../src/Win_GParted.cc:246
+msgid "Undo Last Operation"
+msgstr "མཇུག་གི་བཀོལ་སྤྱོད་འདི་ འབད་བཤོལ།"
+
+#: ../src/Win_GParted.cc:253
+msgid "Apply All Operations"
+msgstr "བཀོལ་སྤྱོད་ཚུ་ཆ་མཉམ་ འཇུག་སྤྱོད་འབད།"
+
+#: ../src/Win_GParted.cc:288
+msgid "_Resize/Move"
+msgstr "ཚད་བསྐྱར་བཟོ་/སྤོ།(_R)"
+
+#: ../src/Win_GParted.cc:312
+msgid "_Format to"
+msgstr "ལུ་ རྩ་སྒྲིག(_F)"
+
+#: ../src/Win_GParted.cc:321
+msgid "Unmount"
+msgstr "བརྩེགས་བཤོལ།"
+
+#: ../src/Win_GParted.cc:327
+msgid "_Mount on"
+msgstr "_སྦྱར་བརྩེགས་ཨཱོན།"
+
+#: ../src/Win_GParted.cc:334
+msgid "M_anage Flags"
+msgstr "ཟུར་རྟགས་ཚུ་ _འཛིན་སྐྱོང་འཐབ།"
+
+#: ../src/Win_GParted.cc:339
+msgid "C_heck"
+msgstr "ཞིབ་དཔྱད།(_h)"
+
+#: ../src/Win_GParted.cc:393
+msgid "Device Information"
+msgstr "ཐབས་འཕྲུལ་བརྡ་དོན།"
+
+#. model
+#: ../src/Win_GParted.cc:401
+msgid "Model:"
+msgstr "དཔེ་:"
+
+#. disktype
+#: ../src/Win_GParted.cc:438
+msgid "DiskLabelType:"
+msgstr "ཌིཀསི་ཁ་ཡིག་གི་དབྱེ་བ་:"
+
+#. heads
+#: ../src/Win_GParted.cc:446
+msgid "Heads:"
+msgstr "མགོ་:"
+
+#. sectors/track
+#: ../src/Win_GParted.cc:454
+msgid "Sectors/Track:"
+msgstr "དུམ་ཚན་/གླུ་རིམ་:"
+
+#. cylinders
+#: ../src/Win_GParted.cc:462
+msgid "Cylinders:"
+msgstr "སི་ལིན་ཌརསི་:"
+
+#: ../src/Win_GParted.cc:637
+msgid "Could not add this operation to the list."
+msgstr "ཐོ་ཡིག་ནང་ འ་ནི་བཀོལ་སྤྱོད་འདི་ཁ་སྐོང་བརྐྱབ་མི་ཚུགས་པས།"
+
+#: ../src/Win_GParted.cc:663
+msgid "%1 operations pending"
+msgstr "%1 བཀོལ་སྤྱོད་ཚུ་བསྣར་བའི་བསྒང་།"
+
+#: ../src/Win_GParted.cc:665
+msgid "1 operation pending"
+msgstr "༡ བཀོལ་སྤྱོད་བསྣར་བའི་བསྒང་།"
+
+#: ../src/Win_GParted.cc:713
+msgid "Quit GParted?"
+msgstr "ཇི་པར་ཊེཊི་ སྤང་ག?"
+
+#: ../src/Win_GParted.cc:720
+msgid "%1 operations are currently pending."
+msgstr "%1 བཀོལ་སྤྱོད་ཚུ་ད་ལྟོ་བསྣར་དོ།"
+
+#: ../src/Win_GParted.cc:723
+msgid "1 operation is currently pending."
+msgstr "1 བཀོལ་སྤྱོད་ ད་ལྟོ་བསྣར་དོ།"
+
+#: ../src/Win_GParted.cc:742
+msgid "_Unmount"
+msgstr "_བརྩེགས་བཤོལ།"
+
+#: ../src/Win_GParted.cc:767
+msgid "_Swapoff"
+msgstr "_བརྗེ་སོར་ ཨོཕ།"
+
+#: ../src/Win_GParted.cc:773
+msgid "_Swapon"
+msgstr "_ བརྗེ་སོར་ཨཱོན།"
+
+#: ../src/Win_GParted.cc:921
+msgid "%1 - GParted"
+msgstr "%1 -ཇི་པར་ཊེཊི།"
+
+#: ../src/Win_GParted.cc:967
+msgid "Scanning all devices..."
+msgstr "ཐབས་འཕྲུལ་ཚུ་ཆ་མཉམ་ ཞིབ་ལྟ་འབད་དོ་་་་"
+
+#: ../src/Win_GParted.cc:983
+msgid "The kernel is unable to re-read the partitiontables on the following devices:"
+msgstr "ཀར་ནེལ་འདི་གིས་ བར་བཅད་ཐིག་ཁྲམ་ཚུ་ འོག་གི་ཐབས་འཕྲུལ་གུ་ལུ་ལོག་ལྷག་མ་ཚུགས་:"
+
+#: ../src/Win_GParted.cc:990
+msgid "Because of this you will only have limited access to these devices. Unmount all mounted partitions on a device to get full access."
+msgstr "ཐབས་འཕྲུལ་ཚུ་ལུ་ འདི་ལས་བརྟེན་ཏེ་ཁྱོད་ལུ་འཛུལ་སྤྱོད་ཙམ་ཅིག་ལས་མེད། ཐབས་འཕྲུལ་གུ་ལུ་འཛུལ་སྤྱོད་ཆ་ཚང་འཐོབ་ནི་ལུ་ བརྩེག་ཅན་གྱི་བར་བཅད་ཆ་མཉམ་ བརྩེག་བཤོལ།"
+
+#: ../src/Win_GParted.cc:1034
+msgid "No devices detected"
+msgstr "ཐབས་འཕྲུལ་ཚུ་ སྐྱོན་འཛིན་མ་འབད།"
+
+#: ../src/Win_GParted.cc:1113
+msgid "Sorry, not yet implemented."
+msgstr "དགོངསམ་མ་ཁྲེལ་ ད་ཚུན་བསྟར་བཅོས་མ་འབད།"
+
+#: ../src/Win_GParted.cc:1119
+msgid "Please visit http://gparted.sf.net for more information and support."
+msgstr "བརྡ་དོན་ཁ་གསལ་དང་རྒྱབ་སྐྱོརགྱི་དོན་ལུ་ http://gparted.sf.net ནང་ལུ་ བལྟ་སྤྱོད་འབད་གནང་།"
+
+#. TO TRANSLATORS: your name(s) here please, if there are more translators put newlines (\n) between the names.
+#. It's a good idea to provide the url of your translationteam as well. Thanks!
+#: ../src/Win_GParted.cc:1150
+msgid "translator-credits"
+msgstr "སྐད་སྒྱུར་པ་-ངོ་བསྟོད།"
+
+#: ../src/Win_GParted.cc:1192
+msgid "It is not possible to create more than %1 primary partitions"
+msgstr "%1 གཞི་རིམ་བར་བཅད་ལས་ལྷག་སྟེ་ གསར་བསྐྲུན་འབད་མི་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1200
+msgid "If you want more partitions you should first create an extended partition. Such a partition can contain other partitions. Because an extended partition is also a primary partition it might be necessary to remove a primary partition first."
+msgstr "ཁྱོད་ཀྱིས་བར་བཅད་ཧེང་བཀལ་དགོ་པ་ཅིན་ དང་པ་རང་རྒྱ་བསྐྱེད་ཅན་གྱི་བར་བཅད་ གསར་བསྐྲུན་འབད་དགོ དེ་བཟུམ་མའི་བར་བཅད་འདི་ནང་ བར་བཅད་གཞན་ཚུ་གནས་འོང་། ག་ཅི་འབད་ཟེར་བ་ཅིན་ རྒྱ་བསྐྱེད་ཅན་གྱི་བར་བཅད་འདི་ཡང་གཞི་རིམ་བར་བཅད་ཨིནམ་ལས་ དང་པ་རང་གཞི་རིམ་བར་བཅད་འདི་རྩ་བསྐྲད་གཏང་དགོཔ་འོང་།"
+
+#: ../src/Win_GParted.cc:1386
+msgid "Unable to delete %1!"
+msgstr "%1 བཏོན་གཏང་མ་ཚུགས་!"
+
+#: ../src/Win_GParted.cc:1393
+msgid "Please unmount any logical partitions having a number higher than %1"
+msgstr "%༡1ལས་མཐོ་མིའི་ཨང་གྲངས་དང་ལྡན་པའི་གཏན་ཚིག་བར་བཅད་གང་རུང་ཅིག་ བརྩེག་ནི་བཤོལ་གནང་།"
+
+#: ../src/Win_GParted.cc:1404
+msgid "Are you sure you want to delete %1?"
+msgstr "ཁྱོད་ཀྱིས་འཐད་རི་འབའ་རི་ %1 བཏོན་གཏང་ནི་ཨིན་ན?"
+
+#: ../src/Win_GParted.cc:1411
+msgid "After deletion this partition is no longer available for copying."
+msgstr "བར་བཅད་འདི་བཏོན་གཏང་པའི་ཤུལ་ལས་ ད་ལས་ཕར་འདྲ་བཤུས་བརྐྱབ་ནིའི་དོན་ལུ་ ཐོབ་མི་ཚུགས།"
+
+#. TO TRANSLATORS: dialogtitle, looks like   Delete /dev/hda2 (ntfs, 2345 MiB)
+#: ../src/Win_GParted.cc:1414
+msgid "Delete %1 (%2, %3)"
+msgstr "%1 (%2 %3) བཏོན་གཏང་།"
+
+#: ../src/Win_GParted.cc:1480
+msgid "Cannot format this filesystem to %1."
+msgstr "%1 ལུ་ ཡིག་སྣོད་རིམ་ལུགས་འདི་ རྩ་སྒྲིག་འབད་མི་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1489
+msgid "A %1 filesystem requires a partition of at least %2."
+msgstr "%1 ཡིག་སྣོད་རིམ་ལུགས་འདི་ལུ་ བར་བཅད་ཉུང་མཐའ་ %2 དགོས་མཁོ་ཡོདཔ་ཨིན།"
+
+#: ../src/Win_GParted.cc:1494
+msgid "A partition with a %1 filesystem has a maximum size of %2."
+msgstr "%1 ཡིག་སྣོད་རིམ་ལུགས་དང་ལྡན་པའི་བར་བཅད་འདི་ལུ་ མང་མཐའི་ཚད་ %2 ཡོད།"
+
+#: ../src/Win_GParted.cc:1579
+msgid "The partition could not be unmounted from the following mountpoints:"
+msgstr "འོག་གི་སྦྱར་བརྩེག་འབད་སའི་ནང་ལས་ བར་བཅད་འདི་སྦྱར་བརྩེག་ འབད་བཤོལ་མ་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1581
+msgid "Most likely other partitions are also mounted on these mountpoints. You are advised to unmount them manually."
+msgstr "སྦྱར་བརྩེག་འབད་སའི་གུ་ བར་བཅད་གཞན་མི་ཚུ་ཡང་སྦྱར་བརྩེག་འབད་ཡོདཔ་བཟུམ་ཅིག་འདུག ཁྱོད་ཀྱིས་དེ་ཚུ་ལག་ཐོག་ལས་སྦྱར་བརྩེག་འབད་བཤོལ་ཟེར་ སླབ་ནི་ཨིན།"
+
+#: ../src/Win_GParted.cc:1631
+msgid "Deactivating swap on %1"
+msgstr "%1 གུ་ལུ་ སུ་ཝེབ་ ཤུགས་མེད་བཟོ་དོ།"
+
+#: ../src/Win_GParted.cc:1631
+msgid "Activating swap on %1"
+msgstr "%1 གུ་ལུ་ སུ་ཝེབ་ ཤུགས་ལྡན་བཟོ་དོ།"
+
+#: ../src/Win_GParted.cc:1638
+msgid "Could not deactivate swap"
+msgstr "སུ་ཝེབ་ ཤུགས་མེད་བཟོ་མ་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1638
+msgid "Could not activate swap"
+msgstr "སུ་ཝེབ་ ཤུགས་ལྡན་བཟོ་མ་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1654
+msgid "Unmounting %1"
+msgstr "%1 སྦྱར་བརྩེག་འབད་བཤོལ་དོ།"
+
+#: ../src/Win_GParted.cc:1659
+msgid "Could not unmount %1"
+msgstr "%1 སྦྱར་བརྩེག་འབད་བཤོལ་མ་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1688
+msgid "mounting %1 on %2"
+msgstr "%1 འདི་ %2 གུ་ལུ་ སྦྱར་བརྩེག་འབད་དོ།"
+
+#: ../src/Win_GParted.cc:1695
+msgid "Could not mount %1 on %2"
+msgstr "%1 འདི་ %2 གུ་ལུ་ སྦྱར་བརྩེག་འབད་མ་ཚུགས།"
+
+#: ../src/Win_GParted.cc:1719
+msgid "Are you sure you want to create a %1 disklabel on %2?"
+msgstr "ཁྱོད་ཀྱིས་འཐད་རི་འབའ་རི་%1 ཌིཀསི་ཁ་ཡིག་ཅིག་ %2 གུ་ལུ་ གསར་བསྐྲུན་འབད་ནི་ཨིན་ན?"
+
+#: ../src/Win_GParted.cc:1727
+msgid "This operation will destroy all data on %1!"
+msgstr "བཀོལ་སྤྱོད་འདི་གིས་ %1 གུ་ལུ་ གནད་སྡུད་ཆ་མཉམ་རྩ་མེད་གཏང་འོང་!"
+
+#: ../src/Win_GParted.cc:1736
+msgid "Error while setting new disklabel"
+msgstr "ཌིཀསི་ཁ་ཡིག་གསརཔ་ གཞི་སྒྲིག་འབད་བའི་སྐབས་ལུ་ འཛོལ་བ།"
+
+#: ../src/Win_GParted.cc:1820
+msgid "Are you sure you want to apply the pending operations?"
+msgstr "ཁྱོད་ཀྱིས་འཐད་རི་འབའ་རི་ བསྣར་བའི་བཀོལ་སྤྱོད་ཚུ་ འཇུག་སྤྱོད་འབད་ནི་ཨིན་ན?"
+
+#: ../src/Win_GParted.cc:1825
+msgid "It is recommended to backup valuable data before proceeding."
+msgstr "རྩ་ཆེ་བའི་གནད་སྡུད་འདི་བྱ་རིམ་གྱི་ཧེ་མ་ལས་ རྒྱབ་ཐག་བཟོ་དགོ་པའི་འོས་སྦྱོར་འབད་ཡོདཔ།"
+
+#: ../src/Win_GParted.cc:1826
+msgid "Apply operations to harddisk"
+msgstr "བཀོལ་སྤྱོད་ཚུ་ ཧརཌི་ཌིཀསི་ལུ་འཇུག་སྤྱོད་འབད།"
+
+#. create mountpoint...
+#: ../src/jfs.cc:146
+#: ../src/xfs.cc:147
+#: ../src/xfs.cc:238
+#: ../src/xfs.cc:245
+msgid "create temporary mountpoint (%1)"
+msgstr "གནས་སྐབས་ཀྱི་སྦྱར་བརྩེག་འབད་ས་(%1) གསར་བསྐྲུན་འབད།"
+
+#: ../src/jfs.cc:153
+#: ../src/xfs.cc:154
+#: ../src/xfs.cc:252
+#: ../src/xfs.cc:261
+msgid "mount %1 on %2"
+msgstr "%1 འདི་ %2 གུ་ སྦྱར་བརྩེག་འབད།"
+
+#: ../src/jfs.cc:162
+msgid "remount %1 on %2 with the 'resize' flag enabled"
+msgstr "'ཚད་བསྐྱར་བཟོ་' ཟུར་རྟགས་ལྕོགས་ཅན་བཟོ་ཡོད་པའི་ཐོག་ལས་  %1 འདི་ %2 གུ་ལོག་སྟེ་སྦྱར་བརྩེག་འབད།"
+
+#: ../src/jfs.cc:180
+#: ../src/xfs.cc:176
+#: ../src/xfs.cc:285
+#: ../src/xfs.cc:306
+msgid "unmount %1"
+msgstr "%1 སྦྱར་བརྩེག་བཤོལ།"
+
+#: ../src/jfs.cc:200
+#: ../src/xfs.cc:196
+#: ../src/xfs.cc:326
+#: ../src/xfs.cc:349
+msgid "remove temporary mountpoint (%1)"
+msgstr "གནས་སྐབས་ཀྱི་སྦྱར་བརྩེག་འབད་ས་(%1) རྩ་བསྐྲད་གཏང་།"
+
+#: ../src/main.cc:38
+msgid "Root privileges are required for running GParted"
+msgstr "ཇི་པར་ཊེཊི་གཡོག་བཀོལ་ནིའི་དོན་ལུ་ རྩ་བའི་ཁེ་དབང་ཚུ་དགོས་མཁོ་ཡོདཔ་ཨིན།"
+
+#: ../src/main.cc:43
+msgid "Since GParted can be a weapon of mass destruction only root may run it."
+msgstr "ཇི་པར་ཊེཊི་འདི་གནོད་རྐྱེན་སྦོམ་རྐྱབ་པའི་གོ་མཚོན་ཨིནམ་སྲིདཔ་ལས་བརྟེན་ཏེ་ རྩ་བ་འདི་གིས་རྐྱངམ་ཅིག་ གཡོག་བཀོལ་བཏུབ་འོང་།"
+
+#. simulation..
+#: ../src/ntfs.cc:120
+msgid "run simulation"
+msgstr "མཚུངས་བཟོ་ གཡོག་བཀོལ།"
+
+#. real resize
+#: ../src/ntfs.cc:127
+msgid "real resize"
+msgstr "ཚད་བསྐྱར་བཟོ་འབད་ནི་ངོ་མ།"
+
+#. grow the mounted filesystem..
+#: ../src/xfs.cc:162
+msgid "grow mounted filesystem"
+msgstr "བརྩེག་ཅན་གྱི་ཡིག་སྣོད་རིམ་ལུགས་ ཡར་བསྐྱེད་འབད།"
+
+#. copy filesystem..
+#: ../src/xfs.cc:269
+msgid "copy filesystem"
+msgstr "ཡིག་སྣོད་རིམ་ལུགས་ འདྲ་བཤུས་རྐྱབས།"
+
+#~ msgid "Current Operation:"
+#~ msgstr "ད་ལྟོའི་བཀོལ་སྤྱོད་:"
+#~ msgid "The following operation could not be applied to disk:"
+#~ msgstr "འོག་གི་བཀོལ་སྤྱོད་འདི་ཌིཀསི་ལུ་ འཇུག་སྤྱོད་འབད་མ་ཚུགས།"
+#~ msgid "Did you install the correct plugin for this filesystem?"
+#~ msgstr "ཁྱོད་ཀྱིས་ ཡིག་སྣོད་རིམ་ལུགས་འདི་གི་དོན་ལུ་ངེས་ལྡན་པ་ལག་ཡིན་ གཞི་བཙུགས་འབད་ཡི་ག?"
+#~ msgid "resize partition and filesystem using libparted"
+#~ msgstr "ལའིབ་པར་ཊེཊི་ལག་ལེན་གྱི་ཐོག་ལས་ བར་བཅད་དང་ཡིག་སྣོད་རིམ་ལུགས་ཀྱི་ཚད་བསྐྱར་བཟོ་འབད།"
+#~ msgid "Move %1 forward by %2"
+#~ msgstr "%2 ཀྱིས་ %1 གདོང་ཁར་སྤོ།"
+#~ msgid "Move %1 backward by %2"
+#~ msgstr "%2 ཀྱིས་ %1 རྒྱབ་ཁར་སྤོ།"
+#~ msgid "and Resize %1 from %2 to %3"
+#~ msgstr " དེ་ལས་ %2 ནང་ལས་ %1 འདི་ %3 ལུ་ཚད་བསྐྱར་བཟོ་འབད།"
+#~ msgid "Operations"
+#~ msgstr "བཀོལ་སྤྱོད་ཚུ།"
+#~ msgid "Hide operationslist"
+#~ msgstr "བཀོལ་སྤྱོད་ཐོ་ཡིག་ སྦ་བཞག"
+
