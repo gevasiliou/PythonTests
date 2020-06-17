@@ -131,3 +131,7 @@ case $answer in
 esac
 getactive #After finishing the set up, read and display the values from xrandr , as a kind of gui verification.
 exit
+#xrandr --output HDMI-1 --off --output HDMI-2 --off --output eDP-1 --mode 1366x768 --scale 2x2 
+#This will adjust the laptop screen to 2732x1536. 
+#xrandr --output HDMI-1 --off --output HDMI-2 --off --output eDP-1 --mode 1366x768 --scale 1.4x1.4 
+#This will adjust the laptop screen to 1920x1080, like VGA/HDMI. Usefull to restore lost windows when hdmi is disconnected 
