@@ -15,12 +15,14 @@ import base92
 
 if len(sys.argv) > 1:
     #print sys.argv[1]
+    if sys.argv[1]=="--help":
+        print('This script can be used only with pipe. echo "hello" |base92gv.py or echo "hello" |base92gv.py --decode', end="\n")
     if sys.argv[1]=="--decode": #this particulary checks arg1.Raises an error if no argv[1] exists.
         for line in sys.stdin:
             #print line
             d=base92.decode(line)
             print(d, end="") #end of line="" instead of new line. Decode of base92.py can not handle \n
-    exit 
+    exit() 
 
 for line in sys.stdin:
     e=base92.encode(line)
