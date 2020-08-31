@@ -104,7 +104,7 @@ function asciifrom {
 #Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
 #MD5, SHA-1 , SHA-256, etc : https://cryptii.com/pipes/md5-hash
 #substitution cipher: http://practicalcryptography.com/ciphers/simple-substitution-cipher/
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85 / base58 / base26-1 [start from 1] / base26-0 [start from 0]"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / base92 / rot 1 to 25 / rot47 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85 / base58 / base26-1 [start from 1] / base26-0 [start from 0]"
 [[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
 #asciifrom bin returns the ascii letters corresponding to the binary input.
 #actually binary number is converted to hex number and hex number is converted to corresponding ascii letter 
@@ -130,6 +130,7 @@ function asciifrom {
 
 [[ $1 == "ascii85" ]] && sed 's/^/\<\~/g; s/$/\~\>/g' |ascii85 -d   #apt install ruby-ascii85. Runs with just ascii85. Sed adds <~ to the start, ~> in the end
 [[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
+[[ $1 == "base92" ]] && base92gv.py --decode   #make sure that base92gv.py exists in /usr/bin or in any other directory in the $PATH
 #[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "base26-1" ]] && sed 's/10/j/g; s/11/k/g; s/12/l/g; s/13/m/g; s/14/n/g; s/15/o/g; s/16/p/g; s/17/q/g; s/18/r/g; s/19/s/g; s/20/t/g; s/21/u/g; s/22/v/g; s/23/w/g; s/24/x/g; s/25/y/g; s/26/z/g;' | sed 's/1/a/g; s/2/b/g; s/3/c/g; s/4/d/g; s/5/e/g; s/6/f/g; s/7/g/g; s/8/h/g; s/9/i/g'
 [[ $1 == "base26-0" ]] && sed 's/9/j/g; s/10/k/g; s/11/l/g; s/12/m/g; s/13/n/g; s/14/o/g; s/15/p/g; s/16/q/g; s/17/r/g; s/18/s/g; s/19/t/g; s/20/u/g; s/21/v/g; s/22/w/g; s/23/x/g; s/24/y/g; s/25/z/g;' | sed 's/0/a/g; s/1/b/g; s/2/c/g; s/3/d/g; s/4/e/g; s/5/f/g; s/6/g/g; s/7/h/g; s/8/i/g'
@@ -229,7 +230,7 @@ esac
 }
 
 function asciito {
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58 / base26-1"
+[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / base92 /rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58 / base26-1"
 [[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
 [[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
 
@@ -245,6 +246,7 @@ function asciito {
 [[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
 [[ $1 == "base58" ]] && base58  && echo
 [[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
+[[ $1 == "base92" ]] && base92gv.py   #make sure that base92gv.py exists in /usr/bin or in any other directory in the $PATH
 [[ $1 == "base26-1" ]] && sed 's/./& /g' |sed -r 's/j|J/10/g; s/k|K/11/g; s/l|L/12/g; s/m|M/13/g; s/n|N/14/g; s/o|O/15/g; s/p|P/16/g; s/q|Q/17/g; s/r|R/18/g; s/s|S/19/g; s/t|T/20/g; s/u|U/21/g; s/v|V/22/g; s/w|W/23/g; s/x|X/24/g; s/y|Y/25/g; s/z|Z/26/g;' | sed -r 's/a|A/1/g; s/b|B/2/g; s/c|C/3/g; s/d|D/4/g; s/e|E/5/g; s/f|F/6/g; s/g|G/7/g; s/h|H/8/g; s/i|I/9/g'
 [[ $1 == "base26-0" ]] && sed 's/./& /g' |sed -r 's/j|J/9/g; s/k|K/10/g; s/l|L/11/g; s/m|M/12/g; s/n|N/13/g; s/o|O/14/g; s/p|P/15/g; s/q|Q/16/g; s/r|R/17/g; s/s|S/18/g; s/t|T/19/g; s/u|U/20/g; s/v|V/21/g; s/w|W/22/g; s/x|X/23/g; s/y|Y/24/g; s/z|Z/25/g;' | sed -r 's/a|A/0/g; s/b|B/1/g; s/c|C/2/g; s/d|D/3/g; s/e|E/4/g; s/f|F/5/g; s/g|G/6/g; s/h|H/7/g; s/i|I/8/g'
 ##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH

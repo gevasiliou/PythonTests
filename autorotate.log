@@ -21,3 +21,76 @@ environment: line 1:  3178 Terminated              monitor-sensor >> sensor.log 
 Tue Jan 30 03:11:45 EET 2018 xrandr rotate normal
 Jan 30 03:11:45 Setting up watches.
 Jan 30 03:11:45 Watches established.
+Mon 17 Aug 2020 12:44:20 AM EEST Main Programm Starting
+Mon 17 Aug 2020 12:44:32 AM EEST Unlock Selected
+Mon 17 Aug 2020 12:44:32 AM EEST notrunning - starting now
+Mon 17 Aug 2020 12:44:32 AM EEST Start of Function gv. Parameters Received:
+Mon 17 Aug 2020 12:44:32 AM EEST Auto Recognize screen {alt}: eDP-1
+Aug 17 00:44:33 Setting up watches.
+Aug 17 00:44:33 Watches established.
+Aug 17 00:44:33 sensor.log MODIFY 
+Mon 17 Aug 2020 12:44:33 AM EEST xrandr rotate normal
+Aug 17 00:44:34 Setting up watches.
+Aug 17 00:44:34 Watches established.
+Aug 17 00:44:35 sensor.log MODIFY 
+Mon 17 Aug 2020 12:44:35 AM EEST xrandr rotate right-up
+Aug 17 00:44:37 Setting up watches.
+Aug 17 00:44:37 Watches established.
+Aug 17 00:57:48 sensor.log MODIFY 
+Mon 17 Aug 2020 12:57:48 AM EEST xrandr rotate bottom-up
+Aug 17 00:57:50 Setting up watches.
+Aug 17 00:57:50 Watches established.
+Mon 17 Aug 2020 12:58:22 AM EEST Main Programm Starting
+Mon 17 Aug 2020 12:58:57 AM EEST monitor-sensor pid = 18700
+Mon 17 Aug 2020 12:58:58 AM EEST Main Programm Starting
+Mon 17 Aug 2020 12:59:00 AM EEST monitor-sensor pid = 18700
+Aug 17 15:46:53 sensor.log MODIFY 
+Mon 17 Aug 2020 03:46:53 PM EEST xrandr rotate normal
+Aug 17 15:46:54 Setting up watches.
+Aug 17 15:46:54 Watches established.
+Mon 17 Aug 2020 03:48:22 PM EEST Main Programm Starting
+Mon 17 Aug 2020 03:48:30 PM EEST monitor-sensor pid = 18700
+Mon 17 Aug 2020 03:48:30 PM EEST Locked Selected
+Mon 17 Aug 2020 03:48:30 PM EEST Notify Stop
+Mon 17 Aug 2020 03:48:33 PM EEST xrandr rotate normal
+Aug 17 15:48:33 Setting up watches.
+Aug 17 15:48:33 Watches established.
+Mon 17 Aug 2020 03:48:40 PM EEST Main Programm Starting
+Mon 17 Aug 2020 03:48:43 PM EEST Unlock Selected
+Mon 17 Aug 2020 03:48:43 PM EEST notrunning - starting now
+Aug 17 15:48:43 sensor.log MODIFY 
+Mon 17 Aug 2020 03:48:43 PM EEST Start of Function gv. Parameters Received:
+Aug 17 15:48:43 Setting up watches.
+Aug 17 15:48:43 Watches established.
+Aug 17 15:48:43 sensor.log MODIFY 
+Aug 17 15:48:43 Setting up watches.
+Aug 17 15:48:43 Watches established.
+Mon 17 Aug 2020 03:48:44 PM EEST Auto Recognize screen {alt}: eDP-1
+Aug 17 15:48:44 Setting up watches.
+Aug 17 15:48:44 Watches established.
+Aug 17 15:48:45 sensor.log MODIFY 
+Aug 17 15:48:45 sensor.log MODIFY 
+Mon 17 Aug 2020 03:48:45 PM EEST xrandr rotate right-up
+Mon 17 Aug 2020 03:48:45 PM EEST xrandr rotate right-up
+Aug 17 15:48:48 Setting up watches.
+Aug 17 15:48:48 Watches established.
+Aug 17 15:48:51 Setting up watches.
+Aug 17 15:48:51 Watches established.
+Aug 17 15:48:53Aug 17 15:48:53 sensor.log MODIFY 
+ sensor.log MODIFY 
+Mon 17 Aug 2020 03:48:53 PM EEST xrandr rotate normal
+Mon 17 Aug 2020 03:48:53 PM EEST xrandr rotate normal
+Aug 17 15:48:56 Setting up watches.
+Aug 17 15:48:56 Watches established.
+Aug 17 15:48:56 Setting up watches.
+Aug 17 15:48:56 Watches established.
+Mon 17 Aug 2020 03:49:01 PM EEST Main Programm Starting
+Mon 17 Aug 2020 03:49:07 PM EEST monitor-sensor pid = 19592
+Mon 17 Aug 2020 03:49:07 PM EEST Locked Selected
+Mon 17 Aug 2020 03:49:07 PM EEST Notify Stop
+Mon 17 Aug 2020 03:49:09 PM EEST xrandr rotate normal
+Mon 17 Aug 2020 03:49:09 PM EEST xrandr rotate normal
+Aug 17 15:49:10 Setting up watches.
+Aug 17 15:49:10 Watches established.
+Aug 17 15:49:10 Setting up watches.
+Aug 17 15:49:10 Watches established.
