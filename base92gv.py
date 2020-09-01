@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Base92 encode/decode for Python 2 (pip install base92)
+#/usr/local/lib/python2.7/dist-packages/base92/base92.py
 # https://github.com/thenoviceoof/base92
 #THE BEERWARE LICENSE (Revision 42):
 
