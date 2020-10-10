@@ -24,6 +24,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
+alias screenreset='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
 alias converttopng='convert -verbose -coalesce'
 alias vpn='openfortivpn'
 alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
