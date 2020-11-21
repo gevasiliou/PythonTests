@@ -2199,8 +2199,31 @@ teamviewer-monitoring/stable 1.0.166669 amd64
 teamviewer/stable 15.11.6 amd64
 $ apt install teamviewer
 #was installed correctly in my kali machine
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GOOGLE CHROME
 Updated: 22/11/2020
 
+##INSTALL in KALI MANUALLY
 If google chrome is not available in repos (like in kali) then:
+$ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+$ apt-get install ./google-chrome-stable_current_amd64.deb   # it is preferable than dkpg -i , installs also dependencies
+$ google-chrome --no-sandbox   
+#google chrome does not run as root (defaul user for kali is root) unless --no-sandbox flag is given , but better to create a simple user with adduser command
+
+During the installation the following file will be created inside sources.list.d directory, to allow future updates
+If you want, you can first create this file manually with nano/echo/etc and then apt-get update && apt-get install google-chrome-stable (similar way as in teamviewer)
+$ cat /etc/apt/sources.list.d/google-chrome.list
+### THIS FILE IS AUTOMATICALLY CONFIGURED ###
+# You may comment out this entry, but any other modifications may be lost.
+deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:ZOOM
+Updated: 22/11/2020
+https://computingforgeeks.com/how-to-install-zoom-client-on-kali-linux/
+
+##INSTALL in KALI MANUALLY
+$ wget https://zoom.us/client/latest/zoom_amd64.deb
+$ apt-get install ./zoom_amd64.deb
+# installs a lot of dependencies, but seems to work ok
