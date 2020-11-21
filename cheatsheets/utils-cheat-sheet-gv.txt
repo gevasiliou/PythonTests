@@ -2178,3 +2178,29 @@ There are tools that can be used to hide data or texts or even a whole image wit
 Such programs are:
 * steghide
 * binwalk
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:TEAMVIEWER
+Updated: 22/11/2020
+
+##INSTALL WITH APT
+First check if your repos already have teamviewer available; if yes just apt-get install
+$apt list 'teamview*'
+
+On Kali for example, teamviewer is missing. Follow these steps:
+$ echo "deb http://linux.teamviewer.com/deb stable main" | sudo tee /etc/apt/sources.list.d/teamviewer.list
+$ apt-get update #error comes up due to missing teamviewer GPG key
+$ apt-get install gpg ca-certificates
+$ apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys C5E224500C1289C0  #use the key that apt-get advised
+$ apt list 'teamviewer*'
+Listing... Done
+teamviewer-host/stable 15.11.6 amd64
+teamviewer-monitoring/stable 1.0.166669 amd64
+teamviewer/stable 15.11.6 amd64
+$ apt install teamviewer
+#was installed correctly in my kali machine
+------------------------------------------------------------------------------------------------------------------------
+UTILS:GOOGLE CHROME
+Updated: 22/11/2020
+
+If google chrome is not available in repos (like in kali) then:
