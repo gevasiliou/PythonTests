@@ -1950,7 +1950,10 @@ mpv <(netcat IP MoviePort) --sub-file <(netcat IP SRTPort)
 Tip: You can send the srt file from server to client and open this srt file explicitly with mpv when movie is playing.
 Srt will not be autoloaded due to mismatching names of srt pipe && movie pipe
 
+##WGET Save and watch movie
+wget http://cclicence.film/myfavourite.mp4 -O- | tee myfav.mp4 | mpv - #or |mpv --sub-file=file.srt -
 ------------------------------------------------------------------------------------------------------------------------
+
 UTILS:GRUB
 https://wiki.debian.org/GrubEFIReinstall
 
