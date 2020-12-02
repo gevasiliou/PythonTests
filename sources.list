@@ -36,6 +36,13 @@ deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 # deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 # In case of generic key/sign error : apt-get install debian-ports-archive-keyring
 
+###Teamviewer - Dec 2020
+deb https://linux.teamviewer.com/deb stable main
+## if key is missing:  
+## apt-get install gpg ca-certificates
+## apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys C5E224500C1289C0  #use the key that apt-get update complained
+## apt list 'teamviewer*'
+
 ###### 3rd Party Binary Repos
 ###Debian Multimedia
 #wget http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2016.8.1_all.deb && dpkg -i deb-multimedia-keyring_2016.8.1_all.deb
