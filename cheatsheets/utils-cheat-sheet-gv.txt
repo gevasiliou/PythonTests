@@ -1991,6 +1991,9 @@ In windows , open a terminal as administrator and write:
 
 bcdedit /set {bootmgr} path \EFI\debian\grubx64.efi   #tested and works 18.09.2019
 
+To detect the correct path run:
+bcdedit /enum firmware
+
 Undo: 
 bcdedit /deletevalue {bootmgr} path \EFI\debian\grubx64.efi
 bcdedit /set {bootmgr} path \EFI\Microsoft\Boot\bootmgfw.efi
