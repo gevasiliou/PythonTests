@@ -1928,7 +1928,7 @@ PC2-Dell    : $ netcat 192.168.1.116 8111 |vlc -            #client
 #or         : $ cat </dev/tcp/192.168.1.116/8111 |vlc - 
 #or         : $ mpv <(netcat 192.168.1.116 8111)            #might not work with vlc
 #Surprisingly this does not work : $ vlc </dev/tcp/192.168.1.116/8111 
-
+#It has been proved that VLC works even directly (i.e Win VLC) by open VLC (GUI) , "Open Network Stream" -- > tcp://192.168.1.116:8111
 
 .I Method 2 - Reversed
 PC2-Dell    : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
