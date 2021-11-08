@@ -62,11 +62,19 @@ exit
 esac
 
 exit
-#cpufreq-set -c 0 -f 1600000
-#cpufreq-set -c 1 -f 1600000
-#cpufreq-set -c 0 -g performance --min 2000000 --max 3000000 #real max will be the hw limit 2160000
+# Userspace governor
 # modprobe cpufreq_userspace 
-#cpufreq-info
+# cpufreq-set -c 0 -f 2100000
+# cpufreq-set -c 1 -f 1800000
+# Alternative,by editing the config file of cpufrequtils
+# nano /etc/init.d/cpufrequtils
+# ENABLE="true"
+# GOVERNOR="userspace"
+# MAX_SPEED="2100000"
+# MIN_SPEED="1800000"
+# /etc/init.d/cpufrequtils restart
+# cpufreq-info
+# cpufreq-set -c 0 -g performance --min 2000000 --max 3000000 #real max will be the hw limit 2160000
 
 :help <<OOO
 depmod — Generate a list of kernel module dependences and associated map files.
