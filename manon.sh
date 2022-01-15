@@ -1,5 +1,7 @@
 #!/bin/bash
-# Copy this file to /usr/bin or /bin or to any of the paths provided by $PATH. Ensure executable rights for all users and then you can then call it directly avoiding the ./manon syntax
+# Copy this file to /usr/bin or /bin or to any of the paths provided by $PATH.
+# When you copy , you can skip the .sh extension i.e : cp ./manon.sh /usr/bin/manon 
+#Ensure executable rights for all users and then you can then call it directly using $manon instead of ./manon.sh
 helpme() {
 	    cat <<EOF
 This script search online man pages in various ways.
