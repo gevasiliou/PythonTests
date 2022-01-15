@@ -1,10 +1,10 @@
 Package: *
 Pin: release a=testing
-Pin-Priority: 900
+Pin-Priority: 500
 
 Package: *
 Pin: release a=stable
-Pin-Priority: 500
+Pin-Priority: 1000
 
 Package: *
 Pin: release a=unstable
