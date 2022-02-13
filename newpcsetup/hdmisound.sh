@@ -11,10 +11,26 @@ sleep 1
         active=$(su gv -c 'pacmd list |grep "active profile"')
         echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
         amixer sset 'Master' 120%  >& /dev/null
+        #2022
         #xrandr --output eDP-1 --off --output HDMI-2 --mode 1920x1080 --scale 1x1 2>>/var/log/hdmi.log #not working, even with su gv -c
         #su gv -c "DISPLAY=:0.0 bash -x '/usr/bin/xrandr --output eDP-1 --off' " #not working 
         #su gv -c 'DISPLAY=:0.0 bash -x /home/gv/Desktop/PythonTests/laptopscreen.sh off 1>&2 2>>/var/log/hdmi.log' #working
-        su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --vgaonly >>/var/log/hdmi.log' #works
+        #
+        #13.02.2022 : 
+        #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --vgaonly >>/var/log/hdmi.log' #working - keeping this one
+        #Above command works ok and laptop screen is automatically disabled keeping only hdmi in native resolution
+        # Debian 11: The use of FN + Screen Hot Key (i.e F4) works perfectly allowing correctly to mirror or laptop only or vgaonly
+        # so youu don't need a script solution. Just hit FN+F4
+        # Bug present 13022022:
+        #when tv input is switched to another hdmi or antenna , if you unplug the hdmi cable later , kerner fails to detect
+        #that hdmi is disconnected (unless you run xrandr). This has as result to stay with a black laptop screen if "vga only"
+        #had been selected before either by this script or by the hot FN key combination. 
+        #If you unplug the hdmi cable when the correct hdmi channel is selected on TV then detection of "hdmi disconnected" 
+        #works perfectly either by this script or by the display utility called by FN key combination and laptop screen is normally enabled.
+        #Bug workaround: 
+        #When you will be left with a black laptop screen due to hdmi cable disconnection, just hit FN+Screen Key
+        #and everything will be restored (laptop screen will be re-enabled obviously due to the display utility hot key call that invokes xrandr i suppose). 
+        
         echo "$(date)  ---- given command : xrandr eDP-1 off HDMI-2 on" >> /var/log/hdmi.log
         #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --status >>/var/log/hdmi.log' #works
         #xr=$(xrandr 2>&1) 
@@ -28,12 +44,13 @@ sleep 1
             active=$(su gv -c 'pacmd list |grep "active profile"')
             echo "$(date) --- $active" >> /var/log/hdmi.log #full path required
             amixer sset 'Master' 120% >& /dev/null
+            #13.02.2022:
             #su gv -c 'DISPLAY=:0.0 bash -x /home/gv/Desktop/PythonTests/laptopscreen.sh on 1>&2 2>>/var/log/hdmi.log' #working
-            su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --laptoponly >>/var/log/hdmi.log' #working ok
-            echo "$(date)  ---- given command: xrandr eDP-1 ON HDMI-2 OFF" >> /var/log/hdmi.log
-            #xr=$(xrandr 2>&1)
-            #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --status >>/var/log/hdmi.log'  #works
-            #echo "$(date) --- $xr" >> /var/log/hdmi.log
+            #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --laptoponly >>/var/log/hdmi.log' #working ok keeping this one
+            #echo "$(date)  ---- given command: xrandr eDP-1 ON HDMI-2 OFF" >> /var/log/hdmi.log #works - for troubleshooting only
+            #xr=$(xrandr 2>&1) && echo "$(date) --- $xr" >> /var/log/hdmi.log #sucks, xrandr fails - unknown display error
+            #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --status >>/var/log/hdmi.log'  #works ok
+            #finally disabled since FN key ++ screen key F4 works perfect in Debian 11
 	fi
 #done
 exit 0
