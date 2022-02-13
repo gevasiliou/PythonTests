@@ -17,7 +17,7 @@ sleep 1
         #su gv -c 'DISPLAY=:0.0 bash -x /home/gv/Desktop/PythonTests/laptopscreen.sh off 1>&2 2>>/var/log/hdmi.log' #working
         #
         #13.02.2022 : 
-        #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --vgaonly >>/var/log/hdmi.log' #working - keeping this one
+        su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --vgaonly >>/var/log/hdmi.log' #working - keeping this one
         #Above command works ok and laptop screen is automatically disabled keeping only hdmi in native resolution
         # Debian 11: The use of FN + Screen Hot Key (i.e F4) works perfectly allowing correctly to mirror or laptop only or vgaonly
         # so youu don't need a script solution. Just hit FN+F4
@@ -31,11 +31,10 @@ sleep 1
         #When you will be left with a black laptop screen due to hdmi cable disconnection, just hit FN+Screen Key
         #and everything will be restored (laptop screen will be re-enabled obviously due to the display utility hot key call that invokes xrandr i suppose). 
         
-        echo "$(date)  ---- given command : xrandr eDP-1 off HDMI-2 on" >> /var/log/hdmi.log
+        #echo "$(date)  ---- given command : xrandr eDP-1 off HDMI-2 on" >> /var/log/hdmi.log #works - for troubleshooting
         #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --status >>/var/log/hdmi.log' #works
-        #xr=$(xrandr 2>&1) 
-        #echo "$(date) --- xrandr : $xr" >> /var/log/hdmi.log
-        #w=$(whoami);echo "$w" >> /var/log/hdmi.log
+        #xr=$(xrandr 2>&1) && echo "$(date) --- xrandr : $xr" >> /var/log/hdmi.log #sucks-xrandr not working - display error
+        #w=$(whoami);echo "$w" >> /var/log/hdmi.log #troubleshooting. whoami = root (this script)
 
 	else
 	    sleep 2
@@ -46,11 +45,11 @@ sleep 1
             amixer sset 'Master' 120% >& /dev/null
             #13.02.2022:
             #su gv -c 'DISPLAY=:0.0 bash -x /home/gv/Desktop/PythonTests/laptopscreen.sh on 1>&2 2>>/var/log/hdmi.log' #working
-            #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --laptoponly >>/var/log/hdmi.log' #working ok keeping this one
+            su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --laptoponly >>/var/log/hdmi.log' #working ok keeping this one
             #echo "$(date)  ---- given command: xrandr eDP-1 ON HDMI-2 OFF" >> /var/log/hdmi.log #works - for troubleshooting only
             #xr=$(xrandr 2>&1) && echo "$(date) --- $xr" >> /var/log/hdmi.log #sucks, xrandr fails - unknown display error
             #su gv -c 'DISPLAY=:0.0 bash /home/gv/Desktop/PythonTests/twoscreens.sh --status >>/var/log/hdmi.log'  #works ok
-            #finally disabled since FN key ++ screen key F4 works perfect in Debian 11
+            #could be disabled since FN key ++ screen key F4 works perfect in Debian 11, but i kept it enabled by script for my kids
 	fi
 #done
 exit 0
