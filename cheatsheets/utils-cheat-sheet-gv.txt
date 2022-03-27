@@ -1,35 +1,51 @@
 UTILS:CHEAT SHEET by GV
 .I https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
-.I https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
-.I https://man7.org/linux/man-pages/man7/groff_man.7.html
+.I https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation 
 
 ------------------------------------------------------------------------------------------------------------------------
 
 UTILS:FILE MANIPULATIONS
 Depending on the job you can use different commands:
 
-.SY Synopsis 
+.SY "Synopsis of Commands"
 cut file: slices a line of file (or multi lines) based on a delimiter.
 paste file1 file2: Prints field of both files side by side , ignoring matching criteria
 diff file1 file2 : Prints differences of files 
 sort file1 file2 fileN: Sorts the files. Can be adjusted to sort on a specific columnt (i.e 1.2 = file 1 column2)
 join file1 file2 : Joins files in a common field
-
+.YS #end of synopsis
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:MAN PAGES & CHEAT SHEETS 
 
 ##CHEAT SHEET TXT 2 MANPAGE FORMATTING
-Read this cheat file with man pages:
-http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
-man formatting: man 7 man & man 7 man-pages
-groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
-man pages making: https://liw.fi/manpages/
-https://linux.die.net/man/1/help2man
 
-.B See the special synthax of any installed man page:
-zcat manpage.gz
-zcat $(man -w grep)
+.B man pages making & groff programming 
+.I http://technicalprose.blogspot.gr/2011/06/how-to-write-unix-man-page.html
+.I https://man7.org/linux/man-pages/man7/groff_man.7.html
+.I https://man7.org/linux/man-pages/man7/groff_man_style.7.html
+.I https://liw.fi/manpages/
+.I https://linux.die.net/man/1/help2man
+.I http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
+
+.OP "$ man 7 man" 
+.OP "$ man 7 man-pages"
+
+Package 'help2man' creates man pages with groff formating from the --help output of an executable command.
+.I man <(help2man grep)
+Use just 'help2man grep' to see on screen how help2man formats the man page by the help section of a command with groff.
+
+Tip: To see which programs does not provide a man page use the command 'manpage-alert' from deb devscripts.
+manpage-alert will scan the bin directories (i.e /usr/bin) and check if a man page exists for each executable located in bin locations.
+
+Tip: help2man fails if an error occured (i.e some bins do not run as root). You can avoid this failure using --no-discard-stderr flag like this:
+.I man <(help2man --no-discard-stderr icedove)
+
+
+.B See the special synthax of any installed man page
+    zcat manpage.gz
+    zcat $(man -w grep)
+
 
 .B WORKING COMMAND:
 man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\e/g;G' |sed 's/^$/\.br/g')
@@ -47,10 +63,14 @@ Subsection start with .SS. All the sections in this document starting with ## ar
 Bold Line: Use .B to make this line bold. .B follows text identation - .SS has it's own idents.
 The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
 The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
-More Commands
-\.SY : Synopsis - accepts a single word as description and the next line are idented automatically under synopsis. .SY section ends with an empty line (line break)
+.SY "More Commands"
+\.B  : Bold , should be inserted in the beginning of the line.
+\.I  : Italic, usually different color - at line start only
+\.SY : Synopsis Section. After .SY the Title is added - Next lines are idented automatically under synopsis. .SY section ends with an empty line or with .YS
 \.TH : Title Heading , single word - no spaces recognized.
-\.OP : Command line Option - recognizes commands i.e .OP cat file1 will appear as [cat file1] but the rest word (i.e comments) are ignored.
+\.OP : Command line Option - recognizes commands i.e .OP cat file1 will appear as [cat file1] but the rest word (i.e #comments) are ignored.
+.YS
+
 ##MAN - SEE MANPAGES OF NON INSTALLED PACKAGES USING CURL (see also manon shell script)
 You can either decompress a .deb in the screen and ask man to display it OR
 you can download the .deb package and decompress/display the manpages available and finally delete the .deb unless you plan to tinstall it!
@@ -384,6 +404,50 @@ env POSIXLY_CORRECT=1 grep "hello" myfile -v ---> will raise an error for the -v
 ##GREP INSTALL AN OLDER VERSION SIMULTANEOUSLY
 You can apt download grep-version-you-like , you then extract grep from data.tar inside .deb, save it somewhere , rename it to grepold and copy this file to /bin
 Same job for the manpage included in the .deb package. Just be sure to rename also the man page from grep.1.gz to grepold.1.gz (same name as renamed grep)
+
+##GREP EXCLUDING COMMENTS
+When you want to grep a conf or log file , it is usefull to exclude comments.
+.I grep '^[^#]' /etc/squid/squid.conf
+First '^' captures beginning of line. The synthax [^#] excludes #. All together '^[^#]' = grep the lines that starting (^) is NOT a # ([^#]).
+
+Sometimes in big conf files you might want to know in which line of the file the parameter you want is located.
+In this case for a file (i.e squid.conf) like this:
+  # Recommended minimum configuration:
+  #
+  
+  # Example rule allowing access from your local networks.
+  # Adapt to list your (internal) IP networks from where browsing
+  # should be allowed
+  acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+  acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+  acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+
+You want to know the line numbers using 'cat -n /etc/squid/squid.conf':
+  1182	# Recommended minimum configuration:
+  1183	#
+  1184	
+  1185	# Example rule allowing access from your local networks.
+  1186	# Adapt to list your (internal) IP networks from where browsing
+  1187	# should be allowed
+  1188	acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+  1189	acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+  1190	acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+
+You want to grep all the non-comment lines, preserving the line numbering of the inital file.
+This can be done with a grep like this:
+.I cat -n /etc/squid/squid.conf |grep -v '^\s*[0-9]*\s*[#]\|^\s*[0-9]*\s*$'
+-v                 : return the non-matching lines
+^\s*[0-9]*\s*[#]   : pattern 1 = Starting with space (\s) zero or more (*) following number ([0-9]) zero or more (*) following zero or more space following a single #
+\|                 : OR
+^\s*[0-9]*\s*$     : pattern 2 = starting with zero or more space, following zero or more numbers following zero or more space and then line end ($) = skip empty lines like 1184 above
+
+Result: 
+  <lines 1182-1187 are skipped>
+  1188	acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+  1189	acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+  1190	acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+  <.... more lines following bellow....>
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -2281,6 +2345,20 @@ teamviewer/stable 15.11.6 amd64
 $ apt install teamviewer
 #was installed correctly in my kali machine
 
+##TEAMVIEWER UPDATE
+Normally, a teamviewer.list file will be added in /etc/apt/sources.list.d directory during teamviewer installation.
+This file contains this basic line:
+deb https://linux.teamviewer.com/deb stable main
+
+The teamviewer repository can be controlled by command line like this:
+teamviewer repo                - show current repository configuration
+teamviewer repo default        - restore default configuration
+teamviewer repo disable        - disable the repository
+teamviewer repo stable         - make all regular TeamViewer packages available (default)
+teamviewer repo preview        - additionally, make feature preview packages available
+teamviewer repo development    - additionally, make the latest development packages available
+
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GOOGLE CHROME
 Updated: 22/11/2020
@@ -2288,16 +2366,22 @@ Updated: 22/11/2020
 ##INSTALL in KALI MANUALLY
 If google chrome is not available in repos (like in kali) then:
 $ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-$ apt-get install ./google-chrome-stable_current_amd64.deb   # it is preferable than dkpg -i , installs also dependencies
+$ apt-get install ./google-chrome-stable_current_amd64.deb   # apt-get install is preferable than dkpg -i , since it installs also dependencies
 $ google-chrome --no-sandbox   
 #google chrome does not run as root (defaul user for kali is root) unless --no-sandbox flag is given , but better to create a simple user with adduser command
+#for debian that you are loged in as standard user, you don't need --no-sandbox flag.
 
 During the installation the following file will be created inside sources.list.d directory, to allow future updates
-If you want, you can first create this file manually with nano/echo/etc and then apt-get update && apt-get install google-chrome-stable (similar way as in teamviewer)
+
 $ cat /etc/apt/sources.list.d/google-chrome.list
 ### THIS FILE IS AUTOMATICALLY CONFIGURED ###
 # You may comment out this entry, but any other modifications may be lost.
 deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+
+.B Chrome Installation Trick:
+You can create the .list file manually with nano/echo/etcetera and then run apt-get update && apt-get install google-chrome-stable 
+apt-get update reads the repos in /etc/apt/sources.list and /etc/apt/sources.list.d directory, so by supplying the web location of google chrome apt-get will be capable to 
+locate the google-chrome package (apt-get update) and then you can install it with apt-get install
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:ZOOM
