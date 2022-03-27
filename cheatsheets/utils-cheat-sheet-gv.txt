@@ -2,7 +2,9 @@ UTILS:CHEAT SHEET by GV
 .I https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
 .I https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
 .I https://man7.org/linux/man-pages/man7/groff_man.7.html
+
 ------------------------------------------------------------------------------------------------------------------------
+
 UTILS:FILE MANIPULATIONS
 Depending on the job you can use different commands:
 
