@@ -2102,6 +2102,8 @@ Partition /dev/sda3 holds my Windows. You can automount this partition like this
 UUID=A25866FE5866D119 /media/MyWin ntfs defaults 0 0
 5. mount -a
 
+------------------------------------------------------------------------------------------------------------------------
+UTILS:NETWORKING
 ##FORTICLIENT VPN - OPENFORTI
 openfortivpn is a free vpn client that can be connected to Fortinet.
 apt install openfortivpn
@@ -2176,6 +2178,51 @@ Avoid to use root account when you mount.cifs to be capable to open the sharre a
 gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/Users/Drawings/file640.pdf
 Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
 
+##SHARE A DEBIAN FOLDER WITH WINDOWS (LAN)
+https://www.howtogeek.com/176471/how-to-share-files-between-windows-and-linux/
+.B At Debian Machine
+First you need to make sure that you have samba installed on your debian (samba server and maybe samba client - just apt get install samba)
+In some files managers like gnome, nautilus, etc you can just right click a folder and share it , as easy as is done on Windowns.
+On XFCE you have to do some command line actions to assign a shared folder.
+
+Open samba configuration file (/etc/samba/smb.conf) and create manually the shares you want like this (add bellow to the end of file)
+
+[natwin]
+   comment = natwin-debian
+   path = /media/MyWin/Documents and Settings/nat/
+   valid users = gv
+   available = yes
+   browseable = yes
+   public = yes
+   writeable = yes
+   read only = no
+   guest ok = no
+
+The name in [ ] is the name that your share will appear on shared directories when browsed by other machines.
+Save the file and close your editor.
+
+In order the share to work , you need to add samba users with this command from CLI:
+smbpasswd -a geek
+#This will add user geek at samba environment
+
+Now, you just need to restart the SMB service for the changes to take effect : sudo service smbd restart
+
+.B At Windows PC
+the network location of the shared folder, with this syntax: \\IP-ADDRESS\SHARE-NAME
+In our case \\192.168.xxx.xxx\natwin
+
+You can try to create a shortcut pointing to the above address , or Add Network Location (right click on My Computer/This PC).
+Those techniques failed in my business laptop (assigned to a domain).
+The only technique that really worked is Map Network Drive, providing the above path and by selecting "Connect Using Different Credentials".
+When propmted for credentials provide:
+Username : .\geek (mind the .\ to define that this user is a local user and not a domain user).
+Password : The password provided at Debian for samba user geek
+For some reason my laptop asks for the credentials a second time, having already username completed (geek) and asking for password.
+provid password one more time and the mapping should have been completed succesfully.
+
+In my case this technique worked and allowed me to share a single desktop folder at Debian , or even a mounted location under the hdd of Debian (at Windows Partition).
+
+ 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
 
