@@ -24,6 +24,9 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
+alias hdmisound="pacmd set-card-profile 0 output:hdmi-stereo && pacmd list 2>&1 |grep 'active profile'"
+alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
+
 alias screenreset='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
 alias converttopng='convert -verbose -coalesce'
 alias vpn='openfortivpn'
