@@ -1,15 +1,19 @@
 UTILS:CHEAT SHEET by GV
-https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
-https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
+.I https://www.gnu.org/software/coreutils/manual/html_node/index.html#Top
+.I https://www.gnu.org/software/coreutils/manual/html_node/tac-invocation.html#tac-invocation
+.I https://man7.org/linux/man-pages/man7/groff_man.7.html
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:BASICS - FILE MANIPULATIONS
+UTILS:FILE MANIPULATIONS
 Depending on the job you can use different commands:
 
+.SY Synopsis 
 cut file: slices a line of file (or multi lines) based on a delimiter.
 paste file1 file2: Prints field of both files side by side , ignoring matching criteria
 diff file1 file2 : Prints differences of files 
 sort file1 file2 fileN: Sorts the files. Can be adjusted to sort on a specific columnt (i.e 1.2 = file 1 column2)
 join file1 file2 : Joins files in a common field
+
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:MAN PAGES & CHEAT SHEETS 
 
@@ -21,7 +25,7 @@ groff programming: http://web.cecs.pdx.edu/~trent/gnu/groff/groff.html#IDX123
 man pages making: https://liw.fi/manpages/
 https://linux.die.net/man/1/help2man
 
-.I See the special synthax of any installed man page:
+.B See the special synthax of any installed man page:
 zcat manpage.gz
 zcat $(man -w grep)
 
@@ -30,16 +34,21 @@ man --nj <(h=".TH man 1 2017 1.0 cheats page";sed "1i $h" cheatsheets/utils*gv.t
 You can also combine with --nh 
 PS: man options --nj = not auto justified , --nh = not auto break words with hyphen on line changes.
 
-##MAN AND GROFF/troff require special handling.
+##MAN AND GROFF/troff FORMATING - groff /troff require special handling.
 man ignores normal line feeds at end of lines ($); empty lines (^$) are recognized and displayed
 Line feeds in man pages can be done by inserting .br between two lines.
 More .br in series of lines are ignored by man and got intepreted as a single line feed - not multiple new lines.
 Man pages should start with a .TH line
 Man sections / header start with .SH. 
-Subsection start with .SS. Alternativelly you can use .B to make this line bold. .B follows text identation - .SS has it's own idents.
+Subsection start with .SS. All the sections in this document starting with ## are changed to .SS
+
+Bold Line: Use .B to make this line bold. .B follows text identation - .SS has it's own idents.
 The backslash \ works as escape in groff, so you need to escape the backslash with \e (or \\ can also work)
 The example tr -d '\n' will become tr -d '\en' with \e escaping, or will become tr -d '\\n' with \\ escaping.
-
+More Commands
+\.SY : Synopsis - accepts a single word as description and the next line are idented automatically under synopsis. .SY section ends with an empty line (line break)
+\.TH : Title Heading , single word - no spaces recognized.
+\.OP : Command line Option - recognizes commands i.e .OP cat file1 will appear as [cat file1] but the rest word (i.e comments) are ignored.
 ##MAN - SEE MANPAGES OF NON INSTALLED PACKAGES USING CURL (see also manon shell script)
 You can either decompress a .deb in the screen and ask man to display it OR
 you can download the .deb package and decompress/display the manpages available and finally delete the .deb unless you plan to tinstall it!
@@ -2021,7 +2030,7 @@ GRUB_DEFAULT=2     ---> Default menu entry to be auto-selected
 GRUB_TIMEOUT=5     ---> Timeout Before to load Default Entry
 
 
-In my system i had three partitions: /dev/sda3 = Windows, /dev/sda5 = Ubuntu and /dev/sda9 = Debian
+In one of my system i had three partitions: /dev/sda3 = Windows, /dev/sda5 = Ubuntu and /dev/sda9 = Debian
 Ubuntu was installed first so the grub was actually installed by Ubuntu.
 When i deleted Ubuntu partition, grub crashed.
 Searching for grub.cfg returns:
@@ -2049,8 +2058,24 @@ mount /dev/sda1 /mnt/usb/boot/efi
 grub-install --force --removable --boot-directory=/mnt/usb/boot /dev/sdc
 
 
-##BOOT FROM GRUB COMMAND LINE
-Considering that your Debian was installed at /dev/sda9 and grub has crashed badly:
+##GRUB-REBOOT & GRUB-SET-DEFAULT
+.I https://wiki.debian.org/GrubReboot
+With the command grub-reboot you are allowed to temporary (next time only) select the grub entry that will be automatically selected in your grub menu on next reboot,
+ignoring for this time the setting grub_default that is hardcoded in you grub configuration file (/boot/grub/grub.cfg)
+Just provide in command line of your linux 
+.B grub-reboot 0 && reboot
+
+Now the first line of the grub menu will be selected (grub numbering starts from zero) for the next reboot only. 
+
+This is usefull for example when your grub-default setting is for example 2 (win partition in my system) but you want to make a reboot and force grub to use entry 0 (Debian in my setup).
+
+if you want to change the default boot item permanently you can either edit the grub.cfg file or provide this command in Linux CLI:
+.B grub-set-default 0
+With this command you probably don't need to run update-grub command (required when you manually edit the grub.cfg file)
+
+##GRUB BOOT FROM COMMAND LINE (when grub crashes)
+Considering that your Debian was installed at /dev/sda9 and grub has crashed badly.
+You can save the day like this:
 
 grub> ls
 (hd0) (hd0,gpt9) etc
@@ -2068,7 +2093,7 @@ In Debian the most recent kernel and initrd image is found under root as symlink
 This is why /vmlinuz works above.
 
 If you want to specify a particular kernel (i.e a legacy 3.14 kernel) then you can use something like linux /boot/vmlinuz-of-your-choice.
-Accordingly you should load the matching initrd: /boot/initrd-matching-vmlinuz-choice.img
+Accordingly it is mandatory to load the initrd that matches the kernel version you loaded before: /boot/initrd-matching-vmlinuz-choice.img
 
 Tip: 
 You can still call the grub CLI even if grub works ok by following grub menu on-screen instructions.
