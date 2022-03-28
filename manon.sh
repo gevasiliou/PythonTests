@@ -30,11 +30,15 @@ Option1:
                              --nodelete     When used with --down the deb package will not be deleted.
 
     --debian        Search particulary in debian manpages online platform (i.e https://manpages.debian.org/testing/grep). 
-                    Your current release is detected (lsb_release -r -s) and man pages for your release are provided.
-                    Combine with --browser to display man page at browser instead of terminal.
+                    Your current release is detected  and man pages for your release are provided.
+                    If manpage is not found, then a second attempt to --debiansuite is made before abandoning the script (i.e deb debian-goodies)
+                    
+    --debiansuite   When providing a suite of tools (i.e devscripts) the swith --debian will provide the man page for devscripts but this switch will provide
+                    the man pages of all the tools inside the suite.
 
     --debianlist    Display a list of available man pages (various releases) at i.e http://manpages.debian.org/grep (i.e jessie,stretch,testing, unstable, posix etc). 
-                    Combine with --browser to display man page at browser
+                    Does not work with suites of tools (i.e debian-goodies) except if the suite has it's own man page (i.e devscripts).
+                    If --debianlist does not work ok with man & curl, use --debianlisthtml for the old html based man page viewing (html man page dumped to terminal)
                         
     --bsd           Display the FreeBSD man pages (i.e https://man.freebsd.org/grep). 
                     Combine with --browser to display man page at browser
@@ -347,25 +351,61 @@ function netbsd {
   fi  
 }
 
-function debian {
-#if [[ "$mode" == "--debian" ]]; then
+function debiansuite {
   validmode=1  
-  manpage="$1"
-  release="$(lsb_release -r -s)"
-  manpagecap="${manpage^^}" #Capitalize the man page title
-  mandata="$(links -dump https://manpages.debian.org/$release/$manpage |awk "/$manpagecap/,0")"
-  [[ -z "$mandata" ]] && echo "No man page found at \"https://manpages.debian.org/$release/$manpage\"" && exit 1
+  page="$1"
+  loop=1
+  release="$(lsb_release -c -s)" #yields to codename release i.e bullseye (instead of release number i.e 11)- codename required at 2022
+  #manpagesuite+=( $(curl -s -L -o- "http://manpages.debian.org/$release/$page" |grep -v 'index.html' |grep -Po ".* href=\"\K.*/$release/$page/.*[.]html") ) #works ok 28.03.2022
+  manpagesuite+=( $(curl -s -L -o- "http://manpages.debian.org/$release/$page" |grep -v 'index.html' |grep -Po ".* href=\"\K.*/$release/$page/.*[.]html" |perl -pe 's/html/gz/g') )
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpagesuite ]];then
+			echo "No results. "
+			links -dump "http://manpages.debian.org/$release/$page"
+			exit 1
+		else
+			clear
+			echo "man page found: ${#manpagesuite[@]}"
+			declare -p manpagesuite |sed 's/declare -a manpagesuite=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+    	read -p "Select man pages to display by id or q to quit : " ms
+        if [[ $ms == "q" ]]; then
+			echo "exiting" && loop=0
+		elif [[ $ms -le $((${#manpagesuite[@]}-1)) ]]; then
+			echo "Display ${manpagesuite[$ms]/,/}" #list is given in "link,version" format. ${var/,*/} removes the version at the end (removes comma and everything after comma)
+    #        links -dump http://manpages.debian.org"${manpagesuite[$ms]/,*/}" |less -S #works ok 28.03.2022
+            man <(curl -s -L -o- "https://manpages.debian.org/${manpagesuite[$ms]}")
 
-  if [[ "$mode" == "--debian" && $3 == "--browser" ]]; then
-     gksu -u "$normaluser" xdg-open "https://manpages.debian.org/$release/$manpage" 2>/dev/null &
-  else
-     echo "$mandata" |sed "1i https://manpages.debian.org/$release/$manpage" |less -S
-  fi  
-#fi
+		else
+			echo "Invalid Selection - Try Again"
+		fi
+	done
 }
 
-function debianlist {
-#if [[ "$mode" == "--debianlist" ]]; then
+
+function debian {
+  validmode=1  
+  manpage="$1"
+  #release="$(lsb_release -r -s)" #yields to numerical release i.e 11 - not working at 2022
+  release="$(lsb_release -c -s)" #yields to codename release i.e bullseye - required at 2022
+  manpagecap="${manpage^^}" #Capitalize the man page title
+  mandata="$(links -dump https://manpages.debian.org/$release/$manpage |awk "/$manpagecap/,0")" #works ok 28.03.2022
+    #hardcoding .gz at the end , forces manpages.debian to bring the man raw file
+  #[[ ! -z "$mandata" ]] && echo "$mandata" |sed "1i https://manpages.debian.org/$release/$manpage" |less -S #works ok 28.03.2022
+  [[ ! -z "$mandata" ]] && mandataraw="$(curl -s -L -o - https://manpages.debian.org/$release/$manpage.gz)" && man <(echo "$mandataraw")
+  if [[ -z "$mandata" ]];then
+    echo "No man page found at \"https://manpages.debian.org/$release/$manpage\""
+    echo "let's check if this is a debian suite"
+    read -p "press any key to continue" pp
+    debiansuite "$1" #calling another function, in this script.
+  fi
+
+}
+
+
+
+function debianlisthtml {
+#This is the old - legacy version of --debianlist , working with html files. The new version (just bellow) uses man and online stored gz raw data available in manpages.debian.org
   validmode=1
   page="$1"
   pagecap="${1^^}"
@@ -374,7 +414,7 @@ function debianlist {
 
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpage ]];then
-			echo "No results. "
+			echo "No results. If you entered the name of a suite (i.e debian-goodies) try to use --debian switch"
 			links -dump "http://manpages.debian.org/$page"
 			exit 1
 		else
@@ -398,6 +438,40 @@ function debianlist {
 	done
 #fi
 }
+
+function debianlist {
+#if [[ "$mode" == "--debianlist" ]]; then
+  validmode=1
+  page="$1"
+  pagecap="${1^^}"
+  loop=1
+	manpage+=( $(curl -s -L -o- "http://manpages.debian.org/$page" |grep -Po ".* href=\"\K.*/$page.*pkgversion.*title.*$" |perl -pe 's/">.*title="/,/g' |perl -pe 's/">.*$//g' ) )
+
+	while [[ $loop -eq 1 ]]; do
+		if [[ -z $manpage ]];then
+			echo "No results. If you entered the name of a suite (i.e debian-goodies) try to use --debian switch"
+			links -dump "http://manpages.debian.org/$page"
+			exit 1
+		else
+			#clear
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+		fi
+    	read -p "Select man pages to display by id or q to quit : " ms
+        if [[ $ms == "q" ]]; then
+			echo "exiting" && loop=0
+		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+			echo "Display ${manpage[$ms]/,/}" #list is given in "link,version" format. ${var/,*/} removes the version at the end (removes comma and everything after comma)
+            u=$(echo "${manpage[$ms]/,*/}" |perl -pe 's/html/gz/g') #&& echo "$u" && read -p "any key..." 
+            uu="https://manpages.debian.org${manpage[$ms]}" && export uu; #export required in order perl to be able to read the bash variable
+            man <(curl -s -L -o- "https://manpages.debian.org/$u" |perl -pe 's/SYNOPSIS/SYNOPSIS ($ENV{uu})/') #Replacing Synopsis header in man page including url & version of the pkg 
+		else
+			echo "Invalid Selection - Try Again"
+		fi
+	done
+#fi
+}
+
 
 function ubuntu {
 #---------------------------------------------------------------------------------------------------------------------------------------
@@ -716,9 +790,11 @@ case $mode in
 "--netbsd")netbsd "$@";;
 "--debian")debian "$@";;
 "--debianlist")debianlist "$@";;
+"--debianlisthtml")debianlisthtml "$@";;
 "--ubuntu")ubuntu "$@";;
 "--ubuntulist")ubuntulist "$@";;
 "--online")online "$@";;
+"--debiansuite")debiansuite "$@";;
 esac
 
 [[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
