@@ -893,7 +893,17 @@ function epochtodate {
     fi
     
     echo "[epochtodate]: Date to be converted from epoch to normal date format = $dt" >&2; 
-    date -d@"$dt"; 
+    ###date -d@"$dt"; #legacy - works ok 30.03.2022
+    
+    #to be done: This function fails when used as pipe and stdin contains more than one line
+    #tail -2 /var/log/squid/access.log |awk '{print $1}' |epochtodate
+    #[epochtodate-n]: Date to be converted from epoch to normal date format = 1648597316.787
+    #1648597351.857
+    #date: invalid date ‘@1648597316.787\n1648597351.857’
+    # For multilines you have to workaround with bash , but i am sure we can fix this inside this function
+    # tail -3 /var/log/squid/access.log |awk '{print $1}' |while read -r a;do echo $a|epochtodate;done  #this works ok in cmd line.
+    # bellow seems to handle correct multiline input ether by pipe, or by cli i.e pipe from awk or echo. Also works as standalone or with just one input line
+    echo "$dt" |while read -r tm;do date -d@"$tm";done  #trial 30.03.2022 - method to handle multiline input
 }
 
 
