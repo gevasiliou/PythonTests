@@ -2392,3 +2392,101 @@ https://computingforgeeks.com/how-to-install-zoom-client-on-kali-linux/
 $ wget https://zoom.us/client/latest/zoom_amd64.deb
 $ apt-get install ./zoom_amd64.deb
 # installs a lot of dependencies, but seems to work ok
+
+------------------------------------------------------------------------------------------------------------------------
+UTILS:PROXY
+Date: 29.03.2022
+##INSTALL SQUID PROXY ON DEBIAN
+Follow the instruction provided here:
+.I https://linuxize.com/post/how-to-install-and-configure-squid-proxy-on-debian-10/
+
+.B Squid Configuration
+After installation on my Debian 11 , i only adjusted proxy port. 
+By default, Squid listens on port 3128 on all network interfaces. 
+I changed listen port and all rest setting files remained at default values.
+
+Keep a back up of the original conf file:
+.I sudo cp /etc/squid/squid.conf{,.orginal}
+
+Tips:
+The Access Control Lists (ACLs) allows you to control how the clients can access web resources. 
+By default, Squid allows access only from the localhost.
+
+.B My Current & Working Squid Configuration:
+root:#cat -n /etc/squid/squid.conf |grep -v '^\s*[0-9]*\s*[#]\|^\s*[0-9]*\s*$'
+  1188	acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+  1189	acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+  1190	acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+  1191	acl localnet src 169.254.0.0/16 	# RFC 3927 link-local (directly plugged) machines
+  1192	acl localnet src 172.16.0.0/12		# RFC 1918 local private network (LAN)
+  1193	acl localnet src 192.168.0.0/16		# RFC 1918 local private network (LAN)
+  1194	acl localnet src fc00::/7       	# RFC 4193 local private network range
+  1195	acl localnet src fe80::/10      	# RFC 4291 link-local (directly plugged) machines
+  1197	acl SSL_ports port 443
+  1198	acl Safe_ports port 80		# http
+  1199	acl Safe_ports port 21		# ftp
+  1200	acl Safe_ports port 443		# https
+  1201	acl Safe_ports port 70		# gopher
+  1202	acl Safe_ports port 210		# wais
+  1203	acl Safe_ports port 1025-65535	# unregistered ports
+  1204	acl Safe_ports port 280		# http-mgmt
+  1205	acl Safe_ports port 488		# gss-http
+  1206	acl Safe_ports port 591		# filemaker
+  1207	acl Safe_ports port 777		# multiling http
+  1208	acl CONNECT method CONNECT
+  1385	http_access deny !Safe_ports
+  1388	http_access deny CONNECT !SSL_ports
+  1391	http_access allow localhost manager
+  1392	http_access deny manager
+  1402	include /etc/squid/conf.d/*
+  1408	http_access allow localhost
+  1411	http_access deny all
+  1907	http_port 8000
+  4571	coredump_dir /var/spool/squid
+  5272	refresh_pattern ^ftp:		1440	20%	10080
+  5273	refresh_pattern ^gopher:	1440	0%	1440
+  5274	refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
+  5275	refresh_pattern .		0	20%	4320
+
+root:# cat /etc/squid/conf.d/debian.conf
+#
+# Squid configuration settings for Debian
+#
+
+# Logs are managed by logrotate on Debian
+logfile_rotate 0
+
+# For extra security Debian packages only allow
+# localhost to use the proxy on new installs
+#
+# Bellow line if disabled (tried at 29.03.2022) makes squid proxy to stop working in the lan
+http_access allow localnet
+
+.B Allow - Deny certain lan IPs
+Edit /etc/squid/squid.conf
+acl allowed_ips  src "/etc/squid/allowed_ips.txt"
+http_access allow localhost
+http_access allow allowed_ips
+# And finally deny all other access to this proxy
+http_access deny all
+
+PS1: Obviously the access is read serially - the deny all last command does not affect the previous allow commands.
+PS2: allowed_ips.txt is a single txt file , containing a list of allowed IPs i.e 192.158.1.10 , etc (one IP per line)
+
+.B Squid status - restart - etc
+service squid status #or systemctl status squid
+service squid restart #or systemctl restart squid
+
+.B Using squid
+In Chrome (Win) just go to setting and provide the lan ip that squids is running to
+In Chrome (Lin) you have to run chrome like this:
+.I /usr/bin/google-chrome --user-data-dir="$HOME/proxy-profile" --proxy-server="http://SQUID_IP:3128"
+
+.B Squid Logs
+Logs are found in path /var/log/squid
+.I tail -5 /var/log/squid/access.log
+Returns the 5 last (end) entries. Date in the beginning is provided in epoch time.
+
+.I tail -20 /var/log/squid/access.log |awk '{cmd="date -d@"$1;cmd |getline $1; close(cmd)}1'
+.I tail -20 /var/log/squid/access.log |awk '{$1=strftime("%c",$1)}1'
+Uses awk to print the last (more recent) log entries, converting date from epoch to normal date format

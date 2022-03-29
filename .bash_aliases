@@ -49,7 +49,7 @@ alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #-
 
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias gitcancel='read -p "are you sure? [y/n]: " p;case "$p" in "y") git reset --hard HEAD~;;esac' #cancels the last local commit. You can also cancel 2 commits at once: git reset --hard HEAD~2
-alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ && chown gv:gv /home/gv/.bash_aliases'
+alias bashaliascp='cp -i .bash_aliases /home/gv/ && cp -i .bash_aliases /root/ && chown --verbose gv:gv /home/gv/.bash_aliases'
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade '
 alias printfunctions='set |grep -A2 -e "()"'
@@ -864,14 +864,53 @@ echo "mancheat: explore the cheat sheets using man page viewer"
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 }
 
-function dtoe {
-echo "dtoe: convert date to epoch. Send a date or pipe me a date in format 14/Feb/2017:11:31:20" >&2
+function datetoepoch {
+#echo "converts regular date to epoch. Send a date or pipe me a date in format 14/Feb/2017:11:31:20" >&2
 # The help message is printed on stderr (&2). In command line run will be printed on screen. 
-# On script run $(..) mode only the returned converted date result is stored in $(..), not the help message, since scripts hold only stdout , unless they include 2>&1
-[[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
-echo "Date to be converted = $dt" >&2
-date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+# On script run mode $(..) or in pipe run mode only the returned converted date result is stored without the help message, since scripts hold by default only stdout , unless 2>&1 is provided
+#buggy method:
+#[[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
+
+    if [ -p /dev/stdin ]; then  # Check to see if a pipe exists on stdin.
+    local dt=$(</dev/stdin);    # store the pipe data in variable
+    else
+    [[ -z $1 ]] && local dt="$(date)" || local dt="$(echo $1 | sed -e 's,/,-,g' -e 's,:, ,')" #if not a pipe and no args given then keep current - now - date
+    fi
+
+echo "[datetoepoch]: Date to be converted to epoch = $dt" >&2
+
+#date -d "$(echo $dt | sed -e 's,/,-,g' -e 's,:, ,')" +"%s"
+date -d "$dt" +"%s"
 }
+
+function epochtodate { 
+    #echo "[epochtodate]: convert epoch date to normal date" >&2; 
+    #[[ -z $1 ]] && local dt=$(</dev/stdin) || local dt="$1" #if $1 is empty, use dev/stdin = works like a pipe. Otherwise use $1 if provided - This is buggy. If not piped and no arguments are given then terminal hangs expecting user input.
+    if [ -p /dev/stdin ]; then # Check to see if a pipe exists on stdin.
+    local dt=$(</dev/stdin);
+    else
+    [[ -z $1 ]] && local dt="$(date +%s)" || local dt="$1" #if no argument is given, the keep the current - now - date in epoch format , else keep $1
+    fi
+    
+    echo "[epochtodate]: Date to be converted from epoch to normal date format = $dt" >&2; 
+    date -d@"$dt"; 
+}
+
+
+function dategr { 
+    if [ -p /dev/stdin ]; then # Check to see if a pipe exists on stdin.
+    local dt=$(</dev/stdin);
+    #echo "pipe contains : $dt" >&2; #debugging
+    else 
+    [[ -z $1 ]] && local dt="$(date)" || local dt="$1"
+    fi
+
+    echo "[dategr]: Date to be converted in GR format (24H)) = $dt" >&2;
+    date --date="$dt" +%d/%m/%Y" "%H:%M:%S; #dt can get either pipe data , or "now" if is called without pipe and without arguments or $1 argument.
+    #testing: echo "1648583844.667" |epochtodate |dategr
+
+}
+
 
 function toascii {
 [[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1

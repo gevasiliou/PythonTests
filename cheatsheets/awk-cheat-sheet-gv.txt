@@ -1773,3 +1773,61 @@ awk '$1<p {
 }
 { p=$1 }' file
 
+------------------------------------------------------------------------------------------------------------------------
+AWK:USE EXTERNAL SHELL / SCRIPT COMMAND INSIDE AWK
+.B GAWK Documentation: https://www.gnu.org/software/gawk/manual/gawk.html#Getline_002fVariable_002fPipe
+.I https://unix.stackexchange.com/questions/72935/using-bash-shell-function-inside-awk
+.I https://unix.stackexchange.com/questions/399135/converting-epoch-time-from-multiple-lines-in-a-log-file
+provided by αғsнιη
+Tags: #external, #system, #getline, #logfile, #date 
+
+.B Example
+echo -e "1648589451\n1245589441" |awk '{cmd="date -d@" $1;cmd |getline m;print $1,"-->",m}'
+
+- cmd="date -d@" $1 ==> uses the input first field $1 to built the "cmd" (using the space as concatenation method of awk way to join strings)
+- cmd |getline m    ==> first cmd runs as a shell command (acc to gawk manual) and the output then it is sended (pipe) to getline.
+getline reads the data received by "cmd" output (one record per time) and saves those data to variable m
+- print $1,"-->",m  ==> prints first field of input record and the value of var m (output of cmd command)
+Result:
+1648589451 --> Wed 30 Mar 2022 12:30:51 AM EEST
+1245589441 --> Sun 21 Jun 2009 04:04:01 PM EEST
+
+.B A more idiomatic way to use this method to "transform" dates stored in a log file (first field)
+tail -20 /var/log/squid/access.log |awk '{cmd="date -d@"$1;cmd |getline $1; close(cmd)}1'
+- cmd="date -d@"$1;   => built the shell command 'date' using $1=first field of input file as an operator to -d switch of 'date'
+- cmd |getline $1;    => run the shell command "cmd" , send (pipe) cmd results to getline and finally getline stores the cmd results BACK to $1 (magnificent)
+- close(cmd)}         => close the shell
+- 1'                  => just print the whole record ($0)of input file with $1 modified by getline!
+
+.B Alternative way 1
+tail -2 /var/log/squid/access.log |awk '{$1=system("date -d@" $1)}1'
+This also works ok , but system returns a new line at the end of the results that is messing up the output.
+
+.B Altrnative way 2
+tail -2 /var/log/squid/access.log |awk '{$1=strftime("%c",$1)}1'
+This also works great.
+
+------------------------------------------------------------------------------------------------------------------------
+AWK:INPUT METHODS INSTEAD OF FILE (awk '{}' file) AND INSTEAD OF PIPE (command | awk)
+Actually this is bash related and not awk related. 
+Different shells may have different ways to inject data into awk.
+
+awk '{...}' <<<"one two three"
+awk '{....}' <(command) # i.e <(seq 100)
+
+.B Working Examples (2022) with bash & gawk:
+awk '{print $1}' <(echo -e "oneA oneB\ntwoA twoB")
+
+awk '{print $1}' <<<"one
+two"
+
+awk '{print $2}' <(cat <<EOF
+oneA oneB
+twoA twoB
+EOF
+)
+
+awk '{print $2}' <<EOF
+oneA oneB
+twoA twoB
+EOF
