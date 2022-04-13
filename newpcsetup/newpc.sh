@@ -22,7 +22,7 @@ else
 fi
 
 ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "ntp" )
-ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" )
+ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" "build-essential" "dkms")
 ess+=( "kmod" "sysfsutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
@@ -113,7 +113,8 @@ param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$para
 }
 
 function gitclone {
-echo "This will run the following commands:" 
+echo "This will run the following commands:"
+echo "apt install git-all"
 echo "git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests"
 echo "git config credential.helper store #this will store the username/password on the next push."
 read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
