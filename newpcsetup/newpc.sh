@@ -21,7 +21,7 @@ else
   fi
 fi
 
-ess=( "geany" "git" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "ntp" )
+ess=( "geany" "git" "git-all" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "desktop-file-utils" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" "build-essential" "dkms")
 ess+=( "kmod" "sysfsutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
@@ -35,7 +35,7 @@ for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
 if ! dpkg-query -s "$i" >&/dev/null ;then 
   read -p "========> Want to install $i [y/n] ? :" an
-  [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
+  [[ $an == "y" ]] && apt-get --yes install "$i" || echo "===========> skipping installation of $i <============"
 else 
   printf '%s\n' " <========= already installed ";
 fi
@@ -55,7 +55,7 @@ done
 function utils {
 read -p "Utilities Installation. press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 unset toinst
-toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" )
+toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp")
 toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
 toinst+=( "transmission" "hexchat" "htop" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
@@ -73,8 +73,9 @@ toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qt
 for i in "${toinst[@]}";do
 printf '%s ' "=========> Installing pkg $i"
 if ! dpkg-query -l "$i" >&/dev/null ;then 
-  read -p "========> Want to install $i [y/n] ? :" an
-  [[ $an == "y" ]] && apt-get install "$i" || echo "===========> skipping installation of $i <============"
+  read -p "========> Want to install $i [y/n/h] ? :" an
+  [[ $an == "h" ]] && apt show "$i" && read -p "========> Want to install $i [y/n] ? :" an
+  [[ $an == "y" ]] && apt-get --yes install "$i" || echo "===========> skipping installation of $i <============"
 else 
   printf '%s\n' " <========= already installed ";
 fi
