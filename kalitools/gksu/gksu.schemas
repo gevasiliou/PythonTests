@@ -1,0 +1,607 @@
+<gconfschemafile>
+    <schemalist>
+
+      <schema>
+      <key>/schemas/apps/gksu/disable-grab</key>
+      <applyto>/apps/gksu/disable-grab</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Disable keyboard and mouse grab</short>
+	<long>
+	Whether the keyboard and mouse grabbing should be turned
+	off. This will make it possible for other X applications to
+	listen to keyboard input events, thus making it not possible
+	to shield from malicious applications which may be running.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Zakáže zachytávání klávesnice a myši</short>
+	<long>Zda se má vypnout zachytávání klávesnice a myši. Tímto umožníte jiným X aplikacím, aby naslouchaly událostem vstupu z klávesnice a tím pádem ztrácíte ochranu před zlovolnými aplikacemi, které by mohly v systému běžet.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Deaktiér keyboard og muse lås</short>
+	<long>Om keyboard og mus låsning skal være slået fra. Dette vil gøre det muligt for andre X-programmet at lytte til keyboard handlinger, som kan gøre at andre ondsindede programmer kan lytte til adgangskoden.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Desactivar el bloqueo del teclado y el ratón</short>
+	<long>Si el bloqueo del teclado y el ratón esté desactivado, otras aplicaciones de X podrán escuchar los eventos de entrada del teclado, incluso no pudiendo protegerse de aplicaciones malignas que pueden estar ejecutándose.</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Desgaitu teklatua eta sagua blokeatzea</short>
+	<long>Teklatua eta sagua blokeatzea desaktibatu behar den ala ez adierazten du. Beste X-eko aplikazioek teklatuaren sarrerako gertaerak entzutea eragin dezake, eta ondorioz exekutatzen egon daitezkeen aplikazio maltzurretatik ez babestea.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Billentyűzet és egér zárolásának letiltása</short>
+	<long>A billentyűzet és egér zárolása ki legyen-e kapcsolva. Ez lehetővé teszi már X alkalmazások számára, hogy figyeljék a billentyűzet bemeneti eseményeket és nem teszi lehetővé, hogy az esetlegesen futó rosszindulatú alkalmazásokkal szemben védelmet biztosítson.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Disabilita la cattura di tastiera e mouse</short>
+	<long>Se la cattura di tastiera e mouse debba essere disabilitata. Questo renderà possibile ad altre applicazioni X di ascoltare eventi di inserimento da tastiera, rendendo così impossibile la protezione da applicazioni malevole che possono essere in esecuzione.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>キーボードとマウスの占有を無効化する</short>
+	<long>キーボードとマウスを「つかむ」設定をオフにしました。他のXアプリケーションがキーボード入力イベントを取得することが可能になります。この結果、万が一悪意あるアプリケーションが存在する場合には身を守ることができません。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>키보드 및 마우스 고정 사용하지 않기</short>
+	<long>키보드 및 마우스 고정 기능을 끌 지 여부. 이 옵션을 사용하면 다른 X 프로그램이 키보드 입력 이벤트를 가로챌 수 있습니다. 즉 실행 중일 지도 모르는 의심스러운 프로그램을 막을 수 없게 됩니다.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Blokkering van toetsenbord en muis uitzetten</short>
+	<long>Hiermee wordt bepaald of het blokkeren van toetsenbord en muis uitgeschakeld dient te worden. Op die manier is het mogelijk dat andere X-toepassingen de toetsenbord-invoer onderscheppen; het is dan onmogelijk om bescherming te bieden tegen schadelijke programma&apos;s. </long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Desabilitar a captura do teclado e do mouse</short>
+	<long>Se a captura do teclado e do mouse deve ser desabilitada. Isso permitirá a outros aplicativos gráficos monitorar eventos de entrada, de modo que não será possível proteger-se de eventuais aplicativos maliciosos que estiverem em execução.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Отключить захват клавиатуры и мыши</short>
+	<long>Определяет, будет ли отключён захват клавиатуры и мыши. Это может привести к несанкционированному получению вводимых с клавиатуры данных другими графическими приложениями, что приведёт к невозможности защиты от вредоносных программ, которые могут быть запущены в этот момент.</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Inaktivera fångst av tangentbord och mus</short>
+	<long>Huruvida fångst av tangentbordet och musen ska stängas av. Det här gör det möjligt för andra X-program att lyssna på tangentbordsinmatningshändelser, vilket gör det inte är möjligt att skydda sig mot ondsinta program som kan vara igång.</long>
+      </locale>
+
+      <locale name="th">
+	<short>ปิดการยึดครองแป้นพิมพ์และเมาส์</short>
+	<long>กำหนดว่าจะปิดการยึดครองแป้นพิมพ์และเมาส์หรือไม่ การปิดนี้จะเป็นการเปิดโอกาสให้โปรแกรม X อื่นดักเหตุการณ์การกดแป้นพิมพ์ได้ ซึ่งจะทำให้ไม่สามารถป้องกันโปรแกรมที่ไม่ประสงค์ดีที่อาจทำงานอยู่ได้</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>禁用键盘和鼠标独占</short>
+	<long>是否应当关闭对键盘和鼠标的独占。这将使其它的应用程序能够监听键盘输入事件，因而无法防护可能在运行的恶意程序。</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/force-grab</key>
+      <applyto>/apps/gksu/force-grab</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Force keyboard and mouse grab</short>
+	<long>
+	Grab keyboard and mouse even if -g has been passed as argument
+	on the command line.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Vynutí zachycení klávesnice a myši</short>
+	<long>Zachytí klávesnici a myš i v případě, že byl na příkazové řádce použit parametr -g.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Tving keyboard og muse lås</short>
+	<long>Lås keyboard og mus selvom -g er blevet angivet som argument på kommandolinjen.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Forzar el bloqueo del teclado y el ratón</short>
+	<long>Bloquear el teclado y el ratón incluso si se ha pasado la opción «-g» en la línea de órdenes.</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Behartu teklatua eta sagua blokeatzea</short>
+	<long>Blokeatu teklatua eta sagua, nahiz eta &apos;-g&apos; aukera eman komando-lerroan.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Billentyűzet és egér zárolásának kikényszerítése</short>
+	<long>A billentyűzet és egér megragadása, még ha a -g paraméter meg is lett adva.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Forza la cattura di tastiera e mouse</short>
+	<long>Cattura la tastiera e il mouse anche se -g è stato passato come argomento sulla linea di comando.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>キーボードとマウスの占有を強制する</short>
+	<long>コマンドラインで-gオプションが与えられた場合はキーボードとマウスを占有する。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>키보드 및 마우스 강제로 고정</short>
+	<long>명령행에 -g 옵션을 넘겼을 경우에도 키보드와 마우스 고정.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Blokkering van toetsenbord en muis forceren</short>
+	<long>Toetsenbord en muis blokkeren zelfs wanneer het argument -g opgegegeven is.</long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Forçar a captura do teclado e do mouse</short>
+	<long>Capturar o teclado e o mouse ainda que -g tenha sido passado como argumento na linha de comando.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Принудительно захватить клавиатуру и мышь</short>
+	<long>Захватывать клавиатуру и мышь, даже если в командной строке присутствует аргумент «-g».</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Tvinga fångst av tangentbord och mus</short>
+	<long>Fånga tangentbord och mus även om -g har angivits som argument på kommandoraden.</long>
+      </locale>
+
+      <locale name="th">
+	<short>บังคับยึดครองแป้นพิมพ์และเมาส์</short>
+	<long>ยึดครองแป้นพิมพ์และเมาส์เสมอ แม้จะระบุตัวเลือก -g ในบรรทัดคำสั่ง</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>强制键盘和鼠标独占</short>
+	<long>独占键盘和鼠标，即使命令行参数中有 -g 。</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/sudo-mode</key>
+      <applyto>/apps/gksu/sudo-mode</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Sudo mode</short>
+	<long>
+	Whether sudo should be the default backend method. This method
+        is otherwise accessed though the -S switch or by running 'gksudo'
+        instead of 'gksu'.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Režim sudo</short>
+	<long>Zda má být sudo výchozím backendem. Tento backend je jinak dostupný 
+přepínačem -S, nebo spuštěním „gksudo&quot; místo „gksu&quot;.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Sudo-tilstand</short>
+	<long>Om sudo skal være standard backend-metoden. Denne metode kan ellers opnås ved at anvende -S tilvalget, eller ved at køre &apos;gksudo&apos; i stedet for &apos;gksu&apos;.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Modo de sudo</short>
+	<long>Cuando sudo sea el método predeterminado, a este método se accederá mediante el parámetro «-S» o ejecutando «gksudo» en lugar de «gksu».</long>
+      </locale>
+
+      <locale name="eu">
+	<short>&apos;Sudo&apos; modua</short>
+	<long>&apos;sudo&apos; metodo lehenetsia izngo den ala ez adierazten du. Metodo hau atzitzeko &apos;-S&apos; aukera erabili edo &apos;gksudo&apos; exekutatu daiteke &apos;gksu&apos; ordez.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Sudo mód</short>
+	<long>A sudo legyen-e az alapértelmezett háttér eljárás. Egyébként ez az eljárás a -S kapcsolóval érhető el, vagy a gksudo futtatásával a gksu helyett.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Modalità sudo</short>
+	<long>Se sudo debba essere il metodo sottostante predefinito. Questo metodo è altrimenti accessibile attraverso l&apos;argomento -S o eseguendo &apos;gksudo&apos; invece di &apos;gksu&apos;.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>Sudo モード</short>
+	<long>sudoをデフォルトのバックエンドメソッドにしますか？　そうしない場合、 -S スイッチが与えられた場合か、「gksu」の代わりに「gksudo」として起動された場合にのみsudoが利用されます。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>sudo 모드</short>
+	<long>sudo를 기본 벡엔드로 할 지 여부. 이 방법은 -S 옵션을 사용하거나 (&apos;gksu&apos; 대신) &apos;gksudo&apos;를 실행해도 사용할 수 있습니다.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Sudo-modus</short>
+	<long>Hiermee wordt bepaald of sudo de standaard methode is. Deze methode wordt normaal gesproken ingesteld met het -S-argument of door &apos;gksudo&apos; te starten in plaats van &apos;gksu&apos;.</long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Modo sudo</short>
+	<long>Se o sudo deve ser o método estrutural padrão. Esse método também pode ser utilizado através da opção -S ou executando-se &quot;gksudo&quot; em vez de &quot;gksu&quot;.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Режим sudo</short>
+	<long>Определяет, будет ли sudo использоваться как метод аутентификации по умолчанию. Также метод можно задать с помощью параметра -S или запустив «gksudo» вместо «gksu».</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Sudo-läge</short>
+	<long>Huruvida sudo ska vara standardbakändemetoden. Den här metoden användas annars genom flaggan -S eller genom att köra &quot;gksudo&quot; istället för &quot;gksu&quot;.</long>
+      </locale>
+
+      <locale name="th">
+	<short>โหมด sudo</short>
+	<long>กำหนดว่า จะใช้ sudo เป็นวิธีปริยายหรือไม่ หากไม่กำหนด ก็ยังสามารถเรียกใช้วิธีนี้ได้ ผ่านตัวเลือก -S หรือโดยเรียกคำสั่ง &apos;gksudo&apos; แทน &apos;gksu&apos;</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>Sudo 模式</short>
+	<long>是否将 sudo 作为默认的后端方法。否则须通过 -S 开关或运行‘gksudo’而不是‘gksu’来启用。</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/prompt</key>
+      <applyto>/apps/gksu/prompt</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Prompt for grabbing</short>
+	<long>
+	This option will make gksu prompt the user if he wants to have
+	the screen grabbed before entering the password. Notice that this
+	only has an effect if force-grab is disabled.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Dotáže se na zachycení</short>
+	<long>Povolením této volby zajistíte, aby se gksu před zadáním hesla zeptal uživatele, zda chce zachytit obrazovku. Toto však funguje pouze v případě, že je vypnuta volba force-grab.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Spørg om der skal låses</short>
+	<long>Denne indstilling vil lade gksu spørge brugeren om han vil have skærmen låst før indtastning af adgangskoden. Bemærk at dette kun har en virkning hvis force-grab er slået fra.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Preguntar al bloquear</short>
+	<long>Esta opción hará que gksu pregunte al usuario si quiere tener la pantalla bloqueada antes de introducir la contraseña. Tenga en cuenta que esto sólo tiene efecto si no fuerza el bloqueo.</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Blokeatzeko eskaera</short>
+	<long>Auekra honekin &apos;gksu&apos;-k erabiltzaileari galdetuko dio ea pantaila blokeatzea nahi duen pasahitza sartzean. Jakin ezazu &apos;force-grab&apos; (derrigortu blokeoa) desgaituta badago soilik eragiten duela.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Rákérdezés a zárolásra</short>
+	<long>Ezen kapcsoló hatására a gksu megkérdezi a felhasználót, hogy akarja-e a képernyő zárolását a jelszó megadása előtt. Ne feledje, hogy ez csak akkor hatásos, ha a force-grab kapcsoló le van tiltva.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Richiede se catturare</short>
+	<long>Questa opzione farà sì che gksu chieda all&apos;utente se vuole avere lo schermo catturato prima dell&apos;inserimento della password. Notare che questo ha effetto solo se force-grab è disabilitato.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>占有時のプロンプト</short>
+	<long>このオプションを有効にすると、パスワードを入力する前に画面をつかむようにユーザに促します。この設定は、強制的に画面を掴む動作が無効な場合にだけ機能します。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>고정할 때 물어보기</short>
+	<long>이 옵션을 켜면 gksu에서 열쇠글을 입력할 때 화면을 고정할 지 여부를 물어봅니다 이 옵션은 force-grab 옵션을 껐을 때만 효과가 있습니다.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Vragen om bevestiging van blokkering</short>
+	<long>Hiermee bepaalt u dat gksu de gebruiker vraagt of het scherm geblokkeerd dient te worden voordat het wachtwoord ingevoerd wordt. Merk op dat dit alleen werkt wanneer de optie force-grab uitgeschakeld is.</long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Perguntar pela captura</short>
+	<long>Esta opção fará com que o gksu pergunte ao usuário se ele quer que a tela seja capturada antes de inserir a senha. Note que isso só tem efeito se force-grab (forçar a captura) estiver desabilitado.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Запрос на захват</short>
+	<long>Этот параметр заставит gksu вывести пользователю запрос о захвате экрана перед вводом пароля. Заметим, что это происходит только если не указан параметр принудительного захвата (force-grab).</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Fråga för fångst</short>
+	<long>Det här alternativet kommer att göra att gksu frågar användaren om denne vill få skärmen fångad innan lösenordet matas in. Observera att det endast har effekt om force-grab är inaktivert.</long>
+      </locale>
+
+      <locale name="th">
+	<short>ถามการยึดครอง</short>
+	<long>ตัวเลือกนี้จะทำให้ gksu ถามผู้ใช้ว่าต้องการให้ยึดครองหน้าจอหรือไม่ ก่อนที่จะป้อนรหัสผ่าน สังเกตว่าค่านี้จะมีผลก็ต่อเมื่อตัวเลือก force-grab ปิดอยู่เท่านั้น</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>提示是否独占</short>
+	<long>此选项将使 gksu 提示用户在输入密码前是否要独占屏幕。注意这仅在 force-grab 被禁用时有效。</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/display-no-pass-info</key>
+      <applyto>/apps/gksu/display-no-pass-info</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>true</default>
+      <locale name="C">
+	<short>Display information message when no password is needed</short>
+	<long>
+	This option determines whether a message dialog will be displayed
+	informing the user that the program is being run without the need
+	of a password being asked for some reason.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Pokud není potřeba heslo, upozorní na to hláškou</short>
+	<long>Tato volba určuje, zda se zobrazí informační dialog v případě, kdy se může program spustit bez nutnosti zadání hesla.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Vis informationsbesked når ingen adgangskode kræves</short>
+	<long>Denne indstilling bestemmer om en besked-dialog skal vises der oplyser brugeren om at programmet der køres ikke kræver nogen adgangskode.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Mostrar el mensaje de información cuando no se necesite la contraseña</short>
+	<long>Esta opción determina si un diálogo de mensajes se mostrará informando al usuario de que el programa se está ejecutando sin necesidad de pedirle una contraseña por alguna razón.</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Bistaratu informazioaren mezua pasahitzik behar ez denean</short>
+	<long>Aukera honek mezuaren elkarrizketa-koadroa bistaratuko den ala ez zehazten du. Elkarrizketa-koadro horrek programa eskatu den pasahitza behar izan gabe eta arrazoi bategatik exekutatzen ari dela jakinarazten dio erabiltzaileari.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Információs üzenet megjelenítése, ha nincs szükség jelszóra</short>
+	<long>Ez a kapcsoló megadja, hogy szükséges-e a felhasználót egy párbeszédablak megjelenítésével értesíteni arról, hogy a program valamilyen okból a jelszó megadásának szükségessége nélkül fut.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Visualizza un messaggio informativo quando la password non è necessaria</short>
+	<long>Questa opzione determina se un dialogo di messaggio verrà visualizzato per informare l&apos;utente che il programma sta per essere eseguito senza la necessità di richiesta di una password per qualche ragione.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>パスワードが必要ないときは情報を表示する</short>
+	<long>このオプションは、何らかの理由でパスワードの確認が不要な場合、ユーザにパスワード入力なしで権限が取得されたことを知らせるかどうかを決定します。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>열쇠글이 필요 없을 때 정보 메세지 표시</short>
+	<long>이 옵션에 따라 (무언가의 이유로) 열쇠글 입력 없이 프로그램을 실행한다는 사실을 알리는 메세지 창을 표시할 지 여부를 결정합니다.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Informatief bericht weergeven als er geen wachtwoord vereist is</short>
+	<long>Hiermee bepaalt u of een melding wordt weergegeven die de gebruiker informeert dat het programma uitgevoerd wordt zonder dat er om een wachtwoord gervraagd wordt.</long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Exibir uma mensagem informativa quando não houver necessidade de senha</short>
+	<long>Esta opção determina se uma mensagem será exibida informando o usuário que o programa, por alguma razão, está sendo executado sem a necessidade de pedir senha.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Вывести сообщение, если не требуется ввод пароля</short>
+	<long>Этот параметр определяет будет ли показано диалоговое окно, информирующее пользователя о том, что программа выполнятся без запроса пароля по некоторой причине.</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Visa informationsmeddelande när inget lösenord behövs</short>
+	<long>Det här alternativet bestämmer huruvida en meddelandedialog kommer att visas och informera användaren att programmet kör utan att behöva fråga efter ett lösenord av någon anledning.</long>
+      </locale>
+
+      <locale name="th">
+	<short>แสดงข้อความแจ้งเตือนเมื่อไม่จำเป็นต้องใช้รหัสผ่าน</short>
+	<long>กำหนดว่าจะแสดงกล่องข้อความเพื่อแจ้งให้ผู้ใช้ทราบหรือไม่ ว่ากำลังจะเรียกโปรแกรมโดยไม่จำเป็นต้องถามรหัสผ่านด้วยเหตุผลบางประการ</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>不需要密码时显示通知消息</short>
+	<long>此选项决定在运行由于某种原因不需要询问密码的程序时是否应当显示消息对话框以通知用户。</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/save-to-keyring</key>
+      <applyto>/apps/gksu/save-to-keyring</applyto>
+      <owner>gksu</owner>
+      <type>bool</type>
+      <default>true</default>
+      <locale name="C">
+	<short>Save password to gnome-keyring</short>
+	<long>
+	gksu can save the password you type to the gnome-keyring so you'll
+	not be asked everytime
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Uložit hesla do klíčenky gnome-keyring</short>
+	<long>gksu může ukládat zadaná hesla do gnome-keyring, takže nebudete dotazováni při každém použití gksu.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Gem adgangskode til gnome-keyring</short>
+	<long>gksu kan gemme adgangskoden du skriver til gnome-keyring så du ikke behøver at blive spurgte hver gang</long>
+      </locale>
+
+      <locale name="es">
+	<short>Guardar la contraseña en el depósito de claves de GNOME («gnome-keyring»)</short>
+	<long>gksu puede guardar la contraseña que ha escrito en el depósito de claves de GNOME («gnome-keyring»). de modo que no se le pregunte siempre por ella</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Gorde pasahitza &apos;gnome-keyring&apos;-en</short>
+	<long>&apos;gksu&apos;-k idazten duzun pasahitza &apos;gnome-keyring&apos;-en gorde dezake, aldi bakoitzean zuri ez galdetzeko.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>Jelszó mentése a Gnome kulcstartóra</short>
+	<long>A gksu képes elmenteni a beírt jelszót a Gnome kulcstartóra, így nem kérdez rá minden alkalommal</long>
+      </locale>
+
+      <locale name="it">
+	<short>Salva la password in gnome-keyring</short>
+	<long>gksu può salvare la password digitata in gnome-keyring così da non essere richiesta ogni volta</long>
+      </locale>
+
+      <locale name="ja">
+	<short>gnome-keyring にパスワードを保存</short>
+	<long>gksuはパスワードをgnome-keyringに記憶させることを許可し、毎回パスワードを聞かれなくても済むようにすることができます</long>
+      </locale>
+
+      <locale name="ko">
+	<short>열쇠글을 그놈 키모음에 저장</short>
+	<long>gksu에서 입력하는 열쇠글을 그놈 키 모음에 저장해서 매번 물어보지 않게 합니다</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Wachtwoord opslaan in de gnome-sleutelbos</short>
+	<long>gksu kan het wachtwoord opslaan in de gnome-sleutelbos zodat het niet telkens opnieuw gevraagd wordt</long>
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Armazenar a senha no chaveiro do GNOME (gnome-keyring)</short>
+	<long>O gksu pode armazenar a senha que você digitar no chaveiro do GNOME (gnome-keyring). Assim você não seja perguntado toda vez</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Сохранить пароль в gnome-keyring</short>
+	<long>gksu может сохранить набранный пароль в gnome-keyring, таким образом пользователю не надо будет вводить его каждый раз.</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Spara lösenord i gnome-keyring</short>
+	<long>gksu kan spara lösenordet som du anger i gnome-keyring så att du inte kommer att bli tillfrågad varje gång det används</long>
+      </locale>
+
+      <locale name="th">
+	<short>เก็บรหัสผ่านใน gnome-keyring</short>
+	<long>gksu สามารถเก็บรหัสผ่านที่คุณป้อนเข้าใน gnome-keyring ได้ เพื่อที่คุณจะไม่ต้องป้อนรหัสผ่านทุกครั้ง</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>保存密码到 gnome 密钥环</short>
+	<long>gksu 能将您输入的密码保存到 GNOME 密钥环从而不会每次都询问您密码</long>
+      </locale>
+      </schema>
+
+      <schema>
+      <key>/schemas/apps/gksu/save-keyring</key>
+      <applyto>/apps/gksu/save-keyring</applyto>
+      <owner>gksu</owner>
+      <type>string</type>
+      <default>session</default>
+      <locale name="C">
+	<short>Keyring to which passwords will be saved</short>
+	<long>
+	The name of the keyring gksu should use. Usual values are "session",
+	which saves the password for the session, and "default", which saves the
+	password with no timeout.
+	</long>
+      </locale>
+
+      <locale name="cs">
+	<short>Klíčenka, ve které se budou uchovávat hesla</short>
+	<long>Jméno klíčenky, kterou má gksu použít. Obvyklé hodnoty jsou „session&quot;, což uloží heslo po dobu sezení a „default&quot;, což uloží heslo bez časového omezení.</long>
+      </locale>
+
+      <locale name="da">
+	<short>Nøglering som adgangskoder vil blive gemt i</short>
+	<long>Navnet på nøgleringen skal bruge. Normale værdier er &quot;session&quot;, som gemmer adgangskoden i sessionen, og &quot;standard&quot; som gemmer adgangskoden uden timeout.</long>
+      </locale>
+
+      <locale name="es">
+	<short>Depósito de claves en el que se guardarán las contraseñas</short>
+	<long>El nombre del depósito de claves que debería utilizar gksu. Los valores usuales son «sesión», que guarda la contraseña durante la sesión, y «predeterminado», que guarda la contraseña sin fecha de caducidad.</long>
+      </locale>
+
+      <locale name="eu">
+	<short>Gako-sorta (pasahitzak hor gordetzeko)</short>
+	<long>Gksu-k erabiliko duen gako-sortaren izena. Balio erabilgarriak: &quot;session&quot; (saioa), pasahitza saioan gordetzeko; &quot;default&quot; (lehenetsia), pasahitza denbora-mugarik gabe gordetzeko.</long>
+      </locale>
+
+      <locale name="hu">
+	<short>A kulcstartó, amelyre a jelszavak mentve lesznek</short>
+	<long>A gksu által használandó kulcstartó neve. A szokásos értékek a  &quot;session&quot; (munkamenet), amely a jelszót a munkamenet számára menti, és a  &quot;default&quot; (alapértelmezett), amely a jelszót időkorlát nélkül menti.</long>
+      </locale>
+
+      <locale name="it">
+	<short>Portachiavi nel quale le password verranno salvate</short>
+	<long>Il nome del portachiavi che gksu dovrebbe utilizzare. Valori usuali sono &quot;session&quot;, che salva la password per la sessione, e &quot;default&quot;, che salva la password senza una scadenza.</long>
+      </locale>
+
+      <locale name="ja">
+	<short>パスワードの保存のためにKeyringを使用する</short>
+	<long>gksuが使用するキーリングのの名前を決めます。取りうる値は、パスワードをセッション単位で保存する「セッション」と、タイムアウトなしにパスワードを保存する「デフォルト」です。</long>
+      </locale>
+
+      <locale name="ko">
+	<short>열쇠글을 저장할 키 모음</short>
+	<long>gksu가 사용할 키 모음의 이름. 보통 사용하는 값은 &quot;session&quot;으로 현재 세션에 대해 열쇠글을 저장합니다. 그리고 &quot;default&quot;는 시간 제한 없이 열쇠글을 저장합니다.</long>
+      </locale>
+
+      <locale name="nl">
+	<short>Sleutelbos waarin de wachtwoorden zullen worden opgeslagen</short>
+	
+      </locale>
+
+      <locale name="pt_BR">
+	<short>Chaveiro no qual armazenar as senhas</short>
+	<long>O nome do chaveiro a ser usado pelo gksu. Valores usuais são &quot;session&quot;, que armazena a senha durante a sessão e &quot;default&quot;, que armazena a senha por um tempo ilimitado.</long>
+      </locale>
+
+      <locale name="ru">
+	<short>Брелок, в котором будут храниться пароли</short>
+	<long>gksu использует названия брелока для своей работы. Обычно встречается название «session», такой брелок хранит пароли на время открытого сеанса. Также применяется брелок «default», в нём хранятся пароли в независимости от продолжительности сеанса.</long>
+      </locale>
+
+      <locale name="sv">
+	<short>Nyckelring till vilken lösenord kommer att sparas</short>
+	<long>Namnet på nyckelringen som gksu ska använda. Vanliga värden är &quot;session&quot;, vilket sparar lösenordet för sessionen, och &quot;default&quot; som sparar lösenordet utan maximal tidsgräns.</long>
+      </locale>
+
+      <locale name="th">
+	<short>พวงกุญแจที่จะใช้เก็บรหัสผ่าน</short>
+	<long>ชื่อของพวงกุญแจที่จะให้ gksu ใช้ ค่าโดยทั่วไปคือ &quot;session&quot; ซึ่งจะเก็บรหัสผ่านไว้ใช้จนจบวาระ และ &quot;default&quot; ซึ่งจะเก็บรหัสผ่านโดยไม่มีกำหนดหมดอายุ</long>
+      </locale>
+
+      <locale name="zh_CN">
+	<short>密码将要被保存到的密钥环</short>
+	<long>gksu 应该使用的密钥环的名称。通常的取值有用于只为当前会话保存的“session”和保存密码而不过期的“default”。</long>
+      </locale>
+      </schema>
+
+  </schemalist>  
+</gconfschemafile>
