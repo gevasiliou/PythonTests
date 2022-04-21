@@ -7,7 +7,7 @@
 /usr/share/doc/gksu/changelog.gz
 /usr/share/doc/gksu/copyright
 /usr/share/gksu/gksu-migrate-conf.sh
-/usr/bin/gksudo
+#/usr/bin/gksudo
 #/usr/share/locale/ar/LC_MESSAGES/gksu.mo
 #/usr/share/locale/ca/LC_MESSAGES/gksu.mo
 #/usr/share/locale/cs/LC_MESSAGES/gksu.mo
