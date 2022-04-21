@@ -1,0 +1,7 @@
+?package(gksu):\
+needs="x11"\
+section="Applications/Terminal Emulators"\
+title="X-Terminal as root (GKsu)"\
+longtitle="Runs an X terminal application. Uses GKsu to ask the password."\
+icon="/usr/share/pixmaps/gksu-debian.xpm"\
+command="/usr/bin/gksu -u root /usr/bin/x-terminal-emulator"
