@@ -39,17 +39,18 @@ printf "prepare to copy gksudo to /usr/bin/gksudo " && read -p " - continue ? [y
 [ ! -d "/usr/share/libgksu" ] && mkdir /usr/share/libgksu
 [ ! -d "/usr/share/libgksu/debian" ] && mkdir /usr/share/libgksu/debian
 
-cp gksu-run-helper /usr/lib/libgksu/gksu-run-helper
-cp libgksu2.so.0 /usr/lib/libgksu2.so.0
-cp gconf-defaults.libgksu-su /usr/share/libgksu/debian/gconf-defaults.libgksu-su 
-cp gconf-defaults.libgksu-sudo /usr/share/libgksu/debian/gconf-defaults.libgksu-sudo
-cp gksu.schemas /usr/share/gconf/schemas/gksu.schemas
-cp libgksu2.so.0.0.2 /usr/lib/libgksu2.so.0.0.2
-cp libgnome-keyring.so.0 /usr/lib/x86_64-linux-gnu/libgnome-keyring.so.0
-cp libgconf-2.so.4 /usr/lib/x86_64-linux-gnu/libgconf-2.so.4
-cp gksu-properties.ui /usr/share/libgksu/gksu-properties.ui
-cp gksu-properties /usr/bin/gksu-properties 
-cp README.Debian /usr/share/doc/libgksu2-0/README.Debian
-cp gksu.png /usr/share/pixmaps/gksu.png
-cp gksu-properties.1.gz /usr/share/man/man1/gksu-properties.1.gz
+cp -i gksu-run-helper /usr/lib/libgksu/gksu-run-helper
+cp -i libgksu2.so.0 /usr/lib/libgksu2.so.0
+cp -i gconf-defaults.libgksu-su /usr/share/libgksu/debian/gconf-defaults.libgksu-su 
+cp -i gconf-defaults.libgksu-sudo /usr/share/libgksu/debian/gconf-defaults.libgksu-sudo
+cp -i gksu.schemas /usr/share/gconf/schemas/gksu.schemas
+cp -i libgksu2.so.0.0.2 /usr/lib/libgksu2.so.0.0.2
+cp -i libgnome-keyring.so.0 /usr/lib/x86_64-linux-gnu/libgnome-keyring.so.0
+cp -i libgconf-2.so.4 /usr/lib/x86_64-linux-gnu/libgconf-2.so.4
+cp -i gksu-properties.ui /usr/share/libgksu/gksu-properties.ui
+cp -i gksu-properties /usr/bin/gksu-properties 
+cp -i gksu.png /usr/share/pixmaps/gksu.png
+cp -i gksu-properties.1.gz /usr/share/man/man1/gksu-properties.1.gz
+
+cp -r -i ./libgksu2-0/ /usr/share/doc/libgksu2-0/
 
