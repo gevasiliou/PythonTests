@@ -1,0 +1,49 @@
+==================
+libgksu for Debian
+==================
+
+The gksu library enables the user to run programs with root powers
+using one of `su' or `sudo' as backend. If the application that uses
+the library doesn't specify the backend it wants to use, the backend
+will be selected through the `/apps/gksu/sudo-mode' boolean gconf
+option.
+
+The Debian package provides two gconf default files, one of them
+setting sudo-mode to true, the other setting sudo-mode to false. Which
+one of them is used to set the default is decided through an
+alternative.
+
+Debian tools, Systems Administrators and custom distributions builders
+might want to make use of this functionality to decide whhich backend
+to use. This is done by configuring the libgksu-gconf-default
+alternative:
+
+ # update-alternatives --config libgksu-gconf-defaults
+
+ There are 2 alternatives which provide `libgksu-gconf-defaults'.
+
+   Selection    Alternative
+ -----------------------------------------------
+ *         1    /usr/share/libgksu/debian/gconf-defaults.libgksu-sudo
+  +        2    /usr/share/libgksu/debian/gconf-defaults.libgksu-su
+
+ Press enter to keep the default[*], or type selection number: 2
+ Using `/usr/share/libgksu/debian/gconf-defaults.libgksu-su' to provide `libgksu-gconf-defaults'.
+
+After setting the alternative you must run the `update-gconf-defaults'
+script to actually apply the setting to the gconf defaults XML file.
+
+While this possibility exists, it would be best if it is only used by
+the internal Debian infra-structure, since there are already better
+and documented ways of providing "default" settings for gconf-using
+applications both in the upstream software[0] and in the gconf
+packaging[1] itself, good for administrators and custom distributions
+builders, respectively.
+
+[0]: Read the GNOME Desktop System Administration Guide at
+     http://www.gnome.org/learn/admin-guide/latest/
+[1]: See the dh_gconf(1) script provided in the debhelper package and
+     also see the /usr/sbin/update-gconf-defaults python script
+     provided in the gconf package
+
+ -- Gustavo Noronha Silva <kov@debian.org>, Sun,  3 Sep 2006 19:06:47 -0300
