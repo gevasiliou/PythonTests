@@ -113,7 +113,7 @@ $ t=$(for code in {1..258}; do echo -e "\e[38;05;${code}m $code: Text in Color";
 $ echo "$t" |awk 'FNR%6?ORS=",":ORS="\n"' |column -t
 
 ------------------------------------------------------------------------------------------------------------------------
-BASH:READ - BASICS
+BASH:READ - BASICS , IFS, etc
 ##READING FILES (MAPFILE, READARRAY, READ -R , ETC)
 http://unix.stackexchange.com/questions/339992/how-to-read-different-lines-of-a-file-to-different-variables/339996#339996
 http://wiki.bash-hackers.org/commands/builtin/read
@@ -122,8 +122,8 @@ http://unix.stackexchange.com/questions/209123/understand-ifs-read-r-line
 
 Check man bash for :
 readarray /  mapfile [-d delim] [-n count] [-O origin] [-s count] [-t] [-u fd] [-C callback] [-c quantum] [array] #man bash line 2981
-read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] #man bash line 3056
-#or help -m readarray 
+read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...] 
+#man bash line 3056 or help -m read or help -m readarray 
 
 Important: 
 read is a bash builtin command and though it has a -d (delimiter) option it obeys word splitting acc to IFS. Usefull for null separated data (IFS= and read -d '')
@@ -131,6 +131,22 @@ readarray is a prog and ignores IFS. Default delimiter is new line. Custom delim
 If you need to read a file with while read -r and use a custom separator (i.e :) adjust IFS=: and do not ude -d: option of read.
 Alternativelly you can disable IFS (i.e while IFS= or IFS="") and thus read -d option will come in play.
 
+.B Clarification about IFS & read
+.I https://stackoverflow.com/questions/72080464/cant-understand-the-ifs-variable-in-bash#72080464
+
+IFS is a field separator, not a record separator. 
+The default record separator is the newline; it can be changed with the -d argument to read. 
+Each call to read reads a single record, and optionally splits it into multiple variables at field boundaries.
+
+When you run read -r part, you're reading only one record (the one that goes into part), so there's no separating to be done. 
+By contrast, if you used -a to specify your destination as an array (read -r -a parts) or passed more than one destination variable 
+i.e (read -r part1 part2 part3), splitting into fields would take place.
+
+Tip: You can print the default IFS by using something like the one bellow to see in hex format the IFS value since tab-newline-space prints nothing on screen
+.I echo "$IFS" |od -w40 -An -t x1c -v
+  20  09  0a  0a
+      \t  \n  \n
+      
 ------------------------------------------------------------------------------------------------------------------------
 ##READ FILE TO ARRAY
 http://stackoverflow.com/questions/11393817/bash-read-lines-in-file-into-an-array/11395181#11395181

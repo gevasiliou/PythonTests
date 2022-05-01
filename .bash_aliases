@@ -860,10 +860,22 @@ find / -type f -executable -name "$fname"
 
 function mancheat { 
 echo "mancheat: explore the cheat sheets using man page viewer"
-[[ -z $1 ]] && echo "Pass me a cheat file name to display from ./cheatsheets/ directory" && return 1
-	man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+if [[ -z $1 ]]; then 
+echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' to edit the cheat file";
+echo "Available cheat sheets by gv:";
+find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n'
+return 1;
+fi
+
+if 	[[ $2 == "--edit" ]]; then
+	geany /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
+	return 0
+else
+man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+fi
 #This works directly in cli:
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
+
 }
 
 function datetoepoch {
