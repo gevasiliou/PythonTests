@@ -863,7 +863,7 @@ echo "mancheat: explore the cheat sheets using man page viewer"
 if [[ -z $1 ]]; then 
 echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' to edit the cheat file";
 echo "Available cheat sheets by gv:";
-find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n'
+find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n' |awk -F"-" '{print $1}';
 return 1;
 fi
 
