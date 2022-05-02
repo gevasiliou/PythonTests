@@ -168,7 +168,7 @@ awk 'BEGIN{system("echo 1 > f")}'
 awk 'BEGIN{ORS="\n\n"}{print}' ./tmp/file4                    # Double space a file. ORS=Output Record Separator
 
 ##SHORTHAND NUMERIC ASSIGNMENTS
-https://www.tutorialspoint.com/awk/awk_assignment_operators.htm
+.I https://www.tutorialspoint.com/awk/awk_assignment_operators.htm
 $ echo "1 2 3" |awk '{$NF *=10;print}' # Equivalent to $NF=$NF*10   ----> 1 2 30
 $ echo "1 2 3" |awk '{$NF +=10;print}' # Equivalent to $NF=$NF+10   ----> 1 2 13
 $ echo "1 2 3" |awk '{$NF -=10;print}' # Equivalent to $NF=$NF-10   ----> 1 2 -7
