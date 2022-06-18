@@ -2269,14 +2269,19 @@ Avoid to use root account when you mount.cifs to be capable to open the sharre a
 gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/Users/Drawings/file640.pdf
 Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
 
-##SHARE A DEBIAN FOLDER WITH WINDOWS (LAN)
+##SHARE A FOLDER OR DRIVE OR PARTITION FROM DEBIAN TO WINDOWS (LAN)
 https://www.howtogeek.com/176471/how-to-share-files-between-windows-and-linux/
-.B At Debian Machine
-First you need to make sure that you have samba installed on your debian (samba server and maybe samba client - just apt get install samba)
+Tip Date: 2022
+Scenario: You Debian PC is up and running inside the lan. You want to be able to share over lan a folder , or even an external HDD
+
+.B Setting At Host (Debian) Machine
+Step 1: make sure that you have samba installed on your debian (samba server and maybe samba client - 
+.I apt-get install samba
 In some files managers like gnome, nautilus, etc you can just right click a folder and share it , as easy as is done on Windowns.
 On XFCE you have to do some command line actions to assign a shared folder.
 
-Open samba configuration file (/etc/samba/smb.conf) and create manually the shares you want like this (add bellow to the end of file)
+Step 2: Open samba configuration file and create manually the shares you want like this (add bellow to the end of file)
+.I geany /etc/samba/smb.conf
 
 [natwin]
    comment = natwin-debian
@@ -2290,30 +2295,52 @@ Open samba configuration file (/etc/samba/smb.conf) and create manually the shar
    guest ok = no
 
 The name in [ ] is the name that your share will appear on shared directories when browsed by other machines.
+PS: Don't try to access your share with the comment name!
 Save the file and close your editor.
 
-In order the share to work , you need to add samba users with this command from CLI:
-smbpasswd -a geek
+Step 3: In order the share to work , you need to add samba users with this command from CLI:
+.I smbpasswd -a geek
 #This will add user geek at samba environment
+#If you have already add a user before (i.e for a previous share) you don't need to add a new user again, unless you want to.
 
-Now, you just need to restart the SMB service for the changes to take effect : sudo service smbd restart
+Step 4: Now, you just need to restart the SMB service for the changes to take effect : 
+.I sudo service smbd restart
 
-.B At Windows PC
-the network location of the shared folder, with this syntax: \\IP-ADDRESS\SHARE-NAME
-In our case \\192.168.xxx.xxx\natwin
+.B Settings at Guest (Windows) PC that will access the Debian PC Shares
+Step 5: 
+Open the network location of the shared folder with Win File Explore with this syntax: \\IP-ADDRESS\SHARE-NAME
+In our case 
+.I \\192.168.xxx.xxx\natwin
 
 You can try to create a shortcut pointing to the above address , or Add Network Location (right click on My Computer/This PC).
-Those techniques failed in my business laptop (assigned to a domain).
+Those techniques failed in my business laptop on the first share (assigned to a domain), but worked on my second external HDD share
 
-The only technique that really worked is Map Network Drive, providing the above path and by selecting "Connect Using Different Credentials".
+Step 6: 
+The only technique that really worked is Map Network Drive (Right Click on MyPC in Win10) providing the above path.
+You need alsot to select "Connect Using Different Credentials".
 When propmted for different credentials provide:
 Username : .\geek (mind the .\ to define that this user is a local user and not a domain user).
+Tip: You need to click on "more settings - different account" to be able to use different user name (.\geek)
+
 Password : The password provided at Debian for samba user geek
-For some reason my laptop asks for the credentials password a second time, having already username completed (geek). 
-actually the password was also filled and shown with asterisks , so just press enter one more time.
+For some reason my laptop asks for the credentials password a second time, having already username and password completed (geek & asterisks). 
+You just hit enter and the process proceeds.
+
+Tip:
+On my second share attempt (external HDD atttached to Debian) i did not changed the prompted user by Win10 dialogues 
+I kept the user that Win10 prompted: myWin10-business-domain-name\sambashare-username-on-debian 
+and i just entered the correct debian samba password two times and workd fine.
 
 In my case this technique worked and allowed me to share a single Debian desktop folder to lan, or even a mounted location under the hdd of Debian i.e a Windows Partition).
-Also , it is known that Win10 has stopped to support smb1 shares - I enabled smb1 sharing support by Windows Features Turn on/off at control panel (scroll down and look for smb1)
+On my second share, i was able to browse my external HDD attached to Debian at location /media/XXX/myHDD
+
+Tip:
+I did a lot of failed attempts just to realize that in step6 (map network drive) i was giving the wrong share name.
+Instead of \\192.168.xxx.xxx\sambasharename (i.e \mypassport) i was trying to connect to \\192.168.xxx.xxx\sambashare-comment
+
+Tip: 
+It is known that Win10 has stopped to support smb1 shares - I enabled smb1 sharing support by Windows Features Turn on/off at control panel (scroll down and look for smb1)
+
  
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
