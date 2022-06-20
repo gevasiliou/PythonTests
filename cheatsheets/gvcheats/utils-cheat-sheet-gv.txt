@@ -2422,8 +2422,8 @@ $ apt-get install ./zoom_amd64.deb
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:PROXY
-Date: 29.03.2022
 ##INSTALL SQUID PROXY ON DEBIAN
+Date: 29.03.2022
 Follow the instruction provided here:
 .I https://linuxize.com/post/how-to-install-and-configure-squid-proxy-on-debian-10/
 
@@ -2517,3 +2517,27 @@ Returns the 5 last (end) entries. Date in the beginning is provided in epoch tim
 .I tail -20 /var/log/squid/access.log |awk '{cmd="date -d@"$1;cmd |getline $1; close(cmd)}1'
 .I tail -20 /var/log/squid/access.log |awk '{$1=strftime("%c",$1)}1'
 Uses awk to print the last (more recent) log entries, converting date from epoch to normal date format
+
+##Windows LAN Proxy Servers 
+Date 21.06.2022
+.B https://www.filehorse.com/download-ccproxy/
+CC Proxy installed with a GUI, runs easily but:
+Make sure that the proxy port you select is not in use by other ports. Using 8080 seems a good choice.
+In my setup i had to change default IP available in each setting from 0.0.0.0 to the PC IP that proxy server runs on (192.168.x.x)
+Make sure that the proxy port 8080 is open on the firewall available in the local machine you installed ccproxy
+I suceed to open firewall door in my corporate - quite stric - laptop by adding a firewall rule allowing any protocol, all ports.
+And surprisingly , this new port adding was working ok.
+
+Keep in mind that if you installed ccproxy in a corporate PC that admin policies apply to restrict your internet connection (black lists, web filtering, etc)
+then ccproxy will adopt those restrictions.... meaning that you can not bypass the admin rules just because you installed a proxy.
+
+.B https://www.wingate.com/
+Not tested. 
+
+.B https://softradar.com/freeproxy/
+Not Tested.
+
+.B Chrome addon UltraSurf Security, Privacy & Unblock VPN
+You can add it in chrome , should be handled as extension, and once enabled it uses some proxies in the background (or even vpn - not clear) to bypass admin restrictions and allow you to visit blocked pages.
+Important: We don't know how Ultrasurf handles our data (passwords, bank accounts, etc). We don't know if those data are kept somewhere without us knowing that.
+I used UltraSurf (and worked like a charm) to be able to access whatsapp web & github website - those were blocked by my corporate admin in my business laptop....
