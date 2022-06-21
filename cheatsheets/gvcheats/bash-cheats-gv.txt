@@ -1028,6 +1028,62 @@ BASH:ARGS - POSITIONAL PARAMETERS
 http://wiki.bash-hackers.org/scripting/posparams#range_of_positional_parameters
 https://stackoverflow.com/questions/7529856/retrieving-multiple-arguments-for-a-single-option-using-getopts-in-bash
 
+##How bash getopts work
+First keep in mind that getopts is a bash bultin and supports single char parameters like -c or -i , etc
+Parameters defined with dash - , and may or maynot get an extra argument like -p hello 
+Thought not always necessary, you can use -- in the end of the script invocation to mark the end of parameters.
+
+getopt is a software and is different than bash builtin getopts. 
+getopt supports long parameter names like --someparameter
+
+.B getopts example
+  #!/bin/bash
+  f1(){ echo "f1, -c";}
+  f2(){ echo "f2, -i";}
+
+  while getopts ":c:i:" OPTION; do
+        case ${OPTION} in
+                c) f1;;
+                i) f2;;
+                *) echo  "Wrong arguments" 
+        esac
+  done
+  #script end
+
+
+Using getopts ':c:i:' -> Bash expects some arguments after each parameter -c and -i
+PS: The first colon makes getopts to work in silent mode. Remove it for troubleshooting - error messages to be provided in your screen
+
+Using getopts 'ci' -> It declares to bash that parameters -c and -i take no arguments.
+
+using getopts ':ci:' -> declares that -c will be used without arguments, but -i should be provided with an argument
+
+.B Different invocations tests with bash 5.1.16
+ ./mysh.sh -c -i   # using getopts ':c:i:'
+ f1 - c            # -i function (f2) not performed since -i is considered an argument of -c
+
+ ./mysh.sh -c     # using getopts ':c:i:'
+ Wrong arguments  # because the expected behavior "-parameter argument" is not met
+
+ ./mysh.sh -c one -i two # using getopts ':c:i:'
+ f1, -c                  # works fine , parameter "-c" provided with argument "one" 
+ f2, -i                  # works fine, parameter "-i" provided with argument "two" 
+
+ ./mysh.sh -c -i two  # using getopts ':c:i:'
+ f1, -c               # parameter -c considers -i to be his argument, and two is ignored
+
+ ./mysh.sh -c -i #using  getopts 'ci' 
+ f1, -c          # works fine, f1 function is called, no args required for -c
+ f2, -i          # works fine, f2 function is called, no args required for -i
+
+ ./mysh.sh -c -i    # using  getopts ':ci:'
+ f1, -c            #works fine , -c is used without any arguments
+ Wrong arguments   #error since -i expects an argument that is not provided
+
+ ./mysh.sh -c -i two   # using  getopts ':ci:'
+ f1, -c                # works fine, -c used without arguments
+ f2, -i                # works fine, -i used with argument two
+
 ##ITERATE THROUGH ARGS
 function tt { for a in "$@";do echo "$a";done;};test "${args[@]}"
 function tt { while [[ "$#" -gt 0 ]];do echo "$1";shift;done;};test "${args[@]}"
@@ -1203,7 +1259,7 @@ Command $(cat file) can be replaced by the equivalent but faster $(< file).  : e
 if [[ " ${array[@]} " =~ " ${value} " ]]; then whatever fi #if array contains value
 if [[ ! " ${array[@]} " =~ " ${value} " ]]; then whatever fi
 
-##SEPARATE FILENAME FROM DIRECTORYNAME (EMULATES BASENAME AND DIRNAME)
+##SEPARATE FILE NAME FROM DIRECTORY NAME (EMULATES BASENAME AND DIRNAME)
 for f="/home/bash/bash_hackers.txt"
 Get directory name -> ${f%/*} ⇒ /home/bash
 Get directory name -> ${f%%/*} ⇒ /home
