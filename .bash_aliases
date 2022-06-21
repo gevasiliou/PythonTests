@@ -945,6 +945,7 @@ function rebootat {
 	read -p "Parameter $1 provided - press any key to continue"
 	grub-reboot "$1"
 	read -p "grub-reboot set to $1 - press any key to reboot now..."
+	grub-editenv list;
 	local an;
 	read -p "are you sure you want to reboot ? All your unsaved work will be lost.Type 'yes' to confirm  :" an
 	[[ "$an" == "yes" ]] && sleep 10 && reboot || echo "aborting... $an selected" 
