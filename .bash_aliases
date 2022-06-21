@@ -879,6 +879,7 @@ fi
 }
 
 function datetoepoch {
+#2022
 #echo "converts regular date to epoch. Send a date or pipe me a date in format 14/Feb/2017:11:31:20" >&2
 # The help message is printed on stderr (&2). In command line run will be printed on screen. 
 # On script run mode $(..) or in pipe run mode only the returned converted date result is stored without the help message, since scripts hold by default only stdout , unless 2>&1 is provided
@@ -921,7 +922,8 @@ function epochtodate {
 }
 
 
-function dategr { 
+function dategr {
+	#2022 
     if [ -p /dev/stdin ]; then # Check to see if a pipe exists on stdin.
     local dt=$(</dev/stdin);
     #echo "pipe contains : $dt" >&2; #debugging
@@ -935,6 +937,18 @@ function dategr {
 
 }
 
+function rebootat {
+	helpme="Usage: rebootat 0 -> will use the very first entry of grub boot menu - numbering starts from zero"
+	[[ -z $1 ]] && echo "$helpme" >&2 && return;
+	[[ $1 == "-h" ]] && echo "$helpme" >&2 && return;
+	[[ $1 == "--help" ]] && echo "$helpme" >&2 && return;
+	read -p "Parameter $1 provided - press any key to continue"
+	grub-reboot "$1"
+	read -p "grub-reboot set to $1 - press any key to reboot now..."
+	local an;
+	read -p "are you sure you want to reboot ? All your unsaved work will be lost.Type 'yes' to confirm  :" an
+	[[ "$an" == "yes" ]] && sleep 10 && reboot || echo "aborting... $an selected" 
+}
 
 function toascii {
 [[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
