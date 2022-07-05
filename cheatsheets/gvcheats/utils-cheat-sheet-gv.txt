@@ -1947,7 +1947,7 @@ This can be solved with python scripting - see rightclick-gv.py & relevant right
 
 
 ------------------------------------------------------------------------------------------------------------------------
-UTILS:NETCAT 
+UTILS:NETCAT & NMAP
 https://en.wikipedia.org/wiki/Netcat     # wikipedia has a lot of examples
 https://gist.github.com/lenciel/8780269
 
@@ -1955,7 +1955,7 @@ Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ L
 PC1-Toshiba : 192.168.1.116
 PC2-Dell : 192.168.1.106
 
-##INVOCATION - Simple client / server
+## NCAT INVOCATION - Simple client / server
 nc     : netcat traditional tool
 netcat : the usuall netcat package in modern distros like debian
 ncat   : Similar tool to netcat - same principle - same switches but is not a netcat. Provided by package nmap
@@ -2027,6 +2027,13 @@ Srt will not be autoloaded due to mismatching names of srt pipe && movie pipe
 
 ##WGET Save and watch movie
 wget http://cclicence.film/myfavourite.mp4 -O- | tee myfav.mp4 | mpv - #or |mpv --sub-file=file.srt -
+
+##NMAP
+apt install nmap
+NMAP stands for "Network Mapper" - It is actually a lan scanning utility.
+You can run it and check if a specific port is open , or you can scan an IP for all open parts i.e
+nmap 192.168.1.xx
+
 ------------------------------------------------------------------------------------------------------------------------
 
 UTILS:GRUB
@@ -2372,6 +2379,13 @@ teamviewer/stable 15.11.6 amd64
 $ apt install teamviewer
 #was installed correctly in my kali machine
 
+.B Alternative
+You can download teamviewer deb file from teamviewer web site.
+Go to the download folder and instead of dpkg -i teamviewer.deb run:
+apt-get install ./teamviewer.deb
+The usage of ./ does the trick and apt-get installs the "local" deb.
+Bonus: even with this invocation, apt-get will resolve all the dependancy issues and all missing libraries will be installed.
+
 ##TEAMVIEWER UPDATE
 Normally, a teamviewer.list file will be added in /etc/apt/sources.list.d directory during teamviewer installation.
 This file contains this basic line:
@@ -2408,7 +2422,7 @@ deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 .B Chrome Installation Trick:
 You can create the .list file manually with nano/echo/etcetera and then run apt-get update && apt-get install google-chrome-stable 
 apt-get update reads the repos in /etc/apt/sources.list and /etc/apt/sources.list.d directory, so by supplying the web location of google chrome apt-get will be capable to 
-locate the google-chrome package (apt-get update) and then you can install it with apt-get install
+locate the google-chrome package (apt-get update) and then you can install it with a simple apt-get install chrome
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:ZOOM
@@ -2475,6 +2489,10 @@ root:#cat -n /etc/squid/squid.conf |grep -v '^\s*[0-9]*\s*[#]\|^\s*[0-9]*\s*$'
   5274	refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
   5275	refresh_pattern .		0	20%	4320
 
+Update: In some Debian machines (i.e virtual machines) )above configuration does not work.
+I had to replace all the "deny" entries to "allow" in order to be capable to use squid.
+PS: It seems that i have destroy the term "cyber security" & "protect yourself from hackers" 
+
 root:# cat /etc/squid/conf.d/debian.conf
 #
 # Squid configuration settings for Debian
@@ -2539,5 +2557,6 @@ Not Tested.
 
 .B Chrome addon UltraSurf Security, Privacy & Unblock VPN
 You can add it in chrome , should be handled as extension, and once enabled it uses some proxies in the background (or even vpn - not clear) to bypass admin restrictions and allow you to visit blocked pages.
-Important: We don't know how Ultrasurf handles our data (passwords, bank accounts, etc). We don't know if those data are kept somewhere without us knowing that.
+Important: We don't know how Ultrasurf handles our data (passwords, bank accounts, etc). 
+We don't know if those data are kept / send / published somewhere without our permission.
 I used UltraSurf (and worked like a charm) to be able to access whatsapp web & github website - those were blocked by my corporate admin in my business laptop....
