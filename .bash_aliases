@@ -24,6 +24,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
+alias lanip="ifconfig |grep 'inet[^6]'"
 alias hdmisound="pacmd set-card-profile 0 output:hdmi-stereo && pacmd list 2>&1 |grep 'active profile'"
 alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
 
