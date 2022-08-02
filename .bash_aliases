@@ -622,14 +622,27 @@ echo "Dirs: $(($dirsfound-1))" #Find reports (and wc count) also the directory s
 # in files, ls might fail to catch filenames with strange chars in name (spaces,tabs,newlines,etc)
 }
 
-function lsdir { 
+function lsdir () { 
 # List only directories
 # TBD: Make it work with globs like tmp*
+local d="$PWD";
+local helpme="This is help about lsdir function.
+Under the hood this command is run:
+ls -allh \x22$d\x22 |grep '^d' 
+There are also alternative ways to achieve this :
+alternative1 : find <dir> -maxdepth 1 -type d |column
+alternative2 : for d in */; do ..... done";
+
+[[ "$1" == "--help" ]] && echo -e "$helpme" && return;
 [[ -z "$1" ]] && local d="$PWD" || local d="$1"
 [[ "${d: -1}" != "/" ]] && d="${d}/" #if last char is not a dash, add a dash
-ls -allh "$d" |grep '^d' 
-#-h: show size in human format 
-#alternative : find "$d" -maxdepth 1 -type d |column
+ls -allh "$d" |grep '^d'  #-h: show size in human format 
+#alternative1 : find "$d" -maxdepth 1 -type d |column
+#alternative2 : a=1;for d in */; do echo -e "${a} --> \x22${d:0:-1}\x22";let a=a+1; done
+#1 --> "appsfiles"
+#2 --> "cheat sheets"
+#<etc>
+
 }
 
 function dpkginfo { dpkg -L "$1" |nl;}  #prints files installed by a package with numbering of the entries.
@@ -949,8 +962,8 @@ function rebootat {
 	read -p "grub-reboot set to $1 - press any key to reboot now..."
 	grub-editenv list;
 	local an;
-	read -p "are you sure you want to reboot ? All your unsaved work will be lost.Type 'yes' to confirm  :" an
-	[[ "$an" == "yes" ]] && sleep 10 && reboot || echo "aborting... $an selected" 
+	read -p "are you sure you want to reboot ? All your unsaved work will be lost.Type 'yes-rebootnow' to confirm  :" an
+	[[ "$an" == "yes-rebootnow" ]] && sleep 10 && reboot || echo "aborting... $an selected" 
 }
 
 function toascii {
