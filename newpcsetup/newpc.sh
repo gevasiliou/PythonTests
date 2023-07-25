@@ -125,8 +125,17 @@ mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/Py
 chown -R gv:gv /home/gv/Desktop/PythonTests
 git config credential.helper store #this will store the username/password on the next push.
 git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens
-git config --global user.email ge.vasiliou@gmail.com
+git config --global credential.helper manager #this should work for git 2023 , git version 2.39+
+#especially for git 2.39+ you need to manually install (dpkg -i) the latest Git Credential Manager deb package found here:
+#https://github.com/git-ecosystem/git-credential-manager/releases
+#Then make sure that .git-config file in your home directory includes this line:
+#[credential]
+#	helper = manager
+#	credentialStore = cache
+#
+# The credentialStore = cache is actually a workaround. The main idea is that you need to define a credential store . 
 
+git config --global user.email ge.vasiliou@gmail.com
 }
 
 function sysupgrade {
