@@ -1,0 +1,47 @@
+WEBSERVER:BASICS: CHEAT SHEET by gv
+
+##APACHE2
+To be added - chapter on how to manually install and configure apache2
+
+##PHP
+In Debian 12 , the php version available is 8.2
+
+Step 1: apt install php libapache2-mod-php
+
+Step 2: write a simple test.php file inside /var/www/html folder, containing just those two lines:
+<?php
+phpinfo();
+
+Step 3: open a php interactive shell with php -a and run phpinfo();
+If you see output , php is installed (as a language).
+
+Step 4: geany /etc/apache2/apache2.conf
+To the end of file , add this line:
+SetHandler application/x-httpd-php
+
+Step 5: Disable older php modules and load new php modules
+a2dismod mpm_event
+a2enmod mpm_prefork
+a2enmod php8.2
+a2enmod proxy_fcgi setenvif
+a2enconf php8.0-fpm
+a2query -m php8.2 #this is just a query - you expect a positive confirmation
+
+
+Step 6: Edit the php configuration file and comment out / disable the following lines:
+geany /etc/apache2/mods-enabled/php8.2.conf
+# Running PHP scripts in user directories is disabled by default
+# 
+# To re-enable PHP in user directories comment the following lines
+# (from <IfModule ...> to </IfModule>.) Do NOT set it to On as it
+# prevents .htaccess files from disabling it.
+#<IfModule mod_userdir.c>
+#    <Directory /home/*/public_html>
+#        php_admin_flag engine Off
+#    </Directory>
+#</IfModule>
+
+Step 7: systemctl restart apache2
+
+Step 8: Navigate to http://127.0.0.1/test.php and everything should work ok.
+PS: Considering that you had a working apache2 server , meaning that you have a default index.html file and meaning that visiting http://127.0.0.1 works ok.
