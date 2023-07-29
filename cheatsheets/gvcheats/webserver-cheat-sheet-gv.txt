@@ -5,8 +5,10 @@ To be added - chapter on how to manually install and configure apache2
 
 ##PHP
 In Debian 12 , the php version available is 8.2
+All bellow commands should be run as root or with sudo.
+Source: https://www.installconfig.com/doku.php?id=configure_ubuntu_server_20_04_host_nextcloud_hub_21
 
-Step 1: apt install php libapache2-mod-php
+Step 1: apt install php libapache2-mod-php libapache2-mod-fcgid php-fpm 
 
 Step 2: write a simple test.php file inside /var/www/html folder, containing just those two lines:
 <?php
@@ -24,8 +26,9 @@ a2dismod mpm_event
 a2enmod mpm_prefork
 a2enmod php8.2
 a2enmod proxy_fcgi setenvif
-a2enconf php8.0-fpm
-a2query -m php8.2 #this is just a query - you expect a positive confirmation
+a2enconf php8.2-fpm
+a2query -m php8.2 
+#a2query is just a question to the system / query - you expect to get a positive confirmation in your query
 
 
 Step 6: Edit the php configuration file and comment out / disable the following lines:
@@ -45,3 +48,8 @@ Step 7: systemctl restart apache2
 
 Step 8: Navigate to http://127.0.0.1/test.php and everything should work ok.
 PS: Considering that you had a working apache2 server , meaning that you have a default index.html file and meaning that visiting http://127.0.0.1 works ok.
+
+Step 9: It seems good option to install some php extensions in your system:
+sudo apt install php8.0-gd php8.0-mysql php8.0-curl php8.0-mbstring
+sudo apt install php8.0-intl php8.0-gmp php8.0-bcmath php8.0-xml
+sudo apt install libapache2-mod-php8.0 php8.0-zip php-imagick php-apcu

@@ -21,10 +21,18 @@ else
   fi
 fi
 
+for i in /home/gv /root;do
+echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
+echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
+done
+
 ess=( "geany" "git" "git-all" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "desktop-file-utils" )
-ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" "build-essential" "dkms")
-ess+=( "kmod" "sysfsutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
-ess+=( "firmware-linux" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
+ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" "build-essential" "dkms" )
+ess+=( "kmod" "sysfsutils" "libssl-dev" "cpufrequtils" "debianutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
+ess+=( "firmware-linux" "cmake" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
+ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" )
+ess+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
+
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
@@ -34,7 +42,8 @@ ess+=( "firmware-linux" "build-essential" "libpcap-dev" "autoconf" "intltool" "l
 for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
 if ! dpkg-query -s "$i" >&/dev/null ;then 
-  read -p "========> Want to install $i [y/n] ? :" an
+  read -p "========> Want to install $i [y/n/h] ? :" an
+  [[ $an == "h" ]] && apt show "$i" && read -p "========> Want to install $i [y/n] ? :" an
   [[ $an == "y" ]] && apt-get --yes install "$i" || echo "===========> skipping installation of $i <============"
 else 
   printf '%s\n' " <========= already installed ";
@@ -55,14 +64,11 @@ done
 function utils {
 read -p "Utilities Installation. press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
 unset toinst
-toinst=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp")
-toinst+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
-toinst+=( "transmission" "hexchat" "htop" "lshw" "unrar" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
+toinst=( "transmission" "hexchat" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
-toinst+=( "cpufrequtils" "debianutils" )
 toinst+=( "firmware-linux-free" "firmware-realtek" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
-toinst+=( "eog" "shutter" "info" "pinfo" "okular" "catfish" )
+toinst+=( "eog" "shutter" "okular" "catfish" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" )
 toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qttools5-dev" "qttools5-dev-tools" )
 
