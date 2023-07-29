@@ -28,6 +28,9 @@ done
 
 ess=( "geany" "git" "git-all" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "desktop-file-utils" )
 ess+=( "linux-headers-$(uname -r)" "kbuild" "module-assistant" "build-essential" "dkms" )
+ess+=( "gcm" ) 
+#gcm = Git Credential Manager , available in apt repos and points to the latest Git Credential Manager Version found here: 
+#https://github.com/git-ecosystem/git-credential-manager/releases
 ess+=( "kmod" "sysfsutils" "libssl-dev" "cpufrequtils" "debianutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "cmake" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
 ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" )
