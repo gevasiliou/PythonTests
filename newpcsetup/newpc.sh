@@ -132,9 +132,10 @@ chown -R gv:gv /home/gv/Desktop/PythonTests
 git config credential.helper store #this will store the username/password on the next push.
 git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens
 git config --global credential.helper manager #this should work for git 2023 , git version 2.39+
+git config --global credential.credentialStore cache
 #especially for git 2.39+ you need to manually install (dpkg -i) the latest Git Credential Manager deb package found here:
 #https://github.com/git-ecosystem/git-credential-manager/releases
-#Then make sure that .git-config file in your home directory includes this line:
+#Then make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes this line:
 #[credential]
 #	helper = manager
 #	credentialStore = cache
