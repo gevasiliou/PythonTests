@@ -124,28 +124,37 @@ param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$para
 
 function gitclone {
 echo "This will run the following commands:"
-echo "apt install git-all"
+echo "apt install git git-all gcm"
 echo "git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests"
 echo "git config credential.helper store #this will store the username/password on the next push."
 echo "git config --global credential.helper manager-core"
-read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
+read -p "press any key to proceed with above commands or press s to skip this section" s && [[ "$s" == "s" ]] && return
 
 mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/PythonTests
 chown -R gv:gv /home/gv/Desktop/PythonTests
-git config credential.helper store #this will store the username/password on the next push.
-git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens
-git config --global credential.helper manager #this should work for git 2023 , git version 2.39+
+git config --global user.email ge.vasiliou@gmail.com
+#git config credential.helper store #this will store the username/password on the next push (old trick - not working at 2023 , git version 2.39+
+#git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens, but not working with git 2023 2.39+
+git config --global credential.helper manager #this works for git 2023 , git version 2.39+
 git config --global credential.credentialStore cache
-#especially for git 2.39+ you need to manually install (dpkg -i) the latest Git Credential Manager deb package found here:
+#especially for git 2.39+ you need to install (dpkg -i) the latest Git Credential Manager deb package found here:
 #https://github.com/git-ecosystem/git-credential-manager/releases
-#Then make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes this line:
+#or using Debian repos, just apt install gcm
+
+#Make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes these lines:
+#cat /home/gv/.gitconfig
+#[user]
+#	email = ge.vasiliou@gmail.com
 #[credential]
 #	helper = manager
 #	credentialStore = cache
+#	cacheOptions = --timeout 36000
 #
-# The credentialStore = cache is actually a workaround. The main idea is that you need to define a credential store . 
-
-git config --global user.email ge.vasiliou@gmail.com
+# The credentialStore = cache is actually a workaround , forcing your pc to keep (cache) your credentials. 
+# The main idea is that you need to define a git credential store. 
+# Cache timeout affects for how many seconds your credentials are cached/stored. 
+# Default Cache Timeout Value is 900 seconds. I applied 36000 seconds (10 hours) for testing
+# Git 2.39+ provides more Storing options like gpg keys, ssh keys, etc.
 }
 
 function sysupgrade {
