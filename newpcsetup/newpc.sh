@@ -131,7 +131,9 @@ echo "git config --global credential.helper manager-core"
 read -p "press any key to proceed with above commands or press s to skip this section" s && [[ "$s" == "s" ]] && return
 
 mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/PythonTests
-chown -R gv:gv /home/gv/Desktop/PythonTests
+chown --verbose -R gv:gv /home/gv/Desktop/PythonTests |grep -v "retained as gv:gv"
+# this will change ownership from root:root to gv:gv - With the use of grep -v we avoid the annoying messages about files that have been retained as gv:gv (no chown was necessary)
+#chown -R gv:gv /home/gv/Desktop/PythonTests
 git config --global user.email ge.vasiliou@gmail.com
 #git config credential.helper store #this will store the username/password on the next push (old trick - not working at 2023 , git version 2.39+
 #git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens, but not working with git 2023 2.39+
@@ -142,7 +144,7 @@ git config --global credential.credentialStore cache
 #or using Debian repos, just apt install gcm
 
 #Make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes these lines:
-#cat /home/gv/.gitconfig
+cat /home/gv/.gitconfig
 #[user]
 #	email = ge.vasiliou@gmail.com
 #[credential]
