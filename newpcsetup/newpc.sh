@@ -124,7 +124,7 @@ param="$(systool -a -v -m $module |sed -nr '/Parameters/,/^$/p')" && echo "$para
 
 function gitclone {
 echo "This will run the following commands:"
-echo "apt install git git-all gcm"
+echo "apt install git git-all gcm" #gcm = git credential manager = necessary to "store" your login token in your pc.
 echo "git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests"
 echo "git config credential.helper store #this will store the username/password on the next push."
 echo "git config --global credential.helper manager-core"
@@ -132,16 +132,21 @@ read -p "press any key to proceed with above commands or press s to skip this se
 
 mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/PythonTests
 chown --verbose -R gv:gv /home/gv/Desktop/PythonTests |grep -v "retained as gv:gv"
-# this will change ownership from root:root to gv:gv - With the use of grep -v we avoid the annoying messages about files that have been retained as gv:gv (no chown was necessary)
-#chown -R gv:gv /home/gv/Desktop/PythonTests
+# this will change ownership from root:root to gv:gv - With the use of grep -v we avoid the annoying messages about files 
+#that have been retained as gv:gv (no chown was necessary)
+
+#Old command (still working) : chown -R gv:gv /home/gv/Desktop/PythonTests
+echo "Visit https://github.com/settings/tokens to create a new token for your repos"
 git config --global user.email ge.vasiliou@gmail.com
 #git config credential.helper store #this will store the username/password on the next push (old trick - not working at 2023 , git version 2.39+
 #git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens, but not working with git 2023 2.39+
 git config --global credential.helper manager #this works for git 2023 , git version 2.39+
-git config --global credential.credentialStore cache
-#especially for git 2.39+ you need to install (dpkg -i) the latest Git Credential Manager deb package found here:
+git config --global credential.credentialStore cache #we need to define a store
+git config --global credential.cacheOptions "--timeout 36000" #caching timeout in seconds (default = 900)
+
+# Manual installation of GCM if apt install gcm fails (Git Credential Manager is required for git 2.39 - 2023 version) 
 #https://github.com/git-ecosystem/git-credential-manager/releases
-#or using Debian repos, just apt install gcm
+#download the latest deb file, go into download folder of your PC and install this deb using dpkg -i 
 
 #Make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes these lines:
 cat /home/gv/.gitconfig
