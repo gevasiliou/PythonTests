@@ -676,8 +676,8 @@ echo "mandiff: Compare installed man pages $1 vs the online man page at maniker.
 diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70)
 }
 
-function lsdeb () { 
-	echo "lsdeb: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --down to download deb file "
+function debls () { 
+	echo "debls: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --down to download deb file "
 	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
 
 	if [[ $2 == "--down" ]];then
@@ -703,33 +703,41 @@ function lsdeb () {
 
 function debcat () {
 	echo "Function debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
-	echo "Usage: debcat <pkg> <file-from-pkg> OR debcat <pkg> --list"
-	echo "Use --list switch to force a deb listing of all files or --listnd to force listing excluding directories"
-	echo "Use --ind switch to be prompted will all files found excluding directories and links"
-	echo "Combine --all after --ind to force index to include binary files like .so,.mo,.ko,etc -excluded by default"
+	echo "Usage: debcat <pkg> [option1] "
+	echo "<pkg>: pkg name in apt format"
+	echo "[option1]:"
+	echo "   --list:                    simple deb listing of all files including links and directorier and exit" #or --listnd to force listing excluding directories"
+	echo "   --ind or blank (default):  creates an index of all files excluding directories,links, and binary files (.so, .mo, .ko, /bin/"
+	echo "   --all:                     force index to include binary files (.so, .mo,.ko, /bin/) excluding directories and links"
     echo 
-	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
-	[[ -z $2 ]] && echo "file to display is missing for pkg $1" && return 1
-	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && lsdeb "$1" && return 0
-	#[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && lsdeb "$1" "--nd" && return 0
-	echo "$2 selected" && echo
+	[[ -z $1 ]] && echo "apt pkg file missing, exiting.... " && return 1
+
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
     local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[56789][0-9]{6,}\b')
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
+    echo "<pkg>: $tmpdeb"
+	echo "[Option1]: $2 " && echo
+	[[ -z $2 ]] && secondarg="" || secondarg="$2"  #echo "file to display is missing for pkg $1" && return 1
+	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && debls "$1" && return 0
+	#[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && debls "$1" "--nd" && return 0
     #clear
-    echo "deb package: $tmpdeb"
 
-
-	if [[ $2 == "--ind" ]];then
+	if [[ $2 == "--ind" || $secondarg == "" ]];then
 	    unset flist ms loop key
         loop=1
-	    if [[ "$3" == "--all" ]];then
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
-	    else
-			flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '/bin/' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
-	    fi
+	    #if [[ "$3" == "--all" ]];then
+		flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |egrep -v -e '^l' -e '^d' -e '.mo' -e '.so' -e '.ko' -e '/bin/' -e '\/$' |awk '{print $NF}'))  #-e '\/bin\/' 
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
-	    while [[ $loop -eq 1 ]]; do
+    fi
+	
+	if [[ $2 == "--all" || $2 == "-all" ]];then
+		unset flist ms loop key
+        loop=1
+    	flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
+	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
+	fi
+	
+	while [[ $loop -eq 1 ]]; do
 			read -p "Select file to display by id or  q to quit : " ms
 			[[ "$ms" == "q" ]] && echo "exiting...." && return 1
 			if [[ ${flist[$ms]: -3} == ".so" ]] || [[ ${flist[$ms]: -3} == ".mo" ]] || [[ ${flist[$ms]: -3} == ".ko" ]];then #|| [[ ${flist[$ms]} =~ "/bin/" ]]
@@ -761,9 +769,9 @@ function debcat () {
 			fi
 		done
         return
-	fi	
+	#fi	
 
-
+: << COMMENT
 	local debfile="$2"
     echo "deb file to display:  $debfile"
     if [[ "$debfile" =~ "man/man" ]];then
@@ -775,7 +783,8 @@ function debcat () {
 	else
 	    curl -sL -o- $tmpdeb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO "$debfile" |sed "1i $2" |less
 	fi
-
+COMMENT
+echo "bye!"
 }
 
 function aptshowlight() { 
