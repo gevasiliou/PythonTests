@@ -5,11 +5,12 @@
 # Tip: Using whatis command (i.e whatis cat) gives you a single line description. You can apply this to whole dir like whatis /usr/bin/*
 # Either tkinfo and man have options to looks inside directories or to display directory of man / info page been displayed.
 function printhelp {
-echo "  mang - man with GUI "
+echo "  mangui - man with GUI - Usage: mangui <manpage> OR mangui --install / --help"
 echo "  Place this file under /usr/bin , and chmod +x this file in order to be able to call it from anywhere. " 
 echo "  Use --install to install at /usr/bin automatically"
 echo "  You can call it from every folder , without extension . Just run mang command "
 echo "  This prog does not work with info pages. For GUI at info pages you can install and use the tkinfo package (available in repos) "
+echo " This prog works with man pages present in your system from installed packages."
 }
 #echo $0
 #mkfifo ${fifo=$(mktemp -u)}
@@ -19,14 +20,14 @@ echo "  This prog does not work with info pages. For GUI at info pages you can i
 #exit
 
 if [[ -z $1 ]];then
-	echo "You need to provide a command to show manual or --help for options"
+	printhelp
 else
 	if [ "$1" = "--help" ];then 
 		printhelp
 	elif [ "$1" = "--install" ];then
 		cp -v -i $0 /usr/bin
 		sleep 1
-		chmod +x /usr/bin/mang
+		chmod +x /usr/bin/mangui
 	else
 		tit=$(echo ${1^^}) #Capitalize all letters
 		manual=$(man $1 2>&1) #2>&1 is necessary since if no man available the error goes to stderr (&2) and manual will get no value since nothing is printed in stdout (&1)

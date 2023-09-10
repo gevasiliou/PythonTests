@@ -702,7 +702,8 @@ function lsdeb () {
 }
 
 function debcat () {
-	echo "debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
+	echo "Function debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
+	echo "Usage: debcat <pkg> <file-from-pkg> OR debcat <pkg> --list"
 	echo "Use --list switch to force a deb listing of all files or --listnd to force listing excluding directories"
 	echo "Use --ind switch to be prompted will all files found excluding directories and links"
 	echo "Combine --all after --ind to force index to include binary files like .so,.mo,.ko,etc -excluded by default"
@@ -792,11 +793,13 @@ local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d
 apt show $ass |less
 }
 
-function debman { 
-echo "debman: debian man pages online of package $1"
+function debmanual { 
+echo "Function debmanual: usage debmanual <pkg>"
+echo "debian man pages online of package $1 using links -dump"
 [[ -z $1 ]] && echo "Pass me a package to query debian manpages" && return 1
 #debman uses the 2017 new web page with jump option
 links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
+#avoid to use name "debman" since there is a programm debman inside pkg debian-goodies
 }
 
 
