@@ -158,7 +158,7 @@ gi+=( 'git config --global credential.cacheOptions "--timeout 36000" ' )
 #caching timeout in seconds (default = 900)
 
 for i in "${gi[@]}";do
-  read -p "========> Want to run '$i' command [y/n] ? :" ans && [[ "$ans" == "y" ]] && echo "running $i" && eval "$i" 
+  read -p "========> Want to run '$i' command [y/n] ? :" ans && [[ "$ans" == "y" ]] && echo "running command $i" && eval "$i" 
 done  
 #Make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes these lines:
 printf '\n'

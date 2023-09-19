@@ -1021,11 +1021,42 @@ git show : see the last commit in details
 git show --name-only : lists only file names changed
 git show commitid :  Details about a particular commit id. Can be combined with --name-only. Commit id can be retrieved by git log
 
-##GIT STORE PASSWORD
+##GIT STORE PASSWORD (old releases of git)
 https://git-scm.com/docs/git-credential-store
 git config credential.helper store
 On the next push , your given user name and password will be stored.
 Can be combined with options for expire, etc
+
+##GIT v2.39+ (2023+) PASSWORD STORE
+git needs gcm (git credential manager) to store your login token in your pc.
+if 'apt install gcm' FAILS then you can manually install GCM from here: 
+https://github.com/git-ecosystem/git-credential-manager/releases
+download the latest deb file, go into download folder of your PC and install this deb using dpkg -i "
+
+mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests - press y to run this command, any other key to skip: "  
+
+.I Visit https://github.com/settings/tokens to create a new token for your repos"
+git config --global user.email ge.vasiliou@gmail.com
+git config --global credential.helper manager 
+git config --global credential.credentialStore cache"
+git config --global credential.cacheOptions "--timeout 36000" #caching timeout in seconds (default = 900)
+
+
+After running above commands gitconfig file (/home/gv/.gitconfig and /root/.gitconfig) should be something like this:
+
+[user]
+	email = ge.vasiliou@gmail.com
+[credential]
+	helper = manager
+	credentialStore = cache
+	cacheOptions = --timeout 36000
+
+credentialStore = cache is actually a workaround , forcing your pc to use cache as a credential store and keep your credentials. 
+The main idea is that you need to define a git credential store in order your credentials to be stored. 
+Cache timeout affects for how many seconds your credentials are cached/stored. 
+Default Cache Timeout Value is 900 seconds. I applied 36000 seconds (10 hours) for testing
+Git 2.39+ provides more Storing options like gpg keys, ssh keys, etc.
+
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:TIME & STRACE
