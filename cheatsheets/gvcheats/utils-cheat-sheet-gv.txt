@@ -2441,7 +2441,7 @@ $ apt-get install ./zoom_amd64.deb
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:PROXY
-##INSTALL SQUID PROXY ON DEBIAN
+##SQUID PROXY ON DEBIAN
 Date: 29.03.2022
 Follow the instruction provided here:
 .I https://linuxize.com/post/how-to-install-and-configure-squid-proxy-on-debian-10/
