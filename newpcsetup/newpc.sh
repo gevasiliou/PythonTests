@@ -128,10 +128,11 @@ echo "This will run the following commands:"
 read -p "apt install git git-all - press y to install or s to skip: " s && [[ "$s" == "y" ]] && apt install git git-all
 echo "git needs gcm (git credential manager) to store your login token in your pc."
 read -p "apt install gcm - press y to install or s to skip: " s && [[ "$s" == "y" ]] && apt install gcm
+echo
 echo "if apt install gcm FAILS then you can manually install GCM from here: 
 https://github.com/git-ecosystem/git-credential-manager/releases
 download the latest deb file, go into download folder of your PC and install this deb using dpkg -i "
-
+printf '\n'
 read -p "mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown -R gv:gv /home/gv/Desktop/PythonTests - press y to run this command, any other key to skip: " s && 
 [[ "$s" == "y" ]] && mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/gevasiliou/PythonTests.git /home/gv/Desktop/ && chown --verbose -R gv:gv /home/gv/Desktop/PythonTests
 
@@ -143,8 +144,9 @@ read -p "mkdir /home/gv/Desktop/PythonTests && git clone https://github.com/geva
 ##chown --verbose -R gv:gv /home/gv/Desktop/PythonTests |grep -v "retained as gv:gv"
 # this will change ownership from root:root to gv:gv - With the use of grep -v we avoid the annoying messages about files 
 #that have been retained as gv:gv (no chown was necessary)
-echo
+printf '\n'
 echo "Visit https://github.com/settings/tokens to create a new token for your repos"
+printf '\n'
 gi=( "git config --global user.email ge.vasiliou@gmail.com" )
 #git config credential.helper store #this will store the username/password on the next push (old trick - not working at 2023 , git version 2.39+
 #git config --global credential.helper manager-core #this will do the same job, working 2022 with tokens, but not working with git 2023 2.39+
@@ -159,6 +161,7 @@ for i in "${gi[@]}";do
   read -p "========> Want to run '$i' command [y/n] ? :" ans && [[ "$ans" == "y" ]] && echo "running $i" && eval "$i" 
 done  
 #Make sure that .git-config (or .gitconfig) file in your home directory (i.e /home/gv) includes these lines:
+printf '\n'
 echo "gitconfig file should be something like this:
 #[user]
 #	email = ge.vasiliou@gmail.com
