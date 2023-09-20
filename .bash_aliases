@@ -24,6 +24,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
+alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg from 2019 is obsolete.
 alias grtranslate="trans :el" #you need to have apt install translate-shell 
 alias lanip="ifconfig |grep 'inet[^6]'"
 alias hdmisound="pacmd set-card-profile 0 output:hdmi-stereo && pacmd list 2>&1 |grep 'active profile'"
@@ -888,18 +889,24 @@ find / -type f -executable -name "$fname"
 function mancheat { 
 echo "mancheat: explore the cheat sheets using man page viewer"
 if [[ -z $1 ]]; then 
-echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' to edit the cheat file";
+echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' or '--gedit' to edit the cheat file";
 echo "Available cheat sheets by gv:";
 find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n' |awk -F"-" '{print $1}';
 return 1;
 fi
 
 if 	[[ $2 == "--edit" ]]; then
+	nano /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
+	return 0
+fi
+
+if 	[[ $2 == "--gedit" ]]; then
 	geany /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
 	return 0
-else
-man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
 fi
+
+man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+
 #This works directly in cli:
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 
