@@ -52,3 +52,8 @@ deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 ##gpg --keyserver keyring.debian.org --recv-keys 0x673A03E4C1DB921F
 #deb [arch=amd64,armel,armhf,i386,kfreebsd-amd64,kfreebsd-i386,mips,mipsel,powerpc] http://www.deb-multimedia.org stable main non-free
 deb http://www.deb-multimedia.org stable main non-free
+
+##ANYDESK
+##AnyDesk DEB repository how-to
+## run: wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | apt-key add -
+deb http://deb.anydesk.com/ all main
