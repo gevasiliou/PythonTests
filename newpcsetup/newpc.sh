@@ -3,8 +3,8 @@
 set +f #treat * as glob star. Use set -f to disable globbing and treat * literally as an *
 [[ "$(whoami)" != "root" ]] && echo "you need to be root to run this script" && exit 1
 echo "proceeding as root"
-synclient TapButton1=1 #enable touchpad click if necessary.
-xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 #enable touchpad click if necessary.
+synclient TapButton1=1 2>/dev/null #enable touchpad click if necessary.
+xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 2>/dev/null #enable touchpad click if necessary.
 
 function essentials {
 read -p "esseential pkgs installation - press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
@@ -22,6 +22,19 @@ else
   fi
 fi
 
+echo "the following commands will be appened to .bashrc (/root and /home/gv) to enable touchpad click"
+echo "synclient TapButton1=1 2>/dev/null"
+echo "xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 2>/dev/null"
+read -p "press any key to continue or press s to skip" ans
+
+if [[ "$ans" != "s" ]];then 
+echo "synclient TapButton1=1 2>/dev/null" >>/root/.bashrc
+echo "xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 2>/dev/null" >>/root/.bashrc
+echo "synclient TapButton1=1 2>/dev/null" >>/home/gv/.bashrc
+echo "xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 2>/dev/null" >>/home/gv/.bashrc
+fi
+
+
 for i in /home/gv /root;do
 echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
 echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
@@ -35,13 +48,14 @@ ess+=( "gcm" )
 ess+=( "kmod" "sysfsutils" "libssl-dev" "cpufrequtils" "debianutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "cmake" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
 ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" )
-ess+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" )
+ess+=( "mpv" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" "gvfs-fuse" "gvfs-backends" )
 
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
 # gksu will provide a gui su, will create gksu.desktop = root terminal = Exec=gksu /usr/bin/x-terminal-emulator and also Icon=gksu-root-terminal
 # sudo is not installed by default in Debian
 # kmod will provide lsmod, insmod, modprobe,modinfo, etc. 
 # sysfsutils provide systool -a -v -m rtl8192se
+# gvfs-fuse and gvfs-backend will add ftp capabilities to Thunar Manager of XFCE
 
 for i in "${ess[@]}";do
 printf '%s ' "=========> Installing pkg $i"
@@ -50,7 +64,7 @@ if ! dpkg-query -s "$i" >&/dev/null ;then
   [[ $an == "h" ]] && apt show "$i" && read -p "========> Want to install $i [y/n] ? :" an
   [[ $an == "y" ]] && apt-get --yes install "$i" || echo "===========> skipping installation of $i <============"
 else 
-  printf '%s\n' " <========= already installed ";
+  printf '%s\n' " <========= already installed, skipping";
 fi
 
 #dpkg-query -l pkg returns 0 if pkg is installed
