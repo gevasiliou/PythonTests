@@ -34,6 +34,11 @@ echo "synclient TapButton1=1 2>/dev/null" >>/home/gv/.bashrc
 echo "xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1 2>/dev/null" >>/home/gv/.bashrc
 fi
 
+# Modifications to force xfce to ignore the lid close
+#sudo sed -i '/IgnoreLid=/{s/false/true/}' /etc/UPower/UPower.conf 
+#sudo sed -i '/HandleLidSwitch/{s/#//;s/suspend/ignore/}' /etc/systemd/logind.conf
+#sudo systemctl restart systemd-logind
+#
 
 for i in /home/gv /root;do
 echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
