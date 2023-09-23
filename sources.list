@@ -53,6 +53,14 @@ deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 #deb [arch=amd64,armel,armhf,i386,kfreebsd-amd64,kfreebsd-i386,mips,mipsel,powerpc] http://www.deb-multimedia.org stable main non-free
 deb http://www.deb-multimedia.org stable main non-free
 
+##TEAMVIEWER
+#old: deb http://linux.teamviewer.com/deb stable main
+##2023 Teamviewer Installation (using dpkg -i)
+##2023 (we keep it disabled / commented because teamviwer has install a file in sources.d directory
+#deb [signed-by=/usr/share/keyrings/teamviewer-keyring.gpg] https://linux.teamviewer.com/deb stable main
+
+
+
 ##ANYDESK
 ##AnyDesk DEB repository how-to
 ## run: wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | apt-key add -
