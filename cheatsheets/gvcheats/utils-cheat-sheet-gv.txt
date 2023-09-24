@@ -2638,3 +2638,33 @@ You can add it in chrome , should be handled as extension, and once enabled it u
 Important: We don't know how Ultrasurf handles our data (passwords, bank accounts, etc). 
 We don't know if those data are kept / send / published somewhere without our permission.
 I used UltraSurf (and worked like a charm) to be able to access whatsapp web & github website - those were blocked by my corporate admin in my business laptop....
+
+---------------------------------------------------------------------------------------------------------------------------
+UTILS:PLEX MEDIA SERVER
+https://www.linuxcapable.com/how-to-install-plex-media-server-on-debian-linux/
+sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https curl -y
+
+curl -fsSL https://downloads.plex.tv/plex-keys/PlexSign.key | gpg --dearmor | sudo tee /usr/share/keyrings/plex.gpg > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/plex.gpg] https://downloads.plex.tv/repo/deb public main" >> /etc/apt/sources.list
+
+apt install plexmediaserver
+
+systemctl status plexmediaserver
+
+systemctl start plexmediaserver
+
+systemctl enable plexmediaserver
+
+If you need to restart the Plex Media Server service for any reason, use the following command: sudo systemctl restart plexmediaserver
+
+ufw allow 32400
+ufw allow 3005/tcp
+ufw allow 5353/udp
+ufw allow 8324/tcp
+ufw allow 32410:32414/udp
+
+ssh 192.168.2.12 -L 8888:localhost:32400
+
+http://localhost:8888/web (from Local Debian machine)
+
