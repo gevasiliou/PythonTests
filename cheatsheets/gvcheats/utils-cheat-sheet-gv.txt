@@ -2208,7 +2208,7 @@ Tip:
 You can still call the grub CLI even if grub works ok by following grub menu on-screen instructions.
 You might need this tweak in case you want to manually load a kernel from a usb (/dev/sdb or /dev/sdc) as a workaround if usb auto-boot was not succesfull for some reason.
 
-##FSTAB
+##FSTAB & MOUNT
 To ensure that booting will be ok you need a working /etc/fstab file like this:
 # /etc/fstab: static file system information.
 #
@@ -2224,7 +2224,6 @@ UUID=F665-1803  /boot/efi       vfat    umask=0077      0       1
 # swap was on /dev/sda8 during installation
 UUID=3278b9af-f992-4ab8-8fe5-7d20bef6ce43 none            swap    sw              0       0
 
-
 ##FSTAB - AUTOMOUNT DRIVE / PARTITION
 https://superuser.com/questions/646249/automatically-mount-a-2nd-hard-drive-in-debian-7
 
@@ -2234,7 +2233,50 @@ Partition /dev/sda3 holds my Windows. You can automount this partition like this
 3. blkid ---> find the /dev/sda3 UUID
 4. Add to /etc/fstab the following line
 UUID=A25866FE5866D119 /media/MyWin ntfs defaults 0 0
-5. mount -a
+
+PS: According to this post, this command will ensure permissions free mounting:
+/dev/sda3        /media/data           ntfs      nls=iso8859-1,permissions,users,auto,exec
+Alternative:
+/dev/sda3 /media/ntfs ntfs-3g users,permissions,auto 0 0
+
+source: https://askubuntu.com/questions/92863/mount-ntfs-partition-at-startup-with-non-root-user-as-owner
+
+Tip: For some reason , ubuntu tips did not work for me. But this command works fine:
+/dev/sda3        /media/gv/TIH0067800A           ntfs      defaults	0	0
+
+5. mount -a (this is used to reload / load new entries of fstab instead of rebooting).
+
+6. systemctl daemon-reload (this will force systemd to use the new version of fstab)
+
+PS1: It is a good idea to chown user:user /media/MyWin instead of root:root to avoid permission errors.
+
+PS2: To be able to work with ntfs partitions make sure that nts-common is installed in your Debian
+
+PS3: Sometimes, when you try to mount ntfs windows partition you might get errors due to win fast startup features or hibernate.
+You can get rid of those errors using ntfsfix /dev/sda3 - working fine in my machine.
+
+PS4: Test your win partition with mount, by going to /media/MyWin , make sure that chown to user:user is valid and run mount /dev/sda3 /media/MyWin
+
+PS5: Once you will be able to opern ntfs partition by Thunar, you can create shortcuts of your favorite Win Folders directly to your Debian Desktop (right click , Send to Desktop)
+
+PS6: Check mounted partitions using df -h command
+
+## Mount a disk/partition to be accessible by ftp
+Assuming that you have installed in Debian vsftpd pkg (ftp server) and you have correctly configure /etc/vsftpd.config file.
+You use a client to connect to Debian FTP Server (ps: i used Win10 File Explorer by the way from another machine).
+Assuming that you have already mount your ntfs partition, either by fstab or by direct mount like mount /dev/sda3 /media/gv/MyWin
+
+To make MyWin accesible through ftp you need these steps:
+a. Create a folder (as a user - not as root) in home/gv/Desktop , i.e mkdir MyW
+b. Run the command sudo mount --bind /media/gv/MyWin /home/gv/Desktop/MyW
+Now the folder "MyW" in your Desktop will be binded to MyWin folder/mount point - 
+MyW will be visible (and usable) directly from your Destkop and even through ftp clients.
+c. To achieve automatic binding at start up add the bellow line to /etc/fstab
+/media/gv/TIH0067800A	/home/gv/Desktop/MyW	none	defaults,bind	0	0
+
+So now (24092023), my fstab file looks like bellow and works fine (only the last user entries are shown):
+/dev/sda3        /media/gv/TIH0067800A           ntfs      defaults	0	0
+/media/gv/TIH0067800A	/home/gv/Desktop/MyW	none	defaults,bind	0	0
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:NETWORKING
