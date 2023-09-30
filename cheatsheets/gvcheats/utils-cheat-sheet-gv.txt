@@ -2443,6 +2443,14 @@ drives in this folder , so once you get to connected remotely to your Debian Des
 to the hdd. 
 This folder trick works also for ftp access (if you have installed an ftp server in your Debian).
 
+Tip : If you ever want to achieve file sharing with your android phone as server , the easy way to do it is to install webDAV app on your phone.
+With WebDAV app on your phone you can browse your phone files using any web browser like http://192.168.2.6:8080
+But you can also make use of Windows "add network location" feature that allows you to map http://192.168.2.6:8080 and this can be opened
+with your file explorer. 
+Actually, in win10 file explorer you can enter directly http://192.168.2.6:8080 and it will work.
+ps1: 8080 is the default WebDAV port 
+ps2: In non-rooted android devices you can not use ports of the range 1-1024.
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
 
