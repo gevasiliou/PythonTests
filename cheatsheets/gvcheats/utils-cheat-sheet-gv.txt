@@ -2451,6 +2451,19 @@ Actually, in win10 file explorer you can enter directly http://192.168.2.6:8080 
 ps1: 8080 is the default WebDAV port 
 ps2: In non-rooted android devices you can not use ports of the range 1-1024.
 
+.B Android webdav share access from Debian 
+.I source: https://sleeplessbeastie.eu/2017/09/04/how-to-mount-webdav-share/
+apt install davfs2
+mkdir /home/gv/Desktop/andro
+sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro
+During mounting you will be asked to provide username and password for your android webdav share.
+Just hit enter to leave those fields blank unless you have specified user & password in your android webdav share.
+Now, all you have to do is simply open your andro folder that exists in your Desktop.
+You might want to make this mount automatic in fstab, but to do so you need to make sure that your android phone webdav will be active.
+I do not know what will be the results for fstab if your android phone is not running webdav share.
+Better to create an alias in your .bash_aliases for quick android mounting, something like
+alias mountandroid = "sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
+#mount with options: sudo mount -t davfs -o noexec https://nextcloud.example.com/remote.php/webdav/ /mnt/dav/
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
 
