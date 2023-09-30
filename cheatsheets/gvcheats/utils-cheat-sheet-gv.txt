@@ -2426,7 +2426,13 @@ Instead of \\192.168.xxx.xxx\sambasharename (i.e \mypassport) i was trying to co
 Tip: 
 It is known that Win10 has stopped to support smb1 shares - I enabled smb1 sharing support by Windows Features Turn on/off at control panel (scroll down and look for smb1)
 
- 
+Tip Oct 2023: 
+I also spent a lot of time in my Dell Win10 laptop , because i used "gv" as user instead of ".\gv" (including dot and slash)
+Once i add dot and slash, login was ok (by selecting use different credentials).
+In my Dell Win10 , i got only one (and not two) login prompts, quite confusing asking for my Dell username and password but actually i had
+to select use different credentials and provide .\gv and samba password for gv samba user. 
+Don't forget that samba users / samba passwords are different than debian users/passwords.
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
 
