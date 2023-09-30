@@ -24,6 +24,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
+alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
 alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg from 2019 is obsolete.
 alias grtranslate="trans :el" #you need to have apt install translate-shell 
 alias lanip="ifconfig |grep 'inet[^6]'"
