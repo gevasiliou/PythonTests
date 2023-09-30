@@ -2463,7 +2463,10 @@ You might want to make this mount automatic in fstab, but to do so you need to m
 I do not know what will be the results for fstab if your android phone is not running webdav share.
 Better to create an alias in your .bash_aliases for quick android mounting, something like
 alias mountandroid = "sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
-#mount with options: sudo mount -t davfs -o noexec https://nextcloud.example.com/remote.php/webdav/ /mnt/dav/
+
+Tip: The above mount command is actually translated by Debian to this command:
+/sbin/mount.davfs http://192.168.2.6:8080 /home/gv/Desktop/andro -o rw
+
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:CRYPTOGRAPHY
 
