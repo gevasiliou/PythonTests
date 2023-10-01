@@ -891,7 +891,7 @@ function mancheat {
 echo "mancheat: explore the cheat sheets using man page viewer"
 if [[ -z $1 ]]; then 
 echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' or '--gedit' to edit the cheat file";
-echo "Available cheat sheets by gv:";
+echo "Available cheat sheets by gv (directory ls -all listing of gvcheats):";
 find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n' |awk -F"-" '{print $1}';
 return 1;
 fi
@@ -902,7 +902,16 @@ if 	[[ $2 == "--edit" ]]; then
 fi
 
 if 	[[ $2 == "--gedit" ]]; then
-	geany /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
+    if dpkg-query -s geany >&/dev/null ; 
+    # Check if geany is installed - dpkg -s or dpkg-query -s 
+    # If pkg is installed , return code is 0 (=all ok) and info about pkg are displayed in user's std ouput
+    # if pkg is not installed, return code is 1 (=error) and error messages are display in user's error output (usually the same as std output)
+    # Wigh >&/dev/null we redirect both std output and error output to /dev/null, because what we need is just the error code.
+    # We don't count on the numerical error code 1 or 0 , we count on it's logical value (true or false)
+    # and in this case it is known that a return code 0 means all good = true
+    then geany /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt
+	else nano /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
+	fi
 	return 0
 fi
 
