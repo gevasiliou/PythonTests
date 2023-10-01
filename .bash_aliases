@@ -33,7 +33,11 @@ alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-st
 
 alias winpid="echo -ne 'select window  to get pid...  ' && xprop _NET_WM_PID WM_CLASS | cut -d' ' -f3 |sed -z -e 's/\n/ - /1' -e 's/[\x22,]//g'"
 ##
-alias screenreset='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
+
+alias screenreset='xrandr --output eDP-1 --off && sleep 20 && xrandr --output eDP-1 --auto'
+
+alias screenreset2='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
+
 alias converttopng='convert -verbose -coalesce'
 alias vpn='openfortivpn'
 alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
