@@ -52,7 +52,7 @@ ess+=( "gcm" )
 #https://github.com/git-ecosystem/git-credential-manager/releases
 ess+=( "kmod" "sysfsutils" "libssl-dev" "cpufrequtils" "debianutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "cmake" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
-ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" )
+ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" "nmap" )
 ess+=( "mpv" "fuse" "ntfs-3g" "nfs-common" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" "gvfs-fuse" "gvfs-backends" )
 ess+=( "dirmngr" "ca-certificates" "software-properties-common" "apt-transport-https" "curl" ) #those packages are required for Plex Media Server
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
@@ -89,7 +89,7 @@ read -p "Utilities Installation. press any key to proceed or s to skip this sect
 unset toinst
 toinst=( "transmission" "hexchat" "vobcopy" "browser-plugin-freshplayer-pepperflash" ) 
 toinst+=( "flashplugin-nonfree" "flashplugin-nonfree-extrasound" "pepperflashplugin-nonfree" )
-toinst+=( "firmware-linux-free" "firmware-realtek" )
+toinst+=( "firmware-linux-free" "firmware-realtek" "gobuster" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "okular" "catfish" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" )
