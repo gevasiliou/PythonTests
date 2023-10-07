@@ -52,7 +52,7 @@ ess+=( "gcm" )
 #https://github.com/git-ecosystem/git-credential-manager/releases
 ess+=( "kmod" "sysfsutils" "libssl-dev" "cpufrequtils" "debianutils" ) #kmod=kernel modules handling (lsmod,modprobe,insmod,modinfo,,etc)
 ess+=( "firmware-linux" "cmake" "build-essential" "libpcap-dev" "autoconf" "intltool" "libtool" "automake" "systemd-ui" "x11-xserver-utils" )
-ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" "nmap" )
+ess+=( "perl" "python" "gawk" "sed" "grep" "original-awk" "ntp" "htop" "lshw" "unrar" "info" "pinfo" "nmap" "ncat" )
 ess+=( "mpv" "fuse" "ntfs-3g" "nfs-common" "youtube-dl" "links" "lynx" "yad" "xxd" "xdotool" "vlc" "agrep" "moreutils" "debian-goodies" "gvfs-fuse" "gvfs-backends" )
 ess+=( "dirmngr" "ca-certificates" "software-properties-common" "apt-transport-https" "curl" ) #those packages are required for Plex Media Server
 # apt-get install geany-plugin-addons geany-plugin-py #fails on Debian 9 2018
