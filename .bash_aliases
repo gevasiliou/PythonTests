@@ -653,6 +653,7 @@ ls -allh "$d" |grep '^d'  #-h: show size in human format
 function dpkginfo { dpkg -L "$1" |nl;}  #prints files installed by a package with numbering of the entries.
 
 function printarray () { 
+#set -x
 # ab=( "one" "two" "fi ve" );printarray --> please provide a var
 # printarray ab
 # [0]="one
@@ -662,16 +663,24 @@ function printarray () {
 #declare -p $1 |sed "s/declare -a $1=(//g; s/)$//g; s/\" \[/\"\n\[/g" #Only valid in GNU Sed -not working in BSD
 #declare -p $1 | perl -pe "s/declare -[aA] $1=\(//g; s/\)$//g; s/\" \[/\"\n\[/g" #works even in BSD
 echo "printarray: Prints array $1 as stored in bash environment "
+
 declare -p $1 | perl -pe 's/\[/\n[/g'
 #This works because when array is defined in main bash shell , the array is also accessible by the functions
-
-
-#Alternative:
-#function printarray { for k in $(eval echo "\${!$1[@]}");do printf '%s' "$1[${k}]="; eval echo "\${$1[$k]}";done; }
+# Above perl -pe fails in logic if the array you  want to print contains data [...] i.e _xspecs array set by system
+# Try printarray _xspecs and you will see the failure.
 
 #Tip: 
 #Shell quick printing: for key in "${!array[@]}";do echo "array[$key]=${array[$key]}";done
 #using ${!array[@]} syntax we can loop over array KEYS/INDEX
+
+# Those are not working inside a shell script - problem how to pass and parse a dynamic array into a script
+#arr=( "$@" ) OR #arr="$1[@]"
+#for key in "${!arr[@]}";do echo "$arr[$key]=${arr[$key]}";done
+
+# This Alternative approach seems to work due to eval usage:
+#function printarray { for k in $(eval echo "\${!$1[@]}");do printf '%s' "$1[${k}]="; eval echo "\${$1[$k]}";done; }
+
+
 }
 
 function mandiff { 
