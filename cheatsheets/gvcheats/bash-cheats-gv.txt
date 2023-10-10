@@ -2316,7 +2316,8 @@ By command 'set' you get a variables list (including predefined startup function
 
 Print environmental variables : export -p , printenv or just env, ( set -o posix ; set ) , declare -p (or -xp)
 
-To print all bash shopt parameters run #shopt. Combine with -s to see options set to ON or -u to see options set to OFF
+To print all bash shopt parameters you can `echo $BASHOPTS` or run `shopt` command from cli. 
+Combine `shopt` with -s to see options set to ON or -u to see options set to OFF
 Typical Output:
 extquote       	on
 force_fignore  	on
