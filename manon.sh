@@ -66,10 +66,17 @@ dman - read man pages online from manpages.debian.org
 debman - read man pages from uninstalled packages (not working very well at 2023)
 debmany  - more modern than debman - works well - used to select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
 "man", "sensible-pager" or an alternative viewer.
-txt2man  : transforms an ASCII txt file to man page
-help2man : Program to create simple man pages from the --help and --version output of other programs.
-info2man : Convert GNU info files to POD (Plain Old Documentation) or man pages (info to pod to man in one step)    
 
+More interesting pkgs about manpages:
+pkg: txt2man            : transforms an ASCII txt file to man page
+pkg: help2man           : Program to create simple man pages from the --help and --version output of other programs.
+pkg: info2man           : Convert GNU info files to POD (Plain Old Documentation) or man pages (info to pod to man in one step)    
+pkg: manpages-el        : GNU Manpages Collection in Greek Language
+pkg: mandoc             : BSD Manpage compiler toolset
+pkg: freebsd-manpages   : Free BSD Manpages collection
+pkg: debiman            : debiman makes (Debian) manpages accessible in a web browser.
+fn: debcat              : In .bash_aliases we have a function that by default extracts contents of deb file in screen
+                          without downloading the pkg in HDD and you can select which file you want to see
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
 }	
