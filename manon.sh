@@ -77,7 +77,21 @@ pkg: freebsd-manpages   : Free BSD Manpages collection
 pkg: debiman            : debiman makes (Debian) manpages accessible in a web browser.
 fn: debcat              : In .bash_aliases we have a function that by default extracts contents of deb file in screen
                           without downloading the pkg in HDD and you can select which file you want to see
+
+TODO & BUGS Dated 15.10.2023: 
+
+a. Find a way to ensure that script will exit if --manpage <pkg> is not provided.
+
+b. Buggy usage: manon --manpage --apt --> Fails since --apt will be considered as argument for --manpage.
+   Can be resolved by further validating \$2 field when --manpage is processed.
+   As for now we do a basic validation to \$2 field of --manpage to avoid \$2=<pkg> not beeing provided / beeing empty.
+   
+c. Buggy usage: manon --apt --manpage help2man 
+   This will fail since --apt will be parsed first (apt function will be called) before --manpage <pkg> is parsed.  
+   This can be resolved by first parsing all arguments, and then make the corresponding function calls.
+
 EOF
+
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
 }	
 
@@ -539,19 +553,25 @@ function ubuntu {
 # You can keep the most recent one (zesty) - this is also the auto-forwarding man pages if you use http://manpages.ubuntu.com/grep
 # or you can provide an indexed array to select the man page you want
 # To use zesty you just need to dump http://manpages.ubuntu.com/manpages/zesty/en/man1/dman.1.html
+## 2023: Ubuntu keeps a separate server for manpages in gz format .
+## a gz manpage can be read directly by man using this command:
+## man <(curl -s -L -o- https://manpages.ubuntu.com/manpages.gz/focal/man1/gawk.1.gz)
 
   validmode=1
   page=$manpage # $manpage has been set by main body , global variable
   address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages/.*html')"
- 
+##  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages.gz/.*gz')"
   [[ -z "$address" ]] && echo "no man pages returned : curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && 
   links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
   
+  address=$(echo "$address" | perl -pe 's/manpages/manpages.gz/g; s/html/gz/g')
+  address="https://manpages.ubuntu.com$address"; #export address
   read -p "address=$address - press any key to continue"
   if [[ "$mode" == "--ubuntu" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com$address" 2>/dev/null &
   else 
-     links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less -S
+  #   links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" | less -S #works ok 15.10.23
+  man <(curl -s -L -o- "$address")  #trying to catch the gz file instead of the html file
   fi
 
 }
@@ -581,7 +601,14 @@ function ubuntulist {
 			if [[ "$mode" == "--ubuntulist" && $3 == "--browser" ]]; then
                gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com${pkgmanpage[$ms]}" 2>/dev/null &
 			else
-			   links -dump http://manpages.ubuntu.com"${pkgmanpage[$ms]}" |sed "1i http://manpages.ubuntu.com${pkgmanpage[$ms]}" |less -S
+			   #links -dump http://manpages.ubuntu.com"${pkgmanpage[$ms]}" |sed "1i http://manpages.ubuntu.com${pkgmanpage[$ms]}" |less -S
+			   #old implmenentation before 151023, relying on the html man page
+  		       address=$(echo "${pkgmanpage[$ms]}" | perl -pe 's/manpages/manpages.gz/g; s/html/gz/g')
+  		       #making use of the nice ubuntu gz man places, i.e : https://manpages.ubuntu.com/manpages.gz/focal/man1/gawk.1.gz
+  		       #instead of the default html man page that is available at https://manpages.ubuntu.com/manpages/focal/en/man1/gawk.1.html
+  		       address="https://manpages.ubuntu.com$address"
+  		       #read -p "press a key to proceed with address= $address"
+  		       man <(curl -s -L -o- "$address")  #trying to catch the gz file instead of the html file to make use of man nice coloring
 			fi
 		else
 			echo "Invalid Selection - Try Again"
@@ -865,7 +892,8 @@ function main { return; }
 	# TODO 15.10.2023: 
 	# Find a way to ensure that script will exit if --manpage <pkg> is not provided.
 	# Also keep in mind that this usage will fail: manon --manpage --apt because --apt will be considered as argument for --manpage.
-	
+	# Another buggy usage: manon --apt --manpage help2man -> This will fail since --apt will be found firts and apt function will be called
+	# before --manpage <pkg> is examined.
 	esac
     done
 	[[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
