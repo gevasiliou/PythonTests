@@ -819,8 +819,8 @@ apt show $ass |less
 
 function debmanual { 
 echo "Function debmanual: usage debmanual <pkg>"
-echo "debian man pages online of package $1 using links -dump"
-[[ -z $1 ]] && echo "Pass me a package to query debian manpages" && return 1
+echo "debian man pages online (https://manpages.debian.org) of package $1 using links -dump"
+[[ -z $1 ]] && echo "Pass me a package to query manpages.debian.org" && return 1
 #debman uses the 2017 new web page with jump option
 links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
 #avoid to use name "debman" since there is a programm debman inside pkg debian-goodies

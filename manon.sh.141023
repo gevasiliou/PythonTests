@@ -1,15 +1,10 @@
 #!/bin/bash
 # Copy this file to /usr/bin or /bin or to any of the paths provided by $PATH.
 # When you copy , you can skip the .sh extension i.e : cp ./manon.sh /usr/bin/manon 
-# Ensure executable rights for all users and then you can then call it directly using $manon instead of ./manon.sh
-# 14/10/2023 : Just keep in mind that debian-utilities has some binaries that do most of the man job:
-# dman - read man pages from manpages.debian.org
-# debman - read man pages from uninstalled packages
-# debmany  -  select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
-#       "man", "sensible-pager" or an alternative viewer.
-
+#Ensure executable rights for all users and then you can then call it directly using $manon instead of ./manon.sh
 helpme() {
 	    cat <<EOF
+This script search online man pages in various ways.
 Usage: manon [packagename] [option1] [option2]
 Option1:
     --help          This usage screen.
@@ -24,7 +19,6 @@ Option1:
                     Option 2:
                              --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc
-                             --pkg     : Package name as used in apt-get / apt 
 
     --aptmulti      Debian Specific. Extract and display the man page from many packages at once(i.e kodi*), without downloading it. 
                     Option 2:
@@ -38,7 +32,6 @@ Option1:
     --debian        Search particulary in debian manpages online platform (i.e https://manpages.debian.org/testing/grep). 
                     Your current release is detected  and man pages for your release are provided.
                     If manpage is not found, then a second attempt to --debiansuite is made before abandoning the script (i.e deb debian-goodies)
-                    Option 2: --manpage programm 
                     
     --debiansuite   When providing a suite of tools (i.e devscripts) the swith --debian will provide the man page for devscripts but this switch will provide
                     the man pages of all the tools inside the suite.
@@ -61,13 +54,6 @@ Option1:
     
     --ubuntulist    Display a list of available man pages (various released) at http://manpages.ubuntu.com (i.e posix man, plan9, regular man pages, etc). 
                     Combine with --browser to display man page at browser
-
-Just keep in mind that debian-utilities has some binaries that do most of the man job:
-dman - read man pages from manpages.debian.org
-debman - read man pages from uninstalled packages
-debmany  -  select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
-"man", "sensible-pager" or an alternative viewer.
-
     
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
@@ -76,29 +62,15 @@ EOF
 function apt {
 	validmode=1
 	loop=1
-	full_mode=0
-	noman_mode=0
-	echo "function apt  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function apt - processing arg $1"
-	  case "$1" in
-		--full) full_mode=1;shift;; 
-		--noman) noman_mode=1;shift;;
-#		--pkg) echo "--pkg found";if [ -n "$2" ]; then pkg="$2";echo "pkg name=$2";shift 2; else echo "Option --pkg requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-    pkg="$manpage"
-	echo "function apt - package requested: $pkg"
-	
-#141023	pkg="$1"
+	pkg="$1"
     [[ "$pkg" =~ "*" ]] && echo "wildmark not accepted; try --aptmulti" && return
+	echo "package requested: $pkg"
 
 	#Nov17: apt list does not work with pkg/experimental or pkg/repo in general. An if added to handle differently packages including / like pkg/experimental
 	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
 
-#    if [[ $1 =~ "/" ]];then
-         aptresp=$(apt-get --print-uris download $pkg 2>&1) 
+#    if [[ $1 =~ "/" ]];then 
+         aptresp=$(apt-get --print-uris download $1 2>&1) 
          # apt-get --print-uris download is better than install. install will return the uris of all the dependencies;download will return just the uri of the package.
          # Moreover apt-get download works fine with package/repo synthax.
          echo "apt response=$aptresp"
@@ -120,49 +92,49 @@ function apt {
     aptpkg="${pkg%%/*}"
 	deb=$(grep "/$aptpkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 	echo "deb file : $deb"
-	if [[ $full_mode -eq 1 ]]; then
+	if [[ $3 == "--full" ]]; then
 	  echo "--full mode selected-returning man pages,changelogs,readme,info,examples & docs"
-      pkgmanpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
-    elif [[ $noman_mode -eq 1 ]]; then
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+    elif [[ $3 == "--noman" ]]; then
    	  echo "--noman mode selected: only changelogs,readme,info,examples & docs. man pages excluded"
-      pkgmanpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
     else
       #man pages only-default selection
-      pkgmanpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
+      manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: added grep -v '^l' to exclude sym links
 	fi
 	while [[ $loop -eq 1 ]]; do
-		if [[ -z $pkgmanpage ]];then
+		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package - These are the contents of the $deb:"
 			curl -sL -o- $deb |dpkg -c /dev/stdin
 			exit 1
 		else
-			echo "man page found: ${#pkgmanpage[@]}"
-			declare -p pkgmanpage |sed 's/declare -a pkgmanpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 		
-		if [[ ${#pkgmanpage[@]} -eq 1 ]]; then
+		if [[ ${#manpage[@]} -eq 1 ]]; then
 			echo "One man page found - Display "
-			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $pkgmanpage |man /dev/stdin
+			curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO $manpage |man /dev/stdin
 			loop=0
 		else
 			read -p "Select man pages to display by id or press a for all  - q to quit : " ms
 			if [[ $ms == "a" ]]; then 
 				echo "Display all"
-				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[@]} |man /dev/stdin				
+				curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[@]} |man /dev/stdin				
 			elif [[ $ms == "q" ]]; then
 				echo "exiting"
 				loop=0
-			elif [[ $ms -le $((${#pkgmanpage[@]}-1)) ]]; then
+			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
 				echo "Display ${manpage[$ms]}"
 				#curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
-                if [[ ${pkgmanpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
-				elif [[ ${pkgmanpage[$ms]: -3} == ".gz" ]]; then
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |gunzip -c |less -S
+                if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
+				elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
 				else 
-				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |less -S
+				   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
 				fi
-			elif [[ $ms -gt $((${#pkgmanpage[@]}-1)) ]]; then
+			elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
 				echo "out of range - try again"
 			else
 				echo "Invalid Selection - Try Again"
@@ -174,9 +146,7 @@ function apt {
 function aptmulti {
 	validmode=1
 	loop=1
-	full_mode=0
-	#pkg="$1"
-	pkg="$manpage" #global variable, defined in main program body
+	pkg="$1"
 	echo "package requested: $pkg"
     resp=( $(apt-get --print-uris download "$1" 2>&1) )
     aptresp=( $(printf '%s\n' ${resp[@]} |grep 'http' |sed 's/\x27//g') )
@@ -187,16 +157,16 @@ function aptmulti {
     [[ -z "${aptresp[@]}" ]] && echo "nothing found" && return
     declare -A debs
     for ((i=0;i<=${#aptresp[@]};i++));do
-      if [[ $full_mode -eq 1 ]];then
-        pkgmanpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
+      if [[ $3 == "--full" ]];then
+        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
       else
         #man pages only - default selection
-        pkgmanpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) 
+        manpage+=($(curl -sL -o- ${aptresp[$i]} |dpkg -c /dev/stdin |grep -v -e '^l' |grep -e "man/man" |grep -vE "\/$" |awk '{print $NF}')) 
       fi
 
       #script for association between man pages of each deb file (1 deb / many manpages)
-      for k in "${!pkgmanpage[@]}";do
-          [[ -z "${debs[${pkgmanpage[$k]}]}" ]] && debs["${pkgmanpage[$k]}"]="${aptresp[$i]}"
+      for k in "${!manpage[@]}";do
+          [[ -z "${debs[${manpage[$k]}]}" ]] && debs["${manpage[$k]}"]="${aptresp[$i]}"
       done
 
     done
@@ -204,30 +174,30 @@ function aptmulti {
 #TODO: include in the man pages the control file (apt show info) from deb using dpkg-deb --ctrl-tarfile     
 
 	while [[ $loop -eq 1 ]]; do
-		if [[ -z $pkgmanpage ]];then
+		if [[ -z $manpage ]];then
 			echo "No man pages found in deb package"
 			exit 1
 		else
-			echo "man page found: ${#pkgmanpage[@]}"
-			declare -p pkgmanpage |sed 's/declare -a pkgmanpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+			echo "man page found: ${#manpage[@]}"
+			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
 #		exit
 		read -p "Select man pages to display by id or press q to quit : " ms
 		if [[ $ms == "q" ]]; then
 			echo "exiting"
 			loop=0
-        elif [[ $ms -le $((${#pkgmanpage[@]}-1)) ]]; then
-            deb="${debs[${pkgmanpage[$ms]}]}"
-            echo "Display ${pkgmanpage[$ms]} from $deb"
+        elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
+            deb="${debs[${manpage[$ms]}]}"
+            echo "Display ${manpage[$ms]} from $deb"
             #curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin
-            if [[ ${pkgmanpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
-                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
-            elif [[ ${pkgmanpage[$ms]: -3} == ".gz" ]]; then
-                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |gunzip -c |less -S
+            if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling of various file types
+                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |man /dev/stdin #|yad --text-info --center --width=800 --height=600 --no-markup
+            elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
+                curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |gunzip -c |less -S
             else 
-			   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${pkgmanpage[$ms]} |less -S
+			   curl -sL -o- $deb |dpkg-deb --fsys-tarfile /dev/stdin |tar -xO ${manpage[$ms]} |less -S
 			fi
-        elif [[ $ms -gt $((${#pkgmanpage[@]}-1)) ]]; then
+        elif [[ $ms -gt $((${#manpage[@]}-1)) ]]; then
             echo "out of range - try again"
         else
             echo "Invalid Selection - Try Again"
@@ -236,19 +206,34 @@ function aptmulti {
 }
 
 function down {
+#if [[ "$mode" == "--down" ]]; then
 	validmode=1
 	loop=1
 	rawpkg="$1"
 	echo "rawpkg requested: $rawpkg"
+#    if [[ $rawpkg =~ "/" ]];then 
          aptresp=$(apt-get --print-uris download $rawpkg 2>&1)
-
+#        echo "apt response=$aptresp"
+#    else
+#		aptpkg=$(apt list $pkg 2>/dev/null |grep $rawpkg |cut -d" " -f1 |cut -d"," -f1)
+#		echo "AptPackage: $aptpkg"
+#		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
+#		#initially i did it with '--print-uris install' but in case of pkg 'yade', there are three deb files returned. This seems to be valid for any package that needs to install an additional deb in order to work .
+#		#on the other hand , using '--print-uris download' only the required package is returned without it's dependencies (more deb packages)
+#	fi
 
 	if [[ "$aptresp" == *"Unable to locate package"* ]];then
 		echo "Error. Either wrong package name or other error. Raw output of apt:"
+#		apt-get --print-uris download $aptpkg
 		apt-get --print-uris download $rawpkg
 		exit 1
+#	else
+#	    aptpkg=$1
 	fi
 
+##	aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1) #Prior to Nov17
+##	[[ $aptpkg == "" ]] && echo "No valid package found" && exit 1 || echo "Package: $aptpkg" #prior to Nov17
+#	apt-get download "$aptpkg" 2>/dev/null
 	apt-get download "$rawpkg"   
 	
 	pkg="${rawpkg%%/*}" #Nov17: remove the /repository i.e /experimental if exists
@@ -268,6 +253,7 @@ function down {
 		echo "data.tar is not a gz or xz archive. Exiting"
 		exit 1
 	fi
+	#manpage+=($(ar p $debname $datatar | tar t"$options" |grep -v -e '^l' |grep -e "man/man" -e "changelog" |grep -vE "\/$" |awk '{print $NF}')) #Nov17: Changelog option added
 	manpage+=($(dpkg -c $debname |grep -v -e '^l' |grep -e "man/man" -e "changelog" -e "README" -e '/info/' -e '/examples/' -e '/doc/' |grep -vE "\/$" |awk '{print $NF}')) 
 	#Nov17: Changelog option added and deb contents listing changed from 'ar -p' to 'dpkg -c' since the latest one seems more reliable and robust and also provides an ls similar output thus grep -v '^l' works fine = skip sym links	
 	while [[ $loop -eq 1 ]]; do
@@ -290,11 +276,13 @@ function down {
 			if [[ $ms == "a" ]]; then 
 				echo "Display all"
 				ar p "$debname" "$datatar" | tar xO"$options" ${manpage[@]} |man /dev/stdin #works ok
+	#			loop=0
 			elif [[ $ms == "q" ]]; then
 				echo "exiting"
 				loop=0
 			elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
 				echo "Display ${manpage[$ms]}"
+				#ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin #works ok
 				if [[ ${manpage[$ms]} =~ "man/man" ]]; then #Nov17: Different handling for various file types
 				   ar p "$debname" "$datatar" | tar xO"$options" ${manpage[$ms]} |man /dev/stdin  
                 elif [[ ${manpage[$ms]: -3} == ".gz" ]]; then
@@ -335,60 +323,45 @@ function bsd {
 function openbsd {
 #if [[ "$mode" == "--openbsd" ]]; then
   validmode=1  
-  #manpage="$1"
-  echo "function openbsd - args received: $*"
-  echo "function openbsd - proceed with manpage: $manpage to url: https://man.openbsd.org/$manpage"
-  manpagecap="${manpage^^}" #Capitalize the man page title
-  mandata="$(links -dump https://man.openbsd.org/$manpage |awk "/$manpagecap/,0")"
-  [[ -z "$mandata" ]] && echo "No man page found at \"https://man.openbsd.org/$manpage\"" && exit 1
+  bsdpage="$1"
+  bsdpagecap="${bsdpage^^}" #Capitalize the man page title
+  bsddata="$(links -dump https://man.openbsd.org/$bsdpage |awk "/$bsdpagecap/,0")"
+  [[ -z "$bsddata" ]] && echo "No man page found at \"https://man.openbsd.org/$bsdpage\"" && exit 1
 
   if [[ "$mode" == "--openbsd" && $3 == "--browser" ]]; then
-     gksu -u "$normaluser" xdg-open "https://man.openbsd.org/$manpage" 2>/dev/null &
+     gksu -u "$normaluser" xdg-open "https://man.openbsd.org/$bsdpage" 2>/dev/null &
   else
-     echo "$mandata" |sed "1i https://man.openbsd.org/$manpage" |less -S
+     echo "$bsddata" |sed "1i https://man.openbsd.org/$bsdpage" |less -S
   fi  
 #fi
 }
 
 function netbsd {
-#old: http://netbsd.gw.com/cgi-bin/man-cgi?grep++NetBSD-current
-#https://man.netbsd.org/${manpage}
+#http://netbsd.gw.com/cgi-bin/man-cgi?grep++NetBSD-current
   validmode=1  
-  #manpage="$1"
-  echo "Function netbsd - manpage received: $manpage"
-  manpagecap="${manpage^^}" #Capitalize the man page title
-  mandata="$(links -dump https://man.netbsd.org/${manpage} |awk "/$manpagecap/,0")"
-  [[ -z "$mandata" ]] && echo "No man page found at \"https://man.netbsd.org/${manpage}\"" && exit 1
+  netbsdpage="$1"
+  bsdpagecap="${bsdpage^^}" #Capitalize the man page title
+  netbsddata="$(links -dump http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current |awk "/$netbsdpagecap/,0")"
+  [[ -z "$netbsddata" ]] && echo "No man page found at \"http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current\"" && exit 1
 
   if [[ "$mode" == "--netbsd" && $3 == "--browser" ]]; then
-     gksu -u "$normaluser" xdg-open "https://man.netbsd.org/${manpage}" 2>/dev/null &
+     gksu -u "$normaluser" xdg-open "http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current" 2>/dev/null &
   else
-     echo "$mandata" |sed "1i https://man.netbsd.org/${manpage}" |less -S
+     echo "$netbsddata" |sed "1i http://netbsd.gw.com/cgi-bin/man-cgi?${netbsdpage}++NetBSD-current" |less -S
   fi  
 }
 
 function debiansuite {
   validmode=1  
-  
-    	echo "function debiansuite  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function debiansuite - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then manpage="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $manpage"
-  
-  ##manpage="$1"
+  page="$1"
   loop=1
   release="$(lsb_release -c -s)" #yields to codename release i.e bullseye (instead of release number i.e 11)- codename required at 2022
-  manpagesuite+=( $(curl -s -L -o- "http://manpages.debian.org/$release/$manpage" |grep -v 'index.html' |grep -Po ".* href=\"\K.*/$release/$manpage/.*[.]html" |perl -pe 's/html/gz/g') )
+  #manpagesuite+=( $(curl -s -L -o- "http://manpages.debian.org/$release/$page" |grep -v 'index.html' |grep -Po ".* href=\"\K.*/$release/$page/.*[.]html") ) #works ok 28.03.2022
+  manpagesuite+=( $(curl -s -L -o- "http://manpages.debian.org/$release/$page" |grep -v 'index.html' |grep -Po ".* href=\"\K.*/$release/$page/.*[.]html" |perl -pe 's/html/gz/g') )
 	while [[ $loop -eq 1 ]]; do
 		if [[ -z $manpagesuite ]];then
 			echo "No results. "
-			links -dump "http://manpages.debian.org/$release/$manpage"
+			links -dump "http://manpages.debian.org/$release/$page"
 			exit 1
 		else
 			clear
@@ -410,22 +383,8 @@ function debiansuite {
 }
 
 function debian {
-  validmode=1
-  
-  	echo "function debian  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function debian - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then manpage="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $manpage"
-
-  
-    
-  ##141023: manpage="$1"
+  validmode=1  
+  manpage="$1"
   #release="$(lsb_release -r -s)" #yields to numerical release i.e 11 - not working at 2022
   release="$(lsb_release -c -s)" #yields to codename release i.e bullseye - required at 2022
   manpagecap="${manpage^^}" #Capitalize the man page title
@@ -480,19 +439,7 @@ function debianlisthtml {
 function debianlist {
 #if [[ "$mode" == "--debianlist" ]]; then
   validmode=1
-  
-    	echo "function debianlist  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function debianlist - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then page="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $page"
-  
-  #page="$1"
+  page="$1"
   pagecap="${1^^}"
   loop=1
 	manpage+=( $(curl -s -L -o- "http://manpages.debian.org/$page" |grep -Po ".* href=\"\K.*/$page.*pkgversion.*title.*$" |perl -pe 's/">.*title="/,/g' |perl -pe 's/">.*$//g' ) )
@@ -558,19 +505,7 @@ function ubuntu {
 function ubuntulist {
 #if [[ "$mode" == "--ubuntulist" ]]; then
   validmode=1
-  
-      	echo "function ubuntulist  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function ubuntulist - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then page="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $page"
-  
-  #page="$1"
+  page="$1"
   loop=1
 	manpage+=($(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o '/manpages/.*man.*html') ) 
 	while [[ $loop -eq 1 ]]; do
@@ -808,9 +743,8 @@ function aptcheck {
 #Bellow is also for testing 
 #if [[ "$mode" == "--aptcheck" ]]; then
 		validmode=1
-		#unset manpage aptresp aptpkg
-		#pkg="$1"
-		pkg="$manpage"
+		unset manpage aptresp aptpkg
+		pkg="$1"
 		aptpkg=$(apt list $pkg 2>/dev/null |grep $pkg |cut -d" " -f1 |cut -d"," -f1)
 		echo "Package in apt: $aptpkg"
 		aptresp=$(apt-get --print-uris download $aptpkg 2>&1)
@@ -823,13 +757,13 @@ function aptcheck {
 		else
 			deb=$(grep "/$pkg" <<<"$aptresp" |cut -d" " -f1 |sed s/\'//g)
 			echo "deb file : $deb"
-			pkgmanpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
-			if [[ -z $pkgmanpage ]];then
+			manpage+=($(curl -sL -o- $deb |dpkg -c /dev/stdin |grep "man/man" |grep -vE "\/$" |awk '{print $NF}'))
+			if [[ -z $manpage ]];then
 				echo "No man pages found in deb package for $pkg. These are the contents of the $deb:"
 				curl -sL -o- $deb |dpkg -c /dev/stdin
 			else
-				echo "man page found: ${pkgmanpage[@]}"
-				declare -p pkgmanpage |sed 's/declare -a pkgmanpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+				echo "man page found: ${manpage[@]}"
+				declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 			fi
 		fi
 #fi
@@ -838,49 +772,32 @@ function aptcheck {
 #------------------------MAIN PROGRAMM-----------------------------------------------------------------------------------------#
 function main { return; }
 {
-    oldargs=$*
-    echo "Number of Parameters Given: $#"
-    if [[ $# -eq 0 ]];then helpme;exit 1;fi #show help and exit if no args are provided at all
+[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
+[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
+echo "mode selected:  $mode"
+normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" 
+#Detect the system normal user. Could be buggy if more than one normal user exists
 
-    echo "Old Args = $oldargs"
-	#[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
-	#[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
-	#echo "mode selected:  $mode"
-	normaluser="$(awk -F':' '/1000:1000/{print $1;exit}' /etc/passwd)" 
-	#Detect the system normal user. Could be buggy if more than one normal user exists
+case $mode in
+"--apt")apt "$@";;
+"--aptmulti")aptmulti "$@";;
+"--down")down "$@";;
+"--bsd")bsd "$@";;
+"--openbsd")openbsd "$@";;
+"--netbsd")netbsd "$@";;
+"--debian")debian "$@";;
+"--debianlist")debianlist "$@";;
+"--debianlisthtml")debianlisthtml "$@";;
+"--ubuntu")ubuntu "$@";;
+"--ubuntulist")ubuntulist "$@";;
+"--online")online "$@";;
+"--debiansuite")debiansuite "$@";;
+esac
 
-	while [[ $# -gt 0 ]]; do
-	  case "$1" in
-
-	#case $mode in
-	"--manpage") echo "--manpage found";if [ -n "$2" ]; then manpage="$2";echo "manpage name=$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-	#"--pkg") echo "--pkg found";if [ -n "$2" ]; then pkg="$2";echo "pkg name=$2";shift 2; else echo "Option --pkg requires a value." >&2;exit 1;fi;;
-	"--apt" )echo "mode selected=$1";apt $oldargs;shift;; ## Mind the absence of double quotes. If you pass oldargs using double quotes will be passed as ONE parameter and we don't want that.
-	"--aptmulti" )echo "mode selected=$1";aptmulti $oldargs;shift;; ##	"--aptmulti")aptmulti "$@";;
-	"--aptcheck" )echo "mode selected=$1";aptcheck $oldargs;shift;;
-	"--down" )echo "mode selected=$1";down $oldargs;shift;;
-	"--bsd" )echo "mode selected=$1";bsd $oldargs;shift;;
-	"--openbsd" )echo "mode selected=$1";openbsd $oldargs;shift;;
-	"--netbsd" )echo "mode selected=$1";netbsd $oldargs;shift;;
-	"--debian" )echo "mode selected=$1";debian $oldargs;shift;;
-	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
-	"--debianlist" )echo "mode selected=$1";debianlist $oldargs;shift;;
-	"--debianlisthtml" )echo "mode selected=$1";debianlisthtml $oldargs;shift;;
-	"--ubuntu" )echo "mode selected=$1";ubuntu $oldargs;shift;;
-	"--ubuntulist" )echo "mode selected=$1";ubuntulist $oldargs;shift;;
-	"--online" )echo "mode selected=$1";online $oldargs;shift;;
-	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
-	"--help" ) helpme; exit 1; shift ;;
-	*) restparam+=$1;shift;;
-	esac
-    done
-	[[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
-	echo "invalid options - exit with code 1" && exit 1
-	exit 1
+[[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
+echo "invalid options - exit with code 1" && exit 1
+exit 1
 }
-
-
-
 
 # compare man pages:
 # http://unix.stackexchange.com/questions/337884/how-to-view-differences-between-the-man-pages-for-different-versions-of-the-same
