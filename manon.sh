@@ -10,9 +10,12 @@
 
 helpme() {
 	    cat <<EOF
-Usage: manon [packagename] [option1] [option2]
+Usage: ./manon.sh --manpage [packagename] [option1] [option2]
+Update 15-10-2023: Due to script changes, --apt, --debian --debianlist --ubuntu , --ubuntulist and bsd switches work ok.
+The rest switches like --online, are not fully tested.
+
 Option1:
-    --help          This usage screen.
+    --help          This help screen.
 
     --online        Use online services to retrieve requested man page (die.net, mankier.com and man.he.net).
                     Option2:
@@ -20,13 +23,12 @@ Option1:
                            --manhenet    Skip die.net and mankier.com and look directly in man.he.net
                            * If option2 is ommited , default is die.net service
 
-    --apt           [DEFAULT MODE] Debian Specific. Extract and display the man page from the deb package without downloading it. 
+    --apt           Debian Specific. Extract and display the man page from the deb package without downloading it. 
                     Option 2:
                              --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc
-                             --pkg     : Package name as used in apt-get / apt 
 
-    --aptmulti      Debian Specific. Extract and display the man page from many packages at once(i.e kodi*), without downloading it. 
+    --aptmulti      Experimental - Debian Specific. Extract and display the man page from many packages at once(i.e kodi*), without downloading it. 
                     Option 2:
                              --full    : man pages but also examples,change logs, readme,docs and info pages
                              --noman   : Exclude man pages and return changelog entries,examples, etc
@@ -40,9 +42,6 @@ Option1:
                     If manpage is not found, then a second attempt to --debiansuite is made before abandoning the script (i.e deb debian-goodies)
                     Option 2: --manpage programm 
                     
-    --debiansuite   When providing a suite of tools (i.e devscripts) the swith --debian will provide the man page for devscripts but this switch will provide
-                    the man pages of all the tools inside the suite.
-
     --debianlist    Display a list of available man pages (various releases) at i.e http://manpages.debian.org/grep (i.e jessie,stretch,testing, unstable, posix etc). 
                     Does not work with suites of tools (i.e debian-goodies) except if the suite has it's own man page (i.e devscripts).
                     If --debianlist does not work ok with man & curl, use --debianlisthtml for the old html based man page viewing (html man page dumped to terminal)
@@ -63,12 +62,14 @@ Option1:
                     Combine with --browser to display man page at browser
 
 Just keep in mind that debian-utilities has some binaries that do most of the man job:
-dman - read man pages from manpages.debian.org
-debman - read man pages from uninstalled packages
-debmany  -  select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
+dman - read man pages online from manpages.debian.org
+debman - read man pages from uninstalled packages (not working very well at 2023)
+debmany  - more modern than debman - works well - used to select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
 "man", "sensible-pager" or an alternative viewer.
+txt2man  : transforms an ASCII txt file to man page
+help2man : Program to create simple man pages from the --help and --version output of other programs.
+info2man : Convert GNU info files to POD (Plain Old Documentation) or man pages (info to pod to man in one step)    
 
-    
 EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
 }	
@@ -317,7 +318,8 @@ function down {
 function bsd {
 #if [[ "$mode" == "--bsd" ]]; then
   validmode=1
-  bsdpage="$1"
+#  bsdpage="$1"
+  bsdpage="$manpage"
   bsddata="$(links -dump https://man.freebsd.org/$bsdpage |sed '1,/home | help/d' )"
   [[ "$bsddata" =~ "Sorry, no data found" ]] && echo "No man page found at \"https://man.freebsd.org/$bsdpage\"" && exit 1
   
@@ -363,7 +365,8 @@ function netbsd {
   if [[ "$mode" == "--netbsd" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "https://man.netbsd.org/${manpage}" 2>/dev/null &
   else
-     echo "$mandata" |sed "1i https://man.netbsd.org/${manpage}" |less -S
+     #echo "$mandata" |sed "1i https://man.netbsd.org/${manpage}" |less -S
+     echo "$mandata" |man /dev/stdin
   fi  
 }
 
@@ -412,16 +415,9 @@ function debiansuite {
 function debian {
   validmode=1
   
-  	echo "function debian  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function debian - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then manpage="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $manpage"
+  echo "function debian  - args received : $* / number of args = $#"
+  argsreceived=$*
+  echo "manpage requested: $manpage"
 
   
     
@@ -437,7 +433,7 @@ function debian {
     echo "No man page found at \"https://manpages.debian.org/$release/$manpage\""
     echo "let's check if this is a debian suite"
     read -p "press any key to continue" pp
-    debiansuite "$1" #calling another function, in this script.
+    debiansuite $argsreceived #calling another function, in this script.
   fi
 
 }
@@ -481,40 +477,37 @@ function debianlist {
 #if [[ "$mode" == "--debianlist" ]]; then
   validmode=1
   
-    	echo "function debianlist  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function debianlist - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then page="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
+   	echo "function debianlist  - args received : $* / number of args = $#"
+    echo "function debianlist - processing arg $1"
+    page="$manpage"
 	echo "manpage requested: $page"
   
   #page="$1"
   pagecap="${1^^}"
   loop=1
-	manpage+=( $(curl -s -L -o- "http://manpages.debian.org/$page" |grep -Po ".* href=\"\K.*/$page.*pkgversion.*title.*$" |perl -pe 's/">.*title="/,/g' |perl -pe 's/">.*$//g' ) )
+	pkgmanpage+=( $(curl -s -L -o- "http://manpages.debian.org/$page" |grep -Po ".* href=\"\K.*/$page.*pkgversion.*title.*$" |perl -pe 's/">.*title="/,/g' |perl -pe 's/">.*$//g' ) )
 
 	while [[ $loop -eq 1 ]]; do
-		if [[ -z $manpage ]];then
+		if [[ -z $pkgmanpage ]];then
 			echo "No results. If you entered the name of a suite (i.e debian-goodies) try to use --debian switch"
 			links -dump "http://manpages.debian.org/$page"
 			exit 1
 		else
 			#clear
 			echo "man page found: ${#manpage[@]}"
-			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+			declare -p pkgmanpage |sed 's/declare -a pkgmanpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
     	read -p "Select man pages to display by id or q to quit : " ms
         if [[ $ms == "q" ]]; then
 			echo "exiting" && loop=0
-		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-			echo "Display ${manpage[$ms]/,/}" #list is given in "link,version" format. ${var/,*/} removes the version at the end (removes comma and everything after comma)
-            u=$(echo "${manpage[$ms]/,*/}" |perl -pe 's/html/gz/g') #&& echo "$u" && read -p "any key..." 
-            uu="https://manpages.debian.org${manpage[$ms]}" && export uu; #export required in order perl to be able to read the bash variable
-            man <(curl -s -L -o- "https://manpages.debian.org/$u" |perl -pe 's/SYNOPSIS/SYNOPSIS ($ENV{uu})/') #Replacing Synopsis header in man page including url & version of the pkg 
+		elif [[ $ms -le $((${#pkgmanpage[@]}-1)) ]]; then
+			echo "Display ${pkgmanpage[$ms]/,/}" 
+			#list is given in "link,version" format. ${var/,*/} removes the version at the end (removes comma and everything after comma)
+            u=$(echo "${pkgmanpage[$ms]/,*/}" |perl -pe 's/html/gz/g') #&& echo "$u" && read -p "any key..." 
+            uu="https://manpages.debian.org${pkgmanpage[$ms]}" && export uu; 
+            #export required in order perl to be able to read the bash variable uu
+            man <(curl -s -L -o- "https://manpages.debian.org/$u" |perl -pe 's/SYNOPSIS/SYNOPSIS ($ENV{uu})/') 
+            #Replacing Synopsis header in man page including url & version of the pkg 
 		else
 			echo "Invalid Selection - Try Again"
 		fi
@@ -526,7 +519,8 @@ function ubuntu {
 #---------------------------------------------------------------------------------------------------------------------------------------
 # Ubuntu Online Man pages
 # Global Address : http://manpages.ubuntu.com
-# Quick jump : http://manpages.ubuntu.com/grep . Includes jscript redirection and thus works on browser but not on terminal (links or curl -L)
+# Quick jump : http://manpages.ubuntu.com/grep . 
+# Includes jscript redirection and thus works on browser but not on terminal (links or curl -L)
 # Work around: http://manpages.ubuntu.com/cgi-bin/search.py?q=grep  --> provides a list will all man pages / various releases
 # Using curl you can get this list in terminal: 
 # curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=dman |perl -pe 's/>/>\n/g' |grep -o '/manpages.*man.*html'
@@ -539,58 +533,48 @@ function ubuntu {
 # or you can provide an indexed array to select the man page you want
 # To use zesty you just need to dump http://manpages.ubuntu.com/manpages/zesty/en/man1/dman.1.html
 
-#if [[ "$mode" == "--ubuntu" ]]; then
   validmode=1
-  page="$1"
-  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' -e 'plan9' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
-  [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -v -e 'posix' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
-  [[ -z "$address" ]] &&  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages/zesty/.*man.*html' )"
-  [[ -z "$address" ]] && echo "no man pages returned : curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
-  read -p "$address - press any key to continue"
+  page=$manpage # $manpage has been set by main body , global variable
+  address="$(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o -m1 '/manpages/.*html')"
+ 
+  [[ -z "$address" ]] && echo "no man pages returned : curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && 
+  links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit
+  
+  read -p "address=$address - press any key to continue"
   if [[ "$mode" == "--ubuntu" && $3 == "--browser" ]]; then
      gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com$address" 2>/dev/null &
   else 
      links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" |less -S
   fi
-#fi
+
 }
 
 function ubuntulist {
-#if [[ "$mode" == "--ubuntulist" ]]; then
   validmode=1
-  
-      	echo "function ubuntulist  - args received : $* / number of args = $#"
-	while [[ $# -gt 0 ]]; do
-	  echo "function ubuntulist - processing arg $1"
-	  case "$1" in
-		--manpage) echo "--manpage found";if [ -n "$2" ]; then page="$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
-		*) restparam+=$1;shift;;
-	  esac
-	done
-
-	echo "manpage requested: $page"
+  echo "function ubuntulist : args received : $* / number of args = $#"
+  echo "function ubuntulist : manpage requested: $manpage"
   
   #page="$1"
   loop=1
-	manpage+=($(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$page |perl -pe 's/>/>\n/g' |grep -o '/manpages/.*man.*html') ) 
+	pkgmanpage+=($(curl -s -L -o- http://manpages.ubuntu.com/cgi-bin/search.py?q=$manpage |perl -pe 's/>/>\n/g' |grep -o '/manpages/.*man.*html') ) 
 	while [[ $loop -eq 1 ]]; do
-		if [[ -z $manpage ]];then
+		if [[ -z $pkgmanpage ]];then
 			echo "No results. "
-			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$page" && exit 1
+			links -dump "http://manpages.ubuntu.com/cgi-bin/search.py?q=$manpage" && exit 1
 		else
-			clear
-			echo "man page found at http://manpages.ubuntu.com/cgi-bin/search.py?q=$page : ${#manpage[@]}"
-			declare -p manpage |sed 's/declare -a manpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
+			##clear
+			echo "man page found at http://manpages.ubuntu.com/cgi-bin/search.py?q=$manpage : ${#pkgmanpage[@]}"
+			declare -p pkgmanpage |sed 's/declare -a pkgmanpage=(//g' |tr ' ' '\n' |sed 's/)$//g'
 		fi
     	read -p "Select man pages to display by id or q to quit : " ms
         if [[ $ms == "q" ]]; then
 			echo "exiting" && loop=0
-		elif [[ $ms -le $((${#manpage[@]}-1)) ]]; then
-			echo "Display ${manpage[$ms]}"
+		elif [[ $ms -le $((${#pkgmanpage[@]}-1)) ]]; then
+			echo "Display ${pkgmanpage[$ms]}"
 			if [[ "$mode" == "--ubuntulist" && $3 == "--browser" ]]; then
-               gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com${manpage[$ms]}" 2>/dev/null &
+               gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com${pkgmanpage[$ms]}" 2>/dev/null &
 			else
-			   links -dump http://manpages.ubuntu.com"${manpage[$ms]}" |sed "1i http://manpages.ubuntu.com${manpage[$ms]}" |less -S
+			   links -dump http://manpages.ubuntu.com"${pkgmanpage[$ms]}" |sed "1i http://manpages.ubuntu.com${pkgmanpage[$ms]}" |less -S
 			fi
 		else
 			echo "Invalid Selection - Try Again"
@@ -863,15 +847,18 @@ function main { return; }
 	"--openbsd" )echo "mode selected=$1";openbsd $oldargs;shift;;
 	"--netbsd" )echo "mode selected=$1";netbsd $oldargs;shift;;
 	"--debian" )echo "mode selected=$1";debian $oldargs;shift;;
-	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
+#	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
 	"--debianlist" )echo "mode selected=$1";debianlist $oldargs;shift;;
 	"--debianlisthtml" )echo "mode selected=$1";debianlisthtml $oldargs;shift;;
 	"--ubuntu" )echo "mode selected=$1";ubuntu $oldargs;shift;;
 	"--ubuntulist" )echo "mode selected=$1";ubuntulist $oldargs;shift;;
 	"--online" )echo "mode selected=$1";online $oldargs;shift;;
-	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
 	"--help" ) helpme; exit 1; shift ;;
 	*) restparam+=$1;shift;;
+	# TODO 15.10.2023: 
+	# Find a way to ensure that script will exit if --manpage <pkg> is not provided.
+	# Also keep in mind that this usage will fail: manon --manpage --apt because --apt will be considered as argument for --manpage.
+	
 	esac
     done
 	[[ $validmode -eq 1 ]] && echo "Succesfull exit" && exit 0
