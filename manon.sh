@@ -571,7 +571,9 @@ function ubuntu {
      gksu -u "$normaluser" xdg-open "http://manpages.ubuntu.com$address" 2>/dev/null &
   else 
   #   links -dump http://manpages.ubuntu.com$address |sed "1i http://manpages.ubuntu.com$address" | less -S #works ok 15.10.23
-  man <(curl -s -L -o- "$address")  #trying to catch the gz file instead of the html file
+  export address;man <(curl -s -L -o- "$address" |gzip -d |perl -pe 's/SYNOPSIS/SYNOPSIS ($ENV{address})/')  #trying to catch the gz file instead of the html file
+  #use of gzip -d is not necessary - man can open .gz files firectly. 
+  # Using gzip -d we can further proccess (i.e text replacement) the man page raw data.
   fi
 
 }
@@ -608,7 +610,8 @@ function ubuntulist {
   		       #instead of the default html man page that is available at https://manpages.ubuntu.com/manpages/focal/en/man1/gawk.1.html
   		       address="https://manpages.ubuntu.com$address"
   		       #read -p "press a key to proceed with address= $address"
-  		       man <(curl -s -L -o- "$address")  #trying to catch the gz file instead of the html file to make use of man nice coloring
+  		       ## man <(curl -s -L -o- "$address")  #trying to catch the gz file instead of the html file to make use of man nice coloring
+  		       export address;man <(curl -s -L -o- "$address" |gzip -d |perl -pe 's/SYNOPSIS/SYNOPSIS ($ENV{address})/')  #trying to catch the gz file instead of the html file
 			fi
 		else
 			echo "Invalid Selection - Try Again"
@@ -620,7 +623,8 @@ function ubuntulist {
 function online {
 #if [[ "$mode" == "--online" || "$mode" == "--online-gui" ]]; then
 	validmode=1
-	title=$1
+	#title=$1
+	title=$manpage;pkg=$manpage
 	unset dt0 dt data mson loopon
 	loopon=1
 	if [[ -z $3 ]]; then
