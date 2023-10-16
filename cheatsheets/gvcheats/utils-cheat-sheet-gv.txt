@@ -100,7 +100,7 @@ ar -p "$(ls *.deb)" data.tar.gz |tar -zt  --> Listing files . data.tar coule be 
 ar -p "$(ls *.deb)" data.tar.gz |tar -xzO ./usr/share/man/man1/agrep.1.gz |man /dev/stdin   --> works ok
 
 ##MAN PAGES FOR INTERNAL BASH BUILTIN COMMANDS
-if you try man readarray you get nothing.
+if you try "man readarray" you get nothing.
 man is used to display help pages of external (out of bash) tools, like man grep
 To display a short man page of a builtin command you need to run help -m readarray.
 
@@ -198,6 +198,27 @@ Navigate inside infopage using arrows (up/down to scroll, right to enter a subme
 
 Tip:
 zcat /usr/share/info/sed.info.gz |less   will display the whole info page at once. You can make regex searches using /
+
+.B OTHER USEFULL PACKAGES FOR MAN PAGES
+debian-utilities:
+dman - read man pages online from manpages.debian.org
+debman - read man pages from uninstalled packages (not working very well at 2023)
+debmany  - more modern than debman - works well - used to select  manpages  or documentation files from installed packages, packages from the repository or .deb-files 
+           for viewing using "man", "sensible-pager" or an alternative viewer.
+
+More interesting pkgs about manpages:
+pkg: txt2man            : transforms an ASCII txt file to man page
+pkg: help2man           : Program to create simple man pages from the --help and --version output of other programs.
+pkg: info2man           : Convert GNU info files to POD (Plain Old Documentation) or man pages (info to pod to man in one step)    
+pkg: manpages-el        : GNU Manpages Collection in Greek Language
+pkg: mandoc             : BSD Manpage compiler toolset
+pkg: freebsd-manpages   : Free BSD Manpages collection
+pkg: debiman            : debiman makes (Debian) manpages accessible in a web browser.
+fn: debcat              : In .bash_aliases we have a function that by default extracts contents of deb file in screen
+                          without downloading the pkg in HDD and you can select which file you want to see
+
+fn: viman               : A function that allows you to view man pages in vim -> viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
+pkg: ps2pdf             : Converter man page to pdf -> man -t bash | ps2pdf - bash.pdf
 
 #-----------------------------------------------------------------------------------------------------------------------
 UTILS:DEB - TAR FILES

@@ -79,6 +79,7 @@ fn: debcat              : In .bash_aliases we have a function that by default ex
                           without downloading the pkg in HDD and you can select which file you want to see
 
 fn: viman               : A function that allows you to view man pages in vim -> viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
+pkg: ps2pdf             : Converter man page to pdf -> man -t bash | ps2pdf - bash.pdf
 
 TODO & BUGS Dated 15.10.2023: 
 
