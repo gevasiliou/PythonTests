@@ -78,6 +78,8 @@ pkg: debiman            : debiman makes (Debian) manpages accessible in a web br
 fn: debcat              : In .bash_aliases we have a function that by default extracts contents of deb file in screen
                           without downloading the pkg in HDD and you can select which file you want to see
 
+fn: viman               : A function that allows you to view man pages in vim -> viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
+
 TODO & BUGS Dated 15.10.2023: 
 
 a. Find a way to ensure that script will exit if --manpage <pkg> is not provided.
