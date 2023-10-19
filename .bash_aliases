@@ -30,7 +30,7 @@ alias grtranslate="trans :el" #you need to have apt install translate-shell
 alias lanip="ifconfig |grep 'inet[^6]'"
 alias hdmisound="pacmd set-card-profile 0 output:hdmi-stereo && pacmd list 2>&1 |grep 'active profile'"
 alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
-
+alias ping="ping -c3"
 alias winpid="echo -ne 'select window  to get pid...  ' && xprop _NET_WM_PID WM_CLASS | cut -d' ' -f3 |sed -z -e 's/\n/ - /1' -e 's/[\x22,]//g'"
 ##
 
