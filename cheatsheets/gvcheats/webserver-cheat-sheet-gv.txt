@@ -85,13 +85,21 @@ composer require aldas/modbus-tcp-client
 git clone https://github.com/aldas/modbus-tcp-client.git
 cd modbus-tcp-client
 composer install
+cd modbus—tcp-client/examples && touch .allow-change
+
+File .allow-change is used as a flag, to allow users to change IP address / IP Port.
+Without this file present IP address and IP Port of webserver will be grayed out / locked/hardcoded in index.php file.
+File .allow-change can be empty.
+
+.B Run the webserver
 php -S localhost:8080 -t examples/
+
 -S switch: Run Built-in php webserver
 -t switch: Define the root directory of PHP webserver
 Now open http://localhost:8080 in browser. See additional query parameters from index.php.
 
 Tip:
-aldas Examples folder has index.php inside. 
-index.php can be used with php built-in web server to test out communication with our own PLCs.
+aldas "Examples" folder has index.php inside. 
+index.php is used with php built-in web server to test out communication with our own PLCs.
 
 
