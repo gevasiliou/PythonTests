@@ -50,6 +50,48 @@ Step 8: Navigate to http://127.0.0.1/test.php and everything should work ok.
 PS: Considering that you had a working apache2 server , meaning that you have a default index.html file and meaning that visiting http://127.0.0.1 works ok.
 
 Step 9: It seems good option to install some php extensions in your system:
-sudo apt install php8.0-gd php8.0-mysql php8.0-curl php8.0-mbstring
-sudo apt install php8.0-intl php8.0-gmp php8.0-bcmath php8.0-xml
-sudo apt install libapache2-mod-php8.0 php8.0-zip php-imagick php-apcu
+sudo apt install php-gd php-mysql php-curl php-mbstring
+sudo apt install php-intl php-gmp php-bcmath php-xml phpunit
+sudo apt install libapache2-mod-php php-zip php-imagick php-apcu
+
+#PHP Composer
+composer is a kind of php libraries installer.
+
+.B Installing Composer according to https://getcomposer.org/
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+If everything is ok, you should receive a success confirmation
+
+Last step: sudo mv composer.phar /usr/local/bin/composer
+
+
+##PHP MODBUS
+As of today (19.10.23) there is a Github Project capable to provide libraries for TCP Modbus Communication.
+https://github.com/aldas/modbus-tcp-client
+
+.B Use PHP built-in webserver for PLC Communication
+
+sudo apt-get install php-mbstring
+sudo apt install php-curl
+sudo apt install php-xml
+sudo apt install phpunit
+sudo service apache2 restart
+composer update OR sudo /home/gv/composer.phar update
+composer require aldas/modbus-tcp-client
+
+git clone https://github.com/aldas/modbus-tcp-client.git
+cd modbus-tcp-client
+composer install
+php -S localhost:8080 -t examples/
+-S switch: Run Built-in php webserver
+-t switch: Define the root directory of PHP webserver
+Now open http://localhost:8080 in browser. See additional query parameters from index.php.
+
+Tip:
+aldas Examples folder has index.php inside. 
+index.php can be used with php built-in web server to test out communication with our own PLCs.
+
+
