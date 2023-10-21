@@ -36,7 +36,8 @@ alias winpid="echo -ne 'select window  to get pid...  ' && xprop _NET_WM_PID WM_
 
 alias screenreset='xrandr --output eDP-1 --off && sleep 20 && xrandr --output eDP-1 --auto && xrandr --output HDMI-2 --mode 1920x1080 --scale 1x1 --output eDP-1 --mode 1366x768 --scale 1x1 --left-of HDMI-2'
 alias screenreset2='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
-
+alias scplegacy='scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
+alias sshlegacy='ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 alias converttopng='convert -verbose -coalesce'
 alias vpn='openfortivpn'
 alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
