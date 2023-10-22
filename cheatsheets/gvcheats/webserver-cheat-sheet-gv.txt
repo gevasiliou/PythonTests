@@ -102,4 +102,4 @@ Tip:
 aldas "Examples" folder has index.php inside. 
 index.php is used with php built-in web server to test out communication with our own PLCs.
 
-
+Tip2: php -S localhost:8080 /path/to/index.html -> This is a valid synthax to serve a particular file with php -S

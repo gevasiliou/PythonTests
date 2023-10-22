@@ -126,7 +126,8 @@ read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] 
 #man bash line 3056 or help -m read or help -m readarray 
 
 Important: 
-read is a bash builtin command and though it has a -d (delimiter) option it obeys word splitting acc to IFS. Usefull for null separated data (IFS= and read -d '')
+read is a bash builtin command and though it has a -d (delimiter) option it obeys word splitting acc to IFS. 
+This -d option is usefull for null separated data (IFS= and read -d '')
 readarray is a prog and ignores IFS. Default delimiter is new line. Custom delimiter can be adjusted by -d option (i.e -d ' ' = space)
 If you need to read a file with while read -r and use a custom separator (i.e :) adjust IFS=: and do not ude -d: option of read.
 Alternativelly you can disable IFS (i.e while IFS= or IFS="") and thus read -d option will come in play.
