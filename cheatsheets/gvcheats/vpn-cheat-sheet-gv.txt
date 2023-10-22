@@ -400,24 +400,15 @@ Open a command prompt with Administrator Privileges and navigate to C:\Program F
 run the command openvpn connector03_Milan.ovpn
 After some seconds you should end up in something like this:
  
-
-If you receive an netsh error similar to this:
- 
-
-To fix netsh errors you need to go to network adapter settings, locate TAP-Windows adapter and make sure that:
+If you receive an netsh error, you need to go to network adapter settings, locate TAP-Windows adapter and make sure that:
 a.	DHCP – Automatic Set of IP Address is selected for this TAP Adapter (DHCP was ON in my case)
-b.	IP v6 is active for this TAP adapter (IP6 was OFF/Disabled in my case).
+b.	IP v6 is active for this TAP adapter (IP6 was OFF/Disabled in my case). OpenVPN requires IPv6 to be active.
  
 After you enable TAP DHCP & IP6 you should be ok. Keep the command line window open to maintain the openvpn connection
 
 Once connected you can try (from another instance of command line interface) to ping Network connector01 IP Address (tip: make sure to use connector IP and not Network IP) and also you can try to ping lan addresses behind connector01 (i.e 192.168.1.xx)
  
- 
-
-Similarly, from Win10 Chrome you can visit webpages of connector01 lan:
- 
-
-
+Similarly, from Win10 Chrome you can visit webpages of connector01 lan
 
 Tips:
 1.	Though that it is known that IP 192.168.1.1 exists also in my Office WiFi lan, once openvpn is deployed we can see that http://192.168.1.1 send us to Teltonika Login Page instead of WiFi router page. Somehow, openvpn gets higher priority over WiFi network.
@@ -429,7 +420,23 @@ It has been proved that once openvpn connector03_Milan.ovpn is terminated (contr
 6.	Obviously, if we tweak openvpn more, I am pretty sure that we can find a way to get connected to cloud.openvpn using OpenVPN-GUI instead of CLI, but this is not mandatory since simple CLI with openvpn.exe works just fine with connector03_Milan.ovpn
 7.	Bug: OpenVPN Clouds allows a limited amount of users to be connected for free (I think that only 3 concurrent connections are allowed).
 
-VPN:VARIOUS OPTIONS TO BE TESTED & DOCUMENTATION
+VPN:OPTIONS & DOCUMENTATION
+##Documents and examples
+man openvpn
+cd /usr/share/doc/openvpn
+ls -all 
+
+In this directory you can see two help files in html format:
+openvpn.8.html
+openvpn-examples.5.html
+
+You can use php built-in web server to view those files quickly:
+php -S localhost:8080 openvpn.8.html
+php -S localhost:8080 openvpn-examples.5.html
+
+Just visit localhost:8080 with web browser!
+
+##OPENVPN OPTIONS
 .B explicit-exit-notify 3
 It has been proved , that when you interrupt the connection to server using ctrl+c , you can not reconnect and you receive errors like that:
 2023-10-22 02:30:05 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
@@ -437,12 +444,15 @@ It has been proved , that when you interrupt the connection to server using ctrl
 This error appears because client disconnects suddenly from the server. 
 After some time, server realizes that client is not available, client is deleted by server's cache and after this point you can reconnect.
 Using option explicit-exit-notify you force the client to disconnect not just "dissapear".
+
 The results of this option are straight forward:
-Connect to vpn server
-disconnect 
-try to reconnect.
-Without explicit-exit-notify , you need to wait at least 30 minutes in order server to realize that client is gone.
-But when explicit-exit-notify is present, exciting becomes smooth:
+  (*) Connect to vpn server
+  (*) Disconnect 
+  (*) Try to reconnect.
+
+Without explicit-exit-notify , you need to wait ~15 minutes in order server to realize that client is gone and allow same client reconnecting.
+
+But when explicit-exit-notify is present, exciting becomes smooth and reconnects can be done without delays:
 2023-10-22 02:52:03 Protocol options: explicit-exit-notify 3
 ^C2023-10-22 02:58:38 event_wait : Interrupted system call (fd=-1,code=4)
 2023-10-22 02:58:38 SIGTERM received, sending exit notification to peer

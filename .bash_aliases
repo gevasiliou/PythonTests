@@ -23,6 +23,7 @@ export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
+export MANPAGER='less -s -M +Gg'
 
 alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
 alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg from 2019 is obsolete.
@@ -73,7 +74,9 @@ alias lsm='ls -l $@ && cd' #ls and move. Strange, but cd keeps the $@ and it wor
 
 alias weather="curl wttr.in/'Νέα Ερυθραία'" #/Μαρούσι
 alias hexit='od -w40 -An -t x1c -v'
-alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
+#alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
+#alias man replaced by export MANPAGE in the beginning of this document 22.10.23
+
 #alias asciit='od -An -tuC'
 #alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
 #alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
