@@ -7,19 +7,46 @@ On alice pc run: openvpn --remote bob.example.com --dev tun1 --ifconfig 10.4.0.2
 
 To verify tunnel is working, ping across the tunnel.
 
-On bob: ping 10.4.0.2
-On alice: ping 10.4.0.1
+On bob ping 10.4.0.2 & On alice ping 10.4.0.1
 
 Tip: The --verb 9 option will produce verbose output, similar to the tcpdump(8) program. Omit the --verb 9 option to have OpenVPN run quietly.
 
-##OpenVPN in Teltonika
+## VPN tunnel with self-signed certificates and fingerprint
+source: /usr/share/doc/openvpn/openvpn-examples.5.html
+
+First build a self-signed certificate on bob and display its fingerprint.
+openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout bob.pem -out bob.pem -nodes -sha256 -days 3650 -subj '/CN=bob'
+openssl x509 -noout -sha256 -fingerprint -in bob.pem
+
+and the same on alice:
+openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout alice.pem -out alice.pem -nodes -sha256 -days 3650 -subj '/CN=alice'
+openssl x509 -noout -sha256 -fingerprint -in alice.pem
+
+These commands will build a text file called bob.pem and alice.pem (in ascii format) that contain both self-signed certificate and key 
+and show the fingerprint of the certificates.  Transfer the fingerprints by using the scp(1) or ssh(1) program.
+
+On bob:
+openvpn --ifconfig 10.4.0.1 10.4.0.2 --tls-server --dev tun --dh none --cert bob.pem --key bob.pem --cipher AES-256-GCM \
+        --peer-fingerprint "$fingerprint_of_alices_cert"
+
+On alice:
+openvpn --remote bob.example.com --tls-client --dev tun1  --ifconfig 10.4.0.2 10.4.0.1 --cipher AES-256-GCM  \
+        --cert alice.pem --key alice.pem --peer-fingerprint "$fingerprint_of_bobs_cert"
+
+Now verify the tunnel is working by pinging across the tunnel.
+
+On bob ping 10.4.0.2 & On alice ping 10.4.0.1
+Note: This example use a elliptic curve (secp384), which allows --dh to be set to none.
+
+
+##OpenVPN Teltonika (server) with Debian (client) using Static Key
 .B Teltonika = openvpn server / Debian at laptop = openvpn client
 .I https://wiki.teltonika-networks.com/view/OpenVPN_configuration_examples
 
-1. On Teltonika Web - VPN page, set up a new openvpn connection with server role.
+1. On Teltonika Web - VPN configuration page, set up a new openvpn connection with server role.
 Use the following configuration on Teltonika page for openvpn setup:
 
-Enable: Yes
+Enable VPN: Yes
 TUN/TAP : TUN
 Protocol : UDP
 Port: 1194
@@ -34,7 +61,7 @@ Static pre-shared key: <upload from your laptop static.key>
 
 Bug: In the overview page of Teltonika, openvpn server status might appear as “disconnected” – this is fake.
 
-2.	Use either teltonika cli or Debian ssh at Teltonika and create the required static.key
+2.	Use Teltonika cli (or ssh to Teltonika by Debian) and create the required static.key
 ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net
 cd /etc/easy-rsa
 openvpn --genkey --secret static.key 
@@ -43,15 +70,15 @@ Tip1: modern openvpn versions require secret instead of “--secret”
 
 Tip1: in my .bash_aliases i have create a new alias sshlegacy='ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 
-Tip2: You can use your Debian easy-rsa to generate the static.key and then upload it to Teltonika.
+Tip2: You can instead use Debian easy-rsa to generate the static.key and then upload it to Teltonika.
 
-Tip3: If you use easy-rsa of Teltonika for static.key generation, this file will be created in the CWD.
+Tip3: If you use easy-rsa of Teltonika for static.key generation, this file will be created in the CWD of Teltonika (/etc/easy-rsa)
 
-3.	Copy the static.key from Teltonika to Debian: 
+3.	Transfer static.key from Teltonika to Debian: 
 scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net:/etc/easy-rsa/static.key /etc/openvpn/t-xxstatic.key
 (mind the space between remote and local path)
 
-Verify that the static.key has been copied to /etc/openvpn folder with the name we declared at scp, t-xxstatic.key
+Verify that the static.key has been copied to Debian /etc/openvpn folder with the name we declared at scp, t-xxstatic.key
 
 Tip1: This scp is the legacy method; Modern Teltonika routers with FW >7 , can run just by ssh root@t-xx.ddns.net
       scp -O (capital o) says to scp not to use sftp mode for copying but legacy mode.Usefull when an old version of scp is used.
@@ -59,8 +86,8 @@ Tip1: This scp is the legacy method; Modern Teltonika routers with FW >7 , can r
 
 Tip2: in my .bash_aliases file, i have add an alias of scplegacy='scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 
-4.	Go back to Teltonika, openvpn server configuration and press select button to select static key file. 
-Select the file from your Debian (path /etc/openvpn) to be uploaded to Teltonika.
+4.	Go back to Teltonika, openvpn server configuration and press select button to select static key file using the pop up "open file" dialogue. 
+Select the file from your Debian (/etc/openvpn/) to be uploaded to Teltonika.
 
 Tip: Instead to "resend" the static.key from Debian back to Teltonika using the Teltonika OpenVPN Configuration page, you can try
 to "edit" the /tmp/etc/t-xx-openvpn-server.conf file and define manually "secret /etc/easy-rsa/static.key' . This method tried once, not sure if it works or fails.
@@ -73,7 +100,7 @@ ifconfig 10.0.0.1 10.0.0.2
 keepalive 10 120
 port 1194
 proto udp
-secret /lib/uci/upload/cbid.openvpn.server_t13.secret
+secret /lib/uci/upload/cbid.openvpn.server_txx.secret
 verb 5
 
 Remark: Above conf file is 100% autogenerated by Teltonika OpenVPN page setup.
@@ -104,26 +131,27 @@ OpenVPN 2.6.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [
 library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
 WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  This allows attacks like SWEET32.  Mitigate by using a --cipher with a larger block size (e.g. AES-256-CBC). Support for these insecure ciphers will be removed in OpenVPN 2.7.
 
- 
-
 ##Use your Win10 PC as OpenVPN Client
 1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine.
 
 2. Create Win10 openvpn client file
-Go with Win CLI to installation folder of Win OpenVPN:  
+Go with Win10 CLI to installation folder of Win OpenVPN:  
 cd C:\Program Files\OpenVPN\bin
+
 Create with text editor the openvpn configuration file t-xx.ovpn (requires administrator privileges)
 #providers legacy default       # commented out since win10 openvpn does not recognize "provides" option
 remote t-xx.ddns.net 1194
 proto udp
 dev tun
 ifconfig 10.0.0.2 10.0.0.1
-secret t05static.key                 #ensure that t05static.key is in the same folder with t05.ovpn
+secret t-xxstatic.key                 #ensure that t05static.key is in the same folder with t05.ovpn
 verb 3
 route 192.168.1.0 255.255.255.0
+explicit-exit-notify 3               #not sure if this option is supported by Win openvpn
 
-3. Create manually the static.key file - 
-copy paste contents of static.key from Debian to a new t-xxstatic.key, in the same directory that t-xx.ovpn file exists (for simplicity).
+3. Create manually the static.key file in Win10 
+copy paste contents of Debian t-xxstatic.key to a new t-xxstatic.key in the same Win10 directory that t-xx.ovpn file exists (for simplicity).
+
 #
 # 2048 bit OpenVPN static key
 #
@@ -134,24 +162,15 @@ copy paste contents of static.key from Debian to a new t-xxstatic.key, in the sa
 709ab67bc19ac10baaa6ec7404d4211b
 -----END OpenVPN Static key V1-----
 
-Now your openvpn folder should contain both files t05.ovpn and t05static.key
- 
+Now your openvpn folder in Win10 (C:\Program Files\OpenVPN\bin) should contain both files t-xx.ovpn and t-xxstatic.key
 
-Now, you can run this command from windows CLI:
-openvpn t-xx.ovpn
+Run this command from windows CLI with administrator command line: openvpn t-xx.ovpn
 
-Important: Make sure that your win10 openvpn and it’s relevant Win10 tunnel are “free” - not connected somewhere else!
+Important: Make sure that your win10 openvpn and it’s relevant Win10 tunnel are “free” - not used/not connected somewhere else!
 As in Debian you need to maintain this cli window open to keep the vpn connection open.
  
-
-
-
-
-
 .B Sources: 
 https://wiki.teltonika-networks.com/view/OpenVPN_configuration_examples
-(above link includes instruction on how to set up server/client to be capable to browse “behind lan”)
-
 https://wiki.teltonika-networks.com/view/RUT955_Firewall#Traffic_Rules
 https://stosb.com/blog/explaining-my-configs-openvpn/
 https://wiki.debian.org/OpenVPN
@@ -163,9 +182,15 @@ https://openvpn.net/community-resources/reference-manual-for-openvpn-2-5/
 
 .B To be tested:
 a.	Adjust Debian to be vpn server and rut950 to be the client, ensuring that “server” (Debian) will be capable to see the LAN behind client (rut950)
-b.	Find (or built) an openvpn server in a “3rd” machine. Adjust Debian and RUT to “client-role”. Both machines (rut950 – Debian) must get connected to the 3rd “vpn server” – You need to adjust server to allow forwarding from one client to the other (client-to-client). In this setup hopefully Debian will be capable to “see” the LAN network behind RUT950
-
+b.	Find (or built) an openvpn server in a “3rd” machine. Adjust Debian and Teltonika to have “client-role”. 
+Both machines (rut950 – Debian) get connected to the 3rd “vpn server” – 
+You need to adjust server to allow forwarding from one client to the other (client-to-client). 
+In this setup we need: 
+    (1) Debian client to be capable to access Teltonika client behind-LAN (client to client).
+    (2) openvpn server machine should have access to behind-lan of both Debian and Teltonika.
+    
 ##Teltonika VPN via OpenVPN Cloud 
+https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 
 1.	Create your cloud.openvpn.com account.
 2.	Create a network , i.e aurora2
@@ -173,34 +198,24 @@ b.	Find (or built) an openvpn server in a “3rd” machine. Adjust Debian and R
 4.	Once connector01 is created click on “Deploy” to edit this connector 
 5.	On Connector Type scroll down to “OpenVPN Compatible Router” and select Teltonika.
 6.	Download OVPN profile (something like connector01_milan.ovpn file)
-Help : https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 7.	At RUT950 create a new openvpn setup – client role and “edit” configuration of this setup
-
 8.	Enable “OpenVPN config from file” and then browse for .ovpn file using the popup that will appear to “select” the ovpn file -> 
 Make sure that “Enable” is set to “ON” -> Save and Apply
 tip: In this window, the file selection pop-up will show files in your pc, not in Teltonika. 
 It has been proved that if you select the .ovpn file saved from cloud.openvpn in your pc desktop this .ovpn file will be somehow magically “imported” to RUT950.
 
 9.	Normally you should see something like that, advising that “client” is connected without any manual settings modification required. 
- 
 10.	Back to cloud.openvpn you need now to add a host. Go to “STATUS”, click on “Hosts” and then press “add host” 
- 
 11.	Provide name of the host and name of the connector 
- 
 12.	Select Connector Type – Linux – Debian
- 
 13.	Do not execute the prompted script, but scroll to the end of the page and click on “Next”
 You will be prompted that connector is offline, just skip the connectivity test.
  
 14.	Leave blank “Add Application” and “Add IP Service”
 15.	On the last step “Configure Access Group” select “Default full mesh access group”:
- 
 16.	Click on Finish
-
-17. Deleted
- 
+17. Screenshot Deleted
 18.	Go to “Connectors” tab , click the “deploy” menu and select from the drop-down list the option “Download Profile in ovpn format”:
- 
 19.	Save the file to your desktop, open the file with text editor find the line 
 cipher AES-256-CBC
 Add this line bellow above line and save
@@ -220,7 +235,6 @@ Tip1: You can ping only the connectors. You can not ping the IP of the “host�
 
 Tip2: This is the Debian Terminal screen (which has to remain open to maintain openvpn connection) 
 gv@debssd:~/Desktop$ sudo openvpn connector03_milan.ovpn
-[sudo] password for gv: 
 2023-09-12 02:14:36 Note: cipher 'AES-256-CBC' in --data-ciphers is not supported by ovpn-dco, disabling data channel offload.
 2023-09-12 02:14:36 OpenVPN 2.6.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] [DCO]
 2023-09-12 02:14:36 library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
@@ -280,7 +294,7 @@ gv@debssd:~/Desktop$ sudo openvpn connector03_milan.ovpn
 2023-09-12 02:14:47 Protocol options: explicit-exit-notify 1, protocol-flags tls-ekm
 
 cat connector01_milan.opvn (RUT950)
-setenv USERNAME "gevasiliou/connector/abf939a2-2861-4986-a738-b81274536465_a4d28035-59a7-471f-b408-8a97a4de7068"
+setenv USERNAME "gevasiliou/connector/abf939a2-......7068"
 # OVPN_WEBAUTH_FRIENDLY_USERNAME=gevasiliou/aurora2/connector01
 # OVPN_FRIENDLY_PROFILE_NAME=aurora2@gevasiliou.openvpn.com [Milan]
 client
@@ -329,13 +343,14 @@ key-direction 1
 <tls-auth>
 -----BEGIN OpenVPN Static key V1-----
 4f65292e639c83574026ab790f67257b
-.
-.
+..
+..
 521021b9e6d45cdee7bfd22fce270a49
 -----END OpenVPN Static key V1-----
 </tls-auth>
+
 Host Connector03_Milan.ovpn (Debian)
-setenv USERNAME "gevasiliou/connector/96aa040b-27d6-4a54-a72d-ba41be5dd590_ec10b2d2-ff9e-4dc9-84c5-a5c851edab4d"
+setenv USERNAME "gevasiliou/connector/96aa040b-.......-a5c851edab4d"
 # OVPN_WEBAUTH_FRIENDLY_USERNAME=gevasiliou/auro2-telto/connector03
 # OVPN_FRIENDLY_PROFILE_NAME=auro2-telto@gevasiliou.openvpn.com [Milan]
 client
@@ -420,7 +435,7 @@ It has been proved that once openvpn connector03_Milan.ovpn is terminated (contr
 6.	Obviously, if we tweak openvpn more, I am pretty sure that we can find a way to get connected to cloud.openvpn using OpenVPN-GUI instead of CLI, but this is not mandatory since simple CLI with openvpn.exe works just fine with connector03_Milan.ovpn
 7.	Bug: OpenVPN Clouds allows a limited amount of users to be connected for free (I think that only 3 concurrent connections are allowed).
 
-VPN:OPTIONS & DOCUMENTATION
+VPN:OPENVPN OPTIONS & DOCUMENTATION
 ##Documents and examples
 man openvpn
 cd /usr/share/doc/openvpn
@@ -452,7 +467,7 @@ The results of this option are straight forward:
 
 Without explicit-exit-notify , you need to wait ~15 minutes in order server to realize that client is gone and allow same client reconnecting.
 
-But when explicit-exit-notify is present, exciting becomes smooth and reconnects can be done without delays:
+But when explicit-exit-notify is present, client exciting becomes smooth and reconnects can be done without delays:
 2023-10-22 02:52:03 Protocol options: explicit-exit-notify 3
 ^C2023-10-22 02:58:38 event_wait : Interrupted system call (fd=-1,code=4)
 2023-10-22 02:58:38 SIGTERM received, sending exit notification to peer
