@@ -1,6 +1,12 @@
 VPN:BASICS: CHEAT SHEET by gv
 
-##OPENVPN Simple Tunnel Between two points without any security
+sources:
+.I https://wiki.debian.org/OpenVPN
+.I /usr/share/doc/openvpn/openvpn-examples.5.html
+.I https://community.openvpn.net/openvpn/wiki/GettingStartedwithOVPN
+.I https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/
+
+## OPENVPN Simple Tunnel Between two points without any security
 On bob pc run: openvpn --remote alice.example.com --dev tun1 --ifconfig 10.4.0.1 10.4.0.2 --verb 9
 
 On alice pc run: openvpn --remote bob.example.com --dev tun1 --ifconfig 10.4.0.2 10.4.0.1 --verb 9
@@ -12,7 +18,7 @@ On bob ping 10.4.0.2 & On alice ping 10.4.0.1
 Tip: The --verb 9 option will produce verbose output, similar to the tcpdump(8) program. Omit the --verb 9 option to have OpenVPN run quietly.
 
 ## VPN tunnel with self-signed certificates and fingerprint
-source: /usr/share/doc/openvpn/openvpn-examples.5.html
+
 
 First build a self-signed certificate on bob and display its fingerprint.
 openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout bob.pem -out bob.pem -nodes -sha256 -days 3650 -subj '/CN=bob'
@@ -38,12 +44,73 @@ Now verify the tunnel is working by pinging across the tunnel.
 On bob ping 10.4.0.2 & On alice ping 10.4.0.1
 Note: This example use a elliptic curve (secp384), which allows --dh to be set to none.
 
+## OPENVPN TUNNEL PKI & TLS
+source: /usr/share/doc/openvpn/openvpn-examples.5.html
+ 
+For this test, we will designate bob as the TLS client and alice as the TLS server.
 
-##OpenVPN Teltonika (server) with Debian (client) using Static Key
-.B Teltonika = openvpn server / Debian at laptop = openvpn client
+Note: The client or server designation only has meaning for the TLS subsystem.  It has no bearing on OpenVPN's peer-to-peer, UDP-based communication model.*
+
+First, build a separate certificate/key pair for both bob and alice 
+(see above where --cert is discussed for more info). 
+
+Then construct Diffie Hellman parameters (see above where --dh is discussed for more info). 
+You can also use the included test files client.crt, client.key, server.crt, server.key and ca.crt. 
+
+The .crt files are certificates/public-keys, the .key files are private keys, and ca.crt is a certification authority who 
+has signed both client.crt and server.crt. For Diffie Hellman parameters you can use the included file dh2048.pem.
+
+WARNING: All client, server, and certificate authority certificates and keys included in the OpenVPN distribution are totally insecure 
+and should be used for testing only.
+
+On bob: openvpn --remote alice.example.com --dev tun1 --ifconfig 10.4.0.1 10.4.0.2 \
+        --tls-client --ca ca.crt --cert client.crt --key client.key --reneg-sec 60 --verb 5
+
+On alice: openvpn --remote bob.example.com --dev tun1 --ifconfig 10.4.0.2 10.4.0.1 \
+          --tls-server --dh dh1024.pem --ca ca.crt --cert server.crt --key server.key --reneg-sec 60 --verb 5
+
+Now verify the tunnel is working by pinging across the tunnel.
+
+On bob:   ping 10.4.0.2
+
+On alice: ping 10.4.0.1
+
+Notice the --reneg-sec 60 option we used above. That tells OpenVPN to renegotiate the data channel keys every minute. 
+Since we used --verb 5 above, you will see status information on each new key negotiation.
+
+For production operations, a key renegotiation interval of 60 seconds is probably too frequent. 
+Omit the --reneg-sec 60 option to use OpenVPN's default key renegotiation interval of one hour.
+
+.B Routing
+
+Assuming you can ping across the tunnel, the next step is to route a real subnet over the secure tunnel. 
+Suppose that bob and alice have two network interfaces each, one connected to the internet, and the other to a private network. 
+Our goal is to securely connect both private networks. We will assume that bob's private subnet is 10.0.0.0/24 and alice's is 10.0.1.0/24.
+
+First, ensure that IP forwarding is enabled on both peers. On Linux, enable routing:
+cat /proc/sys/net/ipv4/ip_forward and verify if it has value "1" inside. 
+If not, then : echo 1 > /proc/sys/net/ipv4/ip_forward
+
+This setting is not persistent. 
+Please see your operating systems documentation how to properly configure IP forwarding, which is also persistent through system boots.
+
+If your system is configured with a firewall, see your operating systems guide on how to configure the firewall. 
+You typically want to allow traffic coming from and going to the tun/tap adapter OpenVPN is configured to use.
+
+On bob:   route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.4.0.2
+
+On alice: route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.4.0.1
+
+Now any machine on the 10.0.0.0/24 subnet can access any machine on the 10.0.1.0/24 subnet over the secure tunnel (or vice versa).
+
+In a production environment, you could put the route command(s) in a script and execute with the --up option.
+
+
+## OpenVPN Teltonika (server) with Debian or Windows (client) using Static Key
+Source:
 .I https://wiki.teltonika-networks.com/view/OpenVPN_configuration_examples
 
-1. On Teltonika Web - VPN configuration page, set up a new openvpn connection with server role.
+.B 1. On Teltonika Web - VPN configuration page, set up a new openvpn connection with server role.
 Use the following configuration on Teltonika page for openvpn setup:
 
 Enable VPN: Yes
@@ -59,43 +126,58 @@ Authentication: Static Key
 Encryption: AES-256-CBC 256
 Static pre-shared key: <upload from your laptop static.key>
 
-Bug: In the overview page of Teltonika, openvpn server status might appear as “disconnected” – this is fake.
+When done, press save and you return to Teltonika openvpn overview page.
+You see something like this:
+server_txx    tun_s_txx    udp    1194  enable checked
 
-2.	Use Teltonika cli (or ssh to Teltonika by Debian) and create the required static.key
+Bug: In the very first overview page of Teltonika, openvpn server status might appear as “disconnected” – this is fake.
+
+Verify with ssh or with Teltonika cli that your server conf file is good to go:
+cat /tmp/etc/
+
+.B 2. Generate Static Key
+Use Teltonika cli OR  with your debian make ssh to Teltonika. 
+To be capable to ssh to Teltonika ensure that "remote ssh" and "remote cli" are enabled on Teltonika - System - Administration - Access Control) 
 ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net
 cd /etc/easy-rsa
 openvpn --genkey --secret static.key 
 
-Tip1: modern openvpn versions require secret instead of “--secret” 
+Tip1: modern openvpn versions (like in my Debian) require "--genkey secret" instead of “--genkey --secret” 
 
 Tip1: in my .bash_aliases i have create a new alias sshlegacy='ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 
-Tip2: You can instead use Debian easy-rsa to generate the static.key and then upload it to Teltonika.
+Tip2: You can instead use Debian easy-rsa to generate the static.key and then upload it to Teltonika:
+sudo openvpn --genkey secret /etc/openvpn/txxstatic.key && sudo chown gv:gv /etc/openvpn/txxstatic.key
 
 Tip3: If you use easy-rsa of Teltonika for static.key generation, this file will be created in the CWD of Teltonika (/etc/easy-rsa)
 
-3.	Transfer static.key from Teltonika to Debian: 
+.B 3.	Transfer static.key from Teltonika Server to Debian Client 
 scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net:/etc/easy-rsa/static.key /etc/openvpn/t-xxstatic.key
 (mind the space between remote and local path)
 
 Verify that the static.key has been copied to Debian /etc/openvpn folder with the name we declared at scp, t-xxstatic.key
 
-Tip1: This scp is the legacy method; Modern Teltonika routers with FW >7 , can run just by ssh root@t-xx.ddns.net
+Tip1: Obviously this step is not required if the static.key has been created by Debian openvpn and is stored in /etc/openvpn folder.
+
+Tip2: This scp is the legacy method; Modern Teltonika routers with FW >7 , can run just by ssh root@t-xx.ddns.net
       scp -O (capital o) says to scp not to use sftp mode for copying but legacy mode.Usefull when an old version of scp is used.
       Rest -o options are used for the ssh-rsa negotiation, by forcing algorithms to use ssh-rsa.
 
-Tip2: in my .bash_aliases file, i have add an alias of scplegacy='scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
+Tip3: in my .bash_aliases file, i have add an alias of scplegacy='scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 
-4.	Go back to Teltonika, openvpn server configuration and press select button to select static key file using the pop up "open file" dialogue. 
+.B 4.	Transfer static.key back to Teltonika from Debian
+Go back to Teltonika, openvpn server configuration page and press select button to select static key file using the pop up "open file" dialogue. 
 Select the file from your Debian (/etc/openvpn/) to be uploaded to Teltonika.
 
 Tip: Instead to "resend" the static.key from Debian back to Teltonika using the Teltonika OpenVPN Configuration page, you can try
 to "edit" the /tmp/etc/t-xx-openvpn-server.conf file and define manually "secret /etc/easy-rsa/static.key' . This method tried once, not sure if it works or fails.
 
-Now, the Teltonika openvpn server configuration file located in /tmp/etc looks like that:
+.B 5. Verify Server Configuration
+Teltonika openvpn server configuration file located in /tmp/etc should looks like that:
+cat /tmp/etc/openvpn-server_txx.conf
 persist-key
 cipher AES-256-CBC
-dev tun_s_t13
+dev tun_s_txx
 ifconfig 10.0.0.1 10.0.0.2
 keepalive 10 120
 port 1194
@@ -105,13 +187,24 @@ verb 5
 
 Remark: Above conf file is 100% autogenerated by Teltonika OpenVPN page setup.
 
-5.	Adjust Teltonika Firewall parameters: 
-Firewall – General Settings, input – output – forward: select accept
-Firewall – General Settings – Zone Forwarding – openvpn - >
-           Change the “Default Forwarding Action” to accept (instead of reject) but this seems that makes no difference.
-           Press Edit “vpn: openvpn forwarding action” and make sure than LAN and also WAN are checked / ticked . 
+Tip1: Note that Teltonika tunnel interface is not "tun1" or "tun" as proposed in openvpn documentation. 
+You always need to know how each system is recognizing tunnel interface.... In Teltonika this is referred as tun_s_<network_name>
 
-6.	Go back to Debian, and create t-xx.ovpn file, with the bellow contents:
+Tip2: Note also the special location that Teltonika is using to store the static.key that we uploaded.
+
+.B 6.	Adjust Teltonika Firewall parameters: 
+Firewall – General Settings tab - General Settings Section: 
+           Change fields "input", "output" and "forward" to accept 
+           This is huge - You will not be capable to get connected without adjusting those to "accept". 
+Firewall – General Settings tab – Zone Forwarding section
+           Locate "vpn: openvpn" - > Destination Zones -> Edit
+           Press Edit and make sure than LAN and also WAN are checked / ticked in the menu [Firewall - Zone Settings - Zone "vpn"] 
+Firewall – General Settings tab – Zone Forwarding section
+           Change the “Default Forwarding Action” to accept (instead of reject) but this seems that makes no difference.
+           I have a lot of tests (6,13) in which this option left to "reject" but openvpn works fine in the server side.
+
+.B 7.	Debian Client Configuration File
+Go back to Debian, and create t-xx.ovpn file, with the bellow contents:
 providers legacy default
 remote t-xx.ddns.net 1194
 proto udp
@@ -123,31 +216,33 @@ verb 3
 route 192.168.1.0 255.255.255.0
 explicit-exit-notify 3
 
-7.	On Debian, run openvpn t-xx.ovpn from Debian CLI and you should see the openvpn messages in the cli window. 
+.B 8.	Connect client to the server
+On Debian, run openvpn t-xx.ovpn from Debian CLI and you should see the openvpn messages in the cli window. 
 When you see "Initialization Sequence Completed" openvpn client is connected to server normally.
 
-8.	If we select the default Teltonika cipher BF-CBC, openvpn complains about insecure cipher. 
+Tip: 
+If we select the default Teltonika cipher BF-CBC, openvpn complains about insecure cipher. 
 OpenVPN 2.6.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] [DCO]
 library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
 WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  This allows attacks like SWEET32.  Mitigate by using a --cipher with a larger block size (e.g. AES-256-CBC). Support for these insecure ciphers will be removed in OpenVPN 2.7.
 
 ##Use your Win10 PC as OpenVPN Client
-1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine.
+1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine and you have already configure openvpn server in previous chapter
 
-2. Create Win10 openvpn client file
-Go with Win10 CLI to installation folder of Win OpenVPN:  
-cd C:\Program Files\OpenVPN\bin
+2. Create Win10 openvpn client configuration file
+Go with Win10 CLI to installation folder of Win OpenVPN:  cd C:\Program Files\OpenVPN\bin
 
 Create with text editor the openvpn configuration file t-xx.ovpn (requires administrator privileges)
 #providers legacy default       # commented out since win10 openvpn does not recognize "provides" option
 remote t-xx.ddns.net 1194
 proto udp
 dev tun
+cipher AES-256-CBC              # if ommited the default openvpn insecure cipher BF-CBC will be used and openvpn will keep complaining....
 ifconfig 10.0.0.2 10.0.0.1
 secret t-xxstatic.key                 #ensure that t05static.key is in the same folder with t05.ovpn
 verb 3
 route 192.168.1.0 255.255.255.0
-explicit-exit-notify 3               #not sure if this option is supported by Win openvpn
+explicit-exit-notify 3               #not sure if this option is supported by Win openvpn - not tested
 
 3. Create manually the static.key file in Win10 
 copy paste contents of Debian t-xxstatic.key to a new t-xxstatic.key in the same Win10 directory that t-xx.ovpn file exists (for simplicity).
@@ -188,7 +283,18 @@ You need to adjust server to allow forwarding from one client to the other (clie
 In this setup we need: 
     (1) Debian client to be capable to access Teltonika client behind-LAN (client to client).
     (2) openvpn server machine should have access to behind-lan of both Debian and Teltonika.
-    
+
+## OPENVPN TELTONIKA-DEBIAN QUICK STEP GUIDE
+1. In your Debian create the static key: 
+sudo openvpn --generate secret /etc/openvpn/networkname.key
+sudo chown gv:gv /etc/openvpn/networkname.key
+2. In Teltonika add a new openvpn instance, server role, fullfill all the required fields.
+Don't forget to provide virtual IP of server and client , and also upload the static key generated by Debian.
+3. Make the necessary adjustments to Teltonika Firewall.
+4. On Debian Client create (or copy) the ovpn fonciguration file . 
+Do not forget to define remote server - port - protocol, secret key, cipher algorithm, explicit-exit-notify and other related parameters.
+5. You should be ready! Just run sudo openvpn networkname.ovpn to test it.
+
 ##Teltonika VPN via OpenVPN Cloud 
 https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 
@@ -477,3 +583,42 @@ But when explicit-exit-notify is present, client exciting becomes smooth and rec
 2023-10-22 02:58:41 Closing TUN/TAP interface
 2023-10-22 02:58:41 net_addr_ptp_v4_del: 10.0.0.2 dev tun0
 2023-10-22 02:58:41 SIGTERM[soft,exit-with-notification] received, process exiting
+
+.B dev tun
+This command is actually CREATING a tunnel. Might be invoked as tun1 to forcibly create tun1.
+When tun is used without number, tunnels are created with dynamic names (tun0, tun1, etc).
+It is allowed to create more than one tunnels (from different openvpn instances running at the same time)
+
+It is also possible to use your own name for the virtual network device, but you then need to use --dev-type in addition.
+   dev myvpn
+   dev-type tun
+
+.B cipher VS data-cipher
+data-cipher seems to be the replacement of the cipher; cipher will be depreciated from newer openvpn connections.
+
+.B data-ciphers-fallback AES-128-CBC
+As it's described by name is a fallback option for data-ciphers
+
+.B data-ciphers AES-256-CBC:AES-256-CFB:AES-256-CFB1:AES-256-CFB8:AES-256-OFB:AES-256-GCM
+defining multiple data-ciphers
+
+.B proto
+Defines the comm protocol between Server and Client(s). 
+    proto udp         # in both client and server configurations for udp protocol. 
+    proto tcp-server  # For TCP, required by the server
+    proto tcp-client  # For TCP, required by the client
+
+proto can be combined in the remote command like this:
+   remote myvpn.example.com 1194 udp
+   remote myvpn.example.com 443 tcp-client
+
+It is also possible to connect using IPv6. In openvpn 2.3 releases, you will need to replace udp, tcp-client or tcp-server with udp6, tcp6-client or tcp6-server as the argument to the --proto option. 
+From the OpenVPN 2.4, OpenVPN will try both IPv6 and IPv4 when just using udp/tcp-client/tcp-server. 
+To enforce only IPv4-only, you need to use udp4, tcp4-client or tcp4-server. 
+Similarly to enforce IPv6-only use udp6/tcp6-client/tcp6-server. 
+
+.B nobind
+ This makes OpenVPN use a random client side port when connecting. 
+ Without it, it will use the same port number as used to connect to the server. 
+ Usefull if you want to run multiple VPN clients on the same host to avoid using the same port 1194 for all instances.
+ 
