@@ -200,8 +200,9 @@ Firewall – General Settings tab – Zone Forwarding section
            Locate "vpn: openvpn" - > Destination Zones -> Edit
            Press Edit and make sure than LAN and also WAN are checked / ticked in the menu [Firewall - Zone Settings - Zone "vpn"] 
 Firewall – General Settings tab – Zone Forwarding section
-           Change the “Default Forwarding Action” to accept (instead of reject) but this seems that makes no difference.
-           I have a lot of tests (6,13) in which this option left to "reject" but openvpn works fine in the server side.
+           Change the “Default Forwarding Action” to accept (instead of reject). 
+           I have a lot of tests (6,13) in which this option was left to "reject" but openvpn worked fine.
+           It has been proved, that while Debian openvpn ignores this setting, Win10 openvpn seems that requires this setting to be adjusted to "Accept".
 
 .B 7.	Debian Client Configuration File
 Go back to Debian, and create t-xx.ovpn file, with the bellow contents:
@@ -212,7 +213,7 @@ dev tun
 cipher AES-256-CBC
 ifconfig 10.0.0.2 10.0.0.1
 secret /etc/openvpn/t-xxstatic.key
-verb 3
+verb 5
 route 192.168.1.0 255.255.255.0
 explicit-exit-notify 3
 
