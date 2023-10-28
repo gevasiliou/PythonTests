@@ -2000,14 +2000,10 @@ This can be solved with python scripting - see rightclick-gv.py & relevant right
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:NETCAT & NMAP
+
+## NETCAT
 https://en.wikipedia.org/wiki/Netcat     # wikipedia has a lot of examples
 https://gist.github.com/lenciel/8780269
-
-Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ Latest Release (March 2018)
-PC1-Toshiba : 192.168.1.116
-PC2-Dell : 192.168.1.106
-
-## NCAT INVOCATION - Simple client / server
 
 .B Packages
 nc     : netcat traditional tool
@@ -2015,9 +2011,10 @@ netcat : the usuall netcat package in modern distros like debian.
 ncat   : Similar tool to netcat - same principle - same switches but is not a netcat. Provided by package nmap
 
 Depending on the version of Debian, nc and netcat might not be available.
-For example Debian Stable (dated Oct 23) has no results for nc and netcat is a virtual package:
+For example Debian Stable (dated Oct 23) has no results for pkg 'nc' and pkg 'netcat' is a virtual package:
 	gv@debssd:~/Desktop$ apt list netcat
 	Listing... Done
+
 	gv@debssd:~/Desktop$ sudo apt-get install netcat
 	Reading package lists... Done
 	Building dependency tree... Done
@@ -2026,16 +2023,20 @@ For example Debian Stable (dated Oct 23) has no results for nc and netcat is a v
 	  netcat-openbsd 1.219-1
 	  netcat-traditional 1.10-47
 	You should explicitly select one to install.
-
 	E: Package 'netcat' has no installation candidate
 
 .B Simple Server / Client Usage
+Examples bellow are based on two PCs, both equipped with Debian XFCE Testing @ Latest Release (March 2018)
+PC1-Toshiba : 192.168.1.116
+PC2-Dell : 192.168.1.106
+<------------------------------------------------------------------------>
+
 Server: $ netcat -l -k -p Port ---> Listening mode - awaiting connections
 
 Client: $ netcat ip Port   --> Connects to IP at specific Port
 OR
 Client: echo "hello" >/dev/tcp/IP/Port  
-PS: You can use a second terminal as "client" in the same machine
+Tip: You can use a second terminal as "client" in the same machine
 
 .I Common Options
 -l : listen. As a general idea the listening machine should be started first
@@ -2065,7 +2066,7 @@ You can force connection to close after inactivity by using -w 5 switch (wait 5 
 .B VIDEO VLC/MPV STREAMING with netcat
 https://wiki.videolan.org/Uncommon_uses/
 
-.I Method 1 - Classic Server - Client
+Method 1 - Classic Server - Client
 PC1-Toshiba : $ netcat -l -p 8111 <3071-BRHD-GR-TRAGOUDA.mp4
 #OR           $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat -l -p 8111   #server
 
@@ -2075,7 +2076,7 @@ PC2-Dell    : $ netcat 192.168.1.116 8111 |vlc -            #client
 #Surprisingly this does not work : $ vlc </dev/tcp/192.168.1.116/8111 
 #It has been proved that VLC works even directly (i.e Win VLC) by open VLC (GUI) , "Open Network Stream" -- > tcp://192.168.1.116:8111
 
-.I Method 2 - Reversed
+Method 2 - Reversed
 PC2-Dell    : $ netcat -l -p 8111 |vlc -       #Starts netcat in listening mode and vlc in stdin input mode. You might need to use -k switch also
 PC1-Toshiba : $ cat 3071-BRHD-GR-TRAGOUDA.mp4 >/dev/tcp/192.168.1.106/8111
 OR $ cat 3071-BRHD-GR-TRAGOUDA.mp4 |netcat 192.168.1.106 8111
@@ -2095,7 +2096,7 @@ mpv <(netcat IP MoviePort) --sub-file <(netcat IP SRTPort)
 Tip: You can send the srt file from server to client and open this srt file explicitly with mpv when movie is playing.
 Srt will not be autoloaded due to mismatching names of srt pipe && movie pipe
 
-.B WGET Save and watch movie
+.B Save and watch movie with wget
 wget http://cclicence.film/myfavourite.mp4 -O- | tee myfav.mp4 | mpv - #or |mpv --sub-file=file.srt -
 
 ##NMAP
@@ -2104,17 +2105,19 @@ nmap is used as #1 tool for network analysis and vulnerability testing.
 see also "pentesting" cheat sheet.
 
 .I apt install nmap
-You can run it and check if a specific port is open , or you can scan an IP for all open parts i.e
-nmap 192.168.1.124
-Surprisingly this also works great , using asterisk as a wildcard: 
-nmap 192.168.1.*
+You can run it and check if a specific port is open , or you can scan an IP for all open ports, services running,etc
 
 .B nmap usage examples
-nmap -sU -p 1194 <openvpnserver>
-nmap -sC -sV -p 22 <ssh-server>
+nmap 192.168.1.124
+nmap 192.168.1.*
+nmap 192.168.0/24 
+nmap -sU -p 1194 <openvpnserver address>
+nmap -sC -sV -p 22 <ssh-server address>
 
--sC: Run Service Detection Script
--sV: Verbose, report Service running details on target
+-sU: UDP Scan
+-sC: Run nmap Service Detection Scripts
+-sV: Verbose, report Service Details (version,etc) running on target
+-p : port to use. can be a single port, can be a range, or multiple ports comma seperated. If not provided , typical ports will be scanned.
 
 ------------------------------------------------------------------------------------------------------------------------
 
