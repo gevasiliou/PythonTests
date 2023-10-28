@@ -696,21 +696,23 @@ diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s 
 }
 
 function debls () { 
-	echo "debls: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1 . Use --down to download deb file "
-	[[ -z $1 ]] && echo "apt pkg file missing " && return 1
+	echo "debls: Displays contents of the .deb file (without downloading in local hdd) corresponding to an apt-get install $1" 
+	echo "Use --down to download deb file to local hdd (cwd), list contents and then remove deb file"
+	echo "Without --down, curl will be used to list the contents of the pkg , in a format equivallent to ls -all"
+	[[ -z $1 ]] && echo "apt pkg file missing,exiting " && return 1
 
 	if [[ $2 == "--down" ]];then
 		echo "--down selected"
 		apt-get download $1 && ls -l $1*.deb && dpkg -c $1*.deb && rm -f $1*.deb
 	    #dpkg -c <(curl -sL -o- $tmpdeb) |grep -v '^d' #--nd excludes directories from listing
 	else
-		echo "no downloading selected. curl will be used"
+		echo "no deb downloading is selected. curl will be used"
         echo "apt-get --print-uris download $1 2>&1"
 		local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
 		tmpdeb=$(echo "${tmpdeb: 1:-1}")
 		echo "deb file to list contents: $tmpdeb"
 	    #dpkg -c <(curl -sL -o- $tmpdeb)
-        echo "curl -sL -o- $tmpdeb |dpkg -c /dev/stdin"
+        echo "executing command: curl -sL -o- $tmpdeb |dpkg -c /dev/stdin"
 	    curl -sL -o- $tmpdeb |dpkg -c /dev/stdin
 	fi
 #Alternatives
@@ -720,6 +722,45 @@ function debls () {
 #dpkg -c by default equals to dpkg-deb --fsys-tarfile
 }
 
+function humanreadable() {
+# humanreadable is used to translate a number corresponding to file size to human readable format like Kbyte, Mbyte, Gbyte, Tbyte, etc
+#usage : echo "1024567" |humanreadable OR humanreadable 123123123
+
+#v="$(</dev/stdin)"; #necessary for this function to accept input by pipe
+#echo "$v" |awk ....
+#Though using just cat , prints the stdin to stdout and works fine
+# cat |awk .....
+
+#if [[ -z "$1" ]];then v="$(</dev/stdin)";else v=$1;fi
+
+if test -n "$1"; then
+   v="$1"
+   #echo "Read from positional argument $1";
+elif test ! -t 0; then
+   v="$(</dev/stdin)"
+   #echo "Read from stdin if file descriptor /dev/stdin is open"
+   #cat > file4.txt
+else
+   echo "humanreadable is used to translate a number corresponding to file size to human readable format like Kbyte, Mbyte, Gbyte, Tbyte, etc"
+   echo "Use humanreadable function either with an argument or pipe data into it".
+   return 1
+   #echo "No standard input."
+fi
+
+
+echo "$v" |awk 'function human(x) {
+         s=" B   KiB MiB GiB TiB EiB PiB YiB ZiB"
+         while (x>=1024 && length(s)>1) 
+               {x/=1024; s=substr(s,5)}
+         s=substr(s,1,4)
+         xf=(s==" B  ")?"%5d   ":"%8.2f"
+         return sprintf( xf"%s\n", x, s)
+      }
+      {gsub(/^[0-9]+/, human($1)); print}'
+}
+
+
+
 function debcat () {
 	echo "Function debcat: Extracts and displays a specific file from a .deb package (without downloading in local hdd) corresponding to an apt-get install $1." 
 	echo "Usage: debcat <pkg> [option1] "
@@ -727,12 +768,13 @@ function debcat () {
 	echo "[option1]:"
 	echo "   --list:                    simple deb listing of all files including links and directorier and exit" #or --listnd to force listing excluding directories"
 	echo "   --ind or blank (default):  creates an index of all files excluding directories,links, and binary files (.so, .mo, .ko, /bin/"
-	echo "   --all:                     force index to include binary files (.so, .mo,.ko, /bin/) excluding directories and links"
+	echo "   --all:                     force index to include all files excluding directory listing and links"
     echo 
 	[[ -z $1 ]] && echo "apt pkg file missing, exiting.... " && return 1
 
 	local tmpdeb=$(apt-get --print-uris download $1 2>&1 |cut -d" " -f1)
-    local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[56789][0-9]{6,}\b')
+    local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[0-9]{4,}\b' |humanreadable)  #grep -Eo '\b[56789][0-9]{6,}\b'
+    #humanreadable is a function declared here and converts size in bytes to human readable size in KiB, MiB, etc
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
     echo "<pkg>: $tmpdeb"
 	echo "[Option1]: $2 " && echo
@@ -740,7 +782,16 @@ function debcat () {
 	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && debls "$1" && return 0
 	#[[ $2 == "--listnd" ]] && echo "--listnd selected - perform nd listing - all other options ignored" && debls "$1" "--nd" && return 0
     #clear
-
+    
+    if [[ -z "$tmpdeb" ]];then 
+       echo "No deb file could be found for $1. Results of 'apt-get --printu-uris download $1'" 
+       apt-get --print-uris download "$1" 2>&1 
+       return 1
+    else
+       echo "Command executed: apt-get --printu-uris download $1"
+       echo "Deb Address to curl: $tmpdeb / Size: $downsize"
+    fi
+     
 	if [[ $2 == "--ind" || $secondarg == "" ]];then
 	    unset flist ms loop key
         loop=1
@@ -755,7 +806,8 @@ function debcat () {
     	flist+=($(curl -sL -o- $tmpdeb |dpkg -c /dev/stdin |grep -v -e '^l' -e '^d' |grep -vE "\/$" |awk '{print $NF}'))
 	    declare -p flist |sed 's/declare -a flist=(//g' |tr ' ' '\n' |sed 's/)$//g'
 	fi
-	
+
+
 	while [[ $loop -eq 1 ]]; do
 			read -p "Select file to display by id or  q to quit : " ms
 			[[ "$ms" == "q" ]] && echo "exiting...." && return 1
@@ -827,7 +879,7 @@ echo "debian man pages online (https://manpages.debian.org) of package $1 using 
 [[ -z $1 ]] && echo "Pass me a package to query manpages.debian.org" && return 1
 #debman uses the 2017 new web page with jump option
 links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
-#avoid to use name "debman" since there is a programm debman inside pkg debian-goodies
+#avoid to use name "debman" for this function since there is a programm debman inside pkg debian-goodies
 }
 
 

@@ -286,6 +286,14 @@ In this setup we need:
     (1) Debian client to be capable to access Teltonika client behind-LAN (client to client).
     (2) openvpn server machine should have access to behind-lan of both Debian and Teltonika.
 
+.B Bugs
+It has been proved that Teltonika openvpn server is actually disconnected - port is closed after some time/days of inactivity.
+This can be verified by using 
+nmap -sU -sC -sV -p 1194 <openvpnserver domain name/dyndns name / ip>
+
+Sometimes, a simple ping to openvpnserver seems enough to wake the server.
+But sometimes, you need to get connected to Teltonika Web Interface and tickle the openvpn tab/server.
+ 
 ## OPENVPN TELTONIKA-DEBIAN QUICK STEP GUIDE
 1. In your Debian create the static key: 
 sudo openvpn --generate secret /etc/openvpn/networkname.key
