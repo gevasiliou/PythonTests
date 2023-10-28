@@ -2110,14 +2110,18 @@ You can run it and check if a specific port is open , or you can scan an IP for 
 .B nmap usage examples
 nmap 192.168.1.124
 nmap 192.168.1.*
-nmap 192.168.0/24 
+nmap 192.168.1.0/24 
 nmap -sU -p 1194 <openvpnserver address>
 nmap -sC -sV -p 22 <ssh-server address>
+nmap -sn 192.168.2.0/24
 
--sU: UDP Scan
--sC: Run nmap Service Detection Scripts
--sV: Verbose, report Service Details (version,etc) running on target
--p : port to use. can be a single port, can be a range, or multiple ports comma seperated. If not provided , typical ports will be scanned.
+.I nmap options
+-sU  : UDP Scan
+-sC  : Run nmap Service Detection Scripts
+-sV  : Verbose, report Service Details (version,etc) running on target
+-p   : port to use. can be a single port, can be a range, or multiple ports comma seperated. If not provided , typical ports will be scanned.
+-sn  : ping scan - disable port scan - quite usefull to ping a whole subnet to determine alive hosts. 
+       Keep in mind that classic ping accepts only a single IP to ping and using ping with 192.168.1.* or 192.168.1.0/24 is not accepted
 
 ------------------------------------------------------------------------------------------------------------------------
 
