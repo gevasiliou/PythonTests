@@ -2736,7 +2736,7 @@ Important: We don't know how Ultrasurf handles our data (passwords, bank account
 We don't know if those data are kept / send / published somewhere without our permission.
 I used UltraSurf (and worked like a charm) to be able to access whatsapp web & github website - those were blocked by my corporate admin in my business laptop....
 
----------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
 UTILS:PLEX MEDIA SERVER
 https://www.linuxcapable.com/how-to-install-plex-media-server-on-debian-linux/
 sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https curl -y
@@ -2765,3 +2765,51 @@ ssh 192.168.2.12 -L 8888:localhost:32400
 
 http://localhost:8888/web (from Local Debian machine)
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+UTILS:SSH & SCP
+
+##SSH (Secure SHell)
+Install ssh on your debian with apt-get (usually installed by default).
+
+.B Usage
+from another machine use
+ssh user@server, for example ssh root@192.168.2.12 or ssh gv@192.168.2.12
+ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net
+
+Options "-o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa" are required in old ssh servers to explicit define the ssh-rsa algorithms.
+
+.B Enable ssh root access 
+root access through ssh /scp is by default disabled
+Add this line to ssh server configuration file:
+
+echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+
+.B Restarting ssh
+$ sudo systemctl restart ssh 
+$ sudo service ssh restart
+# /etc/init.d/ssh restart
+# service ssh restart
+
+
+##SCP (Secure CoPy)
+You can use scp directly, without ssh to server. 
+
+.B Usage
+scp <user>@<server>:<path/file-on-server> <path/file-in-your-machine>
+scp root@t-xx.ddns.net:/etc/easy-rsa/static.key /etc/openvpn/t-xxstatic.key
+scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net:/etc/easy-rsa/static.key /etc/openvpn/t-xxstatic.key
+mind the space between remote and local path)
+
+Options:
+-O : Used to instruct scp not to use the recent sftp but the old fashion (legacy) way of copy. Usefull if your server / router is equipped with an old version of ssh/scp.   
+
+##WinSCP & Putty
+WinSCP is a windows client to get connected to ssh server at Debian and copy files using ssh
+Make sure to select "scp" as protocol in WinSCP, port 22.
+
+Tip: Easy file copy with drag and drop.
+
+Putty provides pure ssh access (not scp) , in a dedicated putty terminal window.
+
+Use WinSCP and Putty with administrator rights only.

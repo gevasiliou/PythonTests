@@ -231,19 +231,20 @@ WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  T
 1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine and you have already configure openvpn server in previous chapter
 
 2. Create Win10 openvpn client configuration file
-Go with Win10 CLI to installation folder of Win OpenVPN:  cd C:\Program Files\OpenVPN\bin
+Go with Win10 CLI to installation folder of Win OpenVPN:  
+.I cd C:\Program Files\OpenVPN\bin
 
-Create with text editor the openvpn configuration file t-xx.ovpn (requires administrator privileges)
-#providers legacy default       # commented out since win10 openvpn does not recognize "provides" option
+Create with text editor (or modify a similar) openvpn configuration file t-xx.ovpn (requires administrator privileges)
+#providers legacy default       # Win10 openvpn does not recognize "provides" option
 remote t-xx.ddns.net 1194
-proto udp
+proto udp                       #use proto tcp-client in case you have adjusted your server to use tcp protocol instead of udp.
 dev tun
 cipher AES-256-CBC              # if ommited the default openvpn insecure cipher BF-CBC will be used and openvpn will keep complaining....
 ifconfig 10.0.0.2 10.0.0.1
 secret t-xxstatic.key                 #ensure that t05static.key is in the same folder with t05.ovpn
 verb 3
 route 192.168.1.0 255.255.255.0
-explicit-exit-notify 3               #option is supported by Win openvpn
+explicit-exit-notify 3               #Win openvpn supported only for UDP. In case of TCP server comment this line.
 
 3. Create manually the static.key file in Win10 
 (a) copy paste contents of Debian t-xxstatic.key or Teltonika (patch /lib/uci/upload) to a new t-xxstatic.key in the same Win10 directory that t-xx.ovpn file exists (for simplicity).
@@ -289,7 +290,7 @@ In this setup we need:
 .B Bugs
 It has been proved that Teltonika openvpn server is actually disconnected - port is closed after some time/days of inactivity.
 This can be verified by using 
-nmap -sU -sC -sV -p 1194 <openvpnserver domain name/dyndns name / ip>
+sudo nmap -sU -sC -sV -p 1194 <openvpnserver domain name/dyndns name / ip>
 
 Sometimes, a simple ping to openvpnserver seems enough to wake the server.
 But sometimes, you need to get connected to Teltonika Web Interface and tickle the openvpn tab/server.

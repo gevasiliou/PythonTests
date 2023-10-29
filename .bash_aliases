@@ -957,10 +957,10 @@ find / -type f -executable -name "$fname"
 }
 
 function mancheat { 
-echo "mancheat: explore the cheat sheets using man page viewer"
+echo "mancheat: explore GV cheat sheets using man page viewer"
 if [[ -z $1 ]]; then 
 echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' or '--gedit' to edit the cheat file";
-echo "Available cheat sheets by gv (directory ls -all listing of gvcheats):";
+echo "Available cheat sheets by gv (directory ls -all listing of /home/gv/Desktop/PythonTests/cheatsheets/gvcheats):";
 find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n' |awk -F"-" '{print $1}';
 return 1;
 fi
