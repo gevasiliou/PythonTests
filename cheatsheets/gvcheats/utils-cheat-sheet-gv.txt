@@ -2813,3 +2813,50 @@ Tip: Easy file copy with drag and drop.
 Putty provides pure ssh access (not scp) , in a dedicated putty terminal window.
 
 Use WinSCP and Putty with administrator rights only.
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+UTILS:YAD
+Based on Zenity , but with superpowers. Used to create dialogs.
+
+.B Sources
+man yad
+https://yad-guide.ingk.se/YAD_Guide.html
+
+.B Examples
+Display a file selector with the title Select a file to remove. The file selected is returned on standard output.
+              yad  --title="Select a file to remove" --file-selection
+
+Display  a text entry dialog with the title Select Host and the text Select the host you would like to flood-ping. The entered text is re‐
+turned on standard output.
+              yad  --title "Select Host" --entry --text "Select the host you would like to flood-ping"
+
+Display a dialog, asking Microsoft Windows has been found! Would you like to remove it?. The return code will be 0 (true in shell) if  YES
+is selected, and 1 (false) if NO is selected.
+              yad  --image "dialog-question" --title "Alert" --button=gtk-yes:0 --button=gtk-no:1 --text "Microsoft Windows has been found! Would
+              you like to remove it?"
+
+Show the search results in a list dialog with the title Search Results and the text Finding all header files....
+              find . -name '*.h' | yad --list --title "Search Results" --text "Finding all header files.." --column "Files"
+
+Show an icon in the notification area
+              yad --notification --image=update.png --text "System update necessary!" --command "xterm -e apt-get upgrade"
+
+Display a weekly shopping list in a check list dialog with Apples and Oranges pre selected
+              yad --list --checklist --column "Buy" --column "Item" TRUE Apples TRUE Oranges FALSE Pears FALSE Toothpaste
+
+Display a progress dialog while searching for all the postscript files in your home directory
+              find $HOME -name '*.ps' | yad --progress --pulsate
+
+Display a box with all of the installed desktop applications
+              yad --icons --read-dir=/usr/share/applications
+
+Create a simple "notes" app with yad
+			txttosave=$(yad --text-info --editable --wrap --width=500 --height=500 --center --button=gtk-save:10 --button=gtk-cancel:20)
+			case $? in                         #Define the action based on the return code of each button
+			10) echo "gtk-save selected"
+				fnam=$(yad --file --save --confirm-overwrite --center --title='Select File To Save your notes')
+				echo "$txttosave" > "$fnam"
+			    ;;
+			20) echo "gtk-cancel selected"
+			    ;;
+			esac
