@@ -2821,6 +2821,7 @@ Based on Zenity , but with superpowers. Used to create dialogs.
 .B Sources
 man yad
 https://yad-guide.ingk.se/YAD_Guide.html
+https://github.com/v1cont/yad
 
 .B Examples
 Display a file selector with the title Select a file to remove. The file selected is returned on standard output.
@@ -2850,9 +2851,9 @@ Display a progress dialog while searching for all the postscript files in your h
 Display a box with all of the installed desktop applications
               yad --icons --read-dir=/usr/share/applications
 
-Create a simple "notes" app with yad
+Create a simple "notes" app with yad (see also file yadnotes.sh)
 			txttosave=$(yad --text-info --editable --wrap --width=500 --height=500 --center --button=gtk-save:10 --button=gtk-cancel:20)
-			case $? in                         #Define the action based on the return code of each button
+			case $? in                         #Define the next action based on the return code of each button
 			10) echo "gtk-save selected"
 				fnam=$(yad --file --save --confirm-overwrite --center --title='Select File To Save your notes')
 				echo "$txttosave" > "$fnam"
