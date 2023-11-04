@@ -34,20 +34,22 @@ name=${2}
 #endsize=${6}
 
 #find $loc -name "$name" -newermt "$startdate" ! -newermt "$enddate" -size +$startsize"k" ! -size +$endsize"k" | yad --width=600 --height=400 --separator=" " --window-icon="gtk-find" --title "Search Results" --center --column "Files" --list --dclick-action="rox"
+find $loc -name "$name" | yad --width=600 --height=400 --separator=" " --window-icon="gtk-find" --title "Search Results" --center --column "Files" --list --dclick-action="rox"
+
 }
 export -f look
 
-#yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator=" " --date-format="%Y-%m-%d" \
-#--field="Location:":MDIR "/root" \
-#--field="Filename:" "*" \
-#--field="Start Date:":DT "2000-01-01" \
-#--field="End Date:":DT "2016-12-31" \
-#--field="Start Size KB:":NUM "0" \
-#--field="End Size KB:":NUM "1024" \
-#--field="Find!gtk-find:BTN" 'bash -c "look %1 %2 %3 %4 %5 %6"' \
-#--button=gtk-help:'bash -c help' \
-#--button=gtk-quit:0
+yad --window-icon="gtk-find" --title="Look4 Files" --center --form --separator=" " --date-format="%Y-%m-%d" \
+--field="Location:":MDIR "$PWD" \
+--field="Filename:" "*.sh" \
+--field="Start Date:":DT "2000-01-01" \
+--field="End Date:":DT "2016-12-31" \
+--field="Start Size KB:":NUM "0" \
+--field="End Size KB:":NUM "1024" \
+--field="Find!gtk-find:BTN" 'bash -c "look %1 %2 %3 %4 %5 %6"' \
+--button=gtk-help:'bash -c help' \
+--button=gtk-quit:0
 
-yad --window-icon="gtk-find" --title="Look4 Files" --center --form --columns=2 --separator=" " --date-format="%Y-%m-%d" \
+#yad --window-icon="gtk-find" --title="Look4 Files" --center --form --columns=2 --separator=" " --date-format="%Y-%m-%d" \
 --field="Location:":MDIR "/" --field="Filename:" "*" --field="Directories Only":CHK --field="Executables Only":CHK \
 --button=gtk-help:'bash -c help' --button=gtk-find:0 --button=gtk-quit:1

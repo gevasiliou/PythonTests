@@ -2822,6 +2822,7 @@ Based on Zenity , but with superpowers. Used to create dialogs.
 man yad
 https://yad-guide.ingk.se/YAD_Guide.html
 https://github.com/v1cont/yad
+http://smokey01.com/yad/
 
 .B Examples
 Display a file selector with the title Select a file to remove. The file selected is returned on standard output.

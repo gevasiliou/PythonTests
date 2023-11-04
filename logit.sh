@@ -16,3 +16,4 @@ cat <&4 >&1 # |tail -n +2 |head -n -2 #this prints out the whole logfile. If thi
 # $ logme pwd  
 # > pwd
 # > /home/gv/Desktop/PythonTests
+# 2023
