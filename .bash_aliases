@@ -107,9 +107,15 @@ txttosave=$(yad --title="$title" --text-info --filename="$fname" --editable --wr
 
 case $? in
 10) #echo "gtk-save selected"
-    fnametosave=$(yad --file --filename="$fname" --save --confirm-overwrite --center --title='Select File To Save your notes' 2>/dev/null)
-    [[ ! -z "$fnametosave" ]] && echo "$txttosave" > "$fnametosave" || yad --text="No Filename - No Save"
-    [[ ! -z "$fnametosave" ]] && fname="$fnametosave"  
+    fnametosave=$(yad --file --filename="$fname" --save --center --title='Select File To Save your notes' 2>/dev/null)
+    [[ $? -eq 1 ]] && continue ##If cancel was pressed on file save dialogue
+    [[ "$fname" == "$fnametosave" ]] && yad --text="This file exists. Overwrite?" --button=gtk-ok --button=gtk-cancel
+    case $? in
+    1) continue;;
+    0) [[ ! -z "$fnametosave" ]] && echo "$txttosave" > "$fnametosave" || yad --text="No Filename - No Save"
+    [[ ! -z "$fnametosave" ]] && fname="$fnametosave"
+    ;;
+    esac  
     #if file name to save is NOT empty then assign it to fname. 
     #If fnametosave is empty then no action - the previous fname (if set i.e by fnametoopen) will be preserved.
 
