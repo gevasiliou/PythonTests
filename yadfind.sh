@@ -1,5 +1,10 @@
+#! /bin/bash
+#
+# Simple Frontend for find
+# Author: George Vasiliou 2023
+#
+
 fname=""
-#filepath=$(yad --entry --entry-text="$PWD")
 resp=$(yad --width=400 --title="" --text="Please enter your details:" --form --field="Path":MDIR "$PWD" --field="Search for" "*.sh")
 #Respons (resp) of yad is /home/gv/Desktop/PythonTests | *.sh | (field values separated by yad default saparator |)
 filepath=$(echo "$resp" | awk '{print $1}' FS='|')
