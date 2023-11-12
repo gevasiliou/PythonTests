@@ -1,12 +1,16 @@
+#!/usr/local/bin/php -q
 <?php
+//https://www.php.net/manual/en/sockets.examples.php
+//Super simple PHP WebSocket example: https://medium.com/@cn007b/super-simple-php-websocket-example-ea2cd5893575
 //error_reporting(~E_NOTICE);
 error_reporting(E_ALL);
 set_time_limit (0);
 ob_implicit_flush();
-$address = '0' ; //ip here
+$address = '127.0.0.1' ; //ip here
 $port = 9999; //port number  here
 $max_clients = 12; //10 before
-
+echo "port used: $port";
+echo "";
 if(!($sock = socket_create(AF_INET, SOCK_STREAM, 0)))
 {
     $errorcode = socket_last_error();
