@@ -95,7 +95,7 @@ File .allow-change can be empty.
 php -S localhost:8080 -t examples/
 
 -S switch: Run Built-in php webserver
--t switch: Define the root directory of PHP webserver
+-t switch: Define the root directory of PHP webserver. If not provided cwd will be used as root directory
 Now open http://localhost:8080 in browser. See additional query parameters from index.php.
 
 Tip:
@@ -103,3 +103,8 @@ aldas "Examples" folder has index.php inside.
 index.php is used with php built-in web server to test out communication with our own PLCs.
 
 Tip2: php -S localhost:8080 /path/to/index.html -> This is a valid synthax to serve a particular file with php -S
+
+##NODE JS
+.B Install on Debian
+apt install nodejs   # installation of nodejs core
+apt install npm      # npm is a package manager for nodejs
