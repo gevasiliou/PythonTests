@@ -93,7 +93,7 @@ toinst+=( "firmware-linux-free" "firmware-realtek" "gobuster" )
 toinst+=( "xfce4-terminal" "xfce4-appfinder" "xfce4-notes" "xfce4-notes-plugin" "xfce4-screenshooter" "xfce4-screenshooter-plugin" )
 toinst+=( "eog" "shutter" "okular" "catfish" )
 toinst+=( "iio-sensor-proxy" "inotify-tools" )
-toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qttools5-dev" "qttools5-dev-tools" )
+toinst+=( "cmake" "qt5-default" "libssl-dev" "qtscript5-dev" "libnm-gtk-dev" "qttools5-dev" "qttools5-dev-tools" "pandoc" )
 
 #okular is a perfect pdf reader from kde with touch support (scroll & zoom) providing also text highlight tools
 #pinfo is an info pages reader like links browser
