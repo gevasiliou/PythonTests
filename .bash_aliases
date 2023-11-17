@@ -98,8 +98,12 @@ alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig
 
 alias changelog='apt-get changelog'
 
+function md2man {
+man -l <(pandoc -s -f markdown -t man "$1")
+}
+
 function note {
-fname=""
+fname="$1"
 while :
 do
 title="YadNotes - $fname"
