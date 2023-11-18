@@ -98,7 +98,8 @@ alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig
 
 alias changelog='apt-get changelog'
 
-function md2man { 
+function md2man {
+	[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: md2man <md-file>, which runs \"man -l <(pandoc -s -f markdown -t man \$1)\"" && return 1 
 	man -l <(pandoc -s -f markdown -t man "$1") 
 }
 
