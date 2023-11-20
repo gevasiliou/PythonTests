@@ -2318,16 +2318,21 @@ PS5: Once you will be able to opern ntfs partition by Thunar, you can create sho
 
 PS6: Check mounted partitions using df -h command
 
-## Mount a disk/partition to be accessible by ftp
+##FTP-DISK/PARTITION MOUNT
 Assuming that you have installed in Debian vsftpd pkg (ftp server) and you have correctly configure /etc/vsftpd.config file.
-You use a client to connect to Debian FTP Server (ps: i used Win10 File Explorer by the way from another machine).
+You can use a client to connect to Debian FTP Server. I used Win10 File Explorer from another machine.
+
+Tip: Just be reminded that broswing files with FTP is not allowing a lot of operations that file managers can handle (copy, paste, open file, etc)
+
 Assuming that you have already mount your ntfs partition, either by fstab or by direct mount like mount /dev/sda3 /media/gv/MyWin
 
 To make MyWin accesible through ftp you need these steps:
 a. Create a folder (as a user - not as root) in home/gv/Desktop , i.e mkdir MyW
+
 b. Run the command sudo mount --bind /media/gv/MyWin /home/gv/Desktop/MyW
 Now the folder "MyW" in your Desktop will be binded to MyWin folder/mount point - 
 MyW will be visible (and usable) directly from your Destkop and even through ftp clients.
+
 c. To achieve automatic binding at start up add the bellow line to /etc/fstab
 /media/gv/TIH0067800A	/home/gv/Desktop/MyW	none	defaults,bind	0	0
 

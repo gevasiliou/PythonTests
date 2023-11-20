@@ -1000,8 +1000,11 @@ find / -type f -executable -name "$fname"
 function mancheat { 
 echo "mancheat: explore GV cheat sheets using man page viewer"
 if [[ -z $1 ]]; then 
-echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory - combine with '--edit' or '--gedit' to edit the cheat file";
-echo "Available cheat sheets by gv (directory ls -all listing of /home/gv/Desktop/PythonTests/cheatsheets/gvcheats):";
+echo "Pass me a cheat file name to display from /cheatsheets/gvcheats directory."
+echo "combine with '--edit' or '--gedit' to edit the cheat file"
+echo "combine with --chapters to list available chapters of a particular cheatsheet"
+echo "use mancheat without any argument to get a list of available cheatsheets."
+echo "ls -all /home/gv/Desktop/PythonTests/cheatsheets/gvcheats";
 find /home/gv/Desktop/PythonTests/cheatsheets/gvcheats -type f -printf '%f\n' |awk -F"-" '{print $1}';
 return 1;
 fi
@@ -1024,6 +1027,12 @@ if 	[[ $2 == "--gedit" ]]; then
 	fi
 	return 0
 fi
+
+if 	[[ $2 == "--chapters" ]]; then
+	grep "^##" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt;
+	return 0
+fi
+
 
 man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
 
