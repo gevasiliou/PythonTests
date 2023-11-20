@@ -2407,10 +2407,6 @@ Remember that a local server with name i.e alpha, accessed locally in windows wi
 Also remember that linux doesn't like \\ , but loves // 
 Avoid to use root account when you mount.cifs to be capable to open the sharre as normal user.
 
-##DOWNLOAD A FILE FROM WINDOWS SHARED LOCATION USING DEBIAN
-gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/Users/Drawings/file640.pdf
-Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
-
 ##SHARE A FOLDER OR DRIVE OR PARTITION FROM DEBIAN TO WINDOWS (LAN)
 https://www.howtogeek.com/176471/how-to-share-files-between-windows-and-linux/
 Tip Date: 2022
@@ -2487,7 +2483,7 @@ Instead of \\192.168.xxx.xxx\sambasharename (i.e \natwin) i was trying to connec
 Tip: 
 It is known that Win10 has stopped to support smb1 shares - I enabled smb1 sharing support by Windows Features Turn on/off at control panel (scroll down and look for smb1)
 
-Tip Oct 2023: 
+Tip Oct 2023 1: 
 I also spent a lot of time in my Dell Win10 laptop , because i used "gv" as remote user in Win prompts. 
 I had to use ".\gv" (including dot and slash)
 Once i add dot and slash, login was ok (by selecting use different credentials).
@@ -2495,12 +2491,28 @@ In my Dell Win10, i got only one (and not two) Win login prompts, quite confusin
 Actually i had to select "different credentials" in those dialogues and provide user ".\gv" and password "samba-password-for-gv" 
 Don't forget that samba users / samba passwords are different than debian users/passwords.
 
+Tip Oct 2023 2:
+In my Win10 laptop all the shortcuts / map network drives were not working even using .\gv , gv , win10 default logon.
+To "wake up" the Debian System i followed this procedure:
+a. Teamviewer to Debian, restart samba service
+b. use Win10 file manager and enter "\\192.168.2.12\" (no credentials were requested).
+After this point , all my shortcuts / map network drives started to work again.
+
+
 Tip : For easy sharing of mounted drives on Debian a good trick is to create a folder in your Debian Desktop and mount external / internal
 drives in this folder , so once you get to connected remotely to your Debian Desktop (samba share) you can just open this folder and gain access
 to the hdd. 
 This folder trick works also for ftp access (if you have installed an ftp server in your Debian).
 
-Tip : If you ever want to achieve file sharing with your android phone as server , the easy way to do it is to install webDAV app on your phone.
+##DOWNLOAD A FILE FROM WINDOWS SHARED LOCATION USING DEBIAN
+gv@debian:~$ sudo smbget --user=gv --workgroup=domainname.local smb://10.1.7.12/Users/Drawings/file640.pdf
+Prompts for password, and as soon as you have permissions in the shared folder, pdf file is downloaded normally.
+
+
+##ANDROID WEBDAV SHARES ACCESS FROM WINDOWS & DEBIAN
+.I source: https://sleeplessbeastie.eu/2017/09/04/how-to-mount-webdav-share/
+
+To achieve file sharing with your android phone as server , the easy way to do it is to install webDAV app on your phone.
 With WebDAV app on your phone you can browse your phone files using any web browser like http://192.168.2.6:8080
 But you can also make use of Windows "add network location" feature that allows you to map http://192.168.2.6:8080 and this can be opened
 with your file explorer. 
@@ -2508,8 +2520,7 @@ Actually, in win10 file explorer you can enter directly http://192.168.2.6:8080 
 ps1: 8080 is the default WebDAV port 
 ps2: In non-rooted android devices you can not use ports of the range 1-1024.
 
-.B Android webdav share access from Debian 
-.I source: https://sleeplessbeastie.eu/2017/09/04/how-to-mount-webdav-share/
+.B Android webdav access from Debian 
 apt install davfs2
 mkdir /home/gv/Desktop/andro
 sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro
