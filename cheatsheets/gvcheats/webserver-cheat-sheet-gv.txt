@@ -116,3 +116,4 @@ nvm ls-remote                 # list available nodejs versions
 nvm install <nodejs version>  # install nodejs specific version, i.e nvm install 12.1
 nvm ls                        # list locally installed versions
 nvm use 18.1                  # use a specific nvm version
+npm install module            # npm = nodejs package manager- Can install various nodejs modules (i.e ws, net, express, path)
