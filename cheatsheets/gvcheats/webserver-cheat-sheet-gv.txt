@@ -117,3 +117,38 @@ nvm install <nodejs version>  # install nodejs specific version, i.e nvm install
 nvm ls                        # list locally installed versions
 nvm use 18.1                  # use a specific nvm version
 npm install module            # npm = nodejs package manager- Can install various nodejs modules (i.e ws, net, express, path)
+node script.js                # use node to run script.gr on commandline
+
+.B Websockets
+The use of websockets servers (i.e inside a server.js file) allows websocket clients to get connected and receive messages by the server.
+An html page can be used as websocket client (using javascript).
+As a result you can achieve to have html pages with content updated dynamically , as received (push) by the ws server.
+Actually with node you can enclose in a simple file tcp (or express ) server, websocket server , http server.
+For better results you could use different ports on each server.
+Typical data flow inside server js:
+* html page (ws client) connects to server ws server
+* Json sending APIs get connected to express or tcp servers to post their values
+* http is serving the html file you want.
+* When new json data arrive in tcp/express then ws server push those data to ws clients and html pages refresh their content by pasring the json string received by the ws server.
+
+Check out thingit server files for more.
+
+.B INCLUDE
+Very important, used to include external node modules and use their libraries.
+
+Example of a file called config.js
+exports.port = process.env.PORT || 3000;
+exports.max_request_length = 100000; // The maximum length of characters allowed for a request or a response.
+exports.max_requests_per_second = 10; // The maximum number of requests per second to allow from a given IP.
+
+##Usage of config.js with your main node.js file:
+var config = require("./config");
+
+##Usage of config.js variables in main script file
+function sendTooBigResponse(res) {
+    return writeResponse(res, 413, "the content in the request or response cannot exceed " + config.max_request_length + " characters.");
+}
+
+ if (config.blacklist_hostname_regex.test(remoteURL.hostname)) {
+            return writeResponse(res, 400, "naughty, naughty...");
+        }
