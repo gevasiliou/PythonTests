@@ -2879,3 +2879,65 @@ Create a simple "notes" app with yad (see also file yadnotes.sh)
 			20) echo "gtk-cancel selected"
 			    ;;
 			esac
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+UTILS:VNC - TIGHTVNC and other VNC tools 
+https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-vnc-on-debian-10
+
+TightVNC and other related VNC software in Linux is a kind of server-client application. 
+This allows users for remote login to Linux Machine in a DIFFERENT screen / X-Session than the session currently in use on the machine by the current user.
+As a result, with TightVNC you do not get screen sharing by default , as it happens with TeamViewer or Anydesk.
+
+
+.B Installation
+    `apt install tightvncserver && vncserver`
+Running vncserver (or 'tightvncserver') for the first time triggers the initial setup (password setting etc).
+
+.B Starting vncserver
+    gv@deb:$ vncserver
+
+    New 'X' desktop is deb:1
+
+    Starting applications specified in /home/gv/.vnc/xstartup
+    Log file is /home/gv/.vnc/deb:1.log
+ 
+
+Meaning that vncserver is using X-Display :1 and not the display currently in use by your debian which is usually X-Display `:0`
+
+.B Stop VNC server with this command:
+    vncserver -kill :1
+
+.B VNC Server Config File
+The vnc configuration file in your home directory, path /home/gv/.vnc/xstartup defines the rules / programms / apps that will be used by VNC for this NEW session.
+We can say that TightVNC can be used as an SSH alternative with GUI interface (i.e xfce4).
+
+Typical configuration for xstartup conf file:
+   #!/bin/sh
+    unset SESSION_MANAGER
+    unset DBUS_SESSION_BUS_ADDRESS
+    startxfce4 &
+
+You need to make sure that xstartup file has +x (executable) rights.
+
+.B VNC Screen Sharing
+It is possible to achieve real screen sharing of the Debian machine (vncserver) by Windows or other machines vnc client, by installing the package x11vnc on the server side (Debian 12).
+    apt install x11vnc && x11vnc
+
+Is not clear if x11vnc can be installed as standalone or tightvncserver must be installed first, but in my case i first installed tightvncserver pkg and then i install x11vnc pkg.
+
+TightVNC can be invoked by Windows using the TightVNC Viewer (considering that you have install TightVNC in Windows).
+When you prompted to enter the remote IP address you have also to include the port that you are going to be connected:
+192.168.2.12::5900 or ::5901 etc (double colon is indeed required, is not a typo).
+
+Basically, the number X after ::590 defines the display that you are going to be connected. 
+Using classic TightVNC on a separate session - X Desktop 1 , this has to be ::5901 (no real screen sharing)
+Using x11vnc connection this has to be ::5900 , meaning connected to display :0 = screen already in use by Debian = Real Screen Sharing for remote support
+
+Tip 1: It is necessary to configure vncserver to use a password in your Debian Machine for vncserver (just run vncserver after installation). 
+       Managing vnc passwords can also be done using `vncpasswd`
+       
+Tip 2: You have to use vncserver -kill :1 when the vncserver session is finished to free :1 X session
+
+Tip 3: In Debian 12, Dec 01 2023 i was getting empty gray screen continuoysly with out specific error messages in the logs. 
+This was solved by installing `dbus-x11` pkg. 
+It is also said that pkg `dbus-user-session` may solve the problem, but in my Debian 12 this pkg was already installed and the problem was only solved by installing `dbus-x11`
