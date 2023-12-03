@@ -2941,3 +2941,10 @@ Tip 2: You have to use vncserver -kill :1 when the vncserver session is finished
 Tip 3: In Debian 12, Dec 01 2023 i was getting empty gray screen continuoysly with out specific error messages in the logs. 
 This was solved by installing `dbus-x11` pkg. 
 It is also said that pkg `dbus-user-session` may solve the problem, but in my Debian 12 this pkg was already installed and the problem was only solved by installing `dbus-x11`
+
+Tip 4: When x11vnc is started, by default it is disconnected and x11vnc service shuts down when the client is disconnected.
+This can be changed by invoking x11vnc with options -shared and -forever
+-shared  : allows more than one user to be connected
+-forever : Remains in Listening Mode after client disconnection.
+
+Full Command: x11vnc -shared -forever
