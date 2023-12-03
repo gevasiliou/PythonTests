@@ -2590,6 +2590,15 @@ teamviewer repo stable         - make all regular TeamViewer packages available 
 teamviewer repo preview        - additionally, make feature preview packages available
 teamviewer repo development    - additionally, make the latest development packages available
 
+##TEAMVIEWER RESTART
+It is quite often Teamviewer in Linux to stop working after disconnection, meaning no new connections are allowed.
+To restart teamviewer, and assuming that you can get connected to Linux using another way like ssh, Anydesk, TightVNC etc you can try:
+a. sudo kill -9 all teamviewer processes
+
+b. restart the daemon : sudo teamviewer --daemon restart
+PS: teamviewer daemon is a root process and even if you kill it will be started again automatically.
+
+c. start the teamviewer using GUI or CLI with teamviewer &
 
 ------------------------------------------------------------------------------------------------------------------------
 UTILS:GOOGLE CHROME
