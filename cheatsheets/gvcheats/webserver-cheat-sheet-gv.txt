@@ -251,7 +251,7 @@ http://ec2-51-20-70-223.eu-north-1.compute.amazonaws.com/
 
 Tip1: If your instance in running , you have provided html files to /var/www/html directory and you are not able to see the html pages inside this folder, then you have to try with http instead of https.
 
-Tip2: If you want to use a custom port in your VM, you have to  
+Tip2: If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings.
 
 WEB:COOL WEB TOOLS
 
