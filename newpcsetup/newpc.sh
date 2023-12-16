@@ -213,29 +213,34 @@ echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_ali
 echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
 done
 
-echo "make backup of /etc/apt/sources.list" && cp -iv /etc/apt/sources.list /etc/apt/sources.list.backup
-echo "copy sources.list to /etc/apt" && cp -iv /home/gv/Desktop/PythonTests/sources.list /etc/apt/
-echo "copy apt preferences to /etc/apt/" && cp -iv /home/gv/Desktop/PythonTests/preferences /etc/apt/
-echo "Updating the system (update && upgrade && dist-upgrade)"
+# <Dec2023>
+#Bellow command were disabled Dec 2023 - We prefer to keep only the stable Debian Version meaning that sources.list provided during installation is fine...
+#echo "make backup of /etc/apt/sources.list" && cp -iv /etc/apt/sources.list /etc/apt/sources.list.backup
+#echo "copy sources.list to /etc/apt" && cp -iv /home/gv/Desktop/PythonTests/sources.list /etc/apt/
+#echo "copy apt preferences to /etc/apt/" && cp -iv /home/gv/Desktop/PythonTests/preferences /etc/apt/
+#echo "Updating the system (update && upgrade && dist-upgrade)"
+# </Dec2023>
+
 #we don't need an explicit user confirmation prompt for above cp commamds since cp -i will ask for user confirmation by default. 
 #Option -v in cp stands for verbose = report what you do.
 
 wget -O - http://download.videolan.org/pub/debian/videolan-apt.asc | sudo apt-key add -
 apt-get update && apt-get upgrade --allow-unauthenticated && apt-get dist-upgrade --allow-unauthenticated 
-#Tip: when repos are changed by owners (i.e google INC changed to google LLC) apt-get update will fail. You need to use 'apt upgrade' instead of 'apt-get'.
+#Tip1: when repos are changed by owners (i.e google INC changed to google LLC) apt-get update will fail. You need to use 'apt upgrade' instead of 'apt-get'.
+#Tip2: When Debian Release name / code is changing , is also possible apt-get dist-upgrade or apt dist-upgrade to fail. In this case use aptitude program (not installed by default).
 } 
 
 function vboxinstall {
 echo "Installing virtualbox guest addition cd, but test if essential packages are installed before that. Also better to make a system update first"
 echo "at the end make sure that virtualbox-guest-x11 is installed"
-read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
+read -p "press any key to proceed or s to skip this section completely" s && [[ "$s" == "s" ]] && return
 
-essentials
+read -p "Now we will call the essentials installation - press [y] to proceed or any other key to skip" ans && [[ "$ans" == "y" ]] && essentials
 
+read -p "Now we will try to run this command: apt-get install virtual* - press [s] to skip or any other key to continue..." ans2 && [[ "$ans2" == "s" ]] && return 
 apt-get install virtual* #this will install all virtualbox packages, including the additions cd and virtualbox itself
 apt list virtualbox-guest-x11 #just to verify that this utlil is installed
 }
-
 
 
 function desktopfiles {
@@ -250,20 +255,19 @@ read -p "desktopfiles installation - press any key to proceed or s to skip this 
 }
 
 function chromeinstall {
-echo "ready to install google-chrome-stable from repos"
-read -p "press any key to proceed or s to skip this section" s && [[ "$s" == "s" ]] && return
-
-apt-get install google-chrome-stable
+read -p "press [y] to proceed with apt-get install google-chrome-stable or press [s] to skip this section" s && [[ "$s" == "y" ]] && apt-get install google-chrome-stable
 resp=$? #returns 0 on success , 100 in error
 if [[ "$resp" -ne 0 ]];then
 #if apt install from repos fails then go directly to google for downloading
-echo "Installing chrome from https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb. Deb file will be saved to /tmp"
+echo "apt-get failed. Trying to install chrome from https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb. Deb file will be saved to /tmp"
 apt-get install desktop-file-utils
+echo "Trying to fetch https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb with wget"
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -P /tmp
-dpkg -i /tmp/google-chrome-stable_current_amd64.deb #on new systems may break but is fixed with apt-get install --fix-broken
+echo "Trying to install chrome deb with dpkg command: dpkg -i /tmp/google-chrome-stable_current_amd64.deb"
+dpkg -i /tmp/google-chrome-stable_current_amd64.deb #on new systems this may break but it is fixed running apt-get install --fix-broken
 ret=$?; 
-[[ $ret -ne 0 ]] && apt-get install -f && dpkg -i /tmp/google-chrome-stable_current_amd64.deb  
-update-alternatives --config x-www-browser #as a confirmation - alternatives updated by chrome installer automatically
+[[ $ret -ne 0 ]] && apt-get install --fix-broken && dpkg -i /tmp/google-chrome-stable_current_amd64.deb  
+update-alternatives --config x-www-browser #running just for confirmation - www-browser alternatives normally is updated by chrome installer automatically
 rm -iv /tmp/google-chrome-stable_current_amd64.deb
 fi
 
@@ -281,9 +285,12 @@ KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/bin/systemctl start 
 EOF
   chmod 644 /lib/udev/rules.d/78-hdmi.rules
   ls -allh /lib/udev/rules.d/78-hdmi.rules
+  echo "file /lib/udev/rules.d/78-hdmi.rules created - This file contains these lines:"
+  cat /lib/udev/rules.d/78-hdmi.rules
 else
-  echo "udev hdmi rules file exists:"
+  echo "udev hdmi rules file exists: "
   ls -allh /lib/udev/rules.d/78-hdmi.rules
+  cat /lib/udev/rules.d/78-hdmi.rules
 fi
 
 if [[ ! -f /etc/systemd/system/hdmi-sound.service ]];then
@@ -302,23 +309,27 @@ WantedBy=multi-user.target
 EOF
 
 chmod 777 /etc/systemd/system/hdmi-sound.service
+echo "File /etc/systemd/system/hdmi-sound.service created and contains these lines:"
 ls -allh /etc/systemd/system/hdmi-sound.service
-
+cat /etc/systemd/system/hdmi-sound.service
 else 
   echo "systemd hdmi sound service exists:"
   ls -allh /etc/systemd/system/hdmi-sound.service
+  cat /etc/systemd/system/hdmi-sound.service
 fi
 
 if [[ ! -f /usr/bin/hdmisound.sh ]];then 
   cp -iv /home/gv/Desktop/PythonTests/newpcsetup/hdmisound.sh /usr/bin
   chmod 755 /usr/bin/hdmisound.sh
   ls -allh /usr/bin/hdmisound.sh
+  read -p "Press [y] to see the contents of file /usr/bin/hdmisound.sh " ans3 && [[ "$ans3" == "y" ]] && cat /usr/bin/hdmisound.sh
 else
   echo "hdmisound.sh exists:"
   ls -allh /usr/bin/hdmisound.sh
+  read -p "Press [y] to see the contents of file /usr/bin/hdmisound.sh " ans3 && [[ "$ans3" == "y" ]] && cat /usr/bin/hdmisound.sh
 fi
 
-udevadm control --reload-rules
+read -p "press [y] to reload rules and services running this command: udevadm control --reload-rules" ans4 && [[ "$ans4" == "y" ]] && udevadm control --reload-rules
 
 }
 
@@ -356,5 +367,5 @@ case $1 in
 "--essentials")essentials;;
 "--tweakwifi")tweakwifi;;
 "--hdmisound")hdmisound;;
-*)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --tweakwifi --gitclone --essentials";;
+*)echo "action missing. Usage --utils --sysupgrade --vboxinstall --desktopfiles --chromeinstall --gitclone --essentials --tweakwifi --hdmisound";;
 esac
