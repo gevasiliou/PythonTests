@@ -42,7 +42,8 @@ fi
 
 for i in /home/gv /root;do
 echo "copy .bash_aliases to $i" && cp -iv /home/gv/Desktop/PythonTests/.bash_aliases "$i"
-echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i" 
+echo "copy mancolor to $i" && cp -iv /home/gv/Desktop/PythonTests/mancolor "$i"
+chown --verbose gv:gv /home/gv/.bash_aliases 
 done
 
 ess=( "geany" "git" "git-all" "nano" "gksu" "sudo" "hwinfo" "net-tools" "wget" "curl" "aptitude" "desktop-file-utils" )
