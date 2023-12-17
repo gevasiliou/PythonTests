@@ -25,6 +25,7 @@ export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 export MANPAGER='less -s -M +Gg'
 
+alias bashalias-version="echo This is .bash_aliases version 2.0 , Last Updated 17.12.2023"
 alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
 alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg from 2019 is obsolete.
 alias grtranslate="trans :el" #you need to have apt install translate-shell 

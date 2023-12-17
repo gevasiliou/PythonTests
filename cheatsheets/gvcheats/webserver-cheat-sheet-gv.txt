@@ -116,10 +116,10 @@ nvm ls-remote                 # list available nodejs versions
 nvm install <nodejs version>  # install nodejs specific version, i.e nvm install 12.1
 nvm ls                        # list locally installed versions
 nvm use 18.1                  # use a specific nvm version
-npm install module            # npm = nodejs package manager- Can install various nodejs modules (i.e ws, net, express, path)
-node script.js                # use node to run script.gr on commandline
+npm install module            # npm = nodejs package manager- Can install various nodejs modules (i.e sudo npm install -g ws path http express body-parser yargs fs modbus-serial)
+nodejs script.js              # use nodejs to run file script.js on commandline
 
-.B Websockets
+.B Websockets [ws nodejs module]
 The use of websockets servers (i.e inside a server.js file) allows websocket clients to get connected and receive messages by the server.
 An html page can be used as websocket client (using javascript).
 As a result you can achieve to have html pages with content updated dynamically , as received (push) by the ws server.
@@ -253,7 +253,7 @@ Tip1: If your instance in running , you have provided html files to /var/www/htm
 
 Tip2: If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings.
 
-WEB:COOL WEB TOOLS
+##WEB:COOL WEB TOOLS
 
 ##XTERM.JS
 https://github.com/xtermjs/xterm.js
