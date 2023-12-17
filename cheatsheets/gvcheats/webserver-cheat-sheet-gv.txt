@@ -9,19 +9,21 @@ All bellow commands should be run as root or with sudo.
 Source: https://www.installconfig.com/doku.php?id=configure_ubuntu_server_20_04_host_nextcloud_hub_21
 
 Step 1: apt install php libapache2-mod-php libapache2-mod-fcgid php-fpm 
+Tip: You can just apt install php to install typical php that will be handled by Apache2.
 
 Step 2: write a simple test.php file inside /var/www/html folder, containing just those two lines:
 <?php
 phpinfo();
 
 Step 3: open a php interactive shell with php -a and run phpinfo();
-If you see output , php is installed (as a language).
+If you see output, you have confirmed that php (as languge) is installed in your system.
 
 Step 4: geany /etc/apache2/apache2.conf
 To the end of file , add this line:
 SetHandler application/x-httpd-php
 
-Step 5: Disable older php modules and load new php modules
+Step 5: It is a good idea, though not well understood why in this point, to enable php-fpm (CGI Web Server Support) since it is claimed that CGI has better / faster php support over Apache2. 
+To enable php-fpm you have to disable older php modules and load new php-fpm modules:
 a2dismod mpm_event
 a2enmod mpm_prefork
 a2enmod php8.2
