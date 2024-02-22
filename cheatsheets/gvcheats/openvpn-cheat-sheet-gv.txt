@@ -646,4 +646,11 @@ dhcp-option DNS <dns_server_ip_address>
 
 On the server side it would have been :
 push "dhcp-option DNS <dns_server_ip_address>"
-PS: It seems it's using dhcp-option on both sides. You can do the same with route
+PS1: It seems it's using dhcp-option on both sides. You can do the same with route
+
+PS2: Some other guy suggest that you have also include bellow options in the ovpn file:
+register-dns
+block-outside-dns
+
+The 1st forces Windows to prefer the configured DNS server over any other it may have received from DHCP. 
+The 2nd prevents DNS leakage to any DNS server other than the configured one.
