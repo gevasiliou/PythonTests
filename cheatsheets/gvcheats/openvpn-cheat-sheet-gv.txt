@@ -635,4 +635,15 @@ To enforce only IPv4-only, you need to use udp4, tcp4-client or tcp4-server. Sim
  This makes OpenVPN use a random client side port when connecting. 
  Without it, openvpn will use the same port number as used to connect to the server. 
  This option is usefull if you want to run multiple VPN clients on the same host to avoid using the same port 1194 for all instances.
- 
+
+.B Set up specific dns to be used in the specific vpn connection.
+source: https://superuser.com/questions/637579/setting-dns-servers-using-openvpn-client-config-file
+This will help when you log in to another lan, which is equipped with a customized DNS to allow resolving of addresses like "ermis" , etc.
+Obviously, if you use the IP address of "ermis" you can connect directly....
+
+Add the following to the client config file.
+dhcp-option DNS <dns_server_ip_address>
+
+On the server side it would have been :
+push "dhcp-option DNS <dns_server_ip_address>"
+PS: It seems it's using dhcp-option on both sides. You can do the same with route
