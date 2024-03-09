@@ -27,10 +27,10 @@ export MANPAGER='less -s -M +Gg'
 
 alias bashalias-version="echo This is .bash_aliases version 2.0 , Last Updated 17.12.2023"
 alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
-alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg from 2019 is obsolete.
+alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg that we used old days is obsolete by 2019.
 alias grtranslate="trans :el" #you need to have apt install translate-shell 
 alias lanip="ifconfig |grep 'inet[^6]'"
-alias hdmisound="pacmd set-card-profile 0 output:hdmi-stereo && pacmd list 2>&1 |grep 'active profile'"
+alias hdmisound="pacmd set-card-profile 0 output:analog-stereo && pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
 alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
 alias ping="ping -c3"
 alias winpid="echo -ne 'select window  to get pid...  ' && xprop _NET_WM_PID WM_CLASS | cut -d' ' -f3 |sed -z -e 's/\n/ - /1' -e 's/[\x22,]//g'"
