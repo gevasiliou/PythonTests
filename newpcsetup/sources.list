@@ -1,0 +1,47 @@
+#deb cdrom:[Debian GNU/Linux 12.1.0 _Bookworm_ - Official amd64 NETINST with firmware 20230722-10:48]/ bookworm main non-free-firmware
+
+deb http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian/ stable main non-free contrib
+#deb http://deb.debian.org/debian/ testing main non-free contrib
+#deb http://deb.debian.org/debian/ unstable main non-free contrib
+#deb http://deb.debian.org/debian/ experimental main non-free contrib
+
+#25.03.2024 
+# It has been proved that the most reliable way to force debian to stay on stable is not to include
+# testing/unstable/experimental repos in your sources.list and not count on apt preferences file.
+# /etc/apt/preferences seems that is not well working with the pin priorities - maybe something is not well adjusted in this file.
+
+
+
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+deb-src http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+
+# bookworm-updates, to get updates before a point release is made;
+# see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports
+deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware
+
+# bookworm-backports, previously on backports.debian.org
+deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware
+
+# This system was installed using small removable media
+# (e.g. netinst, live or single CD). The matching "deb cdrom"
+# entries were disabled at the end of the installation process.
+# For information about how to configure apt package sources,
+# see the sources.list(5) manual.
+
+##TEAMVIEWER
+#old: deb http://linux.teamviewer.com/deb stable main
+##2023 Teamviewer Installation (using dpkg -i)
+##2023 (we keep it disabled / commented because teamviwer has install a file in sources.d directory
+#deb [signed-by=/usr/share/keyrings/teamviewer-keyring.gpg] https://linux.teamviewer.com/deb stable main
+
+##ANYDESK
+##AnyDesk DEB repository how-to
+##wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | apt-key add -
+deb http://deb.anydesk.com/ all main
+# apt-get update && apt-get install anydesk
+deb [signed-by=/usr/share/keyrings/plex.gpg] https://downloads.plex.tv/repo/deb public main
