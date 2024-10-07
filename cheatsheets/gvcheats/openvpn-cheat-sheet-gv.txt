@@ -17,7 +17,7 @@ On bob ping 10.4.0.2 & On alice ping 10.4.0.1
 
 Tip: The --verb 9 option will produce verbose output, similar to the tcpdump(8) program. Omit the --verb 9 option to have OpenVPN run quietly.
 
-## VPN tunnel with self-signed certificates and fingerprint
+## OPENVPN tunnel with self-signed certificates and fingerprint
 
 
 First build a self-signed certificate on bob and display its fingerprint.
@@ -227,7 +227,7 @@ OpenVPN 2.6.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [
 library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
 WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  This allows attacks like SWEET32.  Mitigate by using a --cipher with a larger block size (e.g. AES-256-CBC). Support for these insecure ciphers will be removed in OpenVPN 2.7.
 
-##Use your Win10 PC as OpenVPN Client
+## Use your Win10 PC as OpenVPN Client
 1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine and you have already configure openvpn server in previous chapter
 
 2. Create Win10 openvpn client configuration file
@@ -306,7 +306,7 @@ Don't forget to provide virtual IPs of server and client , and also upload the s
 Do not forget to define remote server - port - protocol, secret key path, cipher algorithm, explicit-exit-notify and other related parameters.
 5. You should be ready! Just run sudo openvpn networkname.ovpn to test it.
 
-##Teltonika VPN via OpenVPN Cloud 
+## Teltonika VPN via OpenVPN Cloud 
 https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 
 The concept here is that OpenVPN Cloud works as a TCP Server and both Debian and Teltonika are "clients" to this server. 
@@ -654,3 +654,64 @@ block-outside-dns
 
 The 1st forces Windows to prefer the configured DNS server over any other it may have received from DHCP. 
 The 2nd prevents DNS leakage to any DNS server other than the configured one.
+
+## ZEROTIER VPN
+.B What is it
+Quite popular and easy to set up Cloud beased VPN, free for 25 "devices".
+It creates one (or more) virtual networks - virtual lans with lan-members in each virtual lan.
+You adjust the Virtual IP range for the particular network, and each member gets a virtual IP by zerotier.
+Members can communicate to each other using their ZeroTier (ZT) IPs, like they were on the same physical lan.
+This makes easy to run apps like Anydesk, Teamviewer; You can even get connected directly from one member (pc) to another member (pc) for server - client apps.
+
+.B Quick Set Up Steps for joining two PCs on the same ZeroTier VPN.
+1. Create an account on zerotier.com
+2. Create a virtual lan network with some description (you do this online in your zerotier account). Your network gets a unique id.
+3. On Windows download ZeroTier Client
+4. On Windows Zerotier Client select join new network and provide the network id of your VLAN , step 2 above.
+5. On your zerotier account, inside your VLAN, you have to approve authorization for the new "member" to join.
+6. Repeat the steps 3 & 4 to more computers around the world - don't forget to approve each member to grant access to your VLAN.
+7. Test connectivity between members by pinging ZT IPs from one member to the other member.  
+
+.B Tricks and Bugs
+1. Some routers like Teltonika RUT series, have pre-installed zero tier clients and you can connect your router to your ZT Lan.
+2. You can configure routes in your ZT network to allow access to Physical Lan Devices available behind routers.
+Example:
+Router RUT has ZT IP 172.28.228.221 - connected to ZT Network "xxxx"
+My lap computer, member of ZT Network "xxxx" , has ZT IP 172.28.82.115.
+Router RUT can ping my PC using my PC ZT IP and my PC can ping RUT using router's ZT IP.
+On the network configuration (available online in my zerotier accoung) i have add the following custom route:
+Destination 192.168.1.0/24 Via 172.28.228.221 
+The destination 192.168.1.0/24 (/24 subnet means 255.255.255.0) is the subnet of physical LAN behind my Teltonika Router.
+The "Via" IP is the ZeroTier IP of the router RUT.
+This customized route , is published to all ZT members (clients) including my PC.
+So now, from my PC i can access to various lan devices (192.168.1.XX) behind RUT router - my requests from my PC are sent to RUT ZT IP (due to the ZT rule applied) and RUT handles those requests (forwarding) to various lan devices. 
+
+3. Access Lan Network behind another PC (not router)
+If another PC is a Linux machine then this guide applies: https://docs.zerotier.com/route-between-phys-and-virt/
+
+If another PC is a Windows machine and not a router, then this is quite tricky.
+You need to enable IP Packets forwarding to your PC using this guide:
+https://michlstechblog.info/blog/windows-howto-enable-ip-routing/
+From Terminal (root priveleges):
+c:\>reg add HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters /v IPEnableRouter /D 1 /f
+sc config RemoteAccess start= auto
+sc start RemoteAccess
+
+From PowerShell (root priveleges - no reboot required)
+Get-NetIPInterface | select ifIndex,InterfaceAlias,AddressFamily,ConnectionState,Forwarding | Sort-Object -Property IfIndex | Format-Table
+Set-NetIPInterface -ifindex <required interface index from table> -Forwarding Enabled
+Set-NetIPInterface -Forwarding Enabled
+
+The first step to verify that packet forwarding works, is to be able to ping from Machine A Zero IP the LAN IP (i.e 192.168.2.13) of Machine B instead of it's Zero IP.
+
+But even by enabling packet forwarding on machine B, it seems that will allow you to access lan devices hooked directly to Machine B.
+
+If Machnine B is hooked under a lan router (quite usual) and you want to achieve access to Lan Devices under the same Lan Rooter, then it seems that such a forwarding is quite tricky since you need to do some routing work on the router also....
+
+Sources:
+https://support.tetcos.com/support/solutions/articles/14000098272-how-to-enable-ip-forwarding-in-windows-for-emulation-using-netsim-
+https://serverfault.com/questions/929081/how-can-i-enable-packet-forwarding-on-windows
+https://michlstechblog.info/blog/windows-howto-enable-ip-routing/
+https://discuss.zerotier.com/t/route-between-zerotier-and-physical-networks/11308/6
+https://discuss.zerotier.com/t/connection-through-zerotier-access-to-lan/13432/3
+https://learn.microsoft.com/en-us/powershell/module/netnat/?view=windowsserver2022-ps
