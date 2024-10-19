@@ -8,9 +8,19 @@
 # debmany  -  select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
 #       "man", "sensible-pager" or an alternative viewer.
 
+helpmeshort() {
+		    cat <<EOF
+Usage: ./manon.sh --manpage [packagename] [option1] [option2]
+--manpage [packagename] is a mandatory option.
+Usage example : ./manon.sh --manpage gawk --apt
+run manon.sh without any args to see the full helpme file including details of [option1] and [option2]
+EOF
+}	
 helpme() {
 	    cat <<EOF
 Usage: ./manon.sh --manpage [packagename] [option1] [option2]
+--manpage [packagename] is a mandatory option.
+Usage example : ./manon.sh --manpage gawk --apt
 Update 15-10-2023: Due to script changes, --apt, --debian --debianlist --ubuntu , --ubuntulist and bsd switches work ok.
 The rest switches like --online, are not fully tested.
 
@@ -67,7 +77,7 @@ debman - read man pages from uninstalled packages (not working very well at 2023
 debmany  - more modern than debman - works well - used to select  manpages  or documentation files from installed packages, packages from the repository or .deb-files for viewing using
 "man", "sensible-pager" or an alternative viewer.
 
-More interesting pkgs about manpages:
+More resources / pkgs / apps about manpages:
 pkg: txt2man            : transforms an ASCII txt file to man page
 pkg: help2man           : Program to create simple man pages from the --help and --version output of other programs.
 pkg: info2man           : Convert GNU info files to POD (Plain Old Documentation) or man pages (info to pod to man in one step)    
@@ -75,18 +85,21 @@ pkg: manpages-el        : GNU Manpages Collection in Greek Language
 pkg: mandoc             : BSD Manpage compiler toolset
 pkg: freebsd-manpages   : Free BSD Manpages collection
 pkg: debiman            : debiman makes (Debian) manpages accessible in a web browser.
+pkg: ps2pdf             : Converter man page to pdf -> man -t bash | ps2pdf - bash.pdf
+pkg: pandoc             : This app converts documents (i.e markdown) from one format to another (i.e man page).
+
+fn:  md2man             : A function hidden inside .bash_aliases that transforms md files to man files (based on pandoc):
+                          i.e function md2man { man -l <(pandoc -s -f markdown -t man "$1"); }
+fn: viman               : A function that allows you to view man pages in vim -> viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
+fn: debmanonline		: Custom Function of .bash_aliases that searches for man page (not pkg name) in https://manpages.debian.org
 fn: debcat              : In .bash_aliases we have a function that by default extracts contents of deb file in screen
                           without downloading the pkg in HDD and you can select which file you want to see
 
-fn:  viman              : A function that allows you to view man pages in vim -> viman () { man "$@" >/dev/null 2>&1 && man "$@" | vim -R +":set ft=man" - ; }
-pkg: ps2pdf             : Converter man page to pdf -> man -t bash | ps2pdf - bash.pdf
-pkg: pandoc             : This app converts documents (i.e markdown) from one format to another (i.e man page).
-fn:  md2man             : A function hidden inside .bash_aliases that transforms md files to man files (based on pandoc):
-                          function md2man { man -l <(pandoc -s -f markdown -t man "$1"); }
-                          
+
+                           
 TODO & BUGS Dated 15.10.2023: 
 
-a. Find a way to ensure that script will exit if --manpage <pkg> is not provided.
+a. Find a way to ensure that script will exit if --manpage <pkg> is not provided. -> Closed 20.10.24
 
 b. Buggy usage: manon --manpage --apt --> Fails since --apt will be considered as argument for --manpage.
    Can be resolved by further validating \$2 field when --manpage is processed.
@@ -101,7 +114,8 @@ EOF
 #Don't use tabs to add entries in above help. Always use spaces, since spaces are interprated the same from all shells (while tabs not)
 }	
 
-function apt {
+function aptfn {
+	#name of function initially was apt , but changed to aptfn = apt function to avoid conflicts with Debian apt package.
 	validmode=1
 	loop=1
 	full_mode=0
@@ -126,7 +140,7 @@ function apt {
 	#Nov17: BTW echo "${pkg%%/*}" will return xfce4-power-manager if $1 is xfce4-power-manager/experimental
 
 #    if [[ $1 =~ "/" ]];then
-         aptresp=$(apt-get --print-uris download $pkg 2>&1) 
+         aptresp=$(apt-get --print-uris download $pkg) # 2>&1 
          # apt-get --print-uris download is better than install. install will return the uris of all the dependencies;download will return just the uri of the package.
          # Moreover apt-get download works fine with package/repo synthax.
          echo "apt response=$aptresp"
@@ -867,10 +881,10 @@ function aptcheck {
 function main { return; }
 {
     oldargs=$*
-    echo "Number of Parameters Given: $#"
+    echo "[main] Number of Parameters Given: $#"
     if [[ $# -eq 0 ]];then helpme;exit 1;fi #show help and exit if no args are provided at all
-
-    echo "Old Args = $oldargs"
+    if [ $1 != "--manpage" ]; then helpmeshort;exit 1;fi
+    echo "[main] Old Args = $oldargs"
 	#[[ -z $1 ]] || [[ "$1" == "--help" ]] || [[ "$2" == "--help" ]] && helpme && exit 1 #if no man page is requested print help and exit
 	#[[ -z $2 ]] && mode="--apt" || mode="$2" #if no particular mode is given, the apt mode is used by default
 	#echo "mode selected:  $mode"
@@ -881,22 +895,22 @@ function main { return; }
 	  case "$1" in
 
 	#case $mode in
-	"--manpage") echo "--manpage found";if [ -n "$2" ]; then manpage="$2";echo "manpage name=$2";shift 2; else echo "Option --manpage requires a value." >&2;exit 1;fi;;
+	"--manpage") echo "[main] --manpage found";if [ -n "$2" ]; then manpage="$2";echo "[main] manpage name=$2";shift 2; else echo "[main] Option --manpage requires a value." >&2;exit 1;fi;;
 	#"--pkg") echo "--pkg found";if [ -n "$2" ]; then pkg="$2";echo "pkg name=$2";shift 2; else echo "Option --pkg requires a value." >&2;exit 1;fi;;
-	"--apt" )echo "mode selected=$1";apt $oldargs;shift;; ## Mind the absence of double quotes. If you pass oldargs using double quotes will be passed as ONE parameter and we don't want that.
-	"--aptmulti" )echo "mode selected=$1";aptmulti $oldargs;shift;; ##	"--aptmulti")aptmulti "$@";;
-	"--aptcheck" )echo "mode selected=$1";aptcheck $oldargs;shift;;
-	"--down" )echo "mode selected=$1";down $oldargs;shift;;
-	"--bsd" )echo "mode selected=$1";bsd $oldargs;shift;;
-	"--openbsd" )echo "mode selected=$1";openbsd $oldargs;shift;;
-	"--netbsd" )echo "mode selected=$1";netbsd $oldargs;shift;;
-	"--debian" )echo "mode selected=$1";debian $oldargs;shift;;
+	"--apt" )echo "[main] mode selected=$1";aptfn $oldargs;shift;; ## Mind the absence of double quotes. If you pass oldargs using double quotes will be passed as ONE parameter and we don't want that.
+	"--aptmulti" )echo "[main] mode selected=$1";aptmulti $oldargs;shift;; ##	"--aptmulti")aptmulti "$@";;
+	"--aptcheck" )echo "[main] mode selected=$1";aptcheck $oldargs;shift;;
+	"--down" )echo "[main] mode selected=$1";down $oldargs;shift;;
+	"--bsd" )echo "[main] mode selected=$1";bsd $oldargs;shift;;
+	"--openbsd" )echo "[main] mode selected=$1";openbsd $oldargs;shift;;
+	"--netbsd" )echo "[main] mode selected=$1";netbsd $oldargs;shift;;
+	"--debian" )echo "[main] mode selected=$1";debian $oldargs;shift;;
 #	"--debiansuite" )echo "mode selected=$1";debiansuite $oldargs;shift;;
-	"--debianlist" )echo "mode selected=$1";debianlist $oldargs;shift;;
-	"--debianlisthtml" )echo "mode selected=$1";debianlisthtml $oldargs;shift;;
-	"--ubuntu" )echo "mode selected=$1";ubuntu $oldargs;shift;;
-	"--ubuntulist" )echo "mode selected=$1";ubuntulist $oldargs;shift;;
-	"--online" )echo "mode selected=$1";online $oldargs;shift;;
+	"--debianlist" )echo "[main] mode selected=$1";debianlist $oldargs;shift;;
+	"--debianlisthtml" )echo "[main] mode selected=$1";debianlisthtml $oldargs;shift;;
+	"--ubuntu" )echo "[main] mode selected=$1";ubuntu $oldargs;shift;;
+	"--ubuntulist" )echo "[main] mode selected=$1";ubuntulist $oldargs;shift;;
+	"--online" )echo "[main] mode selected=$1";online $oldargs;shift;;
 	"--help" ) helpme; exit 1; shift ;;
 	*) restparam+=$1;shift;;
 	# TODO 15.10.2023: 

@@ -768,7 +768,8 @@ function debls () {
 
 function humanreadable() {
 # humanreadable is used to translate a number corresponding to file size to human readable format like Kbyte, Mbyte, Gbyte, Tbyte, etc
-#usage : echo "1024567" |humanreadable OR humanreadable 123123123
+#usage 1 : echo "1024567" |humanreadable 
+#usage 2 : humanreadable 123123123
 
 #v="$(</dev/stdin)"; #necessary for this function to accept input by pipe
 #echo "$v" |awk ....
@@ -917,13 +918,33 @@ local ass+=$(apt list $1 2>/dev/null |grep -v "Listing" |sed "s#\\n# #g" |cut -d
 apt show $ass |less
 }
 
-function debmanual { 
-echo "Function debmanual: usage debmanual <pkg>"
-echo "debian man pages online (https://manpages.debian.org) of package $1 using links -dump"
-[[ -z $1 ]] && echo "Pass me a package to query manpages.debian.org" && return 1
+function debmanonline { 
+echo "Function debmanonline: usage debmanonline <manpage>"
+echo "Display debian man pages online from https://manpages.debian.org for package $1"
+echo "Tip1: man page name might be different than package name"
+echo "Tip2: Some packages like mesa-utils include more than one man page"
+[[ -z $1 ]] && echo "Pass me a man page name to query https://manpages.debian.org" && return 1
+echo "running command links -dump https://manpages.debian.org/jump?q=$1 to detect if there is a valid man page or if man page is not found"
+if [[ $(links -dump https://manpages.debian.org/jump?q=$1) == *"Manpage not found"* ]];then 
+echo "man page not found for $1 in online debian manpages. Maybe $1 is a package with a lot of man pages. Try to use debls $1 or debcat $1";return 1;
+fi 
+
 #debman uses the 2017 new web page with jump option
-links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less
+
+#links -dump https://manpages.debian.org/jump?q=$1 |awk "/Scroll to navigation/,0" |less  #disabled 20.10.24
+
+# |less works better than |man /dev/stdin - less has a better formatting of the dumped web page.
 #avoid to use name "debman" for this function since there is a programm debman inside pkg debian-goodies
+#alternative synthax : links -dump https://dyn.manpages.debian.org/gawk
+
+#bellow added 20.10.24 - instead of dumping the online manpage, search for the raw man page link, and parse this gz man page with man
+onlinemanraw="$(curl -sL -o- https://dyn.manpages.debian.org/"$1" |grep -E -o '[/].*en.gz')"
+echo "running command: curl -sL -o- https://dyn.manpages.debian.org/$1 |grep -E -o '[/].*en.gz'  ---->  $onlinemanraw"
+read -p "press enter to open https://manpages.debian.org$onlinemanraw" $an
+curl -sL -o- "https://manpages.debian.org$(curl -sL -o- https://dyn.manpages.debian.org/$1 |grep -E -o '[/].*en.gz')" |man /dev/stdin
+# Explanation
+# curl -sL -o- https://dyn.manpages.debian.org/gawk |grep -E -o '[/].*gz' --> /bookworm/gawk/gawk.1.en.gz
+#
 }
 
 
