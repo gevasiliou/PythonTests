@@ -33,3 +33,5 @@ public class IedClient {
         }
     }
 }
+//https://www.beanit.com/iec-61850/tutorial/
+//https://libiec61850.com/documentation/iec-61850-client-tutorial/

@@ -1,4 +1,7 @@
 JAVA:BASICS: CHEAT SHEET by gv
+Sources:
+https://www.beanit.com/iec-61850/tutorial/
+https://libiec61850.com/documentation/iec-61850-client-tutorial/
 
 ## JAVA INSTALLATION ON LINUX / DEBIAN
 To run Java on your modern Debian system, you'll need to install the Java Development Kit (JDK), which includes the necessary tools to compile and run Java code. 
