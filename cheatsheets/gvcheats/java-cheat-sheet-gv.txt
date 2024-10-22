@@ -75,3 +75,10 @@ jar tf ./libs/openiec61850-1.8.0.jar |less
 unzip Classes.jar
 find . -name '*.class' | xargs javap -p > classes.txt
 cat classes.txt | less
+PS: Remember that .class files are compiled java files and are not viewable by text editors; this is why you need a tool like javap.
+
+4. Create a JAR File so you can re-use libraries (.java files) by importing classes in your projects
+jar cf jar-file input-file(s)
+jar -cf myjarfile.jar *.java
+Another unofficial method is to "pack" (i.e zip) all the java files in a single zip file with .jar extension.
+This is the opposite of method 3 above (unpacking jar files to .class files).  
