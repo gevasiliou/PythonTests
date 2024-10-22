@@ -1,0 +1,34 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1553268442979
+Bundle-ManifestVersion: 2
+Bundle-Name: OpenIEC61850
+Bundle-SymbolicName: com.beanit.openiec61850
+Bundle-Version: 1.8.0
+Created-By: 1.8.0_192 (Oracle Corporation)
+Export-Package: com.beanit.josistack;uses:="com.beanit.jositransport,j
+ avax.net";version="1.8.0",com.beanit.jositransport;uses:="javax.net";
+ version="1.8.0",com.beanit.openiec61850;uses:="javax.net";version="1.
+ 8.0",com.beanit.openiec61850.app;version="1.8.0",com.beanit.openiec61
+ 850.clientgui;uses:="com.beanit.openiec61850,javax.swing,javax.swing.
+ event,javax.swing.tree";version="1.8.0",com.beanit.openiec61850.clien
+ tgui.databind;uses:="com.beanit.openiec61850,com.beanit.openiec61850.
+ clientgui,javax.swing,javax.swing.text";version="1.8.0",com.beanit.op
+ eniec61850.clientgui.util;version="1.8.0"
+Import-Package: com.beanit.jasn1.ber;version="[1.11,2)",com.beanit.jas
+ n1.ber.types;version="[1.11,2)",com.beanit.jasn1.ber.types.string;ver
+ sion="[1.11,2)",javax.net,com.beanit.openiec61850.clientgui;resolutio
+ n:=optional,com.beanit.openiec61850.clientgui.databind;resolution:=op
+ tional,com.beanit.openiec61850.clientgui.util;resolution:=optional,co
+ m.toedter.calendar;resolution:=optional,javax.swing;resolution:=optio
+ nal,javax.swing.border;resolution:=optional,javax.swing.event;resolut
+ ion:=optional,javax.swing.text;resolution:=optional,javax.swing.tree;
+ resolution:=optional,javax.xml.parsers;resolution:=optional,org.slf4j
+ ;resolution:=optional;version="[1.7,2)",org.w3c.dom;resolution:=optio
+ nal
+Private-Package: com.beanit.josistack.internal.acse.asn1,com.beanit.jo
+ sistack.internal.presentation.asn1,com.beanit.openiec61850.internal,c
+ om.beanit.openiec61850.internal.cli,com.beanit.openiec61850.internal.
+ mms.asn1,com.beanit.openiec61850.internal.scl
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.7))"
+Tool: Bnd-4.1.0.201810181252
+

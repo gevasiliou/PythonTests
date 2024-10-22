@@ -1,0 +1,77 @@
+JAVA:BASICS: CHEAT SHEET by gv
+
+## JAVA INSTALLATION ON LINUX / DEBIAN
+To run Java on your modern Debian system, you'll need to install the Java Development Kit (JDK), which includes the necessary tools to compile and run Java code. 
+Here's how you can set it up and run Java programs on Debian:
+
+.B Install Java (OpenJDK)
+Debian typically uses OpenJDK, an open-source implementation of the Java Platform. You can install it using the package manager.
+
+Update your package list:
+    sudo apt update
+    Install OpenJDK (version 17, which is the latest LTS version):
+    sudo apt install openjdk-17-jdk
+    java -version
+
+This should output something like:
+    openjdk version "17.x.x"
+    OpenJDK Runtime Environment (build 17.x.x)
+    OpenJDK 64-Bit Server VM (build 17.x.x)
+
+.B Setting JAVA_HOME (Optional)
+Some Java-based applications may require the JAVA_HOME environment variable to be set. To set it, follow these steps:
+Find out where Java is installed by running:
+
+update-java-alternatives -l
+Set the JAVA_HOME variable in your .bashrc or .profile file:
+
+nano ~/.bashrc
+Add this line at the end of the file:
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+Save and close the file, then run:
+source ~/.bashrc
+
+## JAVA HELLO WORLD
+Writing and Running a Simple Java Program
+Create a Java File: You can write your Java code in a text editor and save it as a .java file. For example, let's create a simple HelloWorld.java file.
+
+nano HelloWorld.java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+
+Save the file (Ctrl + X, then Y, and Enter to confirm).
+
+Use the javac command to compile the Java file into bytecode, which can then be run by the Java Virtual Machine (JVM).
+
+javac HelloWorld.java
+If there are no errors, this will produce a HelloWorld.class file.
+
+After compiling, use the java command to run the compiled program.
+
+java HelloWorld
+Hello, World!
+
+## JAVA IDE for Java Development 
+For more complex projects, you might prefer using an Integrated Development Environment (IDE). Some popular options for Java development are:
+
+.B Eclipse: A widely-used Java IDE.
+sudo apt install eclipse
+
+.B IntelliJ IDEA: Another popular IDE (available in both Community and Ultimate editions).
+Download from: IntelliJ IDEA Website
+
+## JAVA TIPS & TRICKS
+1. Compile your java file by including custom libraries stored in a custom local folder:
+javac -cp ./libs/openiec61850-1.8.0.jar IedClient.java
+
+2. Examine the classes available in a jar file:
+jar tf ./libs/openiec61850-1.8.0.jar |less
+
+3. Examine the methods hidden in classes of a jar file:
+unzip Classes.jar
+find . -name '*.class' | xargs javap -p > classes.txt
+cat classes.txt | less
