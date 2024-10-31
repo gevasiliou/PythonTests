@@ -258,6 +258,10 @@ Tip1: If your instance in running , you have provided html files to /var/www/htm
 
 Tip2: If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings.
 
+Tip3: To copy files from your local machine to remote EC2 server you need to run scp like bellow:
+sudo scp -i "XXXXXXX.pem" myfile.html admin@thingit.online:/home/admin
+Better to avoid copying files directly to /var/www/html/yourfolder since scp to root folders usually is not allowed.
+
 ##WEB:COOL WEB TOOLS
 
 ##XTERM.JS
