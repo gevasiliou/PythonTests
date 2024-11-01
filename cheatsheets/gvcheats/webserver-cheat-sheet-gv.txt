@@ -262,6 +262,28 @@ Tip3: To copy files from your local machine to remote EC2 server you need to run
 sudo scp -i "XXXXXXX.pem" myfile.html admin@thingit.online:/home/admin
 Better to avoid copying files directly to /var/www/html/yourfolder since scp to root folders usually is not allowed.
 
+Tip4: It is common to have a local node.js running on server (i.e node myfile.js) that will be opened for listening at a custom port like 3000 and the 
+corresponding html file, will try to fetch data from http://localhost:3000/end-point.
+The term "localhost:3000" cause a lot of problems when trying to access from outside world. 
+It is better to replace the localhost with public ip of your server inside your html file.
+So , instead of this : fetch('http://localhost:3000/list-files')
+write this : fetch('http://51.21.41.110:3000/list-files') or fetch('http://thingit.online:3000/list-files')
+Also better to keep port 3000 open at your server (though i am not sure if this is required).
+
+Tip5:  For node.js + html troubleshooting: 
+Login to your server with ssh by two terminals at the same time and go to /var/www/html.....
+Terminal one: run node helloworld.js (you should see a message that server is listening on port 3000)
+Terminal two: run links http://localhost:3000/list-files -> you should receive the hello world message received by node.js on terminal 1. 
+In this case the term localhost works ok, since both terminals are connected to the same server and thus localhost has a meaning.
+This is a test to make sure that node.js server is up and running at port 3000.
+
+Then, you can then try to see if hello world message can be delivered by node.js in external browsers. 
+Keep teminal 1 open, running with node.js -serving at port 3000 
+Use any external web browser and try to open: 
+http://thingit.online/isotec/helloworld.html (this is a small web page with a simple button that when pressed the end point /list-files is served = Hello World message
+or try directly http://thingit.online:3000/list-files (you should see Hello World message directly in your browser)
+
+
 ##WEB:COOL WEB TOOLS
 
 ##XTERM.JS
