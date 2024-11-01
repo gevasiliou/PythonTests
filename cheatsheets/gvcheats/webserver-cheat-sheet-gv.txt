@@ -283,6 +283,10 @@ Use any external web browser and try to open:
 http://thingit.online/isotec/helloworld.html (this is a small web page with a simple button that when pressed the end point /list-files is served = Hello World message
 or try directly http://thingit.online:3000/list-files (you should see Hello World message directly in your browser)
 
+Tip6: Custom node.js scripts that are trying to save files to your web server root directories like /var/www/html/.... have write permission issues.
+To overcome those issues, you have to start node.js script on your server with sudo (i.e sudo node myfile.js) to ensure write access to /var/www/html/....
+Alternativelly i suppose you can adjust the /save-file and /load-file endpoints in your node.js file to use a different directory with write access for the user or for everybody.
+As a general idea, being capable to write files to your root directories by a web html page that posts data to node.js , sounds a bad and vulnerable idea.
 
 ##WEB:COOL WEB TOOLS
 
