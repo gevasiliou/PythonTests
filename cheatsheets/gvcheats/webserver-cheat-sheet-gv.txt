@@ -288,6 +288,12 @@ To overcome those issues, you have to start node.js script on your server with s
 Alternativelly i suppose you can adjust the /save-file and /load-file endpoints in your node.js file to use a different directory with write access for the user or for everybody.
 As a general idea, being capable to write files to your root directories by a web html page that posts data to node.js , sounds a bad and vulnerable idea.
 
+Tip6: Perform a task on remote server without keeping the ssh connection open:
+sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js"
+
+Tip7: Compare local files to server files:
+sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js" |diff - isotec2.js
+
 ##WEB:COOL WEB TOOLS
 
 ##XTERM.JS
