@@ -296,9 +296,9 @@ sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/
 
 Tip8: Copy file to your server by local machine:
 sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online: && sudo ssh -i "thingit-debian.pem" admin@thingit.online "sudo cp -v /home/admin/isotec3.js /var/www/html/isotec/"
-First command performs a secure copy using ssh with a special command called scp
-scp usuall synthax is scp source-path target-path.
-in our case target is admin@thingit.online:
+
+First command performs a secure copy using ssh with a special command called scp (usuall synthax is scp source-path target-path).
+in our case target-path is admin@thingit.online:
 The symbol : is equivalent to home directory of the logged in user  --> /home/admin
 sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:   --> sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:/home/admin
 PS: You can not perform scp to root directories like /var/www/html , and this is why we need the second command - to copy the file from home directory to the /var/www/html directory.
