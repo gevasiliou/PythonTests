@@ -268,7 +268,7 @@ The term "localhost:3000" cause a lot of problems when trying to access from out
 It is better to replace the localhost with public ip of your server inside your html file.
 So , instead of this : fetch('http://localhost:3000/list-files')
 write this : fetch('http://51.21.41.110:3000/list-files') or fetch('http://thingit.online:3000/list-files')
-Also better to keep port 3000 open at your server (though i am not sure if this is required).
+Also better to adjust port 3000 to be open for incoming connections at your server configuration (though i am not sure if this is required).
 
 Tip5:  For node.js + html troubleshooting: 
 Login to your server with ssh by two terminals at the same time and go to /var/www/html.....
@@ -293,6 +293,16 @@ sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/
 
 Tip7: Compare local files to server files:
 sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js" |diff - isotec2.js
+
+Tip8: Copy file to your server by local machine:
+sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online: && sudo ssh -i "thingit-debian.pem" admin@thingit.online "sudo cp -v /home/admin/isotec3.js /var/www/html/isotec/"
+First command performs a secure copy using ssh with a special command called scp
+scp usuall synthax is scp source-path target-path.
+in our case target is admin@thingit.online:
+The symbol : is equivalent to home directory of the logged in user  --> /home/admin
+sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:   --> sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:/home/admin
+PS: You can not perform scp to root directories like /var/www/html , and this is why we need the second command - to copy the file from home directory to the /var/www/html directory.
+
 
 ##WEB:COOL WEB TOOLS
 
