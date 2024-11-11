@@ -254,15 +254,15 @@ sudo ssh -i "/home/gv/Desktop/thingit-debian.pem" admin@thingit.online
 This was my instance name earlier, before Elastic IP assignment: 
 http://ec2-51-20-70-223.eu-north-1.compute.amazonaws.com/
 
-Tip1: If your instance in running , you have provided html files to /var/www/html directory and you are not able to see the html pages inside this folder, then you have to try with http instead of https.
+.B Tip1: If your instance in running , you have provided html files to /var/www/html directory and you are not able to see the html pages inside this folder, then you have to try with http instead of https.
 
-Tip2: If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings.
+.B Tip2: If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings.
 
-Tip3: To copy files from your local machine to remote EC2 server you need to run scp like bellow:
+.B Tip3: To copy files from your local machine to remote EC2 server you need to run scp like bellow:
 sudo scp -i "XXXXXXX.pem" myfile.html admin@thingit.online:/home/admin
 Better to avoid copying files directly to /var/www/html/yourfolder since scp to root folders usually is not allowed.
 
-Tip4: It is common to have a local node.js running on server (i.e node myfile.js) that will be opened for listening at a custom port like 3000 and the 
+.B Tip4: It is common to have a local node.js running on server (i.e node myfile.js) that will be opened for listening at a custom port like 3000 and the 
 corresponding html file, will try to fetch data from http://localhost:3000/end-point.
 The term "localhost:3000" cause a lot of problems when trying to access from outside world. 
 It is better to replace the localhost with public ip of your server inside your html file.
@@ -270,7 +270,7 @@ So , instead of this : fetch('http://localhost:3000/list-files')
 write this : fetch('http://51.21.41.110:3000/list-files') or fetch('http://thingit.online:3000/list-files')
 Also better to adjust port 3000 to be open for incoming connections at your server configuration (though i am not sure if this is required).
 
-Tip5:  For node.js + html troubleshooting: 
+.B Tip5:  For node.js + html troubleshooting: 
 Login to your server with ssh by two terminals at the same time and go to /var/www/html.....
 Terminal one: run node helloworld.js (you should see a message that server is listening on port 3000)
 Terminal two: run links http://localhost:3000/list-files -> you should receive the hello world message received by node.js on terminal 1. 
@@ -283,18 +283,18 @@ Use any external web browser and try to open:
 http://thingit.online/isotec/helloworld.html (this is a small web page with a simple button that when pressed the end point /list-files is served = Hello World message
 or try directly http://thingit.online:3000/list-files (you should see Hello World message directly in your browser)
 
-Tip6: Custom node.js scripts that are trying to save files to your web server root directories like /var/www/html/.... have write permission issues.
+.B Tip6: Custom node.js scripts that are trying to save files to your web server root directories like /var/www/html/.... have write permission issues.
 To overcome those issues, you have to start node.js script on your server with sudo (i.e sudo node myfile.js) to ensure write access to /var/www/html/....
 Alternativelly i suppose you can adjust the /save-file and /load-file endpoints in your node.js file to use a different directory with write access for the user or for everybody.
 As a general idea, being capable to write files to your root directories by a web html page that posts data to node.js , sounds a bad and vulnerable idea.
 
-Tip6: Perform a task on remote server without keeping the ssh connection open:
+.B Tip7: Perform a task on remote server without keeping the ssh connection open:
 sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js"
 
-Tip7: Compare local files to server files:
+.B Tip8: Compare local files to server files:
 sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js" |diff - isotec2.js
 
-Tip8: Copy file to your server by local machine:
+.B Tip9: Copy file to your server by local machine:
 sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online: && sudo ssh -i "thingit-debian.pem" admin@thingit.online "sudo cp -v /home/admin/isotec3.js /var/www/html/isotec/"
 
 First command performs a secure copy using ssh with a special command called scp (usuall synthax is scp source-path target-path).
@@ -303,6 +303,19 @@ The symbol : is equivalent to home directory of the logged in user  --> /home/ad
 sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:   --> sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online:/home/admin
 PS: You can not perform scp to root directories like /var/www/html , and this is why we need the second command - to copy the file from home directory to the /var/www/html directory.
 
+.B Tip10: Use git for easy files update between local machine and remote server.
+
+.I Update server with changes made in Local Machine:
+cd /home/gv/Desktop/deger && gitsend && sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git pull"
+
+For this to work, both machines (local - remote server) should have git clone deger repository.
+This could be assigned in an alias or a function inside .bash_aliases
+
+PS1: gitsend is one of my custom aliases: alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
+PS2: git pull is standard git command - in server, this has been aliased to sudo git pull
+
+.I Login to server, git send the changes / files modified in server to git , pull the changes to local machine:
+sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git add . && sudo git commit -m 'update' && sudo git push && sudo git show --name-only" && cd /home/gv/Desktop/deger && git pull
 
 ##WEB:COOL WEB TOOLS
 
