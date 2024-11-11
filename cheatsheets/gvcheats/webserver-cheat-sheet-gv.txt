@@ -265,12 +265,16 @@ http://ec2-51-20-70-223.eu-north-1.compute.amazonaws.com/
 .B Tip1: http access
 If your instance in running , you have provided html files to /var/www/html directory but you are not able to see the html pages inside this folder, then you have to try with http instead of https.
 
-.B Tip2: inbound traffic
+.B Tip2: allow inbound traffic
 If you want to use a custom port in your VM (i.e for a websocket server) you have to allow inbound trafic in this port by configuring Security Group Settings in your aws account/machine
 
-.B Tip3: File Copy
+.B Tip3: Server Login and File Copy
+To login in your aws server by your local debian use this synthax:
+[*] sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online
+thingit-debian.pem is the pem file of the very first time that a key pair to your aws server was created.
+
 To copy files from your local machine to remote EC2 server you need to run scp like bellow:
-sudo scp -i "XXXXXXX.pem" myfile.html admin@thingit.online:/home/admin
+[*] sudo scp -i "XXXXXXX.pem" myfile.html admin@thingit.online:/home/admin
 Avoid copying files directly to /var/www/html/yourfolder since scp to root folders usually is not allowed.
 
 .B Tip4: LocalHost
@@ -302,13 +306,13 @@ Alternativelly i suppose you can adjust the /save-file and /load-file endpoints 
 As a general idea, being capable to write files to your root directories by a web html page that posts data to node.js , sounds a bad and vulnerable idea.
 
 .B Tip7: Perform a task on remote server without keeping the ssh connection open:
-sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js"
+[*] sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js"
 
 .B Tip8: Compare local files to server files:
 sudo ssh -i "thingit-debian.pem" admin@thingit.online "cat /var/www/html/isotec/isotec2.js" |diff - ./isotec2.js
 
 .B Tip9: Copy file to your aws server by local machine with a single command:
-sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online: && sudo ssh -i "thingit-debian.pem" admin@thingit.online "sudo cp -v /home/admin/isotec3.js /var/www/html/isotec/"
+[*] sudo scp -i "thingit-debian.pem" isotec3.js admin@thingit.online: && sudo ssh -i "thingit-debian.pem" admin@thingit.online "sudo cp -v /home/admin/isotec3.js /var/www/html/isotec/"
 
 First command performs a secure copy using ssh with a special command called scp (usuall synthax is scp source-path target-path).
 in our case target-path is admin@thingit.online:
@@ -319,7 +323,7 @@ PS: You can not perform scp to root directories like /var/www/html , and this is
 .B Tip10: Use git for easy files update between local machine and remote aws server.
 
 .I Update aws server with changes made in files of Local Machine:
-cd /home/gv/Desktop/deger && gitsend && sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git pull"
+[*] cd /home/gv/Desktop/deger && gitsend && sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git pull"
 
 For this to work, both machines (local & remote server) should have git clone deger repository.
 
@@ -328,7 +332,7 @@ PS2: git pull is standard git command - in server, this has been aliased to sudo
 
 .I Update local files with new files (i.e log files) created in your aws server.
 Login to aws server, git send the files modified to git , pull the changes to local machine:
-sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git add . && sudo git commit -m 'update' && sudo git push && sudo git show --name-only" && cd /home/gv/Desktop/deger && git pull
+[*] sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git add . && sudo git commit -m 'update' && sudo git push && sudo git show --name-only" && cd /home/gv/Desktop/deger && git pull
 
 ##WEB:COOL WEB TOOLS
 
