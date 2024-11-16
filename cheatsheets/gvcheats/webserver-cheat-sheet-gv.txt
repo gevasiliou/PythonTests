@@ -335,6 +335,42 @@ PS2: git pull is standard git command - in server, this has been aliased to sudo
 Login to aws server, git send the files modified to git , pull the changes to local machine:
 [*] sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git add . && sudo git commit -m 'update' && sudo git push && sudo git show --name-only" && cd /home/gv/Desktop/deger && git pull
 
+.B Tip11: Using PM2 to manage your node apps
+With PM2 (npm install pm2 -g) you can start your node.js app and keep it alive for ever.....
+This process manager takes care to keep app running, including retarting in case of app crash.
+
+[*] sudo pm2 stop isotec4.js && sleep 5 && sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
+You don't need to explicitly define /var/www/html/deger/pm2logs/out.log , since pm2 keeps the /var/www/html/deger path.
+
+To troubleshoot logging (in custom directory) run 
+[*] sudo pm2 logs
+This will open the real logs , and the path of the real log will be displayed.
+You can now check if the real log path matches the log path you provided when your sudo pm2 start.
+
+If PM2 ignores your --output and --error settings then this procedure usually helps:
+sudo pm2 stop all
+sudo pm2 delete all
+sudo pm2 save --force
+sudo chmod -R 777 /var/www/html/deger/pm2logs
+sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
+sudo pm2 save
+
+PS: If logging to custom directory fails, PM2 default logging directory is /root/.pm2/logs - But this will be easily displayed by sudo pm2 logs
+
+More pm2 commands:
+[*] sudo npm install -g pm2
+[*] sudo pm2 start /var/www/html/isotec/isotec.js --name isotec --time --log /var/www/html/deger/pm2logs/out.log
+[*] sudo pm2 start isotec3.js --name isotec3 --time --output pm2logs/out.log --error pm2logs/error.log
+[*] sudo pm2 startup
+[*] sudo pm2 monit
+[*] sudo pm2 logs (or pm2 logs isotec4)
+
+Start all processes: pm2 start all
+Stop all processes: pm2 stop all
+Restart all processes: pm2 restart all
+Delete all processes: pm2 delete all
+
+
 ##WEB:COOL WEB TOOLS
 
 ##XTERM.JS
