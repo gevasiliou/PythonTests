@@ -344,10 +344,10 @@ You don't need to explicitly define /var/www/html/deger/pm2logs/out.log , since 
 
 To troubleshoot logging (in custom directory) run 
 [*] sudo pm2 logs
-This will open the real logs , and the path of the real log will be displayed.
+This will open the real logs , and the path of the real log will be displayed (PM2 default logging directory is /root/.pm2/logs)
 You can now check if the real log path matches the log path you provided when your sudo pm2 start.
 
-If PM2 ignores your --output and --error settings then this procedure usually helps:
+If PM2 ignores your --output and --error settings, bellow procedure usually helps to restore logging in your custom directory:
 sudo pm2 stop all
 sudo pm2 delete all
 sudo pm2 save --force
@@ -355,11 +355,11 @@ sudo chmod -R 777 /var/www/html/deger/pm2logs
 sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
 sudo pm2 save
 
-PS: If logging to custom directory fails, PM2 default logging directory is /root/.pm2/logs - But this will be easily displayed by sudo pm2 logs
+PS: Things got complicated when you run sudo pm2 update.... To Be Checked
 
 More pm2 commands:
 [*] sudo npm install -g pm2
-[*] sudo pm2 start /var/www/html/isotec/isotec.js --name isotec --time --log /var/www/html/deger/pm2logs/out.log
+[*] sudo pm2 start /var/www/html/isotec/isotec.js --name isotec --time --log pm2logs/out.log
 [*] sudo pm2 start isotec3.js --name isotec3 --time --output pm2logs/out.log --error pm2logs/error.log
 [*] sudo pm2 startup
 [*] sudo pm2 monit
