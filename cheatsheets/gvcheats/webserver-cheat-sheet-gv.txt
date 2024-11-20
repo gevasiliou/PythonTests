@@ -389,6 +389,24 @@ In this aspect, either you set up your own mail server / smtp server at thingit 
 
 Mailgun provides API (or classic smtp support) to send email notifications without providing any username and password of your clients.
 
+Mailgun webpage offers sample code for php, java, node.js , curl etc.
+This is a sample node.js app :
+const formData = require('form-data');
+  const Mailgun = require('mailgun.js');
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({username: 'api', key: '64a24..........................52627ba0'}); //username must be api and not your mailgun username
+
+  mg.messages.create('sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org', {
+  	from: "Excited User <mailgun@sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org>",
+  	to: ["someuser@gmail.com"],
+  	subject: "Hello",
+  	text: "Testing some Mailgun awesomeness!",
+  	html: "<h1>Testing some Mailgun awesomeness!</h1>"
+  })
+  .then(msg => console.log(msg)) // logs response data
+  .catch(err => console.log(err)); // logs any error
+
+
 
 ##BREVO
 https://app.brevo.com/
