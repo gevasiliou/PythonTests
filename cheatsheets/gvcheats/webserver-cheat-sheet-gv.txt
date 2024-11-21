@@ -380,39 +380,6 @@ Delete all processes: pm2 delete all
 
 ##WEB:COOL TOOLS
 
-##MAILGUN
-https://www.npmjs.com/package/mailgun.js?activeTab=readme
-npm install mailgun.js form-data
-
-If you need a way to send email notification by node.js , then you need to provide your smtp credentials for i.e gmail.
-In this aspect, either you set up your own mail server / smtp server at thingit or you can use 3rd party services like MailGun.
-
-Mailgun provides API (or classic smtp support) to send email notifications without providing any username and password of your clients.
-
-Mailgun webpage offers sample code for php, java, node.js , curl etc.
-This is a sample node.js app :
-const formData = require('form-data');
-  const Mailgun = require('mailgun.js');
-  const mailgun = new Mailgun(formData);
-  const mg = mailgun.client({username: 'api', key: '64a24..........................52627ba0'}); //username must be api and not your mailgun username
-
-  mg.messages.create('sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org', {
-  	from: "Excited User <mailgun@sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org>",
-  	to: ["someuser@gmail.com"],
-  	subject: "Hello",
-  	text: "Testing some Mailgun awesomeness!",
-  	html: "<h1>Testing some Mailgun awesomeness!</h1>"
-  })
-  .then(msg => console.log(msg)) // logs response data
-  .catch(err => console.log(err)); // logs any error
-
-
-
-##BREVO
-https://app.brevo.com/
-Another 3rd party solution for massive emails / email campaings. 
-Brevo offers a free plan with 300 emails / day - good for sending newsletters in various customers / mailing lists.
-
 ##XTERM.JS
 https://github.com/xtermjs/xterm.js
 Library made to provide kind of terminal inside a web page. Install using npm install -g xterm
@@ -459,4 +426,133 @@ Check rtty: https://github.com/zhaojh329/rtty
 https://www.hostingkey.com/dnhosting.php
 Register to hostingkey name server your web site (not obtained by hostingkey).
 
+##WEB:SET UP YOUR OWN MAIL SERVER
 
+##POSTFIX
+Postfix on debian is a complete smtp package/server/client that can accept incoming emails and can send emails to the world.
+You need to have your tcp port 25 (incoming) open to receive emails (verify this with online port scanner https://www.ipvoid.com/port-scan/)
+You also need to open tcp port 25 (outgoing) for sending emails. This can be tested with Telnet (i.e telnet gmail-smtp-in.l.google.com 25 -> should proceed and not hanging)
+PS: Amazon Web Services (AWS) do not allow traffic on outgoing port 25 so practically you can not send email by AWS with PostFix.
+You can though overcome this issue by using sendinblue = Brevo.
+
+You also have to adjust your DNS records (through your registrar, i.e namecheap) so the world to be able to find and use your mail server.
+.I https://www.namecheap.com/support/knowledgebase/article.aspx/322/2237/how-can-i-set-up-mx-records-required-for-mail-service/
+
+.B PostFix Installation
+https://www.linuxbabe.com/mail-server/build-email-server-from-scratch-debian-postfix-smtp
+
+sudo apt install postfix libsasl2-modules
+
+sudo nano /etc/postfix/main.cf
+Replace relayhost with this line:
+    relayhost = [smtp-relay.sendinblue.com]:587
+
+Then add the following lines to the end of this file.
+    # outbound relay configurations
+    smtp_sasl_auth_enable = yes
+    smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+    smtp_sasl_security_options = noanonymous
+    smtp_tls_security_level = may
+    header_size_limit = 4096000
+
+Also add this line since absent of this line to avoid errors
+    smtpd_recipient_restrictions = permit_sasl_authenticated
+    
+Then create the /etc/postfix/sasl_passwd file.
+    sudo nano /etc/postfix/sasl_passwd
+
+Add the SMTP relay host and SMTP credentials to this file like below. 
+Replace smtp_username and smtp_password with your own username and password that are given by SendinBlue. 
+
+    [smtp-relay.sendinblue.com]:587      smtp_username:smtp_password    #tip: in case of sending email problems, try to delete the port 587
+
+Create the corresponding hash db file with postmap.
+    sudo postmap /etc/postfix/sasl_passwd --> Now you should have a file /etc/postfix/sasl_passwd.db. 
+
+Restart Postfix for the changes to take effect.
+    sudo systemctl restart postfix
+
+Tip:    By default, sasl_passwd and sasl_passwd.db file can be read by any user on the server. 
+        Change the permission to 600 so only root can read and write to these two files.
+            sudo chmod 0600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+
+Use ss (Socket Statistics) utility to verify that Postfix master process is listening on TCP port 25.
+    sudo ss -lnpt | grep master
+
+.B Sending Test Email
+    sudo apt install bsd-mailx mailutils mutt
+    echo "this is a test email." | mailx -r from-address -s hello to-address
+    echo "test email" | sendmail your-account@gmail.com   #sendmail is provided by postfix package among other utils in /usr/sbin/
+    echo "this is test message by thingit.online" |mutt -s "Wind Alert" -- ge.vasiliou@gmail.com    # -s = subject
+
+.B Reading New Emails
+The inbox for each user is located at /var/spool/mail/<username> or /var/mail/<username> file. 
+If you are unsure where to look for the inbox, use this command.
+    sudo postconf mail_spool_directory
+
+Email Readers:
+Classic way: mail or mailx -> Provides a list , you open the email by providing the email id (number).
+Nice Way: mutt             -> looks like a complete email client that runs on the terminal. You can open / read emails, reply, forward, compose new mails, etc
+
+Tip1:   mail & mailx Display the full message with headers. There is not any way to display only the message body.
+        On the other hand, mutt "hides" the header data and displays only the body message & attachments (if any).
+
+.B Reading Saved Emails (in mailbox).
+postfix creates a mailbox to store read emails under home directory of the user i.e /home/admin/mbox
+You can open those emails by specifying the mailbox to mutt:
+    mutt -f ~/mbox
+    mail -f ~/mbox
+
+##BREVO
+Detailed Installation Instructions to make it work with PostFix:
+https://www.linuxbabe.com/mail-server/set-up-postfix-smtp-relay-debian-sendinblue
+
+Brevo is the evolution of "sendinblue" service, used old-days.
+The main service that Brevo offers is an smtp relay.
+This is quite usefull in case that your web hosting service (like AWS) does not allow outgoing traffic on port 25.
+So actually you make an account to Brevo, you get your username and password , you provide those details to postfix and you are capable
+to send emails from AWS EC2 Debian Server using Brevo smtp relay.
+
+Brevo offers a free plan with 300 emails / day - good for sending newsletters in various customers / mailing lists.
+
+For Brevo to work, you need to "add" your domain (thingit.online) on the Brevo trusted sites, in Brevo Settings (web page).
+Brevo will automatically authorize your domain by detecting registrar (namecheap) and make the necessary DNS changes for smtp relaying.
+PS: You need to allow Brevo to get connected to namecheap with your credentials to add the required DNS records.
+
+While the smtp changes made by Brevo for smtp relay work fine, the MX DNS records registered by Brevo does not work as expected.
+
+It has been noted that replying to an email (i.e using gmail) received by thingit gives error -- > 554 5.7.1 : Relay access denied
+
+This was solved by adjusting DNS MX records at namecheap manually to directly point to thingit.online instead of using the Brevo MX settings.
+After this change, you can reply to thingit.online emails by gmail, corporate emails, etc without problem.
+
+Tip: With all this tests, it is clear that having only an smtp server for sending / receiving email is enough. You don't need POP3 settings.
+POP3 is used by GUI Email Readers to retrieve the emails from the server.
+
+##MAILGUN
+https://www.npmjs.com/package/mailgun.js?activeTab=readme
+npm install mailgun.js form-data
+
+If you need a way to send email notification by node.js , then you need to provide your smtp credentials for i.e gmail.
+In this aspect, either you set up your own mail server / smtp server at thingit or you can use 3rd party services like MailGun.
+
+Mailgun provides API (or classic smtp support) to send email notifications without providing any username and password of your clients.
+
+Mailgun webpage offers sample code for php, java, node.js , curl etc.
+This is a sample node.js app :
+const formData = require('form-data');
+  const Mailgun = require('mailgun.js');
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({username: 'api', key: '64a24..........................52627ba0'}); //username must be api and not your mailgun username
+
+  mg.messages.create('sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org', {
+  	from: "Excited User <mailgun@sandbox3fbd203650454002b7d8b2e05a1b82b2.mailgun.org>",
+  	to: ["someuser@gmail.com"],
+  	subject: "Hello",
+  	text: "Testing some Mailgun awesomeness!",
+  	html: "<h1>Testing some Mailgun awesomeness!</h1>"
+  })
+  .then(msg => console.log(msg)) // logs response data
+  .catch(err => console.log(err)); // logs any error
+
+PS: Above code gives error claiming that the user is not identified and that sandbox accounts are for testing only.
