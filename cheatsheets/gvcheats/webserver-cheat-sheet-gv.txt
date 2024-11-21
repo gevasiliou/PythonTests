@@ -529,6 +529,9 @@ After this change, you can reply to thingit.online emails by gmail, corporate em
 Tip: With all this tests, it is clear that having only an smtp server for sending / receiving email is enough. You don't need POP3 settings.
 POP3 is used by GUI Email Readers to retrieve the emails from the server.
 
+Tip: Since postfix and brevo are bind together in the server (postfix uses the brevo username and password stored in server) you can send an email by
+your Debian Server without the need to provide smtp username and password everytime.
+
 ##MAILGUN
 https://www.npmjs.com/package/mailgun.js?activeTab=readme
 npm install mailgun.js form-data
