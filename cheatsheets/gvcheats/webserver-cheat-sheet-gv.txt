@@ -439,11 +439,13 @@ You also have to adjust your DNS records (through your registrar, i.e namecheap)
 .I https://www.namecheap.com/support/knowledgebase/article.aspx/322/2237/how-can-i-set-up-mx-records-required-for-mail-service/
 
 .B PostFix Installation
-https://www.linuxbabe.com/mail-server/build-email-server-from-scratch-debian-postfix-smtp
+.I https://www.linuxbabe.com/mail-server/build-email-server-from-scratch-debian-postfix-smtp
 
-sudo apt install postfix libsasl2-modules
+    sudo apt install postfix libsasl2-modules     #Tip : Select Internet Email during Installation
 
-sudo nano /etc/postfix/main.cf
+Edit postfix configuration:
+    sudo nano /etc/postfix/main.cf
+
 Replace relayhost with this line:
     relayhost = [smtp-relay.sendinblue.com]:587
 
@@ -485,6 +487,11 @@ Use ss (Socket Statistics) utility to verify that Postfix master process is list
     echo "test email" | sendmail your-account@gmail.com   #sendmail is provided by postfix package among other utils in /usr/sbin/
     echo "this is test message by thingit.online" |mutt -s "Wind Alert" -- ge.vasiliou@gmail.com    # -s = subject
 
+Tip: 
+Edit the Mutt Configuration File ~/.muttrc and set the Sender Name: 
+    set from = "Your Name <your-email@example.com>"
+This is the easiest way to define the Sender appearance in remote systems.
+
 .B Reading New Emails
 The inbox for each user is located at /var/spool/mail/<username> or /var/mail/<username> file. 
 If you are unsure where to look for the inbox, use this command.
@@ -505,7 +512,7 @@ You can open those emails by specifying the mailbox to mutt:
 
 ##BREVO
 Detailed Installation Instructions to make it work with PostFix:
-https://www.linuxbabe.com/mail-server/set-up-postfix-smtp-relay-debian-sendinblue
+.I https://www.linuxbabe.com/mail-server/set-up-postfix-smtp-relay-debian-sendinblue
 
 Brevo is the evolution of "sendinblue" service, used old-days.
 The main service that Brevo offers is an smtp relay.
@@ -533,8 +540,9 @@ Tip: Since postfix and brevo are bind together in the server (postfix uses the b
 your Debian Server without the need to provide smtp username and password everytime.
 
 ##MAILGUN
-https://www.npmjs.com/package/mailgun.js?activeTab=readme
-npm install mailgun.js form-data
+.I https://www.npmjs.com/package/mailgun.js?activeTab=readme
+
+    npm install mailgun.js form-data
 
 If you need a way to send email notification by node.js , then you need to provide your smtp credentials for i.e gmail.
 In this aspect, either you set up your own mail server / smtp server at thingit or you can use 3rd party services like MailGun.
