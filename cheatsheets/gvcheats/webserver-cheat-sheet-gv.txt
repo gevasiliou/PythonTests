@@ -331,12 +331,13 @@ PS: You can not perform scp to root directories like /var/www/html , and this is
 .B Tip10: Use git for easy files update between local machine and remote aws server.
 
 .I Update aws server with changes made in files of Local Machine:
-[*] cd /home/gv/Desktop/deger && gitsend && sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online "cd /var/www/html/deger/ && sudo git pull"
+[*] cd /home/gv/Desktop/deger && gitsend && sudo ssh -i "/home/gv/Downloads/thingit-debian.pem" admin@thingit.online -p 6111 "cd /var/www/html/deger/ && sudo git pull"
 
 For this to work, both machines (local & remote server) should have git clone deger repository.
 
-PS1: gitsend is one of my custom aliases: alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
-PS2: git pull is standard git command - in server, this has been aliased to sudo git pull
+PS1: mind the different port used for ssh- this has be changed on purpose since a loot of tools automate attacks to default ssh port 22.
+PS2: gitsend is one of my custom aliases: alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
+PS3: git pull is standard git command - in server, this has been aliased to sudo git pull
 
 .I Update local files with new files (i.e log files) created in your aws server.
 Login to aws server, git send the files modified to git , pull the changes to local machine:
@@ -355,14 +356,14 @@ This will open the real logs , and the path of the real log will be displayed (P
 You can now check if the real log path matches the log path you provided when your sudo pm2 start.
 
 If PM2 ignores your --output and --error settings, bellow procedure usually helps to restore logging in your custom directory:
-sudo pm2 stop all
-sudo pm2 delete all
-sudo pm2 save --force
-sudo chmod -R 777 /var/www/html/deger/pm2logs
-sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
-sudo pm2 save
+[*] sudo pm2 stop all
+[*] sudo pm2 delete all
+[*] sudo pm2 save --force
+[*] sudo chmod -R 777 /var/www/html/deger/pm2logs
+[*] sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
+[*] sudo pm2 save
 
-PS: Things got complicated when you run sudo pm2 update.... Avoid to used, till to Be Checked
+PS: Things got complicated when you run sudo pm2 update.... Avoid to use it, till to be checked
 
 More pm2 commands:
 [*] sudo npm install -g pm2
