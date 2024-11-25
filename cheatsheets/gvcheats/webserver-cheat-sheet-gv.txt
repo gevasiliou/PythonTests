@@ -362,7 +362,7 @@ sudo chmod -R 777 /var/www/html/deger/pm2logs
 sudo pm2 start isotec4.js --name isotec4 --time --output pm2logs/out.log --error pm2logs/error.log
 sudo pm2 save
 
-PS: Things got complicated when you run sudo pm2 update.... To Be Checked
+PS: Things got complicated when you run sudo pm2 update.... Avoid to used, till to Be Checked
 
 More pm2 commands:
 [*] sudo npm install -g pm2
@@ -376,6 +376,12 @@ Start all processes: pm2 start all
 Stop all processes: pm2 stop all
 Restart all processes: pm2 restart all
 Delete all processes: pm2 delete all
+
+.B Tip12: Create a file like degerfetcher.html that will be actually a soft link to your latest degerfetcher html page.
+With this way you don't have to worry what is the "latest" version of your html file.
+Just make a link, and always open degerfetcher.html. Your browser will not notice any difference.
+[*] sudo rm degerfetcher.html
+[*] sudo ln -s degerfetcher10.html degerfetcher.html
 
 
 ##WEB:COOL TOOLS
