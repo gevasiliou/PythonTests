@@ -2712,8 +2712,9 @@ logfile_rotate 0
 # For extra security Debian packages only allow
 # localhost to use the proxy on new installs
 #
+
 # Bellow line if disabled (tried at 29.03.2022) makes squid proxy to stop working in the lan
-http_access allow localnet
+.I http_access allow localnet
 
 .B Allow - Deny certain lan IPs
 Edit /etc/squid/squid.conf
@@ -2751,11 +2752,14 @@ CC Proxy installed with a GUI, runs easily but:
 Make sure that the proxy port you select is not in use by other ports. Using 8080 seems a good choice.
 In my setup i had to change default IP available in each setting from 0.0.0.0 to the PC IP that proxy server runs on (192.168.x.x)
 Make sure that the proxy port 8080 is open on the firewall available in the local machine you installed ccproxy
-I suceed to open firewall door in my corporate - quite stric - laptop by adding a firewall rule allowing any protocol, all ports.
+I suceed to open firewall door in my corporate - quite strict - laptop by adding a firewall rule allowing any protocol, all ports.
 And surprisingly , this new port adding was working ok.
 
 Keep in mind that if you installed ccproxy in a corporate PC that admin policies apply to restrict your internet connection (black lists, web filtering, etc)
 then ccproxy will adopt those restrictions.... meaning that you can not bypass the admin rules just because you installed a proxy.
+
+It seems more reliable to deploy a VM with Debian, set up Debian Network Card to work in bdidge mode (independent IP from Host) , install squid and 
+configure your windows PC to use this proxy.
 
 .B https://www.wingate.com/
 Not tested. 
