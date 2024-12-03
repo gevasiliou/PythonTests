@@ -27,8 +27,6 @@ export MANPAGER='less -s -M +Gg'
 
 alias bashalias-version="echo This is .bash_aliases version 2.2 , Last Updated 10.03.2024"
 
-alias networkreset="ifce=$(ifconfig |grep 'RUNNING' |grep -v 'lo[:]' |awk -F':' '{print$1}') && export $ifce;echo 'restarting $ifce...';sudo ifconfig '$ifce' down && sleep 15 && sudo ifconfig '$ifce' up"
-
 alias calculator='xcalc &'
 alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
 alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg that we used old days is obsolete by 2019.
@@ -147,6 +145,14 @@ alias notes='note &'
 function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
+
+function networkreset {
+ifce="$(ifconfig |grep 'RUNNING' |grep -v 'lo[:]' |awk -F':' '{print$1}')" 
+export "$ifce"
+echo "restarting $ifce... "
+sudo ifconfig "$ifce" down && echo " - $ifce stopped" && sleep 15 && sudo ifconfig "$ifce" up && echo " - $ifce started"
+}
+
 
 function asciifrom {
 #https://gchq.github.io/CyberChef
