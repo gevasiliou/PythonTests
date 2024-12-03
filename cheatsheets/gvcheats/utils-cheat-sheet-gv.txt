@@ -2697,6 +2697,13 @@ root:#cat -n /etc/squid/squid.conf |grep -v '^\s*[0-9]*\s*[#]\|^\s*[0-9]*\s*$'
   5274	refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
   5275	refresh_pattern .		0	20%	4320
 
+Tip: If your squid is adjusted to allow IPs from 192.168.2.0/24 then to use your squid in other network 
+acl localnet src 192.168.2.0/24		# RFC 1918 local private network (LAN)
+acl localnet src 192.168.7.0/24		# RFC 1918 local private network (LAN)
+
+Tip2: Bellow line allows 192.168.*.* due to the /16 usage
+acl localnet src 192.168.0.0/16		# RFC 1918 local private network (LAN)
+
 Update: In some Debian machines (i.e virtual machines) )above configuration does not work.
 I had to replace all the "deny" entries to "allow" in order to be capable to use squid.
 PS: It seems that i have destroy the term "cyber security" & "protect yourself from hackers" 
