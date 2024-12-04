@@ -146,16 +146,18 @@ function aptlog {
 l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
 }
 
-alias networkreset="sudo systemctl restart NetworkManager.service && ifconfig"
+#alias networkreset="sudo systemctl restart NetworkManager.service && ifconfig" #for some reason this switches on and off the network, but IP is not changing!
 #also you can try this: "systemctl restart networking.service" 
 
-#function networkreset {
+function networkreset {
 #this works in my Debian 03 Dec 2024
-#ifce="$(ifconfig |grep 'RUNNING' |grep -v 'lo[:]' |awk -F':' '{print$1}')" 
-#export "$ifce"
-#echo "restarting $ifce... "
-#sudo ifconfig "$ifce" down && echo " - $ifce stopped" && sleep 15 && sudo ifconfig "$ifce" up && echo " - $ifce started"
-#}
+ifce="$(ifconfig |grep 'RUNNING' |grep -v 'lo[:]' |awk -F':' '{print$1}')" 
+export "$ifce"
+echo "restarting $ifce... "
+sudo ifconfig "$ifce" down && echo " - $ifce stopped" && sleep 15 && sudo ifconfig "$ifce" up && echo " - $ifce started"
+sleep 3
+ifconfig |grep 'inet'
+}
 
 
 function asciifrom {
