@@ -2985,11 +2985,24 @@ For sudo to work your admin (root) has to add your username in the sudoers file 
 
 .B ADD USER to SUDOERS
 Open the sudoers File Safely: Use the visudo command to safely edit the sudoers file. This ensures that you do not introduce syntax errors.
-john ALL=(ALL) ALL
+gv ALL=(ALL) ALL
 %sudo ALL=(ALL:ALL) ALL
 This line grants all members of the sudo group the ability to execute any command as any user or group, without restrictions.
 
+Explanation:
+sudo    : switch user & do
+gv      : ths user that sudo rules apply
+ALL=    : host (ALL means all hosts)
+(ALL)   : Specifies that gv can run the command as ALL user. It could be ALL=(root) meaning that gv can run the command in ALL hosts as root user.
+ALL     : The specified command - ALL means all commands.
+
 .B PASSWORDLESS SUDO
 You can stop your Debian from asking password every time that you run sudo with a trick like this:
-john ALL=(ALL) NOPASSWD: ALL
-%sudo ALL=(ALL:ALL) NOPASSWD: ALL
+gv ALL=(ALL) NOPASSWD: ALL                                            #no password for all commands
+gv ALL=(ALL) NOPASSWD: /sbin/ifconfig                                 #no password for a particular command only
+gv ALL=(ALL) NOPASSWD: /sbin/ifconfig, /usr/bin/apt-get update        #no password only for those two commands
+gv host1.example.com=(root) NOPASSWD: /sbin/ifconfig                  #sudo rule for host1.example.com , target account root , no password, specific command
+
+
+
+%sudo ALL=(ALL:ALL) NOPASSWD: ALL                                     #no password for all users in sudo group
