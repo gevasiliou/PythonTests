@@ -150,13 +150,27 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
-#this works in my Debian 03 Dec 2024
-ifce="$(ifconfig |grep 'RUNNING' |grep -v 'lo[:]' |awk -F':' '{print$1}')" 
-export "$ifce"
-echo "restarting $ifce... "
-sudo ifconfig "$ifce" down && echo " - $ifce stopped" && sleep 15 && sudo ifconfig "$ifce" up && echo " - $ifce started"
-sleep 3
-ifconfig |grep 'inet'
+# Populate the array
+mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
+# alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
+# alternative is not suggested due to that splitting will take place using IFS value (space, tab, newline) meaning that if the command output has spaces it will mess up the array.
+# on the otherhand , mapfile with -t switch will only use newline as delimiter and not IFS value.
+# Iterate through the array elements
+for interface in "${ifce[@]}"; do
+    echo "Processing interface: $interface"
+    sudo ifconfig "$interface" down
+    sleep 5
+    echo "Interface $interface stopped"
+done
+sleep 5
+echo "Restarting Interfaces"
+for interface in "${ifce[@]}"; do
+    echo "Processing interface: $interface"
+    sudo ifconfig "$interface" up
+    sleep 5
+    echo "Interface $interface started"
+    ifconfig "$interface" |grep 'inet'
+done
 }
 
 

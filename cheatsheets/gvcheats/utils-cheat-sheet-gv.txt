@@ -2976,3 +2976,20 @@ This can be changed by invoking x11vnc with options -shared and -forever
 -forever : Remains in Listening Mode after client disconnection.
 
 Full Command: x11vnc -shared -forever
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+UTILS:SUDO
+
+With sudo you can run commands with root priveleges.
+For sudo to work your admin (root) has to add your username in the sudoers file using visudo (as root) or sudo visudo.
+
+.B ADD USER to SUDOERS
+Open the sudoers File Safely: Use the visudo command to safely edit the sudoers file. This ensures that you do not introduce syntax errors.
+john ALL=(ALL) ALL
+%sudo ALL=(ALL:ALL) ALL
+This line grants all members of the sudo group the ability to execute any command as any user or group, without restrictions.
+
+.B PASSWORDLESS SUDO
+You can stop your Debian from asking password every time that you run sudo with a trick like this:
+john ALL=(ALL) NOPASSWD: ALL
+%sudo ALL=(ALL:ALL) NOPASSWD: ALL
