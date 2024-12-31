@@ -97,11 +97,18 @@ Can be /4=fourth occurence found in the same line or even /2g=global after secon
 'N': N command Reads next line into the pattern space.
 
 ##SED CLI SWITCHES
--n: not printing/quiet. If missing the input is printed.
 
--e: sed expression follows. Can be used multiple times for multiple expressions
+--posix: Disable all gnu features
+
+-n, --quiet, --silent: not printing/quiet. If missing the input is printed (sed default behavior).
+
+-e: sed expression or sed script follows. Can be used multiple times for multiple expressions like -e 'expression1' -e 'expression2' etc
 
 -i: instant infile edit
+
+-E, -r, --regexp-extended: use extended regular expressions in the script (for portability use POSIX -E).
+
+-s, --separate: consider files as separate rather than as a single, continuous long stream.
 
 -f: read commands from file. Command should not include the word sed, i.e s/e/E/g and not sed 's/e/E/g'
 
@@ -203,7 +210,7 @@ sed -n '2~5p' file   # print every 5th line, starting with line 2 ---> prints li
 http://stackoverflow.com/questions/12833714/the-concept-of-hold-space-and-pattern-space-in-sed
 sed -n '1!G;h;$p'
 --------------------------------------------------------------------------------------------------------------------------------------
-SED:REPLACE (s/original/replace/) AND INSERT
+SED:REPLACE (substitute/this/withthat/) & INSERT
 Also see: http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 
 sed  -n 's/Tatty Error/suck/p' a.txt ## This one replaces Tatty Error with word suck and prints the whole changed line
@@ -222,6 +229,8 @@ echo "abc %-= def." | sed 's/\s/X/g' ---> abcX%-=Xdef.   #\s = all whitespace - 
 echo "abc %-= def." | sed 's/\</X/g' ---> Xabc %-= Xdef. #match beginning of word. Use \> to match end of word
 sed -E -n '/^(.)o\1$/p' ---> matches words starting with any letter , followed by letter o - followed by a letter same as first (\1)
 sed -E -n '/^(.)(.)(.)\3\2\1$/p' --> searches for 6-letter palindromes: first 3 letters are 3 subexpressions, followed by 3 back-references in reverse order
+tip : back references need extended regex in sed - does not work with basic regex.
+
 
 ##REPLACE MULTIPLE REPLACE OPERATIONS: replace with different strings
 You can combine sed commands: sed -i 's/foo/bar/g; s/baz/zab/g; s/Alice/Joan/g' file ##/g means global = all matches in file
@@ -522,6 +531,7 @@ $ sed '/^L/d' file /OR/ sed '/x$/d' file /OR/ sed '/[xX]$/d' file (both x and X)
 
 ##DELETE ALL BLANK LINES IN THE FILE
 $ sed '/^$/d' file
+Tip: ^ is the invissible anchor that exists in every start of line , $ is the invissible anchor that exists in every end of the line
 
 ##DELETE ALL LINES WHICH ARE EMPTY OR WHICH CONTAINS JUST SOME BLANK SPACES:
 $ sed '/^ *$/d' file
