@@ -1,17 +1,203 @@
 WEBSERVER:BASICS: CHEAT SHEET by gv
 
-##APACHE2
-To be added - chapter on how to manually install and configure apache2 in Debian
+##WEBSERVERS (APACHE2 , NGINX)
+Both Apache2 and nginx (engine x) are web servers - they serve the same purpose but have different philosphy , settings, etc.
+.B APACHE2
+typical html directory is /var/www/html
+typical apache2 configuration directory is /etc/apache2
+in /etc/apache2 you can find apache2.conf, conf directories, module directories, sites directories.
+Directories are following the available - enabled logic.
+You can enable / disable confs, mods, sites using a2 commands:
+    Command     Function                                Operates On
+    a2enmod     Enables an Apache module                Modules
+    a2dismod    Disables an Apache module               Modules
+    a2enconf    Enables an Apache configuration file    Configuration Files
+    a2disconf   Disables an Apache configuration file   Configuration Files
+    a2ensite    Enables an Apache virtual host (site)   Virtual Hosts
+    a2dissite   Disables an Apache virtual host (site)  Virtual Hosts
+
+Enabling an apache2 module does not automatically enable the conf file of this module.
+You need to explicitly enable conf of module with a2enconf.
+
+.I Enabling Virtual Hosts (sites) - 1 site only
+All apache2 installations include the file /etc/apache2/sites-available/000-default.conf
+Which usually looks like this:
+    <VirtualHost *:80>
+        #ServerName www.example.com
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+    </VirtualHost>
+
+When i built a project i prefer to create a folder like this /var/www/html/myproject 
+in /myproject/ i hold all the project files (node.js , html , css , js scripts, etc).
+
+So in case that your web server machine is hosting only one site, you can edit this 000-default.conf like bellow:
+    DocumentRoot /var/www/html/myproject
+
+If your server is assigned to a domain name you can also uncomment this line:
+    ServerName www.myproject.net
+
+.I Enabling Virtual Hosts (sites) - More than 1 site
+You can host more sites in the same machine under different directories:
+Project A : /var/www/html/myprojectA
+Project B : /var/www/html/myprojectB
+
+In this case you have to create two new conf files inside /etc/apache2/sites-available/ directory.
+sudo nano /etc/apache2/sites-available/myprojectA.conf
+    <VirtualHost *:80>
+        ServerName myprojectA.net
+        DocumentRoot /var/www/html/myprojectA
+    </VirtualHost>
+
+sudo nano /etc/apache2/sites-available/myprojectB.conf
+    <VirtualHost *:80>
+        ServerName myprojectB.org
+        DocumentRoot /var/www/html/myprojectB
+    </VirtualHost>
+
+You have then to enable those sites / virtual hosts:
+    sudo a2ensite degermonitor.conf
+    sudo a2ensite thingthis.conf
+Tip: In reality a2ensite just creates links inside /etc/apache2/sites-enabled to /etc/apache2/sites-available.
+Tip: file 000-default.conf needs no modifications - can remain blank or typical pointing to /var/www/html
+
+With this way: 
+    (a) when you visit www.myprojectA.net it will load the files / data available in /var/www/html/myprojectA
+    (b) when you visit www.myprojectB.org it will load the files / data available in /var/www/html/myprojectB
+    (c) when you visit http://IPADDRESS of your web server, then file 000-default.conf will come into play and serve default dir == /var/www/html
+        Alternatively, you can add this line to 000-default.conf in order to redirect requests to the project you want to be the "default" project:
+            Redirect permanent / http://myprojectB.org/
+    
+
+.I User Apache2 as a reverse proxy
+Usefull when your server (back-end == node.js) runs on a custom port (i.e 3000) to serve end points in front-end (html, js).
+
+With bellow technic instead of using api calls from frontend like fetch('http://XXX.XXX.XXX:3000/fetch-data')
+you can just use fetch('/fetch-data')
+
+Anotherway would be to adjust your node.js at back-end to use the same port as your webserver (80 or 443) but this raises a lot of security concers.
+The best practice is to use reverse proxy configuration in your Apache2 / site conf file.
+
+As a general idea you don't mess up with 000-default.conf and you should have a separate conf file for your project, something like
+/etc/apache2/sites-available/myprojectA.conf
+
+<VirtualHost *:80> # Or *:443 for HTTPS
+    ServerName myprojectA.net # Replace with your domain
+    #ServerName XXX.XXX.XXX.XXX # Use IP if you don't have a domain name yet
+
+    DocumentRoot /var/www/html/myprojectA # Your website's root directory
+
+    # Reverse proxy configuration
+    ProxyPass /api http://localhost:3000/api # Forward requests to /api to your backend
+    ProxyPassReverse /api http://localhost:3000/api # Important for redirects and headers
+
+    # If your backend is on a different server:
+    # ProxyPass /api http://backend_server_ip:3000/api
+    # ProxyPassReverse /api http://backend_server_ip:3000/api
+    # ... other virtual host configurations
+</VirtualHost>
+
+If in your server you have only a web site , is a good idea instead of creating a new file to modify 000-default.conf.
+If you prefer to have a new conf file , is a good idea to disable your 000-default.conf (sudo a2dissite 000-default.conf).
+If you create a new conf file based on ip access you can do something like this:
+
+sudo nano /etc/apache2/sites-available/51-21-41-110.conf
+<VirtualHost *:80>
+    ServerName 51.21.41.110
+    DocumentRoot /var/www/html/frontend
+
+    ProxyPass /fetch-data http://localhost:3000/fetch-data
+    ProxyPassReverse /fetch-data http://localhost:3000/fetch-data
+</VirtualHost>
+
+sudo a2ensite 51-21-41-110.conf  # If you named the file 51-21-41-110.conf
+#or sudo a2ensite frontend.conf If you named the file frontend.conf
+sudo systemctl restart apache2
+sudo a2dissite 000-default.conf
+
+.I Proxying multiple api calls to the same back-end server
+You absolutely do not need to create separate `ProxyPass` entries for each endpoint if they all point to the same backend server. 
+**The Trick: Proxying a Common Path or the Root:**
+
+The key is to proxy a common path that encompasses all your API endpoints or, even simpler, proxy the root path (`/`).
+
+**1. Proxying a Common Path (If Applicable):**
+If all your API endpoints start with a common path segment (e.g., `/api`), you can proxy that path:
+
+<VirtualHost *:80>
+    ServerName yourdomain.com # Or your IP address
+    DocumentRoot /var/www/html/frontend
+
+    ProxyPass /api http://localhost:3000/ # Proxy all requests starting with /api
+    ProxyPassReverse /api http://localhost:3000/
+</VirtualHost>
+
+With this configuration:
+
+*   `fetch('/api/fetch-data')` will be proxied to `http://localhost:3000/fetch-data`.
+*   `fetch('/api/load-files')` will be proxied to `http://localhost:3000/load-files`.
+*   `fetch('/api/save-files')` will be proxied to `http://localhost:3000/save-files`.
+
+**2. Proxying the Root Path (Simplest and Most Common):**
+
+If you want to proxy *all* requests that aren't for static frontend files to your backend, you can proxy the root path (`/`):
+
+<VirtualHost *:80>
+    ServerName yourdomain.com # Or your IP address
+    DocumentRoot /var/www/html/frontend
+
+    ProxyPass / http://localhost:3000/ # Proxy ALL requests not for static files
+    ProxyPassReverse / http://localhost:3000/
+</VirtualHost>
+
+With this configuration:
+
+*   Requests for static files in your `DocumentRoot` (e.g., `index.html`, `css/style.css`, `js/script.js`) will be served directly by Apache.
+*   All other requests including `fetch('/fetch-data')`, `fetch('/load-files')`, `fetch('/save-files')`, and any other paths not 
+    matching files in your `DocumentRoot`,  will be proxied to `http://localhost:3000/`.
+
+**How it Works:**
+
+When Apache receives a request, it first checks if the requested path matches any files within the `DocumentRoot`. If there's no match, it checks the `ProxyPass` rules. If the `ProxyPass /` rule is present, it will match all remaining requests and forward them to the backend.
+
+**Which Approach to Choose:**
+
+*   **Proxying a Common Path (`/api`):** Use this if you have a clear separation between your frontend and API routes (e.g., all API routes start with `/api`). 
+    This provides better organization.
+
+*   **Proxying the Root Path (`/`):** Use this if you want to proxy all requests that aren't for static files to your backend. 
+    This is the simplest option and often the most suitable.
+
+**Example with your original fetch calls:**
+
+If you use `ProxyPass / http://localhost:3000/`, then:
+
+*   `fetch('/fetch-data')` will be proxied to `http://localhost:3000/fetch-data`.
+*   `fetch('/load-files')` will be proxied to `http://localhost:3000/load-files`.
+*   `fetch('/save-files')` will be proxied to `http://localhost:3000/save-files`.
+
+This single `ProxyPass` rule handles all your API endpoints, making your configuration much cleaner and easier to maintain. 
+This is the recommended way to configure reverse proxying for your backend API.
+
+
+.B Restarting Apache2
+sudo systemctl restart apache2
+sudo system apache2 stop && sleep 5 && sudo system apache2 start
+
 
 ##PHP
 In Debian 12 , the php version available is 8.2
 All bellow commands should be run as root or with sudo.
+The key is that except installing php in your server machine, you have to configure your webserver (apache2) to load the necessary php modules, configurations etc.
+
 Source: https://www.installconfig.com/doku.php?id=configure_ubuntu_server_20_04_host_nextcloud_hub_21
 
 Step 1: apt install php libapache2-mod-php libapache2-mod-fcgid php-fpm 
 Tip: You can just apt install php to install typical php that will be handled by Apache2.
 
-Step 2: write a simple test.php file inside /var/www/html folder, containing just those two lines:
+Step 2: write a simple test.php file inside /var/www/html (default folder), containing just those two lines:
 <?php
 phpinfo();
 
@@ -23,7 +209,7 @@ To the end of file , add this line:
 SetHandler application/x-httpd-php
 
 Step 5: It is a good idea, though not well understood why in this point, to enable php-fpm (CGI Web Server Support) since it is claimed that CGI has better / faster php support over Apache2. 
-To enable php-fpm you have to disable older php modules and load new php-fpm modules:
+To enable php-fpm you have to disable older php modules on Apache2 and load new php-fpm modules:
 a2dismod mpm_event
 a2enmod mpm_prefork
 a2enmod php8.2
