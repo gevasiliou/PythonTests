@@ -121,15 +121,13 @@ sudo a2dissite 000-default.conf
 You absolutely do not need to create separate `ProxyPass` entries for each endpoint if they all point to the same backend server. 
 **The Trick: Proxying a Common Path or the Root:**
 
-The key is to proxy a common path that encompasses all your API endpoints or, even simpler, proxy the root path (`/`).
+The key is to proxy a common path that encompasses all your API endpoints.
 
-**1. Proxying a Common Path (If Applicable):**
-If all your API endpoints start with a common path segment (e.g., `/api`), you can proxy that path:
+For this to work , all your API endpoints should start with a common path segment (e.g., `/api`), and then you can proxy that path:
 
 <VirtualHost *:80>
     ServerName yourdomain.com # Or your IP address
     DocumentRoot /var/www/html/frontend
-
     ProxyPass /api http://localhost:3000/ # Proxy all requests starting with /api
     ProxyPassReverse /api http://localhost:3000/
 </VirtualHost>
@@ -140,47 +138,7 @@ With this configuration:
 *   `fetch('/api/load-files')` will be proxied to `http://localhost:3000/load-files`.
 *   `fetch('/api/save-files')` will be proxied to `http://localhost:3000/save-files`.
 
-**2. Proxying the Root Path (Simplest and Most Common):**
-
-If you want to proxy *all* requests that aren't for static frontend files to your backend, you can proxy the root path (`/`):
-
-<VirtualHost *:80>
-    ServerName yourdomain.com # Or your IP address
-    DocumentRoot /var/www/html/frontend
-
-    ProxyPass / http://localhost:3000/ # Proxy ALL requests not for static files
-    ProxyPassReverse / http://localhost:3000/
-</VirtualHost>
-
-With this configuration:
-
-*   Requests for static files in your `DocumentRoot` (e.g., `index.html`, `css/style.css`, `js/script.js`) will be served directly by Apache.
-*   All other requests including `fetch('/fetch-data')`, `fetch('/load-files')`, `fetch('/save-files')`, and any other paths not 
-    matching files in your `DocumentRoot`,  will be proxied to `http://localhost:3000/`.
-
-**How it Works:**
-
-When Apache receives a request, it first checks if the requested path matches any files within the `DocumentRoot`. If there's no match, it checks the `ProxyPass` rules. If the `ProxyPass /` rule is present, it will match all remaining requests and forward them to the backend.
-
-**Which Approach to Choose:**
-
-*   **Proxying a Common Path (`/api`):** Use this if you have a clear separation between your frontend and API routes (e.g., all API routes start with `/api`). 
-    This provides better organization.
-
-*   **Proxying the Root Path (`/`):** Use this if you want to proxy all requests that aren't for static files to your backend. 
-    This is the simplest option and often the most suitable.
-
-**Example with your original fetch calls:**
-
-If you use `ProxyPass / http://localhost:3000/`, then:
-
-*   `fetch('/fetch-data')` will be proxied to `http://localhost:3000/fetch-data`.
-*   `fetch('/load-files')` will be proxied to `http://localhost:3000/load-files`.
-*   `fetch('/save-files')` will be proxied to `http://localhost:3000/save-files`.
-
-This single `ProxyPass` rule handles all your API endpoints, making your configuration much cleaner and easier to maintain. 
-This is the recommended way to configure reverse proxying for your backend API.
-
+See bellow real life examples for more examples and tested use cases
 
 .B Restarting Apache2
 sudo systemctl restart apache2
@@ -227,6 +185,120 @@ LogFormat "%{Referer}i -> %U" referer
 LogFormat "%{User-agent}i" agent
 IncludeOptional conf-enabled/*.conf
 IncludeOptional sites-enabled/*.conf
+
+.B Real Life Examples 
+In my server, without owning a domain name , i used to have under /var/www/html two subfolders:
+thingit
+deger
+I used to access my deger project files with command http://51.21.41.110/deger/degerfetcher.html
+
+My default apache2 conf file at available-sites (000-default.conf) was like bellow:
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/html
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+I modified 000-default.conf file like bellow:
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/html/deger
+	DirectoryIndex degerfetcher.html index.html # List files in order of preference
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+Changes:        DocumentRoot has been changed to /var/www/html/deger directory.
+                DirectoryInder defines the file to be loaded by default (if ommitted, index.html will be used as default file by apache2)
+Result:         Now i can type in my browser http://51.21.41.110 and my degerfetcher.html page will be loaded. Also the links / api calls seems to work correctly.
+Bug:            There is no way to access my files in my second project thingit (thingit foled under /var/www/html).
+Bug Solution:   (a) If you have domain names available , you can create two conf files , each for each domain, pointing to the required Document Root.
+                (b) If you don't have domain names, you can include in your 000-default.conf file a line like bellow:
+                    Alias /thingit /var/www/html/thingit  # Alias for thingit
+                With this line you bind http://51.21.41.110/thingit to /var/www/html/thingit directory / project.
+
+.I Working Configuration with reverse proxy in my web server
+1. First Enable proxy modules on apache2
+    sudo a2enmod proxy
+    sudo a2enmod proxy_http
+    sudo systemctl restart apache2
+
+2. Finalize 000-default.conf as bellow:
+
+$ cat /etc/apache2/sites-available/000-default.conf |grep -v '^[[:space:]]*[#]'
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/html/deger
+	DirectoryIndex degerfetcher.html index.html # List files in order of preference
+    <Location /api> # Or any other path prefix for your API
+       	ProxyPass http://localhost:3000/api
+       	ProxyPassReverse http://localhost:3000/api
+	</Location>
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+PS: Above configuration was tested and worked fine for front end call fetch('/api/get-max-wind-data') and back end app.get('/api/get-max-wind-data')
+
+2.B You can get also a working reverse proxy with bellow conf file, without using <Location> tag 
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/html/deger
+	DirectoryIndex degerfetcher.html index.html # List files in order of preference
+   	ProxyPass /api http://localhost:3000/api
+   	ProxyPassReverse /api http://localhost:3000/api
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+PS: Above configuration was also tested and worked fine for front end call fetch('/api/get-max-wind-data') and back end app.get('/api/get-max-wind-data')
+
+3. Adjust front-end api calls to include /api like this:
+    const response = await fetch('/api/get-max-wind-data');
+                
+4. Adjust back-end node.js end points to also include /api like this
+    app.get('/api/get-max-wind-data', (req, res) => {
+        res.sendFile(windDataFile, (err) => {
+            if (err) {
+                console.error('Error sending max-wind-values.json:', err);
+                res.status(500).send({ error: 'Could not load max wind data' });
+            }
+        });
+    });
+
+5. Test externally with Browser by hitting directly to http://xxx.xxx.xxx.xxx/api/get-max-wind-data
+You should see data in your browser flowing / received ==> This is good.
+
+6. Test internally at a different server window
+curl http://localhost/api/get-max-wind-data
+Since we ommir the port (http://localhost:3000), we reach endpoint /api/get-max-wind-data by the apache2 reverse proxy.
+If we use curl http://localhost:3000/api/get-max-wind-data i suppose we talk directly to the back-end node.js without proxy.
+
+Tip1: Using /api for calling node.js at back-end and front-end as above, you achieve:
+(a) speed up the loading of static pages in your project directory (i.e anotherpage.html, myscript.js, mystyle.css, etc) 
+(b) "proxying" to back-end server localhost:3000 only /api/endpoint requests and not everything
+(c) Programming discrimination between api calls and static files loading from DocumentRoot (i.e secondpage.html, myscript.js, mystyle.css, etc).
+(d) With above configuration, direct api calls from front-end like:
+    fetch(`http://51.21.41.110:3000/get-data-for-date?date=${date}`)
+    Will still work , if node.js at back-end has /get-data-for-date endpoint.
+
+Tip2: You could even try to use reverse proxy with a setup like bellow, without using <Location>
+            ProxyPass /api http://localhost:3000
+            ProxyPassReverse /api http://localhost:3000
+      In this scenario api calls in front-end should include /api i.e fetch(/api/get-wind-data) but back-end node.js end points does not require /api i.e app.get('/get-wind-data')
+      Think this proxying thing as a kind of alias.
+      This method is not proposed since it can cause quite of confusion having different naming in api calls at front-end vs back-end 
+
+Tip3: Some tutorials might propose the following configuration for reverse proxy (without <Location>)
+            ProxyPass / http://localhost:3000
+            ProxyPassReverse / http://localhost:3000
+      In this case, apache2 will forward (proxying) ALL requests to localhost:3000 (due to / = root rule), including api calls and static files call (**)
+      Api calls will be handled correctly by back-end server (*), but static files will fail, unless node.js at back-end is configured to serve static files.
+      Even if node.js is capable / configured to handle static files requests at document root, this approach will slow down performance.
+      (*) To have correct api calls, front-end calls and back-end endpoints should match, like bellow:
+            fetch('/get-wind-data') at front-end javascript
+            app.get('/get-wind-data') at back-end node.js
+      (**) To be checked if finally proxying / will forward ALL requests including or excluding static files requests.
+
 ##PHP
 In Debian 12 , the php version available is 8.2
 All bellow commands should be run as root or with sudo.
