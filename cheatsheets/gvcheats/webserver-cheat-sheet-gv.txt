@@ -297,7 +297,7 @@ Tip3: Some tutorials might propose the following configuration for reverse proxy
       (*) To have correct api calls, front-end calls and back-end endpoints should match, like bellow:
             fetch('/get-wind-data') at front-end javascript
             app.get('/get-wind-data') at back-end node.js
-      (**) To be checked if finally proxying / will forward ALL requests including or excluding static files requests.
+      (**) To be checked if finally proxying / will forward ALL requests including or excluding static files requests to http://localhost:3000
 
 ##PHP
 In Debian 12 , the php version available is 8.2
