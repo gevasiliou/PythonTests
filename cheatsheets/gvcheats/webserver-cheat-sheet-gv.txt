@@ -2,24 +2,70 @@ WEBSERVER:BASICS: CHEAT SHEET by gv
 
 ##WEBSERVERS (APACHE2 , NGINX)
 Both Apache2 and nginx (engine x) are web servers - they serve the same purpose but have different philosphy , settings, etc.
+
 .B APACHE2
-typical html directory is /var/www/html
-typical apache2 configuration directory is /etc/apache2
-in /etc/apache2 you can find apache2.conf, conf directories, module directories, sites directories.
-Directories are following the available - enabled logic.
-You can enable / disable confs, mods, sites using a2 commands:
-    Command     Function                                Operates On
-    a2enmod     Enables an Apache module                Modules
-    a2dismod    Disables an Apache module               Modules
-    a2enconf    Enables an Apache configuration file    Configuration Files
-    a2disconf   Disables an Apache configuration file   Configuration Files
-    a2ensite    Enables an Apache virtual host (site)   Virtual Hosts
-    a2dissite   Disables an Apache virtual host (site)  Virtual Hosts
 
-Enabling an apache2 module does not automatically enable the conf file of this module.
-You need to explicitly enable conf of module with a2enconf.
+.I Apache2 Installation
+sudo apt update 
+sudo apt install apache2
+sudo systemctl status apache2   #You should see that apache2 is running and listening on default port 80
 
-.I Enabling Virtual Hosts (sites) - 1 site only
+PS: typical apache2 installation folder is /etc/apache2
+
+.I Apache2 Important Directories and Files:
+In /etc/apache2 you can find apache2 global conf files, module directories including module configurations, sites directories.
+
+/etc/apache2/apache2.conf:      The main Apache configuration file (global settings that apply to the whole server)
+                                $ cat /etc/apache2/apache2.conf |grep -v -e '^$' -e '^#'  #skip empty and commented lines
+/etc/apache2/ports.conf:        Configuration for ports Apache listens on.
+/etc/apache2/sites-available/:  Directory for virtual host configuration files.
+/etc/apache2/sites-enabled/:    Directory containing symbolic links to enabled virtual host files.
+/etc/apache2/mods-available/:   Directory for available Apache modules.
+/etc/apache2/mods-enabled/:     Directory containing symbolic links to enabled modules.
+/var/www/html/:                 The default document root (where your website files go).
+/var/log/apache2/:              Directory for Apache log files (error.log and access.log).
+
+
+Tip1: /etc/apache2/sites-available/***.conf: Virtual Host Configuration. This file defines a virtual host. 
+                                             Virtual Host allows you to run multiple websites on a single server, each with its own configuration.
+                                             For this to work you need different domain names. Apache2 will read domain name in the header of the request
+                                             and will serve the corresponding directory to the requestor (web browser).  
+                                             Every apache2 installation includes 000-default.conf file in /etc/apache2/sites-available.
+
+Tip2: conf/mods/sites directories are following the "-available" & "-enabled" logic.
+In most of the cases when you enable a site/conf/module it creates a sym link from -enabled to -available directory.
+This allows you to have i.e 5 site configurations in /etc/apache2/sites-available (5 different sites hosted) but you can enable i.e only two of them.
+In any case you should not create sym links on your own but you should enable/disable sites,modules and configurations with apache2 "a2" commands.
+
+Tip3: List of Apache2 Commands (run directly in your shell)
+    Command     Function                                                        Operates On
+    a2enmod     Enables an Apache module                                        Modules
+    a2dismod    Disables an Apache module                                       Modules
+    a2query     Used with switch -m <module>: Checks if module is enabled       Modules
+    apache2ctl  Used with switch -M: Lists all currently enabled modules.       Modules
+    a2enconf    Enables an Apache configuration file                            Configuration Files
+    a2disconf   Disables an Apache configuration file                           Configuration Files
+    a2ensite    Enables an Apache virtual host (site)                           Virtual Hosts
+    a2dissite   Disables an Apache virtual host (site)                          Virtual Hosts
+    a2query     Used with switch -s <site>: Checks if a site/host is enabled    Virtual Hosts
+
+Tip4:   Enabling an apache2 module does not automatically enable the conf file of this module, which has to be enabled separately (if exists).
+        To get a list of the modules available on your system, you can use the following command:
+            apache2ctl -M   #This will list all loaded (enabled) modules. 
+        To see all available modules (enabled and not enabled), you can look in the /etc/apache2/mods-available directory. 
+        Each file in that directory (ending in .load or .conf) represents a module.
+        Enabling unnecessary modules can have a performance impact. Only enable the modules you actually need.
+        Some modules depend on other modules. For example, ssl requires socache_shmcb and other modules. 
+        a2enmod will usually handle these dependencies automatically.
+        MPMs modules (mpm_prefork, mpm_worker, mpm_event) are mutually exclusive. You can only have one MPM enabled at a time.
+
+Tip5: Testing Apache2 configurations
+When you have set up everything , you can test your configuration like bellow:
+    sudo apachectl configtest
+    sudo systemctl restart apache2
+You can also visit http://localhost or http://127.0.0.1 from your own server (using a web browser) to verify that apache2 is working.
+
+.I Details how to enable Virtual Hosts (web sites) - 1 site only
 All apache2 installations include the file /etc/apache2/sites-available/000-default.conf
 Which usually looks like this:
     <VirtualHost *:80>
@@ -71,14 +117,17 @@ With this way:
             Redirect permanent / http://myprojectB.org/
     
 
-.I User Apache2 as a reverse proxy
+.I User Apache2 as a reverse proxy for communication between front end (html/js) to backend (node.js, etc).
 Usefull when your server (back-end == node.js) runs on a custom port (i.e 3000) to serve end points in front-end (html, js).
 
-With bellow technic instead of using api calls from frontend like fetch('http://XXX.XXX.XXX:3000/fetch-data')
-you can just use fetch('/fetch-data')
+For example instead of using api calls from frontend like fetch('http://XXX.XXX.XXX:3000/fetch-data') you can just use fetch('/fetch-data')
 
 Anotherway would be to adjust your node.js at back-end to use the same port as your webserver (80 or 443) but this raises a lot of security concers.
 The best practice is to use reverse proxy configuration in your Apache2 / site conf file.
+
+Tip: For Apache2 reverse proxy to work, you need to enable proxy modules of apache2:
+        sudo a2enmod proxy proxy_http proxy_ajp
+        sudo systemctl restart apache2
 
 As a general idea you don't mess up with 000-default.conf and you should have a separate conf file for your project, something like
 /etc/apache2/sites-available/myprojectA.conf
@@ -86,12 +135,15 @@ As a general idea you don't mess up with 000-default.conf and you should have a 
 <VirtualHost *:80> # Or *:443 for HTTPS
     ServerName myprojectA.net # Replace with your domain
     #ServerName XXX.XXX.XXX.XXX # Use IP if you don't have a domain name yet
-
-    DocumentRoot /var/www/html/myprojectA # Your website's root directory
+    
+    # Set web server root to your website's root directory
+    DocumentRoot /var/www/html/myprojectA
 
     # Reverse proxy configuration
-    ProxyPass /api http://localhost:3000/api # Forward requests to /api to your backend
-    ProxyPassReverse /api http://localhost:3000/api # Important for redirects and headers
+    # Forward requests to /api to your backend
+    ProxyPass /api http://localhost:3000/api
+    # Important for redirects and headers
+    ProxyPassReverse /api http://localhost:3000/api
 
     # If your backend is on a different server:
     # ProxyPass /api http://backend_server_ip:3000/api
@@ -115,7 +167,7 @@ sudo nano /etc/apache2/sites-available/51-21-41-110.conf
 sudo a2ensite 51-21-41-110.conf  # If you named the file 51-21-41-110.conf
 #or sudo a2ensite frontend.conf If you named the file frontend.conf
 sudo systemctl restart apache2
-sudo a2dissite 000-default.conf
+sudo a2dissite 000-default.conf  # disable the default conf if not needed.
 
 .I Proxying multiple api calls to the same back-end server
 You absolutely do not need to create separate `ProxyPass` entries for each endpoint if they all point to the same backend server. 
@@ -144,52 +196,10 @@ See bellow real life examples for more examples and tested use cases
 sudo systemctl restart apache2
 sudo system apache2 stop && sleep 5 && sudo system apache2 start
 
-.B Typical apache2.conf (working in my server)
-$ cat /etc/apache2/apache2.conf |grep -v '^[#]' |grep -v '^[[:space:]]*$'
-DefaultRuntimeDir ${APACHE_RUN_DIR}
-PidFile ${APACHE_PID_FILE}
-Timeout 300
-KeepAlive On
-MaxKeepAliveRequests 100
-KeepAliveTimeout 5
-User ${APACHE_RUN_USER}
-Group ${APACHE_RUN_GROUP}
-HostnameLookups Off
-ErrorLog ${APACHE_LOG_DIR}/error.log
-LogLevel warn
-IncludeOptional mods-enabled/*.load
-IncludeOptional mods-enabled/*.conf
-Include ports.conf
-<Directory />
-	Options FollowSymLinks
-	AllowOverride None
-	Require all denied
-</Directory>
-<Directory /usr/share>
-	AllowOverride None
-	Require all granted
-</Directory>
-<Directory /var/www/>
-	Options Indexes FollowSymLinks
-	AllowOverride None
-	Require all granted
-</Directory>
-AccessFileName .htaccess
-<FilesMatch "^\.ht">
-	Require all denied
-</FilesMatch>
-LogFormat "%v:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
-LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
-LogFormat "%h %l %u %t \"%r\" %>s %O" common
-LogFormat "%{Referer}i -> %U" referer
-LogFormat "%{User-agent}i" agent
-IncludeOptional conf-enabled/*.conf
-IncludeOptional sites-enabled/*.conf
-
 .B Real Life Examples 
 In my server, without owning a domain name , i used to have under /var/www/html two subfolders:
-thingit
-deger
+    /thingit
+    /deger
 I used to access my deger project files with command http://51.21.41.110/deger/degerfetcher.html
 
 My default apache2 conf file at available-sites (000-default.conf) was like bellow:
@@ -204,7 +214,8 @@ I modified 000-default.conf file like bellow:
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
 	DocumentRoot /var/www/html/deger
-	DirectoryIndex degerfetcher.html index.html # List files in order of preference
+    # Directory Index loads files in order of preference
+	DirectoryIndex degerfetcher.html index.html
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
@@ -218,10 +229,11 @@ Bug Solution:   (a) If you have domain names available , you can create two conf
                     Alias /thingit /var/www/html/thingit  # Alias for thingit
                 With this line you bind http://51.21.41.110/thingit to /var/www/html/thingit directory / project.
 
-.I Working Configuration with reverse proxy in my web server
+.I Working Site Configuration with reverse proxy in my web server
 1. First Enable proxy modules on apache2
     sudo a2enmod proxy
     sudo a2enmod proxy_http
+    
     sudo systemctl restart apache2
 
 2. Finalize 000-default.conf as bellow:
@@ -230,8 +242,8 @@ $ cat /etc/apache2/sites-available/000-default.conf |grep -v '^[[:space:]]*[#]'
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
 	DocumentRoot /var/www/html/deger
-	DirectoryIndex degerfetcher.html index.html # List files in order of preference
-    <Location /api> # Or any other path prefix for your API
+	DirectoryIndex degerfetcher.html index.html
+    <Location /api> 
        	ProxyPass http://localhost:3000/api
        	ProxyPassReverse http://localhost:3000/api
 	</Location>
@@ -244,34 +256,28 @@ PS: Above configuration was tested and worked fine for front end call fetch('/ap
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
 	DocumentRoot /var/www/html/deger
-	DirectoryIndex degerfetcher.html index.html # List files in order of preference
+	DirectoryIndex degerfetcher.html index.html
    	ProxyPass /api http://localhost:3000/api
    	ProxyPassReverse /api http://localhost:3000/api
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
-PS: Above configuration was also tested and worked fine for front end call fetch('/api/get-max-wind-data') and back end app.get('/api/get-max-wind-data')
+PS1: Above configuration was also tested and worked fine for front end call fetch('/api/get-max-wind-data') and back end app.get('/api/get-max-wind-data')
+PS2: Mind the absence of "/" in the end of http://localhost:3000/api - this absence has been done on purpose.
 
 3. Adjust front-end api calls to include /api like this:
-    const response = await fetch('/api/get-max-wind-data');
+    const response = await fetch('/api/get-data');
                 
 4. Adjust back-end node.js end points to also include /api like this
-    app.get('/api/get-max-wind-data', (req, res) => {
-        res.sendFile(windDataFile, (err) => {
-            if (err) {
-                console.error('Error sending max-wind-values.json:', err);
-                res.status(500).send({ error: 'Could not load max wind data' });
-            }
-        });
-    });
+    app.get('/api/get-data', (req, res) => {
 
-5. Test externally with Browser by hitting directly to http://xxx.xxx.xxx.xxx/api/get-max-wind-data
-You should see data in your browser flowing / received ==> This is good.
+5. Test externally with Browser by hitting directly to http://xxx.xxx.xxx.xxx/api/get-data
+You should see JSON data in your browser flowing / received ==> endpoint response is reaching you == this is good.
 
 6. Test internally at a different server window
-curl http://localhost/api/get-max-wind-data
-Since we ommir the port (http://localhost:3000), we reach endpoint /api/get-max-wind-data by the apache2 reverse proxy.
-If we use curl http://localhost:3000/api/get-max-wind-data i suppose we talk directly to the back-end node.js without proxy.
+curl http://localhost/api/get-data
+Since we ommit the port (http://localhost:3000), we reach endpoint /api/get-data by the apache2 reverse proxy.
+If we use curl http://localhost:3000/api/get-max-wind-data i suppose we talk directly to the back-end node.js server without proxy.
 
 Tip1: Using /api for calling node.js at back-end and front-end as above, you achieve:
 (a) speed up the loading of static pages in your project directory (i.e anotherpage.html, myscript.js, mystyle.css, etc) 
@@ -281,12 +287,15 @@ Tip1: Using /api for calling node.js at back-end and front-end as above, you ach
     fetch(`http://51.21.41.110:3000/get-data-for-date?date=${date}`)
     Will still work , if node.js at back-end has /get-data-for-date endpoint.
 
-Tip2: You could even try to use reverse proxy with a setup like bellow, without using <Location>
+Tip2: You can use reverse proxy with a setup like bellow, without using <Location>
             ProxyPass /api http://localhost:3000
             ProxyPassReverse /api http://localhost:3000
-      In this scenario api calls in front-end should include /api i.e fetch(/api/get-wind-data) but back-end node.js end points does not require /api i.e app.get('/get-wind-data')
+      Front End api calls should include /api i.e fetch(/api/get-data).
+      Back End node.js endpoints does not require /api i.e app.get('/get-data')
       Think this proxying thing as a kind of alias.
-      This method is not proposed since it can cause quite of confusion having different naming in api calls at front-end vs back-end 
+      This method is not proposed since it can cause quite of confusion having different naming in api calls at front-end vs back-end.
+      On the other hand, if your node.js is already built in the format app.get('/get-data'), this method helps not to rewrite node.js app.get commands.
+      You only need to rewrite front-end html & js fetch to include /api in the end points to fetch.
 
 Tip3: Some tutorials might propose the following configuration for reverse proxy (without <Location>)
             ProxyPass / http://localhost:3000
@@ -298,6 +307,106 @@ Tip3: Some tutorials might propose the following configuration for reverse proxy
             fetch('/get-wind-data') at front-end javascript
             app.get('/get-wind-data') at back-end node.js
       (**) To be checked if finally proxying / will forward ALL requests including or excluding static files requests to http://localhost:3000
+
+Tip4: After adding to my 000-default.conf this line -> DocumentRoot /var/www/html/deger 
+i was not capable to open my html files using the classic method http://51.21.41.10/deger/degerfetcher.html  and I had to use only http://51.21.41.10/ 
+Though, i added an Alias command in apache2 conf file and now i can use again http://ipaddress/deger/degerfetcher.html (and the various degerfetcherXX htmls)
+    Alias /deger /var/www/html/deger 
+
+Tip5: Apache2 supports the usage of .htaccess file - This file works on directory basis and allows configuration commands that should be applied to the directory.
+in the main .conf of apache2 (i.e 000-default.conf) you have to explicitly allow conf file overrides by .htaccess file in directory with directive AllowOverride.
+
+Tip6: Final working site conf file in my web server:
+$ cat /etc/apache2/sites-enabled/000-default.conf |grep -v '^[[:space:]]*#'
+    <VirtualHost *:80>
+        ServerName 51.21.41.110
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html/deger
+        DirectoryIndex degerfetcher.html index.html
+        ProxyPass /api http://localhost:3000
+        ProxyPassReverse /api http://localhost:3000
+        Alias /deger /var/www/html/deger
+        Alias /thingit /var/www/html/thingit
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+    </VirtualHost>
+
+.B Important : Never add comments at the end of the commands - this causes huge problems. Comment out lines with # at the beginning.
+
+Tip7: List of available commands in apache2 conf files
+Directive	                            Description
+ServerAdmin                             Email address of the server administrator.
+DocumentRoot                    	    The directory from which Apache serves files.
+ServerName                  	        The primary domain name or IP address for the virtual host.
+ServerAlias	                            Alternative domain names or IP addresses for the virtual host.
+ErrorLog	                            Path to the error log file.
+CustomLog	                            Path to the access log file and the log format.
+DirectoryIndex	                        List of files to look for when a directory is requested (e.g., index.html, index.php).
+<Directory> ... </Directory>	        Defines configuration directives that apply to a specific directory or directory tree.
+<Files> ... </Files>	                Defines configuration directives that apply to specific files.
+<FilesMatch> ... </FilesMatch>	        Defines configuration directives that apply to files matching a regular expression.
+<Location> ... </Location>	            Defines configuration directives that apply to specific URLs or URL patterns.
+<LocationMatch> ... </LocationMatch>	Defines configuration directives that apply to URLs matching a regular expression.
+Alias	                                Maps a virtual directory to a physical directory on the server.
+AliasMatch	                            Maps virtual directories matching a regular expression to physical directories.
+RewriteEngine       	                Enables or disables the URL rewriting engine.
+RewriteCond         	                Defines conditions for URL rewriting rules.
+RewriteRule	                            Defines URL rewriting rules.
+ProxyPass	                            Configures reverse proxying for specific paths.
+ProxyPassReverse	                    Configures reverse proxying for redirects and cookies.
+AddDefaultCharset       	            Sets the default character set for responses.
+AddType	                                Maps file extensions to MIME types.
+Options                                 Controls various directory-specific options (e.g., Indexes, FollowSymLinks, ExecCGI).
+AllowOverride                           Controls which directives can be overridden by .htaccess files.
+Require                                 Controls access to resources based on various criteria (e.g., IP address, host name, authentication).
+LogLevel                                Sets the verbosity level of error logs.
+KeepAlive                               Enables persistent connections (keep-alive).
+MaxKeepAliveRequests                    Sets the maximum number of requests allowed per persistent connection.
+KeepAliveTimeout                        Sets the timeout for persistent connections.
+Timeout	                                Sets the timeout for requests.
+UseCanonicalName	                    Determines whether Apache should use the ServerName or the hostname from the client's request when creating self-referential URLs.
+ServerSignature	                        Controls whether Apache displays server information on error pages.
+
+.I Deny Directory Listing
+To protect your server by cyber attacks , it is mandatory to disable directory listing that is enabled by default.
+You need to sudo nano /etc/apache2/apache2.conf and add bellow sections in a parent - child inheritance.
+Initially, apache2.conf has this code:
+    <Directory /var/www/>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+    
+And has to be modified like bellow:
+    <Directory /var/www/>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    <Directory /var/www/html/>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    <Directory /var/www/html/deger>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+The keyword  "-Indexes" due to minus in front disables the Indexes option == directory listing.
+When directory listing is forbiden you get a "forbiden" message in browser (and not 500 - Server Error or 404 - Not Found).
+
+Similarly, if you want to allow directory listing -- > "Options +Indexes +FollowSymLinks"
+Plus sign infront of Indexes enables this option - no sign at all also enables this option.
+
+Keyword "AllowOverride None" forbids .htaccess files inside directories to override apache2.conf settings for this directory. 
+(apache2.conf has global priority over the local .htaccess settings)
+
+Tip: I got some error messages in /var/log/apache2/error.log related to misconfigured roundcube.conf (inside /etc/apache2/sites-enabled).
+To avoid conflicts i have disabled this roundcube.conf (using a2dissite roundcube.conf).
 
 ##PHP
 In Debian 12 , the php version available is 8.2
