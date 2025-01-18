@@ -642,7 +642,7 @@ The only way to gain access as admin/root in your aws machine is to have the ver
 You can login to your aws server with additional pem key pairs, but you have to set up a user in your remote aws machine and create pem keys for those users.
 The pem key file that grants admin/root access to your aws machine is unique and not easily replacable.
 Removing the binding of your aws vm to this very first pem key is a real challenge with great failure probabilities.
-
+-
 ##Assigning an Elastic (static) IP to you instance
 Guide: https://aws.plainenglish.io/assigning-a-domain-name-to-an-aws-ec2-instance-via-elastic-ip-d2234b1662cc
 
