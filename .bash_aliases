@@ -150,8 +150,8 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
-read -p "press any key to reset ALL network interfaces... or press 'n' to abort" $an
-[[ "$an" == "n" ]] && return 
+read -p "press any key to reset ALL network interfaces... or press 'n' to abort:" an
+[[ "$an" == "n" ]] && return 1  
 # Populate the array
 mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
 # alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
@@ -173,8 +173,8 @@ for interface in "${ifce[@]}"; do
     echo "Interface $interface started"
     ifconfig "$interface" |grep 'inet'
 done
-read -p "press any key to restart squid proxy or press 'n' to exit" $q
-[[ "$q" == "n" ]] && return
+read -p "press any key to restart squid proxy or press 'n' to exit" q
+[[ "$q" == "n" ]] && exit
 }
 
 
@@ -972,7 +972,7 @@ fi
 #bellow added 20.10.24 - instead of dumping the online manpage, search for the raw man page link, and parse this gz man page with man
 onlinemanraw="$(curl -sL -o- https://dyn.manpages.debian.org/"$1" |grep -E -o '[/].*en.gz')"
 echo "running command: curl -sL -o- https://dyn.manpages.debian.org/$1 |grep -E -o '[/].*en.gz'  ---->  $onlinemanraw"
-read -p "press enter to open https://manpages.debian.org$onlinemanraw" $an
+read -p "press enter to open https://manpages.debian.org$onlinemanraw" an
 curl -sL -o- "https://manpages.debian.org$(curl -sL -o- https://dyn.manpages.debian.org/$1 |grep -E -o '[/].*en.gz')" |man /dev/stdin
 # Explanation
 # curl -sL -o- https://dyn.manpages.debian.org/gawk |grep -E -o '[/].*gz' --> /bookworm/gawk/gawk.1.en.gz
