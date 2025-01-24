@@ -150,6 +150,8 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
+read -p "press any key to reset ALL network interfaces... or press 'n' to abort" $an
+[[ "$an" == "n" ]] && return 
 # Populate the array
 mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
 # alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
@@ -171,6 +173,8 @@ for interface in "${ifce[@]}"; do
     echo "Interface $interface started"
     ifconfig "$interface" |grep 'inet'
 done
+read -p "press any key to restart squid proxy or press 'n' to exit" $q
+[[ "$q" == "n" ]] && return
 }
 
 
