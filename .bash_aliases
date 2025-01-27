@@ -150,31 +150,40 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
-read -p "press any key to reset ALL network interfaces... or press 'n' to abort:" an
-[[ "$an" == "n" ]] && return 1  
-# Populate the array
-mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
-# alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
-# alternative is not suggested due to that splitting will take place using IFS value (space, tab, newline) meaning that if the command output has spaces it will mess up the array.
-# on the otherhand , mapfile with -t switch will only use newline as delimiter and not IFS value.
-# Iterate through the array elements
-for interface in "${ifce[@]}"; do
-    echo "Processing interface: $interface"
-    sudo ifconfig "$interface" down
-    sleep 5
-    echo "Interface $interface stopped"
-done
-sleep 5
-echo "Restarting Interfaces"
-for interface in "${ifce[@]}"; do
-    echo "Processing interface: $interface"
-    sudo ifconfig "$interface" up
-    sleep 5
-    echo "Interface $interface started"
-    ifconfig "$interface" |grep 'inet'
-done
-read -p "press any key to restart squid proxy or press 'n' to exit" q
-[[ "$q" == "n" ]] && exit
+read -p "Restarting network interfaces... press 'n' to skip, 'y' to proceed: " an
+#[[ "$an" == "n" ]] && return 1  
+    if [[ "$an" == "y" || "$an" == "Y" ]];then
+        # Populate the array
+        mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
+        # alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
+        # alternative is not suggested due to that splitting will take place using IFS value (space, tab, newline) meaning that if the command output has spaces it will mess up the array.
+        # on the otherhand , mapfile with -t switch will only use newline as delimiter and not IFS value.
+        # Iterate through the array elements
+        for interface in "${ifce[@]}"; do
+            echo "Processing interface: $interface"
+            sudo ifconfig "$interface" down
+            sleep 5
+            echo "Interface $interface stopped"
+        done
+        sleep 5
+        echo "Restarting Interfaces"
+        for interface in "${ifce[@]}"; do
+            echo "Processing interface: $interface"
+            sudo ifconfig "$interface" up
+            sleep 5
+            echo "Interface $interface started"
+            ifconfig "$interface" |grep 'inet'
+        done
+    fi
+read -p "Restarting squid proxy... press 'n' to skip, 'y' to proceed: " q
+#[[ "$q" == "n" ]] && exit
+    if [[ "$q" == "y" || "$q" == "Y" ]];then
+        echo "Restarting Squid Proxy...please wait"
+        sudo systemctl stop squid
+        sleep 3
+        sudo systemctl start squid
+        sudo systemctl status squid
+    fi
 }
 
 
