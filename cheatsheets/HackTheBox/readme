@@ -1,0 +1,6 @@
+NMAP: 
+Use with -sC and -sV.
+Using -p- forces nmap to scan all known ports
+
+https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS
+https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html
