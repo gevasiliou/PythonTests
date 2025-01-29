@@ -150,6 +150,12 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
+if [[ "$1" == "--help" || "$1" == "-h" ]];then
+    echo "This script will first restart all your network interfaces and then will restart your squid proxy server"
+    echo "Use --force switch to avoid confirmations and force restarting of network devices & squid proxy"
+    return
+fi
+
 if [[ "$1" == "--force" || "$1" == "-force" ]];then
     echo "Force Mode Selected - Restarting all network interfaces"
     an="y"
