@@ -150,7 +150,13 @@ l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR
 #also you can try this: "systemctl restart networking.service" 
 
 function networkreset {
-read -p "Restarting network interfaces... press 'n' to skip, 'y' to proceed: " an
+if [[ "$1" == "--force" || "$1" == "-force" ]];then
+    echo "Force Mode Selected - Restarting all network interfaces"
+    an="y"
+else 
+    read -p "Restarting network interfaces... press 'n' to skip, 'y' to proceed: " an
+fi
+
 #[[ "$an" == "n" ]] && return 1  
     if [[ "$an" == "y" || "$an" == "Y" ]];then
         # Populate the array
@@ -175,7 +181,13 @@ read -p "Restarting network interfaces... press 'n' to skip, 'y' to proceed: " a
             ifconfig "$interface" |grep 'inet'
         done
     fi
+if [[ "$1" == "--force" || "$1" == "-force" ]];then
+echo "Force Mode Selected - Restarting Squid Proxy"
+q="y"
+else
 read -p "Restarting squid proxy... press 'n' to skip, 'y' to proceed: " q
+fi
+
 #[[ "$q" == "n" ]] && exit
     if [[ "$q" == "y" || "$q" == "Y" ]];then
         echo "Restarting Squid Proxy...please wait"
