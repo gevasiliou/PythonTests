@@ -1,11 +1,109 @@
 VPN:BASICS: CHEAT SHEET by gv
 
-sources:
+.B sources:
 .I https://wiki.debian.org/OpenVPN
 .I /usr/share/doc/openvpn/openvpn-examples.5.html
 .I https://community.openvpn.net/openvpn/wiki/GettingStartedwithOVPN
 .I https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+## OPENVPN OPTIONS
+.B explicit-exit-notify 3
+It has been proved , that when you interrupt the connection to server using ctrl+c , you can not reconnect and you receive errors like that:
+2023-10-22 02:30:05 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
+
+This error appears because client disconnects suddenly from the server. 
+After some time, server realizes that client is not available, client is deleted by server's cache and after this point you can reconnect.
+Using explicit-exit-notify you force the client to properly disconnect and not just "dissapear" like a broken connection.
+
+The results of this option are straight forward:
+  (*) Connect to vpn server
+  (*) Disconnect 
+  (*) Try to reconnect.
+
+Without explicit-exit-notify , you need to wait ~15 minutes in order server to realize that client is gone and allow same client reconnecting.
+
+But when explicit-exit-notify is present, client exciting becomes smooth and reconnects can be done without delays:
+2023-10-22 02:52:03 Protocol options: explicit-exit-notify 3
+^C2023-10-22 02:58:38 event_wait : Interrupted system call (fd=-1,code=4)
+2023-10-22 02:58:38 SIGTERM received, sending exit notification to peer
+2023-10-22 02:58:39 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
+2023-10-22 02:58:40 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
+2023-10-22 02:58:41 net_route_v4_del: 192.168.1.0/24 via 10.0.0.1 dev [NULL] table 0 metric -1
+2023-10-22 02:58:41 Closing TUN/TAP interface
+2023-10-22 02:58:41 net_addr_ptp_v4_del: 10.0.0.2 dev tun0
+2023-10-22 02:58:41 SIGTERM[soft,exit-with-notification] received, process exiting
+
+.B dev tun
+This command is actually CREATING a tunnel. Might be invoked as tun1 to forcibly create tun1.
+When tun is used without number, tunnels are created with dynamic names (tun0, tun1, etc).
+It is allowed to create more than one tunnels (from different openvpn instances running at the same time)
+
+It is also possible to use your own name for the virtual network device, but you then need to use --dev-type in addition.
+   dev myvpn
+   dev-type tun
+
+.B cipher VS data-cipher
+data-cipher seems to be the replacement of the cipher; cipher will be depreciated from newer openvpn versions
+
+.B data-ciphers-fallback AES-128-CBC
+As it's described by name is a fallback option for data-ciphers
+
+.B data-ciphers AES-256-CBC:AES-256-CFB:AES-256-CFB1:AES-256-CFB8:AES-256-OFB:AES-256-GCM
+defining multiple data-ciphers
+
+.B proto
+Defines the comm protocol between Server and Client(s). 
+    proto udp         # in both client and server configurations for udp protocol. 
+    proto tcp-server  # For TCP, required by the server
+    proto tcp-client  # For TCP, required by the client
+
+proto can be combined in the remote command like this:
+   remote myvpn.example.com 1194 udp
+   remote myvpn.example.com 443 tcp-client
+
+It is also possible to connect using IPv6. In openvpn 2.3 releases, you will need to replace udp, tcp-client or tcp-server with udp6, tcp6-client or tcp6-server as the argument to the --proto option. 
+From the OpenVPN 2.4, OpenVPN will try both IPv6 and IPv4 when just using udp/tcp-client/tcp-server. 
+To enforce only IPv4-only, you need to use udp4, tcp4-client or tcp4-server. Similarly to enforce IPv6-only use udp6/tcp6-client/tcp6-server. 
+
+.B nobind
+ This makes OpenVPN use a random client side port when connecting. 
+ Without it, openvpn will use the same port number as used to connect to the server. 
+ This option is usefull if you want to run multiple VPN clients on the same host to avoid using the same port 1194 for all instances.
+
+.B Set up specific dns to be used in the specific vpn connection.
+source: https://superuser.com/questions/637579/setting-dns-servers-using-openvpn-client-config-file
+This will help when you log in to another lan, which is equipped with a customized DNS to allow resolving of addresses like "ermis" , etc.
+Obviously, if you use the IP address of "ermis" you can connect directly....
+
+Add the following to the client config file.
+dhcp-option DNS <dns_server_ip_address>
+
+On the server side it would have been :
+push "dhcp-option DNS <dns_server_ip_address>"
+PS1: It seems it's using dhcp-option on both sides. You can do the same with route
+
+PS2: Some other guy suggest that you have also include bellow options in the ovpn file:
+register-dns
+block-outside-dns
+
+The 1st forces Windows to prefer the configured DNS server over any other it may have received from DHCP. 
+The 2nd prevents DNS leakage to any DNS server other than the configured one.
+
+.B Credentials Handling
+Adjust ovpn configuration file that username / password authentication is required
+    auth-user-pass
+
+Embedding username and password in .ovpn conf file
+    <auth-user-pass>
+    yourusername
+    yourpassword
+    </auth-user-pass>
+
+Reading username and password from external file:
+    auth-user-pass pass.txt
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 ## OPENVPN Simple Tunnel Between two points without any security
 On bob pc run: openvpn --remote alice.example.com --dev tun1 --ifconfig 10.4.0.1 10.4.0.2 --verb 9
 
@@ -227,6 +325,7 @@ OpenVPN 2.6.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [
 library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
 WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  This allows attacks like SWEET32.  Mitigate by using a --cipher with a larger block size (e.g. AES-256-CBC). Support for these insecure ciphers will be removed in OpenVPN 2.7.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Use your Win10 PC as OpenVPN Client
 1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine and you have already configure openvpn server in previous chapter
 
@@ -306,6 +405,7 @@ Don't forget to provide virtual IPs of server and client , and also upload the s
 Do not forget to define remote server - port - protocol, secret key path, cipher algorithm, explicit-exit-notify and other related parameters.
 5. You should be ready! Just run sudo openvpn networkname.ovpn to test it.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Teltonika VPN via OpenVPN Cloud 
 https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 
@@ -572,89 +672,7 @@ php -S localhost:8080 openvpn-examples.5.html
 
 Just visit localhost:8080 with web browser!
 
-## OPENVPN OPTIONS
-.B explicit-exit-notify 3
-It has been proved , that when you interrupt the connection to server using ctrl+c , you can not reconnect and you receive errors like that:
-2023-10-22 02:30:05 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
-
-This error appears because client disconnects suddenly from the server. 
-After some time, server realizes that client is not available, client is deleted by server's cache and after this point you can reconnect.
-Using option explicit-exit-notify you force the client to disconnect not just "dissapear".
-
-The results of this option are straight forward:
-  (*) Connect to vpn server
-  (*) Disconnect 
-  (*) Try to reconnect.
-
-Without explicit-exit-notify , you need to wait ~15 minutes in order server to realize that client is gone and allow same client reconnecting.
-
-But when explicit-exit-notify is present, client exciting becomes smooth and reconnects can be done without delays:
-2023-10-22 02:52:03 Protocol options: explicit-exit-notify 3
-^C2023-10-22 02:58:38 event_wait : Interrupted system call (fd=-1,code=4)
-2023-10-22 02:58:38 SIGTERM received, sending exit notification to peer
-2023-10-22 02:58:39 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
-2023-10-22 02:58:40 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
-2023-10-22 02:58:41 net_route_v4_del: 192.168.1.0/24 via 10.0.0.1 dev [NULL] table 0 metric -1
-2023-10-22 02:58:41 Closing TUN/TAP interface
-2023-10-22 02:58:41 net_addr_ptp_v4_del: 10.0.0.2 dev tun0
-2023-10-22 02:58:41 SIGTERM[soft,exit-with-notification] received, process exiting
-
-.B dev tun
-This command is actually CREATING a tunnel. Might be invoked as tun1 to forcibly create tun1.
-When tun is used without number, tunnels are created with dynamic names (tun0, tun1, etc).
-It is allowed to create more than one tunnels (from different openvpn instances running at the same time)
-
-It is also possible to use your own name for the virtual network device, but you then need to use --dev-type in addition.
-   dev myvpn
-   dev-type tun
-
-.B cipher VS data-cipher
-data-cipher seems to be the replacement of the cipher; cipher will be depreciated from newer openvpn versions
-
-.B data-ciphers-fallback AES-128-CBC
-As it's described by name is a fallback option for data-ciphers
-
-.B data-ciphers AES-256-CBC:AES-256-CFB:AES-256-CFB1:AES-256-CFB8:AES-256-OFB:AES-256-GCM
-defining multiple data-ciphers
-
-.B proto
-Defines the comm protocol between Server and Client(s). 
-    proto udp         # in both client and server configurations for udp protocol. 
-    proto tcp-server  # For TCP, required by the server
-    proto tcp-client  # For TCP, required by the client
-
-proto can be combined in the remote command like this:
-   remote myvpn.example.com 1194 udp
-   remote myvpn.example.com 443 tcp-client
-
-It is also possible to connect using IPv6. In openvpn 2.3 releases, you will need to replace udp, tcp-client or tcp-server with udp6, tcp6-client or tcp6-server as the argument to the --proto option. 
-From the OpenVPN 2.4, OpenVPN will try both IPv6 and IPv4 when just using udp/tcp-client/tcp-server. 
-To enforce only IPv4-only, you need to use udp4, tcp4-client or tcp4-server. Similarly to enforce IPv6-only use udp6/tcp6-client/tcp6-server. 
-
-.B nobind
- This makes OpenVPN use a random client side port when connecting. 
- Without it, openvpn will use the same port number as used to connect to the server. 
- This option is usefull if you want to run multiple VPN clients on the same host to avoid using the same port 1194 for all instances.
-
-.B Set up specific dns to be used in the specific vpn connection.
-source: https://superuser.com/questions/637579/setting-dns-servers-using-openvpn-client-config-file
-This will help when you log in to another lan, which is equipped with a customized DNS to allow resolving of addresses like "ermis" , etc.
-Obviously, if you use the IP address of "ermis" you can connect directly....
-
-Add the following to the client config file.
-dhcp-option DNS <dns_server_ip_address>
-
-On the server side it would have been :
-push "dhcp-option DNS <dns_server_ip_address>"
-PS1: It seems it's using dhcp-option on both sides. You can do the same with route
-
-PS2: Some other guy suggest that you have also include bellow options in the ovpn file:
-register-dns
-block-outside-dns
-
-The 1st forces Windows to prefer the configured DNS server over any other it may have received from DHCP. 
-The 2nd prevents DNS leakage to any DNS server other than the configured one.
-
+------------------------------------------------------------------------------------------------------------------------------------------------------
 ## ZEROTIER VPN
 .B What is it
 Quite popular and easy to set up Cloud beased VPN, free for 25 "devices".

@@ -75,7 +75,7 @@ alias lsm='ls -l $@ && cd' #ls and move. Strange, but cd keeps the $@ and it wor
 #Trick : ls -l /dir && cd $_ does the same job
 
 
-alias weather="curl wttr.in/'Νέα Ερυθραία'" #/Μαρούσι
+alias weather="curl wttr.in/Κηφισιά" #/Μαρούσι
 alias hexit='od -w40 -An -t x1c -v'
 #alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
 #alias man replaced by export MANPAGE in the beginning of this document 22.10.23
