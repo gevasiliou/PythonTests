@@ -463,7 +463,7 @@ sudo apt install php-gd php-mysql php-curl php-mbstring
 sudo apt install php-intl php-gmp php-bcmath php-xml phpunit
 sudo apt install libapache2-mod-php php-zip php-imagick php-apcu
 
-#PHP Composer
+##PHP Composer
 composer is a kind of php libraries installer.
 
 .B Installing Composer according to https://getcomposer.org/
