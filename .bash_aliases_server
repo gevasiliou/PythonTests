@@ -13,7 +13,6 @@
 #alias words='/usr/share/dict/words'
 
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/sbin:/sbin:/usr/sbin
-export MOZ_USE_XINPUT2=1 #firefox with touch events enabled: env MOZ_USE_XINPUT2=1 firefox &
 
 #source mancolor
 export LESS_TERMCAP_mb=$'\e[1;35m'
@@ -25,25 +24,8 @@ export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 export MANPAGER='less -s -M +Gg'
 
-alias bashalias-version="echo This is .bash_aliases version 2.2 , Last Updated 10.03.2024"
-
-alias calculator='xcalc &'
-alias mountandroid="sudo mount -t davfs http://192.168.2.6:8080 /home/gv/Desktop/andro"
-alias gksu="pkexec --keep-cwd env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY" #gksu pkg that we used old days is obsolete by 2019.
-alias grtranslate="trans :el" #you need to have apt install translate-shell 
-alias lanip="ifconfig |grep 'inet[^6]'"
-alias hdmisound="pacmd set-card-profile 0 output:analog-stereo && pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
-alias laptopsound="pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo && pacmd list 2>&1 |grep 'active profile'"
-alias ping="ping -c3"
-alias winpid="echo -ne 'select window  to get pid...  ' && xprop _NET_WM_PID WM_CLASS | cut -d' ' -f3 |sed -z -e 's/\n/ - /1' -e 's/[\x22,]//g'"
-##
-
-alias screenreset='xrandr --output eDP-1 --off && sleep 20 && xrandr --output eDP-1 --auto && xrandr --output HDMI-2 --mode 1920x1080 --scale 1x1 --output eDP-1 --mode 1366x768 --scale 1x1 --left-of HDMI-2'
-alias screenreset2='xrandr --output eDP-1 --scale 1.5x1.5 && sleep 5 && xrandr --output eDP-1 --scale 1x1'
 alias scplegacy='scp -O -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
 alias sshlegacy='ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa'
-alias converttopng='convert -verbose -coalesce'
-alias vpn='openfortivpn'
 alias default="mimeopen -d" #usage : mimeopen -d file.pdf --> Will provide a menu to select & register default application for handling pdfs.
 alias ipchicken="links -dump www.ipchicken.com |egrep -o '[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}'"
 alias cd..='cd ..'
@@ -55,351 +37,21 @@ alias cls='clear'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
-alias nocrap='grep -i -v -e .page -e .png -e .svg -e .jpg -e messages -e usr/share/man -e changelog -e log -e localle -e locale -e "/doc/"'
-alias maxpower='cpufreq-set -c 0 --min 2000000 --max 9000000 && cpufreq-set -c 1 --min 2000000 --max 9000000'
-alias yadit='yad --text-info --center --width=800 --height=600 --no-markup &' #--wrap &'
-#alias yadit='yad --text="$(</dev/stdin)" --center --wrap --no-markup --width=800 & disown'  #alternative: yad --text="$(cat -)"  # yadit alternative but without scroll bars and buttons
-#alias lsdir='ls -l -d */'
-
 alias gitsend='git add . && git commit -m "update" && git push && git show --name-only'
 alias gitcancel='read -p "are you sure? [y/n]: " p;case "$p" in "y") git reset --hard HEAD~;;esac' #cancels the last local commit. You can also cancel 2 commits at once: git reset --hard HEAD~2
 alias bashaliascp='cp -i .bash_aliases /home/gv/ && sudo cp -i .bash_aliases /root/ && sudo chown --verbose gv:gv /home/gv/.bash_aliases'
-alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade '
 alias printfunctions='set |grep -A2 -e "()"'
-alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #WiFiReset. Alternative: modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
-#alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
-#lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
-
 alias lsm='ls -l $@ && cd' #ls and move. Strange, but cd keeps the $@ and it works.
 #Trick : ls -l /dir && cd $_ does the same job
 
-
-alias weather="curl wttr.in/Κηφισιά" #/Μαρούσι
 alias hexit='od -w40 -An -t x1c -v'
-#alias man="LESS='+Gg' man" #This one goes to end of man page and then back to beginning , forcing less to count the man page lines
-#alias man replaced by export MANPAGE in the beginning of this document 22.10.23
-
-#alias asciit='od -An -tuC'
-#alias esc_single_quotes='sed "s|\x27|\x5c\x5c\x27|g"' #\x27 = hex code for single quote. \x5c = hex code for \
-#alias esc_double_quotes=$'sed \'s|"|\\\\"|g\''
-
-# ascii_table() { echo -en "$(echo '\'0{0..3}{0..7}{0..7} | tr -d " ")"; }
-# Uses octal to build the whole ascii table
-
 alias tabit="perl -pe 's/\x20{1,4}/\t/g'"  #alternative : sed -r or sed -E - extended regex for {1,4} to work
-
-#alias battery="upower -i $(upower -e |grep -e 'BAT') |grep -e 'state' -e 'percentage' -e 'time to' -e 'native-path' |sed -r 's/^\s+//g'"
 
 alias catd="awk 'FNR==1{print \"==========>\",FILENAME,\"<===========\"}{printf FNR \":  \" }1'" #cat with details
 #alternative: for f in ./*;do echo "========>> $f <<========";cat "$f";done
-
-alias stopwlan0monitor='ifconfig wlan0 down && sleep 1 && iwconfig wlan0 mode managed && sleep 1 && ifconfig wlan0 up && sleep 1 && NetworkManager'
-alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig wlan0 mode monitor && ifconfig wlan0 up && aireplay-ng -9 wlan0 && airodump-ng wlan0'
-
-#alias dirsize='df -h / && du -b -h -d1 |sort -rh'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
-
 alias changelog='apt-get changelog'
 
-function md2man {
-	[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: md2man <md-file>, which runs \"man -l <(pandoc -s -f markdown -t man \$1)\"" && return 1 
-	man -l <(pandoc -s -f markdown -t man "$1") 
-}
-
-function note {
-fname="$1"
-while :
-do
-title="YadNotes - $fname"
-txttosave=$(yad --title="$title" --text-info --filename="$fname" --editable --wrap --width=500 --height=500 --center --button=gtk-save:10 --button='Exit':20 --button='Open':30 2>/dev/null)
-
-case $? in
-10) #echo "gtk-save selected"
-    fnametosave=$(yad --file --filename="$fname" --save --center --title='Select File To Save your notes' 2>/dev/null)
-    [[ $? -eq 1 ]] && continue ##If cancel was pressed on file save dialogue
-    [[ "$fname" == "$fnametosave" ]] && yad --text="This file exists. Overwrite?" --button=gtk-ok --button=gtk-cancel
-    case $? in
-    1) continue;;
-    0) [[ ! -z "$fnametosave" ]] && echo "$txttosave" > "$fnametosave" || yad --text="No Filename - No Save"
-    [[ ! -z "$fnametosave" ]] && fname="$fnametosave"
-    ;;
-    esac  
-    #if file name to save is NOT empty then assign it to fname. 
-    #If fnametosave is empty then no action - the previous fname (if set i.e by fnametoopen) will be preserved.
-
-    #break
-    ;;
-20 | 252) #echo "Exit selected" - 20 corresponds to return code of "exit" , 252 corresponds to return code when you press X to close the window.
-    break
-    ;;
-30) #echo "Open Button Pressed"
-    fnametoopen=$(yad --file --center --title='Open Notes File' 2>/dev/null)
-    [[ ! -z "$fnametoopen" ]] && fname="$fnametoopen"  #if file name to open is NOT empty then assign it to fname
-    ;;
-esac
-done
-
-}
-alias notes='note $@ &'
-
-function aptlog {
-l=$(awk '/Log started/{a=NR}END{print a}' /var/log/apt/term.log);awk -v l=$l 'NR==l || (NR>l && /^Unpacking/&& NF)' /var/log/apt/term.log |less
-}
-
-#alias networkreset="sudo systemctl restart NetworkManager.service && ifconfig" #for some reason this switches on and off the network, but IP is not changing!
-#also you can try this: "systemctl restart networking.service" 
-
-function networkreset {
-if [[ "$1" == "--help" || "$1" == "-h" ]];then
-    echo "This script will first restart all your network interfaces and then will restart your squid proxy server"
-    echo "Use --force switch to avoid confirmations and force restarting of network devices & squid proxy"
-    return
-fi
-
-if [[ "$1" == "--force" || "$1" == "-force" ]];then
-    echo "Force Mode Selected - Restarting all network interfaces"
-    an="y"
-else 
-    read -p "Restarting network interfaces... press 'n' to skip, 'y' to proceed: " an
-fi
-
-#[[ "$an" == "n" ]] && return 1  
-    if [[ "$an" == "y" || "$an" == "Y" ]];then
-        # Populate the array
-        mapfile -t ifce <<<"$(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}')"
-        # alternative : ifce+=( $(ifconfig | grep 'RUNNING' | grep -v 'lo[:]' | awk -F':' '{print $1}') )
-        # alternative is not suggested due to that splitting will take place using IFS value (space, tab, newline) meaning that if the command output has spaces it will mess up the array.
-        # on the otherhand , mapfile with -t switch will only use newline as delimiter and not IFS value.
-        # Iterate through the array elements
-        for interface in "${ifce[@]}"; do
-            echo "Processing interface: $interface"
-            sudo ifconfig "$interface" down
-            sleep 5
-            echo "Interface $interface stopped"
-        done
-        sleep 5
-        echo "Restarting Interfaces"
-        for interface in "${ifce[@]}"; do
-            echo "Processing interface: $interface"
-            sudo ifconfig "$interface" up
-            sleep 5
-            echo "Interface $interface started"
-            ifconfig "$interface" |grep 'inet'
-        done
-    fi
-if [[ "$1" == "--force" || "$1" == "-force" ]];then
-echo "Force Mode Selected - Restarting Squid Proxy"
-q="y"
-else
-read -p "Restarting squid proxy... press 'n' to skip, 'y' to proceed: " q
-fi
-
-#[[ "$q" == "n" ]] && exit
-    if [[ "$q" == "y" || "$q" == "Y" ]];then
-        echo "Restarting Squid Proxy...please wait"
-        sudo systemctl stop squid
-        sleep 3
-        sudo systemctl start squid
-        sudo systemctl status squid
-    fi
-}
-
-
-function asciifrom {
-#https://gchq.github.io/CyberChef
-#https://tools.ietf.org/html/rfc4648
-#https://en.wikipedia.org/wiki/Base32
-#https://unix.stackexchange.com/questions/98948/ascii-to-binary-and-binary-to-ascii-conversion-tools
-#https://www.linuxnix.com/convert-binaryhex-oct-decimal-linuxunix/
-#https://www.dcode.fr/ascii-85-encoding 
-#echo $((base#number)) : https://phoxis.org/2012/07/12/builtin-bash-any-base-to-decimal-conversion/
-#TODO : 
-# bacon , https://mothereff.in/bacon
-# base62, https://base62.io/
-# base36 , https://www.dcode.fr/base-36-cipher
-# z-base32, 
-# Commercial Enigma : https://cryptii.com/pipes/commercial-enigma
-# https://pypi.org/project/enigmamachine/
-#Enigma and rest of ciphers described in pycipher : https://pycipher.readthedocs.io/en/master/
-#Anybase inlcuding base36 online (text to anybase): https://onlineutf8tools.com/convert-utf8-to-arbitrary-base
-#MD5, SHA-1 , SHA-256, etc : https://cryptii.com/pipes/md5-hash
-#substitution cipher: http://practicalcryptography.com/ciphers/simple-substitution-cipher/
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: echo 'encoded-message' |asciifrom hex / slashedhex / bin / longbin / octal / base64 / base91 / base92 / rot1 upto rot25 / rot47 / base32 / base32hex / base85nd [NoDelimiter] / base85 / ascii85 / base58 / base26-1 [start from 1] / base26-0 [start from 0]"
-[[ $1 == "bin" ]] && perl -lape '$_=pack"(B8)*",@F';     #breaks if spaces are not present. Binary should be 8 digits.
-#asciifrom bin returns the ascii letters corresponding to the binary input.
-#actually binary number is converted to hex number and hex number is converted to corresponding ascii letter 
-[[ $1 == "longbin" ]] && perl -lpe '$_=pack"B*",$_';     #breaks if spaces are present.Binary should be dividable by 8 i guess.
-[[ $1 == "hex" ]] && xxd -r -p && echo                          #input in format with 2digit hex, no space between, like 4648....
-#Remark: xxd -r -p returns the ascii text from the given hex valuer.
-#for example echo "3635" |xxd -r -p  --> 65 = ascii char 6 (hex 0x36) and ascii char 5 (hex 0x35) and not the number 65.
-#this is why we call it asciifrom hex. If you try to convert the number 65 (decimal) to hex , then it's hex value is 41. 
-#or for hex number 41, the decimal number is 65. This is done with dec2hex and hex2dec functions which treats input as numbers.
-[[ $1 == "slashedhex" ]] && sed 's/\\x//g; s/\\u//g' |xxd -r -p && echo   #input in format \x46\x68 ... Tip: Such an input can be viewed directly in bash using echo -e 'input'
-#Tip: When input text is like \u48 this is equal to \x48
-[[ $1 == "octal" ]] && sed 's/^/\\0/g; s/ /\\0/g' |echo -e $(</dev/stdin)
-[[ $1 == "dec" ]] && perl -pe 's/ /\n/g' |while read -r line;do printf \\$(printf "%o\n" $line);echo;done |perl -pe 's/\n/ /g'
-[[ $1 == "base32" ]] && base32 -id            #included in coreutils and basez pkg
-[[ $1 == "base32hex" ]] && base32hex -g -d      #part of basez package. -g : ignore garbage in input
-[[ $1 == "base64" ]] && base64 -id 
-[[ $1 == "base85nd" ]] && base85 -ind         #you need the executable produced by this c program: https://raw.githubusercontent.com/roukaour/ascii85/master/ascii85.c
-[[ $1 == "base85" ]] && base85 -id     #with delimiter . String starts with <~ and finishes with ~> (required by most ascii85
-[[ $1 == "base58" ]] && base58 -d && echo #apt install base58
-#base85 using perl (requires apt install libconvert-ascii85-perl
-# echo ..... |perl -mConvert::Ascii85 -lpe '$_ = Convert::Ascii85::decode($_);'
-# echo ..... |perl -mConvert::Ascii85 -lpe '$_ = Convert::Ascii85::encode($_);'
-
-[[ $1 == "ascii85" ]] && sed 's/^/\<\~/g; s/$/\~\>/g' |ascii85 -d   #apt install ruby-ascii85. Runs with just ascii85. Sed adds <~ to the start, ~> in the end
-[[ $1 == "base91" ]] && base91.py --decode   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "base92" ]] && base92gv.py --decode   #make sure that base92gv.py exists in /usr/bin or in any other directory in the $PATH
-#[[ $1 == "rot13" ]] && rot13.py --decode  #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "base26-1" ]] && sed 's/10/j/g; s/11/k/g; s/12/l/g; s/13/m/g; s/14/n/g; s/15/o/g; s/16/p/g; s/17/q/g; s/18/r/g; s/19/s/g; s/20/t/g; s/21/u/g; s/22/v/g; s/23/w/g; s/24/x/g; s/25/y/g; s/26/z/g;' | sed 's/1/a/g; s/2/b/g; s/3/c/g; s/4/d/g; s/5/e/g; s/6/f/g; s/7/g/g; s/8/h/g; s/9/i/g'
-[[ $1 == "base26-0" ]] && sed 's/9/j/g; s/10/k/g; s/11/l/g; s/12/m/g; s/13/n/g; s/14/o/g; s/15/p/g; s/16/q/g; s/17/r/g; s/18/s/g; s/19/t/g; s/20/u/g; s/21/v/g; s/22/w/g; s/23/x/g; s/24/y/g; s/25/z/g;' | sed 's/0/a/g; s/1/b/g; s/2/c/g; s/3/d/g; s/4/e/g; s/5/f/g; s/6/g/g; s/7/h/g; s/8/i/g'
-
-if [[ $1 == "combo" ]];then
-        g="$(</dev/stdin)";
-        echo "base64 -id"; 
-        echo "$g" |base64 -id;
-        echo "base64 -id | base64 -id"; 
-        echo "$g" |base64 -id |base64 -id;
-        read -p 'next';
-        echo "base64 -id| base32 -id";
-        echo "$g" |base64 -id |base32 -id;
-        read -p 'next';
-        echo "base64 -id| base85 -id";
-        echo "$g" |base64 -id |base85 -ind;
-        read -p 'next';
-        echo "base32 -id";
-        echo "$g" |base32 -id;
-        echo "base32 -id| base64 -id";
-        echo "$g" |base32 -id |base64 -id;
-        read -p 'next';
-        echo "base32 -id| base32 -id";
-        echo "$g" |base32 -id |base32 -id;
-        read -p 'next';
-        echo "base32 -id| base85 -ind";
-        echo "$g" |base32 -id |base85 -ind;
-        read -p 'next';
-        echo "base85 -ind";
-        echo "$g" |base85 -ind;
-        echo "base85 -ind| base64 -id";
-        echo "$g" |base85 -ind |base64 -id;
-        read -p 'next';
-        echo "base85 -ind| base32 -id";
-        echo "$g" |base85 -ind |base32 -id;
-        read -p 'next';
-        echo "base85 -ind| base85 -ind";
-        echo "$g" |base85 -ind |base85 -ind;
-        read -p 'next';
-fi
-
-case $1 in 
-#"rot13") rot13.py --decode;;
-"rot1") tr 'b-za-aB-ZA-A' 'a-zA-Z';; #Rotates by -1 = 1 letter back => a becomes z. Equivalent to 25 letters in front.
-"rot2") tr 'c-za-bC-ZA-B' 'a-zA-Z';; #-2 letters back (or +24 letters)
-"rot3") tr 'd-za-cD-ZA-C' 'a-zA-Z';; #Ceasar Cipher
-"rot4") tr 'e-za-dE-ZA-D' 'a-zA-Z';;
-"rot5") tr 'f-za-eF-ZA-E' 'a-zA-Z';;
-"rot6") tr 'g-za-fG-ZA-F' 'a-zA-Z';;
-"rot7") tr 'h-za-gH-ZA-G' 'a-zA-Z';;
-"rot8") tr 'i-za-hI-ZA-H' 'a-zA-Z';;
-"rot9") tr 'j-za-iJ-ZA-I' 'a-zA-Z';;
-"rot10") tr 'k-za-jK-ZA-J' 'a-zA-Z';;
-"rot11") tr 'l-za-kL-ZA-K' 'a-zA-Z';;
-"rot12") tr 'm-za-lM-ZA-L' 'a-zA-Z';;
-"rot13") tr 'n-za-mN-ZA-M' 'a-zA-Z';;
-"rot14") tr 'o-za-nO-ZA-N' 'a-zA-Z';;
-"rot15") tr 'p-za-oP-ZA-O' 'a-zA-Z';;
-"rot16") tr 'q-za-pQ-ZA-P' 'a-zA-Z';;
-"rot17") tr 'r-za-qR-ZA-Q' 'a-zA-Z';;
-"rot18") tr 's-za-rS-ZA-R' 'a-zA-Z';;
-"rot19") tr 't-za-sT-ZA-S' 'a-zA-Z';;
-"rot20") tr 'u-za-tU-ZA-T' 'a-zA-Z';;
-"rot21") tr 'v-za-uV-ZA-U' 'a-zA-Z';;
-"rot22") tr 'w-za-vW-ZA-V' 'a-zA-Z';;
-"rot23") tr 'x-za-wX-ZA-W' 'a-zA-Z';;
-"rot24") tr 'y-za-xY-ZA-X' 'a-zA-Z';;
-"rot25") tr 'z-za-yZ-ZA-Y' 'a-zA-Z';;
-"rot47") tr 'P-~\!-O' '\!-~' ;;
-esac
-
-#Jolanda Challenges:
-#for a string a="VjVLSjZNT1pSTzRKNjVXTlpTSlQyMzNHQkREVVYyUVNCV0ZGNFZWWFZTM0pYNDNDQUlGRjRZRU5PV1JUWDRHU1JPNEo2NVdOQU9ES1pNV05aUkRUTDJZQkFaRFRaNEdDQUhEUlYzM0hCNUZKUDJNQlJOU1JUMzNEQ1JEVVYyUVdCWkRVTjJZUUJFMktSTVdOWlNLVFZWUURCSTJQTjJZSFJPSEo0VlFIQU9GRk5MM0NBSUpKWDNHSEJaS05IRFlCWkREVUYzM0lST0hUUDVHU1JPTUo2M1FKWklGUE41UVZBU01GTkwzVlpTSlRMTVlCWjVGRk5CRUFWREROSDJRSEJFTFVUQkVDUzVGVDY1UUtaSURKSllHUUE1SkY2NTNEU0lFSjYzR0haSUtVVlkzSUJPSlQ2TFlSQlpLSjJMWUhaSU1URkxZWkJaS0pCTVlIQkVISjRNTUFCQTJUUDRHSFpJRlAyNTNXQkVIUDI0M1ZBNUZUUDNFQVpJNEpYWVlIQTVLSkxZV0hTTUxUNE1MPQ=="
-#decoded message is here: echo "$a" |base64 -d |rot13.py |base32 -d
-#
-#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/435511390415317/
-#echo "$a" |asciifrom bin |base32 -d |rev |base85 -n -d
-#
-#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/430777217555401/
-#echo "$a" |asciifrom bin |sed 's/[U+]//g' |asciifrom hex |asciifrom base32 |asciifrom base85nd
-
-#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/440351073264682/
-#1): 00110100 00110011 00110011 00110011 
-#2): 43330263430213231302631313025303 (asciifrom bin of input)
-#3): 36352033322031303420393720393920 (rev of step2)
-#4): 65 32 104 97 99 107 101 114 32 (ascii chars from hex - treat step3 as hex number)
-#5): Output (decimals of step4 to ascii)
-#echo "$a" |asciifrom bin |rev |sed 's/../& /g' |hex2dec |dec2ascii |perl -pe 's/\n//g' |dec2ascii |perl -pe 's/\n//g'
-
-#https://www.facebook.com/groups/Ethical.Hacking.Cyber.Secure/permalink/444441176189005/
-#1.) 00111000 00110010 00111000 00111000 00110100 00110101
-#2.) 828845884 844575810 593174889 1131292774 1126903354
-#3.) 1g/<2W4B#[!iCn(fC+.:VE+AaqE+q'QOBJgI#HuT]
-#4.) ;flS`@;^!rEa`p#Gp$gB+EV:.+CT;4+E(j7BPD!kDJ(RE8TZ(bDf0
-#5.) Solution ..
-#echo "$a" |asciifrom bin |dec2hex |asciifrom hex |rev |base85 -nd
-}
-
-function asciito {
-[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: asciito hex / slashedhex / bin / longbin / octal / base64 / base91 / base92 /rot 1 to 25 / rot47 / base32 / base32hex / base85 / base85nd [NoDelimiter] / base58 / base26-1"
-[[ $1 == "hex" ]] && xxd -p                            ##returns one big string with 2digit hex like 4648....
-[[ $1 == "slashedhex" ]] && xxd -p |sed 's/../\\x&/g'  ##returns entries like \x46\x68 ...
-
-[[ $1 == "bin" ]] && perl -lpe '$_=join " ", unpack"(B8)*"'
-#bin alternative xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n/ /g; s/^ //g' && echo #default: bin blocks of 8 bits . 
-[[ $1 == "longbin" ]] && xxd -b |awk '{NF--;$1="";print}' |perl -pe 's/\n//g; s/^ //g; s/ //g' && echo #one big string without spaces. Alternative: perl -lpe '$_=unpack"B*"'
-[[ $1 == "octal" ]] && od -b |awk '{$1="";print}' |sed 's/^ //g'
-[[ $1 == "dec" ]] && perl -lpe '$_=join " ", unpack"(B8)*"' | perl -pe 's/ /\n/g' |while read -r line;do echo "obase=10; ibase=2; $line" |bc;done |perl -pe 's/\n/ /g' && echo #asciito bin|bin2dec
-[[ $1 == "base32" ]] && base32         #included in coreutils and basez pkg
-[[ $1 == "base32hex" ]] && base32hex   #part of basez package
-[[ $1 == "base64" ]] && base64
-[[ $1 == "base85" ]] && base85   #using base85.c executable. Equivalent to ruby ascii85 command from pkg ruby-ascii85
-[[ $1 == "base85" ]] && base85 -n  #using base85.c executable. Without <~ in the start and without ~> in the end.
-[[ $1 == "base58" ]] && base58  && echo
-[[ $1 == "base91" ]] && base91.py   #make sure that base91.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "base92" ]] && base92gv.py   #make sure that base92gv.py exists in /usr/bin or in any other directory in the $PATH
-[[ $1 == "base26-1" ]] && sed 's/./& /g' |sed -r 's/j|J/10/g; s/k|K/11/g; s/l|L/12/g; s/m|M/13/g; s/n|N/14/g; s/o|O/15/g; s/p|P/16/g; s/q|Q/17/g; s/r|R/18/g; s/s|S/19/g; s/t|T/20/g; s/u|U/21/g; s/v|V/22/g; s/w|W/23/g; s/x|X/24/g; s/y|Y/25/g; s/z|Z/26/g;' | sed -r 's/a|A/1/g; s/b|B/2/g; s/c|C/3/g; s/d|D/4/g; s/e|E/5/g; s/f|F/6/g; s/g|G/7/g; s/h|H/8/g; s/i|I/9/g'
-[[ $1 == "base26-0" ]] && sed 's/./& /g' |sed -r 's/j|J/9/g; s/k|K/10/g; s/l|L/11/g; s/m|M/12/g; s/n|N/13/g; s/o|O/14/g; s/p|P/15/g; s/q|Q/16/g; s/r|R/17/g; s/s|S/18/g; s/t|T/19/g; s/u|U/20/g; s/v|V/21/g; s/w|W/22/g; s/x|X/23/g; s/y|Y/24/g; s/z|Z/25/g;' | sed -r 's/a|A/0/g; s/b|B/1/g; s/c|C/2/g; s/d|D/3/g; s/e|E/4/g; s/f|F/5/g; s/g|G/6/g; s/h|H/7/g; s/i|I/8/g'
-##[[ $1 == "rot13" ]] && rot13.py   #make sure that rot13.py exists in /usr/bin or in any other directory in the $PATH
-case $1 in 
-#"rot13") rot13.py;;
-"rot1") tr 'a-zA-Z' 'b-za-aB-ZA-A';; #Rotates by +1 , go to next letter (a becomes b) or rotate -25 (25 letters back)
-"rot2") tr 'a-zA-Z' 'c-za-bC-ZA-B';; #Rotates by +2 , go to next 2 letters (a becomes c)
-"rot3") tr 'a-zA-Z' 'd-za-cD-ZA-C';; #Ceasar Cipher - rotate by 3
-"rot4") tr 'a-zA-Z' 'e-za-dE-ZA-D';;
-"rot5") tr 'a-zA-Z' 'f-za-eF-ZA-E';;
-"rot6") tr 'a-zA-Z' 'g-za-fG-ZA-F';;
-"rot7") tr 'a-zA-Z' 'h-za-gH-ZA-G';;
-"rot8") tr 'a-zA-Z' 'i-za-hI-ZA-H';;
-"rot9") tr 'a-zA-Z' 'j-za-iJ-ZA-I';;
-"rot10") tr 'a-zA-Z' 'k-za-jK-ZA-J';;
-"rot11") tr 'a-zA-Z' 'l-za-kL-ZA-K';;
-"rot12") tr 'a-zA-Z' 'm-za-lM-ZA-L';;
-"rot13") tr 'a-zA-Z' 'n-za-mN-ZA-M';;
-"rot14") tr 'a-zA-Z' 'o-za-nO-ZA-N';;
-"rot15") tr 'a-zA-Z' 'p-za-oP-ZA-O';;
-"rot16") tr 'a-zA-Z' 'q-za-pQ-ZA-P';;
-"rot17") tr 'a-zA-Z' 'r-za-qR-ZA-Q';;
-"rot18") tr 'a-zA-Z' 's-za-rS-ZA-R';;
-"rot19") tr 'a-zA-Z' 't-za-sT-ZA-S';;
-"rot20") tr 'a-zA-Z' 'u-za-tU-ZA-T';;
-"rot21") tr 'a-zA-Z' 'v-za-uV-ZA-U';;
-"rot22") tr 'a-zA-Z' 'w-za-vW-ZA-V';;
-"rot23") tr 'a-zA-Z' 'x-za-wX-ZA-W';;
-"rot24") tr 'a-zA-Z' 'y-za-xY-ZA-X';;
-"rot25") tr 'a-zA-Z' 'z-za-yZ-ZA-Y';;
-"rot47") tr '\!-~' 'P-~\!-O' ;;
-esac
-}
 
 function rotby {
 [[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: echo 'message' |rotby 1 (up to rotby 25) or |rotby +1 or |rotby -25"
@@ -513,178 +165,9 @@ echo "Listing Directory Size of $d : "
 du -b -h -d1 "$d" |sort -rh
 }
 
-function cinema {
-echo "A youtube-dl automation script. Downloads from url, and open mpv to watch the video."
-echo "Options:"
-echo "  --url=<url> direct video link"
-echo "  --openloadurl=<url> urls with hidden openload video link"
-echo "  --nosave : do not keep local copy of the video in current working directory (default is to save the file)"
-echo "  --getsubs: try to find openload vtt subs file"
-echo "  --vlc: use vlc instead of default mpv. Combine with --buffer=XXX (in MB) to change the default buffer size (100MB)"
-echo
-unset videotowatch subflag movietitle videotowatch suburl subs
-
-if ! which youtube-dl >/dev/null;then echo "you need to install youtube-dl";return 1;fi	
-#if ! which mpv >/dev/null;then echo "you need to install mpv";return 1;fi	
-if ! which curl >/dev/null;then echo "you need to install curl";return 1;fi	
-
-#[[ -z $1 ]] && echo "no video url given.... exiting now. " && return 1
-
-if printf '%s\n' "$@" |fgrep -- '--url=' >/dev/null;then
-    videotowatch=$(printf "%s\n" "$@" |grep -- '--url=' |sed 's/--url=//')
-else 
-    if printf '%s\n' "$@" |fgrep -- '--openloadurl=' >/dev/null;then
-      openloadlink=$(printf "%s\n" "$@" |grep -- '--openloadurl=' |sed 's/--openloadurl=//') #just remove --openload to get the url sent to function
-      echo "openload link=$openloadlink"
-      videotowatch=$(curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.[^ ]*' |sed 's/[\"]//g')
-	  if [[ -z $videotowatch ]];then
-		echo "[!!]First try to cath video url FAILED. Proceeding to second try to catch video url...."
-		echo "[!!]First try was:"
-		echo "[!!]curl -s $openloadlink |tr ',>' '\n' |egrep -m1 -o 'http.*openload.[^ ]*' |sed 's/[\"]//g"
-		link2=$(curl -s $openloadlink |egrep -m1 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) ##&& echo "link2=$link2"
-		videotowatch=$(curl -Ls "$link2" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g')
-	  fi
-	fi
-fi
-
-echo && echo "video to watch=$videotowatch"
-[[ -z $videotowatch ]] && echo "no valid video url/openload url given.... exiting now. " && return 1
-
-#if [[ $2 == "--getsubs" ]];then
-if printf '%s\n' "$@" |fgrep -- '--subs=' >/dev/null
-then 
-	suburl=$(printf "%s\n" "$@" |grep -- '--subs=' |sed 's/--subs=//')
-	suburl=$(set +f && ls $suburl && set -f)
-	echo "--subs option given... Trying to read subtitles file $suburl..." && echo
-	subs="--sub-file=$suburl"
-	#example: cinema --openloadurl=https://openload.co/f/NyTst2m1ELw --subs=$(ls /home/gv/*.srt)
-else
-	if printf '%s\n' "$@" |fgrep -- '--getsubs' >/dev/null;then 
-	  echo "--getsubs option given... Trying to get subtitles..." && echo && subflag=1
-	  suburl=$(getsubsurl "$videotowatch")
-	  if [[ "$suburl" == "no vtt subs found" ]]; then 
-		echo "no vtt subs found"
-		return 1
-	  else
-		subs="--sub-file=$suburl"
-	  fi
-	fi
-fi
-# cinema --openloadurl=https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/14/episodes/1 --getsubs 
-# gksu -u gv xdg-open https://www.watch-online.cc/tv-shows/tt0203259/law-and-order-special-victims-unit/season/14/episode/2/
-
-
-#if printf '%s\n' "$@" |fgrep -- '--nosave' >/dev/null;then 
-#  movietitle=""
-#else
-  movietitle="$videotowatch"
-  movietitle="${movietitle##*/}" #from url https://openload.co/f/m6ZrSptAZ-E/Drkst.mp4 returns only last part=Drkst.mp4
-  printf "%s\n" "Local file will be named $movietitle"
-  [[ $subflag -eq 1 ]] && moviename="${movietitle%%.*}" && wget --quiet "$suburl" -O "${moviename}.vtt" && printf "%s" " and subs will be named ${moviename}.vtt" 
-  #saving vtt subs. Play locally using mpv L* (video and subs start by letter L)
-#fi
-echo
-
-if printf '%s\n' "$@" |fgrep -- '--vlc' >/dev/null;then
-    if printf '%s\n' "$@" |fgrep -- '--buffer' >/dev/null;then 
-      buffsize=$(printf "%s\n" "$@" |grep -- '--buffer=' |sed 's/--buffer=//')
-      buffsize=$((buffsize*1000000))
-    else
-      buffsize=100000000 #100Mbyte default buffer size
-    fi
-    echo "vlc option is given. Buffer Size = $buffsize. Movie Title=$movietitle"
-    read -p "press any key to start or press ctrl+c to exit"
-    youtube-dl -q -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |cat >/dev/null &
-    sleep 30
-    while [ $(find ./"$movietitle" -printf '%s\n') -lt $buffsize ]; do 
-      printf '%s\r' "buffering $(ls -l "$movietitle" |cut -d' ' -f5) out of $buffsize" >/dev/tty;
-      sleep 10;
-    done
-    vlc ./"$movietitle" 2>/dev/null &
-    fg %1
-    
-else
-  echo && echo "command to be executed:"
-  echo "youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $videotowatch -o- |tee $movietitle |mpv $subs --force-seekable=yes -"
-  read -p "press any key to start or press ctrl+c to exit"
-  youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "$videotowatch" -o- |tee $movietitle |mpv $subs --force-seekable=yes -
-fi
-#alternative with vlc: 
-#youtube-dl -v -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' https://1fhjlub.oloadcdn.net/dl/l/iwiyD3ZGlPz7rf_a/lcCbgM8aHTM/Frozen.2013.BluRay.x264.Greek.mp4 -o- |vlc /dev/stdin
-#or |vlc -
-#vlc opens immediattely but this is not a problem. As soon as data arrive they are played on open vlc.
-
-#if --save is not given , $movietitle is empty "" and actually piping to tee "" does nothing.
-
-#youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' "http://openload.co/embed/1AfWyTzfRcg/LwndrdrSVS1-1.avi" -o- |mpv --sub-file="https://thumb.oloadcdn.net/subtitle/1AfWyTzfRcg/sCt2OvM6F8Q.vtt" -
-#[[ -z $(curl -s "http://openload.co/embed/1AfWyTzfRcg") ]] && echo problem || echo all good -->> returns problem, while https returns all good
-
-#in most cases openload embed link is found on the main page:
-#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/18 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
-#http://openload.co/embed/ZJr47lNfSCs/LwdrSVS1318.mp4
-#cinema "$c" --getsubs
-
-#in some other cases not
-#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |tr ',>' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$c"
-#<empty>
-
-#in such cases you can grap the next moviestar page associated with openload button:
-#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |egrep 'openload' |tr ',>' '\n' |egrep -o 'http.*onlinemoviestar.*/play[^\")]*' |sed 's/\x27//g') && echo "$c"
-#https://onlinemoviestar.xyz/play/series/206209/13/20/aHR0cDovL29wZW5sb2FkLmNvL2VtYmVkLzJrNmZQNjBHdkRZL0x3ZHJTVlMxMzIwLm1wNA%2C%2C
-
-#or
-#c=$(curl -s https://onlinemoviestar.xyz/seires/206209-law-and-order-special-victims-unit/seasons/13/episodes/20 |egrep 'openload' |tr ' ' '\n' |egrep "http" |tr -d '\042\047()' ) && echo "$c"
-#https://onlinemoviestar.xyz/play/series/206209/13/20/aHR0cDovL29wZW5sb2FkLmNvL2VtYmVkLzJrNmZQNjBHdkRZL0x3ZHJTVlMxMzIwLm1wNA%2C%2C
-
-#d=$(curl -Ls "$c" |tr ' ' '\n' |egrep -o 'http.*openload.*' |sed 's/[\"]//g') && echo "$d"
-#http://openload.co/embed/2k6fP60GvDY/LwdrSVS1320.mp4
-#cinema "$d" --getsubs
-}
-
-function getsubsurl {
-echo "[getsubsurl function]: returns openload vtt subs url hidden in embeded openload links" >/dev/tty
-[[ -z $1 ]] && echo "[getsubsurl function]: no video url given.... exiting now. " >/dev/tty && return 1
-
-if ! which youtube-dl >/dev/null;then echo "[getsubsurl function]: you need to install youtube-dl" >/dev/tty;return 1;fi	
-if ! which curl >/dev/null;then echo "[getsubsurl function]: you need to install curl" >/dev/tty;return 1;fi	
-
-ur="$1"
-[[ -z $(curl -s "$ur") ]] && echo "[getsubsurl function]: $ur returns no data - switching to https" >/dev/tty && ur=$(sed 's/^http/https/' <<<"$ur")
-
-subs=$(curl -s "$ur" |grep -m1 'vtt' |grep -Po 'src=\"\K.*vtt')
-if [[ -z "$subs" ]];then 
-	echo "no vtt subs found" 
-else
-	echo "[getsubsurl function]: vtt subs found - $subs" >/dev/tty
-	echo "$subs"
-fi
-}
-
-function tablet {
-[[ -z $1 ]] && echo "tablet function invoked but no option was given. Send me 'on' or 'off'" && return 1
-
-if [[ $1 == "off" ]];then
-while read i;do echo "enabling $(xinput list --name-only $i)" && xinput enable $i;done <<<"$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')"
-fi
-
-if [[ $1 == "on" ]];then
-while read i;do echo "disabling $(xinput list --name-only $i)" && xinput disable $i;done <<<"$(xinput list |grep -e 'AT.*keyboard' -e 'Synaptics' |grep -Po 'id=\K[0-9]+')"
-fi
-}
-
-function aptless {
-[[ -z $1 ]] && echo "no patteern given" && return 1
-apt list "$@" |grep --color=always '^.[^/]*' |less -r
-}
-
-function power {
-echo "AC Power" && upower -i "$(upower -e |grep 'line_power')" |grep -e 'native-path' -e 'online' |sed -r 's/^\s+//g'
-echo && echo "Battery" && upower -i "$(upower -e |grep -e 'BAT')" |grep -e 'state' -e 'percentage' -e 'time to' -e 'native-path' |sed -r 's/^\s+//g'
-}
 
 function teee { 
 #This can be used between pipes toprint on screen what is coming in from the left command and flows to the next command
-
 #function teee { a="$(</dev/stdin)";echo -e "pipe in\n$a\npipe out\n" >/dev/stderr; echo "$a"; }
 	v="$(</dev/stdin)"; 
 	echo '---------------- pipe entry-------------' >/dev/tty;
@@ -708,7 +191,7 @@ function teee {
 #---------------- pipe -------------
 #denovo621   WNA.2_20180 WNA.2_294219
 
-	}
+}
 
 deepest () { 
 #This one goes to the deepest directory starting from current directory - cwd
@@ -718,7 +201,7 @@ cd "$(find $PWD -type d -printf '%d:%p\0' |sort -z -t: -r |awk -F: -v RS='\0' -v
 # %d represents the depth of each dir found (starting from pwd)
 # %p prints the name of the result
 # You can go back to cwd using cd $OLDPWD
-	}
+}
 
 
 function lsnum { 
@@ -788,16 +271,6 @@ declare -p $1 | perl -pe 's/\[/\n[/g'
 
 # This Alternative approach seems to work due to eval usage:
 #function printarray { for k in $(eval echo "\${!$1[@]}");do printf '%s' "$1[${k}]="; eval echo "\${$1[$k]}";done; }
-
-
-}
-
-function mandiff { 
-echo "mandiff: Compare installed man pages $1 vs the online man page at maniker.com"
-[[ -z $1 ]] && echo "manpage missing " && return 1
-[[ $(man -w "$1" 2>/dev/null) == "" ]] && echo "no valid manpage found for $1" && return
-#mandiff = compare with diff an installed man page with online one by mankier.com
-diff -y -bw -W 150 <(links -dump "https://www.mankier.com/?q=$1" |less |fold -s -w 70) <(man $1 |less |fold -s -w 70)
 }
 
 function debls () { 
@@ -1066,20 +539,6 @@ fi
 	#Lines starting with #-!# will be Headers (.SH)
 	#man header to be inserted in the beginning of the file = before first line
 	#backslashes must be man escaped : \ becomes \e (also \\ works for man)
-
-}
-
-function findexec {
-echo "findexec: find executable files under directories of /. Double quotes on file name is MANDATORY"
-[[ -z $1 ]] && echo "Pass me a file name to look for executable files under / dir" && return 1
-local fname=("$1")
-echo "arg=$fname"
-#for $1=*grep* search for all combinations: *grep* , grep*,*grep,grep
-#[[ "${fname:0:1}" == "*" ]] && fname+=("${fname:1}") #if starts with * remove it and add it as a saparate search term
-#[[ "${fname: -1}" == "*" ]] && fname+=("${fname:0:-1}") #if ends with * remove it and add it to array
-#[[ "${fname:0:1}" == "*" ]] && [[ "${fname: -1}" == "*" ]] && fname+=("${fname:1:-1}") #if first and last char is * remove them
-#for f in "${fname[@]}";do find / -type f -executable -name "$f";done 
-find / -type f -executable -name "$fname"
 }
 
 function mancheat { 
