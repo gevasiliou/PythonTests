@@ -2815,7 +2815,59 @@ UTILS:SSH & SCP
 ##SSH (Secure SHell)
 Install ssh on your debian with apt-get (usually installed by default).
 
-.B Usage
+.B PUBLIC - PRIVATE KEYS
+SSH keys always work in a public-private key combination.
+The most easy explanation of ssh public and private keys is the following:
+
+--> Public Key is a unique "padlock". 
+--> Private Key is the unique "padlock key" that can unlock only the padlock above. Can be also protected by a customized passphrase.
+
+You need a ssh engine to generate those two keys at the same time (special padlock and special padlock key).
+
+You need to transfer / copy the "padlock" (public key) to the server or wherever you need secure access in order to be unlocked with the unique padlock key.
+Keeping the "padlock key" (private key) in your computer you can use it to unlock the special padlock in remote location / remote server.
+
+
+Each padlock has a unique padlock key. You can not have two keys unlocking the same padlock but you can use two different padlocks and two different padlock keys
+to access your data securely using ssh in the same server.
+
+In remote sites like servers, etc , your padlock (public key) has to be written in special folders or inside special files.
+For example in a Debian Server , your public key (padlock) has to be inserted in this file: ~/.ssh/authorized_keys
+
+If you lost your padlock key (private key) there is no way to unlock the padlock.
+If an attacker founds your padlock in a server (public key) will take million of years to find (brute force) the padlock key (private key).
+
+.I Encrypting Keys
+Since your private key is unique you might want to create a backup of this key.
+If you are planning to store your private key in a public place (i.e public github repo), you better encrypt it.
+
+Encrypt the key with OpenSSL
+    openssl aes-256-cbc -salt -in mykey -out mykey.enc
+
+Decrypt and use the key:
+    openssl aes-256-cbc -d -salt -in mykey.enc -out mykey
+
+openssl options:
+aes-256-cbc : Uses the AES 256-bit encryption algorithm.
+-salt       : Adds a layer of protection against brute-force attacks.
+
+Encrypt the key with GPG
+    gpg --symmetric --cipher-algo AES256 mykey
+
+Decrypt and use the key with GPG
+    gpg --output mykey --decrypt mykey.gpg
+
+Double Encryption
+First encrypt your key with openssl producing mykey.enc and then encrpypt further this openssl encrypted key with gpg.
+
+    openssl aes-256-cbc -salt -in mykey -out mykey.enc
+    gpg --symmetric --cipher-algo AES256 mykey.enc
+
+This will produce mykey.gpg wich is actually double encrypted:
+Reverse the chain to obtain the original key (first decrypt gpg and then further decrypt the gpg decrypted key with openssl).
+
+
+.B Test Usage
 from another machine use
 ssh user@server, for example ssh root@192.168.2.12 or ssh gv@192.168.2.12
 ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@t-xx.ddns.net
@@ -2835,6 +2887,61 @@ $ sudo service ssh restart
 # /etc/init.d/ssh restart
 # service ssh restart
 
+
+.B Port forwarding to remote host with ssh
+ssh 192.168.2.12 -L 8888:localhost:32400
+The command establishes an SSH connection to the remote server at 192.168.2.12.
+It creates a tunnel so that anything sent to localhost:8888 on your local machine is securely forwarded to port 32400 on localhost of the remote server.
+
+This is often used when accessing services running on a remote server that are not directly accessible from your local machine, such as:
+For example, a Plex Media Server running on port 32400 on the remote machine.
+You can access Plex Media Server by visiting http://localhost:8888 on your browser after running this command.
+
+Tips: Typical ssh usage requires user@IP , but if user is not provided, currently logged in user (in local machine) will be used.
+
+
+.B SSH Config File
+If you frequently SSH into the same server with a specific username, you can simplify the process by editing your SSH configuration file (~/.ssh/config). 
+
+example of ~/.ssh/config:
+    Host myserver
+        Hostname 192.168.2.12
+        User myusername
+        Port 22
+
+Then, you can just type:
+    ssh myserver
+
+You can also include bellow line if you want to use your private key:
+    IdentityFile ~/.ssh/mykey
+
+Make sure that ssh config has the required permissions:
+    chmod 600 ~/.ssh/config
+
+.B SSH Agent
+An SSH agent is a program that securely stores your private key in memory and provides it to SSH sessions. 
+You don't have to repeatedly enter the passphrase of your key (if applicable).
+
+Run the ssh agent and display the process ID:
+    eval "$(ssh-agent -s)"
+
+Add your key to ssh-agent:
+    ssh-add ~/.ssh/mykey
+
+Verify that key is added to the agent:
+    ssh-add -l
+
+Automate Agent Start Up on Login
+To avoid manually starting the agent and adding your key every time you log in, you can automate this process:
+Add these lines to your shell configuration file (e.g., ~/.bashrc):
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_rsa
+
+Save and reload your shell configuration using source (or dot .) 
+
+Tip: The SSH agent only keeps your key loaded in memory for the duration of your session. 
+If your machine is shut down or restarted, the agent forgets the key, requiring you to re-enter the passphrase next time. 
+This balances convenience with security.
 
 ##SCP (Secure CoPy)
 You can use scp directly, without ssh to server. 
