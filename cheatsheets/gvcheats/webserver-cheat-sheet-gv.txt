@@ -592,6 +592,10 @@ b.	VPS Hosting (Virtual Private Server) -> Is the next step of Shared Hosting, e
 In VPS it seems that ssh to your virtual server is possible. At least in AWS that was cool.
 I could use the server terminal and install anything necessary.
 
+.I Other VPS Services:
+    * Cloudzy -> easy to deploy, low cost (~4 USD per month) - no free plan, much cheaper to the AWS paid version.
+                 Supports remote terminal through cloudzy platform (web site), allows root login, 
+
 c.	Dedicated Server Hosting -> One step further than the VPS, you do rent a full / complete server on your own and you are using 100% of the server hardware for your own web-pages. Obviously ssh (quite unrestricted I suppose) it is supported.
 
 d.	Cloud Hosting – Not clear yet – seems to be a kind of VPS but running on the cloud, meaning that your web files might be copied to different servers in order guaranteed uptime to be achieved (if one cloud server fails due to error, overload etc then your web page traffic is redirected and served by another cloud server.
@@ -986,3 +990,55 @@ const formData = require('form-data');
   .catch(err => console.log(err)); // logs any error
 
 PS: Above code gives error claiming that the user is not identified and that sandbox accounts are for testing only.
+
+##WORKING WITH SSH PUBLIC - PRIVATE KEYS
+SSH keys always work in a public-private key combination.
+The most easy explanation of ssh public and private keys is the following:
+
+--> Public Key is a unique "padlock". 
+--> Private Key is the unique "padlock key" that can unlock only the padlock above.
+
+You need a ssh engine to generate those two keys at the same time (special padlock and special padlock key).
+
+You need to transfer / copy the "padlock" (public key) to the server or wherever you need secure access unlocked with the unique padlock key.
+Keeping the "padlock key" (private key) in your computer you can use it to unlock the special padlock in remote location / remote server.
+
+
+Each padlock has a unique padlock key. You can not have two keys unlocking the same padlock but you can use two different padlocks and two different padlock keys
+to access your data securely using ssh.
+
+In remote sites like servers, etc , your padlock (public key) has to be written in special folders or inside special files.
+For example in a Debian Server , your public key (padlock) has to be inserted in this file: ~/.ssh/authorized_keys
+
+If you lost your padlock key (private key) there is no way to unlock the padlock.
+If an attacker founds your padlock in a server (public key) will take million of years to find (brute force) the padlock key (private key).
+
+.B Encrypting Keys
+Since your private key is unique you might want to create a backup of this key.
+If you are planning to store your private key in a public place (i.e public github repo), you better encrypt it.
+
+Encrypt the key with OpenSSL
+    openssl aes-256-cbc -salt -in mykey -out mykey.enc
+
+Decrypt and use the key:
+    openssl aes-256-cbc -d -salt -in mykey.enc -out mykey
+
+openssl options:
+aes-256-cbc : Uses the AES 256-bit encryption algorithm.
+-salt       : Adds a layer of protection against brute-force attacks.
+
+Encrypt the key with GPG
+    gpg --symmetric --cipher-algo AES256 mykey
+
+Decrypt and use the key with GPG
+    gpg --output mykey --decrypt mykey.gpg
+
+Double Encryption
+First encrypt your key with openssl producing mykey.enc and then encrpypt further this openssl encrypted key with gpg.
+
+    openssl aes-256-cbc -salt -in mykey -out mykey.enc
+    gpg --symmetric --cipher-algo AES256 mykey.enc
+
+This will produce mykey.gpg wich is actually double encrypted:
+Reverse the chain to obtain the original key (first decrypt gpg and then further decrypt the gpg decrypted key with openssl).
+
