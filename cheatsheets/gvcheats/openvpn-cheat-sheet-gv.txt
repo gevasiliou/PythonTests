@@ -1,13 +1,13 @@
 VPN:BASICS: CHEAT SHEET by gv
 
 .B sources:
-.I https://wiki.debian.org/OpenVPN
-.I /usr/share/doc/openvpn/openvpn-examples.5.html
-.I https://community.openvpn.net/openvpn/wiki/GettingStartedwithOVPN
-.I https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/
+https://wiki.debian.org/OpenVPN
+/usr/share/doc/openvpn/openvpn-examples.5.html
+https://community.openvpn.net/openvpn/wiki/GettingStartedwithOVPN
+https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-## OPENVPN OPTIONS
+### OPENVPN OPTIONS
 .B explicit-exit-notify 3
 It has been proved , that when you interrupt the connection to server using ctrl+c , you can not reconnect and you receive errors like that:
 2023-10-22 02:30:05 read UDPv4 [ECONNREFUSED]: Connection refused (fd=4,code=111)
@@ -104,7 +104,7 @@ Reading username and password from external file:
     auth-user-pass pass.txt
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-## OPENVPN Simple Tunnel Between two points without any security
+### OPENVPN Simple Tunnel Between two points without any security
 On bob pc run: openvpn --remote alice.example.com --dev tun1 --ifconfig 10.4.0.1 10.4.0.2 --verb 9
 
 On alice pc run: openvpn --remote bob.example.com --dev tun1 --ifconfig 10.4.0.2 10.4.0.1 --verb 9
@@ -142,7 +142,7 @@ Now verify the tunnel is working by pinging across the tunnel.
 On bob ping 10.4.0.2 & On alice ping 10.4.0.1
 Note: This example use a elliptic curve (secp384), which allows --dh to be set to none.
 
-## OPENVPN TUNNEL PKI & TLS
+### OPENVPN TUNNEL PKI & TLS
 source: /usr/share/doc/openvpn/openvpn-examples.5.html
  
 For this test, we will designate bob as the TLS client and alice as the TLS server.
@@ -204,7 +204,7 @@ Now any machine on the 10.0.0.0/24 subnet can access any machine on the 10.0.1.0
 In a production environment, you could put the route command(s) in a script and execute with the --up option.
 
 
-## OpenVPN Teltonika (server) with Debian or Windows (client) using Static Key
+### OpenVPN Teltonika (server) with Debian or Windows (client) using Static Key
 Source:
 .I https://wiki.teltonika-networks.com/view/OpenVPN_configuration_examples
 
@@ -326,7 +326,7 @@ library versions: OpenSSL 3.0.9 30 May 2023, LZO 2.10
 WARNING: INSECURE cipher (BF-CBC) with block size less than 128 bit (64 bit).  This allows attacks like SWEET32.  Mitigate by using a --cipher with a larger block size (e.g. AES-256-CBC). Support for these insecure ciphers will be removed in OpenVPN 2.7.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-## Use your Win10 PC as OpenVPN Client
+### Use your Win10 PC as OpenVPN Client
 1. Assuming that you have already OpenVPN-GUI installed in your Win10 machine and you have already configure openvpn server in previous chapter
 
 2. Create Win10 openvpn client configuration file
@@ -406,7 +406,7 @@ Do not forget to define remote server - port - protocol, secret key path, cipher
 5. You should be ready! Just run sudo openvpn networkname.ovpn to test it.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-## Teltonika VPN via OpenVPN Cloud 
+### Teltonika VPN via OpenVPN Cloud 
 https://openvpn.net/cloud-docs/deploying-connector-on-teltonika-rutos-compatible-router/?_gl=1*tb9354*_ga*MTkyNzc5Mzg4LjE2OTI5Nzg1MTM.*_ga_SPGM8Y8Y79*MTY5NDQ2OTQ2Ny40LjEuMTY5NDQ3NTQyNi4wLjAuMA..&_ga=2.102216897.1538277576.1694469468-192779388.1692978513
 
 The concept here is that OpenVPN Cloud works as a TCP Server and both Debian and Teltonika are "clients" to this server. 
@@ -627,7 +627,7 @@ key-direction 1
 -----END OpenVPN Static key V1-----
 </tls-auth>
 
-## Connect to cloud.openvpn with win10
+### Connect to cloud.openvpn with windowns
 Assuming that openvpnGUI is installed on your Win10PC. 
 Navigate to installation directory (C:\Program Files\OpenVPN\bin) and you should see that there is openvpn.exe file in there (without GUI in it’s name).
 
@@ -658,7 +658,7 @@ It has been proved that once openvpn connector03_Milan.ovpn is terminated (contr
 7.	Bug: OpenVPN Clouds allows a limited amount of users to be connected for free (I think that only 3 concurrent connections are allowed).
 
 VPN:OPENVPN OPTIONS & DOCUMENTATION
-## Documents and examples
+W## Documents and examples
 man openvpn
 cd /usr/share/doc/openvpn
 
@@ -673,7 +673,7 @@ php -S localhost:8080 openvpn-examples.5.html
 Just visit localhost:8080 with web browser!
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-## ZEROTIER VPN
+### ZEROTIER VPN
 .B What is it
 Quite popular and easy to set up Cloud beased VPN, free for 25 "devices".
 It creates one (or more) virtual networks - virtual lans with lan-members in each virtual lan.
@@ -733,3 +733,198 @@ https://michlstechblog.info/blog/windows-howto-enable-ip-routing/
 https://discuss.zerotier.com/t/route-between-zerotier-and-physical-networks/11308/6
 https://discuss.zerotier.com/t/connection-through-zerotier-access-to-lan/13432/3
 https://learn.microsoft.com/en-us/powershell/module/netnat/?view=windowsserver2022-ps
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+### OPENVPN SERVER WITH CLIENTS
+.B Set Up
+(a) You have a server, Debian 12, somewhere in Europe (cloudzy).
+(b) Device "A" somewhere else in Europe
+(c) Device "B" somewhere else in Europe
+
+Target: Device A and B to get connected in Server , and be possible device A to access and open resources from Device B and vice-versa.
+
+.B Server Set Up
+Step 1: Update the System - Make sure your server is up to date:
+    sudo apt update && sudo apt upgrade -y
+
+Step 2: Install OpenVPN and Easy-RSA - Install the required packages for OpenVPN and certificate generation:
+    sudo apt install openvpn easy-rsa -y
+
+Step 3: Set Up Easy-RSA for Certificate Management - Create a directory for Easy-RSA and navigate to it:
+    make-cadir ~/openvpn-ca
+    cd ~/openvpn-ca
+
+Initialize the PKI (Public Key Infrastructure):
+    ./easyrsa init-pki
+
+Build the Certificate Authority (CA):
+    ./easyrsa build-ca
+
+You’ll be prompted to set a password and provide some details.
+
+Step 4: Create Server Certificates - Generate a key pair for the server:
+    ./easyrsa gen-req server nopass
+
+Sign the server certificate with the CA:
+    ./easyrsa sign-req server server
+
+When prompted, type yes to confirm.
+
+Generate Diffie-Hellman parameters (for secure key exchange):
+    ./easyrsa gen-dh
+
+Generate a TLS authentication key:
+    openvpn --genkey --secret ~/openvpn-ca/ta.key
+
+Step 5: Configure the OpenVPN Server - Copy the necessary files to the OpenVPN directory:
+    sudo cp ~/openvpn-ca/pki/ca.crt ~/openvpn-ca/pki/issued/server.crt ~/openvpn-ca/pki/private/server.key ~/openvpn-ca/ta.key /etc/openvpn
+    sudo cp ~/openvpn-ca/pki/dh.pem /etc/openvpn/dh.pem
+
+Create a server configuration file:
+    sudo nano /etc/openvpn/server.conf
+
+Add the following (adjust subnet if needed):
+
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+auth SHA256
+tls-auth ta.key 0
+topology subnet
+server 10.8.0.0 255.255.255.0
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+keepalive 10 120
+cipher AES-256-CBC
+user nobody
+group nogroup
+persist-key
+persist-tun
+verb 3
+client-to-client
+
+Step 6: Enable IP Forwarding - Edit the system configuration file to allow IP forwarding:
+    sudo nano /etc/sysctl.conf
+
+Uncomment or add the following line:
+    net.ipv4.ip_forward=1
+
+Apply the change:
+    sudo sysctl -p
+
+Step 7: Configure UFW (Firewall)
+Allow OpenVPN traffic:
+    sudo ufw allow 1194/udp
+
+Allow traffic forwarding by Editing /etc/ufw/before.rules and add the following at the top:
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+COMMIT
+Replace eth0 with the name of your network interface (check with ip a).
+
+Enable forwarding in UFW: Edit /etc/default/ufw and change the line:
+DEFAULT_FORWARD_POLICY="ACCEPT"
+
+Reload UFW:
+    sudo ufw disable && sudo ufw enable
+
+Step 8: Start and Enable OpenVPN - Start the OpenVPN service and enable it at boot:
+    sudo systemctl start openvpn@server
+    sudo systemctl enable openvpn@server
+
+Step 9: Create Client Configurations
+Generate client certificates:
+    cd ~/openvpn-ca
+    ./easyrsa gen-req client1 nopass
+    ./easyrsa sign-req client client1
+
+Create the client configuration file:
+    nano ~/client1.ovpn
+
+Add the following:
+client
+dev tun
+proto udp
+remote <YOUR_SERVER_IP> 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+auth SHA256
+cipher AES-256-CBC
+key-direction 1
+verb 3
+<ca>
+(Paste contents of ca.crt here)
+</ca>
+<cert>
+(Paste contents of client1.crt here)
+</cert>
+<key>
+(Paste contents of client1.key here)
+</key>
+<tls-auth>
+(Paste contents of ta.key here)
+</tls-auth>
+After completing these steps, transfer the client1.ovpn file to your devices and use an OpenVPN client to connect.
+
+.B CLIENTS CONFIGURATION
+Step 1: Install an OpenVPN Client on Your Devices
+Depending on the operating system of your devices, install the appropriate OpenVPN client:
+    Windows: Download the official OpenVPN client for Windows.
+
+    macOS: Use Tunnelblick or the OpenVPN official client.
+
+    Linux: Install OpenVPN using your package manager:
+            sudo apt install openvpn -y
+
+    Android/iOS: Install the "OpenVPN Connect" app from the Play Store or App Store.
+
+Step 2: Transfer the .ovpn Configuration File
+Take the client1.ovpn file you created on the server and transfer it securely to the device. 
+Here are a few ways to do this:
+
+Use SCP (Secure Copy Protocol) for Linux/macOS:
+    scp user@<YOUR_SERVER_IP>:~/client1.ovpn ~/Downloads/
+
+Use a USB stick or another secure file-sharing method for Windows/macOS.
+
+For mobile devices, use a file transfer tool like email (securely) or cloud storage (ensure it's private).
+
+On the receiving device, ensure the .ovpn file is stored in a location accessible to the VPN client.
+
+Step 3: Import the Configuration File into the VPN Client
+    Windows/macOS/Linux:
+    Open the OpenVPN client application.
+    Click on “Import” or “Add Profile” and locate the .ovpn file.
+    Import the file and save the configuration.
+
+    Android/iOS:
+    Open the OpenVPN Connect app.
+    Tap the “Import Profile” option.
+    Navigate to and select the .ovpn file.
+    Import the configuration.
+
+Step 4: Connect to the VPN
+Open the OpenVPN client on your device.
+Select the imported profile (e.g., client1.ovpn).
+Click “Connect” or “Start” to establish the VPN connection.
+
+You’ll be prompted to enter any credentials if required (e.g., if a user/pass setup was configured on the server).
+
+Step 5: Verify the Connection
+Once connected:
+Check your virtual IP address assigned by the OpenVPN server. It will look something like 10.8.0.x (based on the VPN subnet you configured).
+
+Test connectivity between devices using their virtual IPs. For example:
+From device "A," ping device "B" using its VPN IP (and vice-versa):
+
+    ping 10.8.0.X
+
+At this stage, your devices should be part of the same virtual LAN and able to communicate with each other!
