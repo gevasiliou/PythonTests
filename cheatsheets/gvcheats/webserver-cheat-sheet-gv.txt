@@ -367,7 +367,7 @@ Timeout	                                Sets the timeout for requests.
 UseCanonicalName	                    Determines whether Apache should use the ServerName or the hostname from the client's request when creating self-referential URLs.
 ServerSignature	                        Controls whether Apache displays server information on error pages.
 
-.I Deny Directory Listing
+.B Deny Directory Listing
 To protect your server by cyber attacks , it is mandatory to disable directory listing that is enabled by default.
 You need to sudo nano /etc/apache2/apache2.conf and add bellow sections in a parent - child inheritance.
 Initially, apache2.conf has this code:
@@ -407,6 +407,98 @@ Keyword "AllowOverride None" forbids .htaccess files inside directories to overr
 
 Tip: I got some error messages in /var/log/apache2/error.log related to misconfigured roundcube.conf (inside /etc/apache2/sites-enabled).
 To avoid conflicts i have disabled this roundcube.conf (using a2dissite roundcube.conf).
+
+<p> Require all granted
+When you include Require all granted inside a <Directory> block it ensures that any request to access that directory is permitted without restriction. 
+Essentially, it means no access limitations are applied—any user or client can access the resources in that directory.
+
+#Alternative Options:
+    Require all denied
+    Require ip 192.168.1.0/24
+    Require not ip 10.0.0.0/8
+    Require host example.com
+    Require not host badhost.com
+
+#User Authentication
+Require users to log in with a username and password, prompts users for credentials, granting access only to authenticated individuals.
+
+    <Directory /var/www/html/deger>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        AuthType Basic
+        AuthName "Restricted Area"
+        AuthUserFile /path/to/.htpasswd
+        Require valid-user
+    </Directory>
+
+For this to work, you also have to create an .htpasswd file.
+Use the htpasswd utility to create a file containing the usernames and passwords for authentication.
+    htpasswd -c /path/to/.htpasswd username
+
+Replace /path/to/.htpasswd with the actual path where you want to store the password file.
+
+    PS1: Instead of AuthType Basic you can use more auth-type options for better security.
+    #Digest Authentication - It hashes credentials during transmission, making it less vulnerable to interception. 
+        AuthType Digest
+        AuthName "Restricted Area"
+        AuthDigestDomain /var/www/html/deger
+        AuthDigestProvider file
+        AuthUserFile /path/to/.htdigest
+        Require valid-user
+
+    You'll need an .htdigest file, which is created using the htdigest utility:
+        htdigest -c /path/to/.htdigest "Restricted Area" username
+
+    #Certificate-Based Authentication - using SSL/TLS certificates typically for clients accessing your site securely.
+    Users must present a valid client certificate issued by your Certificate Authority.
+        SSLEngine on
+        SSLVerifyClient require
+        SSLVerifyDepth 1
+        SSLCACertificateFile /path/to/ca.crt
+
+    #Database Authentication
+    Authenticate users via a database backend by integrating third-party modules like mod_authn_dbd. 
+    The database must be preconfigured to store usernames and hashed passwords.
+        AuthType Basic
+        AuthName "Database Authentication"
+        AuthBasicProvider dbd
+        AuthDBDUserPWQuery "SELECT password FROM users WHERE username = ?"
+        Require valid-user
+
+    #LDAP Authentication - If you have a centralized user directory like LDAP, you can authenticate users against it.
+    You'll need to set up LDAP credentials and server access.
+
+    #OAuth/OpenID Connect
+    For modern applications, integrating OAuth or OpenID Connect for authentication is a great option. 
+    This requires additional modules like mod_auth_openidc
+
+    #Custom Authentication Modules - build or use third-party modules to create custom authentication mechanisms that fit your specific needs.
+
+    PS3: Don't forget sudo systemctl restart apache2 to reload new configurations....
+</p>
+#Deny Specific Files or Folders
+You can restrict access to certain sensitive files while keeping others accessible:
+
+    <Files "sensitive_file.html">
+        Require all denied
+    </Files>
+
+<Files> directive can be inserted within a <Directory> block in apache2.conf or it can be inserted outside of <Directory> block for a "global" rule.  
+Outside blocks, operates independently and applies to specific files regardless of their location within the directory structure.
+This will ensure that any attempts to access sensitive_file.html are denied globally across all directories. It's concise and straightforward.
+
+Using <Files> inside <Directory> block, will restricts access to sensitive_file.html only within /var/www/html/deger. 
+It won't apply globally—useful if the file name might exist in multiple directories with different access rules.
+Example:
+    <Directory /var/www/html/deger>
+        <Files "sensitive_file.html">
+            Require all denied
+        </Files>
+    </Directory>
+
+PS: <Files> vs <Directory>
+Use <Directory> when you want to control access to an entire directory or path.
+Use <Files> or <FilesMatch> when targeting individual files or matching specific file patterns (e.g., based on file extensions or names).
 
 ##PHP
 In Debian 12 , the php version available is 8.2
