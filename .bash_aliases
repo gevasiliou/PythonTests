@@ -1119,9 +1119,22 @@ if 	[[ $2 == "--chapters" ]]; then
 fi
 
 
-man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+#This is the original command up to 30.03.2025#
+#man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h");
+#We try to create sub-sub-sections in color using the .IP macro.
+man --nj --nh <(h=".TH man 1 2017 1.0 $1-cheats-by-GV";sed "s/^${1^^}:/.SH ${1^^}:/g; s/^$/\.LP/g; s/^##/\.SS /g;G" /home/gv/Desktop/PythonTests/cheatsheets/gvcheats/${1,,}*gv.txt |sed 's/^$/\.br/g; s/\\/\\e/g;' |sed "1i $h" |sed -E 's/^[[:space:]]*%%%(.*)/.IP "\\fB\\m[cyan]\1\\m[]\\fP"/g' );
 
-#This works directly in cli:
+#2025 Target: to have three different levels of sub-sections
+# Level 1 - master : .SH (should be changed to #)
+# Level 2 - chapters .SS (or ##)
+# Level 3 - sub sections of chapters .IP (or ### or %%%)
+# You can achieve more -deeper - levels using .RS and .RE
+# You can also check the test file created 30.03.2025 called mantest2.txt in this folder.
+# You can run this file like this:
+# man <(sed -E 's/^[[:space:]]*%%%(.*)/.IP "\\fB\1\\fP"/' mantest2.txt)
+
+
+#This works directly in cli (2023):
 #man --nj <(h=".TH man 1 "2017" "1.0" cheats page";sed "1i $h" cheatsheets/utils*gv.txt |sed 's/^UTILS:/.SH UTILS:/g; s/^$/\.LP/g; s/^##/\.SS /g; s/\\/\\\\/g;G' |sed 's/^$/\.br/g')
 
 }

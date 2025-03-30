@@ -1,0 +1,94 @@
+.TH "This is a test manpage"
+.SH SECTION HEADER WITH SH
+
+
+.SS SUBSECTION1 (WITH .SS)
+This is Line1 of Subsection1
+.br
+This is Line2 of Subsection1
+
+.IP "\fB\m[cyan]Sub-Sub Section1\m[]\fP"
+.br
+This is line 1 of sub-sub section 1
+\e
+This is line 2 of sub-sub section 1
+.br
+This is Line 3 of sub-sub section 1
+\\
+This is Line 4 of sub-sub section 1 \\
+.br
+.I This 
+.B is 
+.R Line5 of sub-sub section 1
+.RE 
+
+This is SubSection1 Line3 
+.br
+This is SubSection1 Line4 
+
+    %%%Sub-Sub Section2
+    .br
+    This is line 1 of sub-sub section 2
+    .br
+    This is line 2 of sub-sub section 2
+
+.RS 
+Sub-Sub-Sub Section
+.br
+.RS
+This is line1 of sub-sub-sub section
+.br
+This is line2 of sub-sub-sub section
+.br
+.RE
+.RE
+.TP
+.B -d
+disable syntax highlighting
+
+.TP
+.B -e
+enable syntax highlighting
+
+.TP
+.BI -f " filename"
+Specifies the file you want to edit. This option must be given with the
+.BR " -e " "or the " "-d " option.
+.RE
+.br
+.br
+Run this file with a command like this :
+"man <(sed -E 's/^[[:space:]]*%%%(.*)/.IP "\\fB\\1\\fP"/g' mantest2.txt)"
+
+Though chatGPT suggests this usage:
+".IP "\\fB\\m[cyan]sub sub label\\m[]\\fP""
+
+Small Tutorial:
+\\.TH => Title Header - This should be the very first line of your man page.
+.br
+\\.SH => Section Header
+.br
+\\.SS => SubSection
+.br
+\\.br => Line Break - should be entered alone in a line
+.br
+\\e  => escape (e is required). In man pages, a single \\ is not printed at all. For \\e prints "\\"  while \\text prints ext. It seems that \\\ also prints single "\\" like \\e.
+
+Text Styling Macros
+.br
+\\.B - Bold text.
+.br
+\\.I - Italic text.
+.br
+\\.R - Romant (normal) text.
+.br
+\\.BI - Bold and Italic, alternates between bold and italic for successive words.
+.br
+\\.BR - Bold and Roman, alternates between bold and plain text for successive words.
+.br
+\\.RI - Roman and Italic, alternates between plain and italic text for successive words.
+.br
+\\.RB - Roman and Bold, alternates between plain and bold text for successive words.
+.br
+\\.IR - Italic and Roman, alternates between italic and plain text for successive words.
+.br

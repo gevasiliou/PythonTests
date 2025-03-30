@@ -5,14 +5,14 @@ Both Apache2 and nginx (engine x) are web servers - they serve the same purpose 
 
 .B APACHE2
 
-.I Apache2 Installation
+.B Apache2 Installation
 sudo apt update 
 sudo apt install apache2
 sudo systemctl status apache2   #You should see that apache2 is running and listening on default port 80
 
 PS: typical apache2 installation folder is /etc/apache2
 
-.I Apache2 Important Directories and Files:
+%%% Apache2 Important Directories and Files
 In /etc/apache2 you can find apache2 global conf files, module directories including module configurations, sites directories.
 
 /etc/apache2/apache2.conf:      The main Apache configuration file (global settings that apply to the whole server)
@@ -65,7 +65,7 @@ When you have set up everything , you can test your configuration like bellow:
     sudo systemctl restart apache2
 You can also visit http://localhost or http://127.0.0.1 from your own server (using a web browser) to verify that apache2 is working.
 
-.I Details how to enable Virtual Hosts (web sites) - 1 site only
+%%% Details how to enable Virtual Hosts (web sites) - 1 site only
 All apache2 installations include the file /etc/apache2/sites-available/000-default.conf
 Which usually looks like this:
     <VirtualHost *:80>
@@ -85,7 +85,7 @@ So in case that your web server machine is hosting only one site, you can edit t
 If your server is assigned to a domain name you can also uncomment this line:
     ServerName www.myproject.net
 
-.I Enabling Virtual Hosts (sites) - More than 1 site
+%%% Enabling Virtual Hosts (sites) - More than 1 site
 You can host more sites in the same machine under different directories:
 Project A : /var/www/html/myprojectA
 Project B : /var/www/html/myprojectB
@@ -117,7 +117,7 @@ With this way:
             Redirect permanent / http://myprojectB.org/
     
 
-.I User Apache2 as a reverse proxy for communication between front end (html/js) to backend (node.js, etc).
+%%% User Apache2 as a reverse proxy for communication between front end (html/js) to backend (node.js, etc).
 Usefull when your server (back-end == node.js) runs on a custom port (i.e 3000) to serve end points in front-end (html, js).
 
 For example instead of using api calls from frontend like fetch('http://XXX.XXX.XXX:3000/fetch-data') you can just use fetch('/fetch-data')
@@ -169,7 +169,7 @@ sudo a2ensite 51-21-41-110.conf  # If you named the file 51-21-41-110.conf
 sudo systemctl restart apache2
 sudo a2dissite 000-default.conf  # disable the default conf if not needed.
 
-.I Proxying multiple api calls to the same back-end server
+%%% Proxying multiple api calls to the same back-end server
 You absolutely do not need to create separate `ProxyPass` entries for each endpoint if they all point to the same backend server. 
 **The Trick: Proxying a Common Path or the Root:**
 
