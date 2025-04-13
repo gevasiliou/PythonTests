@@ -896,6 +896,7 @@ function debcat () {
     else
        echo "Command executed: apt-get --printu-uris download $1"
        echo "Deb Address to curl: $tmpdeb / Size: $downsize"
+       echo "Magic Command: curl -sL -o- $tmpdeb |dpkg -c /dev/stdin"
     fi
      
 	if [[ $2 == "--ind" || $secondarg == "" ]];then
