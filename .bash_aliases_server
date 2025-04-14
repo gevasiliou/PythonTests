@@ -355,7 +355,20 @@ function debcat () {
     local downsize=$(apt-get --print-uris download $1 2>&1 |grep -Eo '\b[0-9]{4,}\b' |humanreadable)  #grep -Eo '\b[56789][0-9]{6,}\b'
     #humanreadable is a function declared here and converts size in bytes to human readable size in KiB, MiB, etc
     tmpdeb=$(echo "${tmpdeb: 1:-1}") #remove the first and last char which are a single quote '
-    echo "<pkg>: $tmpdeb"
+
+   if [[ $tmpdeb == mirror+file:* ]]; then
+	echo "apt-get returned mirror+file --> $tmpdeb"
+	echo "Starting of manipulating mirror+file"
+        local hh=$(echo $tmpdeb |sed 's/\x27//g; s/mirror+file://g' |grep -o '.*list')
+        local hhh=$(cat "$hh")
+        tmpdeb=$(echo $tmpdeb |sed "s|mirror+file:$hh|$hhh|g")
+	echo "This part --> $hh is analyzed (cat) to this one --> $hhh"
+	echo "Manipulated tmpdeb --> $tmpdeb"
+	echo "exit of mirror+file manipulation "
+	echo
+    fi
+
+    echo "<pkg> to proceed: $tmpdeb"
 	echo "[Option1]: $2 " && echo
 	[[ -z $2 ]] && secondarg="" || secondarg="$2"  #echo "file to display is missing for pkg $1" && return 1
 	[[ $2 == "--list" ]] && echo "--list selected - perform deb listing - all other options ignored" && debls "$1" && return 0
@@ -369,6 +382,7 @@ function debcat () {
     else
        echo "Command executed: apt-get --printu-uris download $1"
        echo "Deb Address to curl: $tmpdeb / Size: $downsize"
+       echo "Magic Command: curl -sL -o- $tmpdeb |dpkg -c /dev/stdin"
     fi
      
 	if [[ $2 == "--ind" || $secondarg == "" ]];then
