@@ -16,7 +16,7 @@ usage() {
     echo "              Make sure to enclose your passphrase with single quotes, especially if special characters are used"
     echo
     echo "Rules:"
-    echo "  - Encrypted files will use the '.enc' extension (e.g., 'myfile.txt.enc')."
+    echo "  - Encrypted files will use the '.enc' extension (e.g., myfile.txt will created myfile.txt.enc)."
     echo "  - Decryption only works on '.enc' files."
     echo "  - This script does not require root privileges but may need sudo for certain files."
     echo
@@ -28,15 +28,16 @@ usage() {
     echo
     echo "TODO: "
     echo "  Expand this script to encrypt/decrypt all files in a directory"
+    echo "  Modify the script to handle file in from directory A but output file B (encrypted / decrypted) to be stored in Directory B"
     echo
     exit 1
 }
 
-# Check if OpenSSL is installed
-if ! command -v openssl &> /dev/null; then
-    echo "Error: OpenSSL is not installed! Please install it first."
+if ! command -v openssl &> /dev/null || ! command -v shred &> /dev/null || ! command -v geany &> /dev/null; then
+    echo "Error: Required dependencies (OpenSSL, Shred, Geany) are missing!"
     exit 1
 fi
+
 
 # Check number of arguments
 if [[ $# -lt 2 ]]; then
@@ -139,18 +140,18 @@ decrypt_file() {
     TEMP_FILE="${TEMP_DIR}/$(basename "${FILE%.enc}")"
     REENCRYPTED_FILE="${ORIGINAL_DIR}/$(basename "$FILE")"
     
-    echo "Decrypting and Edit file '$FILE'"
+    echo "Decrypting and Editing file '$FILE' using temporary file '$TEMP_FILE'"
     #openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -in "$FILE" -out "$OUTPUT_FILE" -pass pass:"$PASSPHRASE"
-    openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -in "$FILE" -out "$TEMP_FILE" -pass pass:"$PASSPHRASE"
+    openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -in "$FILE" -out "$TEMP_FILE" -pass pass:"$PASSPHRASE" && echo "decrypting $FILE succesfull"
     #geany "$OUTPUT_FILE"
     geany "$TEMP_FILE"
-    read -p "Make Sure that you have saved all changes and press Enter after finishing editing to re-encrypt ..."
-    echo "Re-encrypting after editing..."
+    read -p "Make Sure that you have saved all changes and press Enter after finishing editing to re-encrypt $TEMP_FILE to $REENCRYPTED_FILE ..."
+    echo "Re-encrypting temporary file $TEMP_FILE after editing to $REENCRYPTED_FILE ..."
     #openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -in "$OUTPUT_FILE" -out "$FILE" -pass pass:"$PASSPHRASE" && echo "File successfully re-encrypted."
     openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -in "$TEMP_FILE" -out "$REENCRYPTED_FILE" -pass pass:"$PASSPHRASE" && echo "File successfully re-encrypted."
     #read -p "Delete temp file $OUTPUT_FILE? [y|yes]: " an
     #[[ $an == 'y' || $an == 'yes' ]] && shred -u "$OUTPUT_FILE" && echo "$OUTPUT_FILE deleted"
-    read -p "Delete temp file $TEMP_FILE? [y|yes]: " an
+    read -p "Delete temporary file $TEMP_FILE? [y|yes]: " an
     [[ $an == 'y' || $an == 'yes' ]] && shred -u "$TEMP_FILE" && echo "$TEMP_FILE deleted"
     fi
 }
@@ -171,3 +172,54 @@ elif [[ "$DECRYPT_MODE" == true ]]; then
 else
     usage
 fi
+
+
+: " 
+This is a multiline comment
+It won't be executed by Bash
+Useful for documentation inside scripts
+
+encrypt_directory() {
+    DIR="$1"
+
+    if [[ ! -d "$DIR" ]]; then
+        echo "Error: '$DIR' is not a valid directory!"
+        exit 1
+    fi
+
+    echo "Encrypting all files in directory: $DIR"
+    for FILE in "$DIR"/*; do
+        if [[ -f "$FILE" ]]; then  # Ensure only regular files are encrypted
+            ENC_FILE="${FILE}.enc"
+            openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -in "$FILE" -out "$ENC_FILE" -pass pass:"$PASSPHRASE"
+            shred -u "$FILE"
+            echo "Encrypted: $FILE -> $ENC_FILE"
+        fi
+    done
+
+    echo "Encryption complete for all files in: $DIR"
+}
+
+
+decrypt_directory() {
+    DIR="$1"
+
+    if [[ ! -d "$DIR" ]]; then
+        echo "Error: '$DIR' is not a valid directory!"
+        exit 1
+    fi
+
+    echo "Decrypting all files in directory: $DIR"
+    for FILE in "$DIR"/*.enc; do
+        if [[ -f "$FILE" ]]; then
+            DECRYPTED_FILE="${FILE%.enc}"
+            openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -in "$FILE" -out "$DECRYPTED_FILE" -pass pass:"$PASSPHRASE"
+            shred -u "$FILE"
+            echo "Decrypted: $FILE -> $DECRYPTED_FILE"
+        fi
+    done
+
+    echo "Decryption complete for all files in: $DIR"
+}
+
+"
