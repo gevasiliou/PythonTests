@@ -668,6 +668,10 @@ Though i am located in Greece, I didn’t want a .gr domain name but I would lik
 I finally ended up with ‘.online’ domain registered with namecheap at 1/8 of Greek registrars price (~1 euro for 1 year). 
 Greek Registrars require ~2.5€ per year for .gr domain or 8 euro for .online for 1 year  (ps: i paid just 1 euro for 1 year). 
 
+Tip1 : The low price of 1USD is only for 1 year. Renewal Price is about 25 USD!
+Tip2 : By allowing your domain name to expire and re-buying it when expiration is completed and domain name is free again, you most probably will have
+the opportunity to "re-buy" your same domain name for 1USD again ( i did it once; my .online domain expired Jan 25 and i bought the same domain at May 2025).
+
 To complete my domain name registration I used namecheap.
 https://ap.www.namecheap.com/Domains/DomainControlPanel/thingit.online/advancedns 
 
@@ -675,6 +679,20 @@ After purchasing your required domain name you have to update dns records in ord
 
 All registrars provide a kind of web-based control panel for managing domain names purchased.
 Tip: https://www.namecheap.com/support/knowledgebase/article.aspx/434/2237/how-do-i-set-up-host-records-for-a-domain/
+
+Quick Set up guide for namecheap dns records to bind your domain name with an external server public IP (likw aws or like cloudzy).
+source: https://www.namecheap.com/support/knowledgebase/article.aspx/642/2237/dns/
+
+1. Log in to your Namecheap account, select Domain List from the Left Pane, click on "Manage" button next to your domain name.
+2. Go to the "Advanced DNS" tab and locate the Host Records section.
+3. Click on "Add New Record" and add the following records to have your bare domain and its www subdomain pointed to your IP:
+Type: A Record | Host: @ | Value: <your-bare-ip-here>
+Type: A Record | Host: www| Value: <your-bare-ip-here>
+4. Save the changes using the "Save All Changes" button.
+5. Ensure there are no conflicting records for your domain. Usually namecheap adds URL redirect record set for @ host and CNAME record 
+for www host pointing your domain to parkingpage.namecheap.com.
+If they are present - please remove them by clicking on a trash bin icon next to the record.
+The changes might take up 30 minutes to propagate globally.
 
 ##Hosting Types
 a.	Shared Hosting -> The cheapest one – suitable for personal web sites / small business serving static web pages without big demands. The physical server resources (cpu, ram, net speed, bandwitch, etc) are shared to all the server web-pages/users. Performance can be dependent on the total server workload, meaning that other web-pages/users might affect the performance of the physical web server. 
