@@ -963,13 +963,29 @@ Register to hostingkey name server your web site (not obtained by hostingkey).
 
 ##POSTFIX
 Postfix on debian is a complete smtp package/server/client that can accept incoming emails and can send emails to the world.
+If you plan to read your email directly on the server using CLI tools like mail or mutt or mailx , then postfix is enough.
+If you plan to remotely access your server mailbox (maildir/) and read your emails using email clients (thunderbird, outlook, web clients, etc) 
+then postfix can not serve this purpose. You need an "email retrieval/reading server" like devcot to be installed in your server. 
+Devcot acts as an agent installed in your server and provides access to user mailbox (stored in Debian Server) to common email clients like outlook.
+
 You need to have your tcp port 25 (incoming) open to receive emails (verify this with online port scanner https://www.ipvoid.com/port-scan/)
-You also need to open tcp port 25 (outgoing) for sending emails. This can be tested with Telnet (i.e telnet gmail-smtp-in.l.google.com 25 -> should proceed and not hanging)
-PS: Amazon Web Services (AWS) do not allow traffic on outgoing port 25 so practically you can not send email by AWS with PostFix.
+You also need to open tcp port 25 (outgoing) for sending emails. 
+To test if port 25 (outgoing) is open you can make this test: telnet gmail-smtp-in.l.google.com 25 -> should proceed and not hanging
+
+PS1: Amazon Web Services (AWS) do not allow traffic on outgoing port 25 so practically you can not send email by AWS with PostFix.
 You can though overcome this issue by using sendinblue = Brevo.
+
+PS2: Not only Amazon but also other VPS providers block port 25. For example cloudzy blocks outgoing port 25 and also port 587.
 
 You also have to adjust your DNS records (through your registrar, i.e namecheap) so the world to be able to find and use your mail server.
 .I https://www.namecheap.com/support/knowledgebase/article.aspx/322/2237/how-can-i-set-up-mx-records-required-for-mail-service/
+
+.B DNS Records in namecheap (as advised by copilot)
+MX Record: Custom MX , Host: @ , Value: mail.thingit.online
+A Record: Host: mail , Value: your-server-public-ip
+TXT Record: Host: @ , Value: v=spf1 ip4:45.61.132.185 mx ~all 
+TXT Record: Host: default._domainkey , Value: v=DKIM1; h=sha256; k=rsa; p=MIIBI
+TXT Record: Host: _dmarc , Value: v=DMARC1; p=none; rua=mailto:gv@thingit.online
 
 .B PostFix Installation
 .I https://www.linuxbabe.com/mail-server/build-email-server-from-scratch-debian-postfix-smtp
@@ -979,7 +995,7 @@ You also have to adjust your DNS records (through your registrar, i.e namecheap)
 Edit postfix configuration:
     sudo nano /etc/postfix/main.cf
 
-Replace relayhost with this line:
+Replace relayhost with this line to make us of sendinblue relay service:
     relayhost = [smtp-relay.sendinblue.com]:587
 
 Then add the following lines to the end of this file.
