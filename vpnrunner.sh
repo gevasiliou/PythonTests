@@ -66,60 +66,87 @@ disable_ipv6() {
 # Function to enable/disable DNS leak protection
 configure_dns_protection() {
     if [ "$1" == "enable" ]; then
+        log_entry "Enforcing VPN-only DNS for $VPN_IFACE..."
+
+        # Block UDP DNS traffic outside VPN
         if ! sudo iptables -C OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP 2>/dev/null; then
-            log_entry "Enforcing VPN-only DNS for $VPN_IFACE ..."
             sudo iptables -A OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP
+            log_entry "Blocked UDP DNS traffic outside VPN."
         fi
-    else
-        log_entry "Restoring default DNS settings..."
-        sudo iptables -D OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP
+
+        # Block TCP DNS traffic outside VPN
+        if ! sudo iptables -C OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP 2>/dev/null; then
+            sudo iptables -A OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP
+            log_entry "Blocked TCP DNS traffic outside VPN."
+        fi
+
+    elif [ "$1" == "disable" ]; then
+        log_entry "Restoring normal DNS settings for non-VPN mode..."
+
+        # Remove UDP DNS blocking rule
+        if sudo iptables -C OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP 2>/dev/null; then
+            sudo iptables -D OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP
+            log_entry "Restored UDP DNS settings."
+        fi
+
+        # Remove TCP DNS blocking rule
+        if sudo iptables -C OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP 2>/dev/null; then
+            sudo iptables -D OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP
+            log_entry "Restored TCP DNS settings."
+        fi
     fi
 }
+
 
 configure_ipv6_dns_protection() {
-    log_entry "Blocking IPv6 DNS leaks..."
+    VPN_IFACE=$(ip a | grep -Eo 'tun[0-9]+' | head -n 1)  # Detect active VPN interface
 
-    # Check if the rule already exists before adding it
-    if ! sudo ip6tables -C OUTPUT -p udp --dport 53 -j DROP 2>/dev/null; then
-        sudo ip6tables -A OUTPUT -p udp --dport 53 -j DROP
-    else
-        log_entry "IPv6 DNS protection rule for UDP port 53 already exists."
+    if [ "$1" == "enable" ]; then
+        if [ -n "$VPN_IFACE" ]; then
+            log_entry "VPN detected on $VPN_IFACE. Enforcing IPv6 DNS protection..."
+
+            # Block IPv6 UDP DNS traffic outside VPN
+            if ! sudo ip6tables -C OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP 2>/dev/null; then
+                sudo ip6tables -A OUTPUT ! -o "$VPN_IFACE" -p udp --dport 53 -j DROP
+                log_entry "Blocked IPv6 UDP DNS traffic outside VPN."
+            else
+                log_entry "IPv6 UDP DNS blocking rule already exists."
+            fi
+
+            # Block IPv6 TCP DNS traffic outside VPN
+            if ! sudo ip6tables -C OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP 2>/dev/null; then
+                sudo ip6tables -A OUTPUT ! -o "$VPN_IFACE" -p tcp --dport 53 -j DROP
+                log_entry "Blocked IPv6 TCP DNS traffic outside VPN."
+            else
+                log_entry "IPv6 TCP DNS blocking rule already exists."
+            fi
+
+        else
+            log_entry "VPN is not active. Skipping IPv6 DNS protection changes."
+        fi
+
+    elif [ "$1" == "disable" ]; then
+        log_entry "Restoring normal IPv6 DNS settings for non-VPN mode..."
+
+        # Remove IPv6 UDP DNS blocking rule
+        if sudo ip6tables -C OUTPUT -p udp --dport 53 -j DROP 2>/dev/null; then
+            sudo ip6tables -D OUTPUT -p udp --dport 53 -j DROP
+            log_entry "Restored IPv6 UDP DNS settings."
+        else
+            log_entry "No IPv6 UDP DNS blocking rule found—skipping removal."
+        fi
+
+        # Remove IPv6 TCP DNS blocking rule
+        if sudo ip6tables -C OUTPUT -p tcp --dport 53 -j DROP 2>/dev/null; then
+            sudo ip6tables -D OUTPUT -p tcp --dport 53 -j DROP
+            log_entry "Restored IPv6 TCP DNS settings."
+        else
+            log_entry "No IPv6 TCP DNS blocking rule found—skipping removal."
+        fi
     fi
-
-    if ! sudo ip6tables -C OUTPUT -p tcp --dport 53 -j DROP 2>/dev/null; then
-        sudo ip6tables -A OUTPUT -p tcp --dport 53 -j DROP
-    else
-        log_entry "IPv6 DNS protection rule for TCP port 53 already exists."
-    fi
-
-    log_entry "IPv6 DNS leak protection applied successfully."
 }
-
-revert_ipv6_dns_protection() {
-    log_entry "Restoring default IPv6 DNS settings..."
-
-    # Check if the rule exists before removing
-    if sudo ip6tables -C OUTPUT -p udp --dport 53 -j DROP 2>/dev/null; then
-        sudo ip6tables -D OUTPUT -p udp --dport 53 -j DROP
-        log_entry "Removed IPv6 DNS blocking rule for UDP port 53."
-    else
-        log_entry "No IPv6 UDP DNS blocking rule found. Skipping removal."
-    fi
-
-    if sudo ip6tables -C OUTPUT -p tcp --dport 53 -j DROP 2>/dev/null; then
-        sudo ip6tables -D OUTPUT -p tcp --dport 53 -j DROP
-        log_entry "Removed IPv6 DNS blocking rule for TCP port 53."
-    else
-        log_entry "No IPv6 TCP DNS blocking rule found. Skipping removal."
-    fi
-
-    log_entry "IPv6 DNS protection successfully reverted."
-}
-
-
 
 # Function to enforce VPN-only traffic (Kill Switch)
-
 configure_vpn_killswitch() {
     if [ "$1" == "enable" ]; then
         if ! sudo iptables -C OUTPUT ! -o "$VPN_IFACE" -j DROP 2>/dev/null; then
@@ -413,7 +440,7 @@ elif [ "$1" == "--anonymous" ]; then
     ensure_nm_ipv6_disabled
     disable_ipv6
     configure_dns_protection enable
-    configure_ipv6_dns_protection
+    configure_ipv6_dns_protection enable
     configure_vpn_killswitch enable
     remove_default_routes
     allow_remote_access
@@ -425,10 +452,11 @@ elif [ "$1" == "--anonymous" ]; then
     echo "Anonymous mode activated! Logs saved to $LOGFILE"
 elif [ "$1" == "--default" ]; then
     restore_default_routes
+    configure_dns_protection disable
+    configure_ipv6_dns_protection disable
     configure_vpn_killswitch disable
     configure_dns_protection disable
     modify_ovpn_config_block_outside_dns disable
-    revert_ipv6_dns_protection
     log_entry "Default network mode restored."
 elif [ "$1" == "--report" ];then
 	detect_lan_ip
