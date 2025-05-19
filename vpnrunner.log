@@ -1,0 +1,68 @@
+2025-05-19 03:57:46 - Detected LAN IP: 192.168.2.19
+10.147.18.186
+2025-05-19 03:57:46 - 
+    Generating VPN Privacy Report...
+    Date: Mon May 19 03:57:46 AM EEST 2025
+2025-05-19 03:57:46 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:46 - ### External IP Check using curl ifconfig.me & curl nodedata.io/whoami ###
+2025-05-19 03:57:46 - 46.177.157.100
+2025-05-19 03:57:52 - 					const data = [null
+{"type":"data"
+"data":{ip:"46.177.157.100"
+hostname:"ppp046177157100.access.hol.gr"
+security:{vpn:false
+proxy:false
+tor:false
+relay:false
+crawler:false}
+location:{city:"Saronida"
+region:"Attica"
+country:"Greece"
+continent:"Europe"
+region_code:"ESYE31"
+country_code:"GR"
+continent_code:"EU"
+latitude:37.74817
+longitude:23.91069
+timezone:"Europe/Athens"
+eu:true}
+network:{asn:3329
+name:"VODAFONE-PANAFON HELLENIC TELECOMMUNICATIONS COMPANY SA"
+route:"46.177.128.0/19"}
+operating_system:void 0
+browser:void 0
+device:void 0}
+"uses":{}}];
+2025-05-19 03:57:52 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:52 - ### IPv6 Leak Check ###
+2025-05-19 03:57:52 -     inet6 ::1/128 scope host noprefixroute 
+    inet6 fe80::841a:ddff:fecc:fda7/64 scope link 
+2025-05-19 03:57:52 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:52 - ### DNS Leak Test (nslookup google.com) ###
+2025-05-19 03:57:52 - Server:		192.168.2.1
+Address:	192.168.2.1#53
+
+Non-authoritative answer:
+Name:	google.com
+Address: 172.217.169.110
+Name:	google.com
+Address: 2a00:1450:4017:816::200e
+2025-05-19 03:57:52 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:52 - ### VPN Routing Test (ip route show)###
+2025-05-19 03:57:52 - default via 192.168.2.1 dev enp0s3 proto dhcp src 192.168.2.19 metric 100 
+10.147.18.0/24 dev ztkseq3wll proto kernel scope link src 10.147.18.186 
+169.254.0.0/16 dev enp0s3 scope link metric 1000 
+192.168.2.0/24 dev enp0s3 proto kernel scope link src 192.168.2.19 metric 100 
+2025-05-19 03:57:52 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:52 - Simple WHOIS Test using whois.cymru.com
+2025-05-19 03:57:53 - AS      | IP               | BGP Prefix          | CC | Registry | Allocated  | AS Name
+3329    | 46.177.157.100   | 46.177.128.0/19     | GR | ripencc  | 2010-12-06 | HOL-GR Athens, Greece, GR
+2025-05-19 03:57:53 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:53 - ### WebRTC Leak Test using curl -s https://browserleaks.com/webrtc  ###
+2025-05-19 03:57:53 -   <tr><td>Local IP Address</td><td><span id="rtc-local"></span></td></tr>
+  <tr><td>Public IP Address</td><td><span id="rtc-public"></span></td></tr>
+2025-05-19 03:57:54 -    Public IP Address
+2025-05-19 03:57:54 - -----------------------------------------------------------------------------------------------
+2025-05-19 03:57:54 - Anonymity verification tests completed.
+2025-05-19 03:57:54 - VPN Privacy Report saved to vpnrunner_report.txt
+2025-05-19 03:57:54 - -----------------------------------------------------------------------------------------------
