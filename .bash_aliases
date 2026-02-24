@@ -67,7 +67,7 @@ alias bashaliascp='cp -i .bash_aliases /home/gv/ && sudo cp -i .bash_aliases /ro
 alias aptsourcescp='cp -i /etc/apt/sources.list /etc/apt/sources.backup && cp -i /home/gv/Desktop/PythonTests/sources.list /etc/apt/'
 alias update='apt-get update && apt-get upgrade && apt-get dist-upgrade '
 alias printfunctions='set |grep -A2 -e "()"'
-alias wfr='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #WiFiReset. Alternative: modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
+alias wifireset='( nmcli radio wifi off && sleep 10 && nmcli radio wifi on & )' #WiFiReset. Alternative: modprobe -r rtl8723be && sleep 10 && modprobe rtl8723be
 #alias weather='links -dump "http://www.meteorologos.gr/" |grep -A7 -m1 -e "Αθήνα"'
 #lynx -dump "http://www.meteorologos.gr/" |awk '/Αθήνα/{a=1;next}a==1{print gensub(/(...)(..)(.*)/,"\\2 βαθμοί",1,$0);exit}' |espeak -vel+f2 -s130
 
@@ -100,6 +100,34 @@ alias startwlan0monitor='airmon-ng check kill && ifconfig wlan0 down && iwconfig
 #alias dirsize='df -h / && du -b -h -d1 |sort -rh'   #Combine with * or ./* to display also files. Use */ for subdirs or even */*/ for subdirs
 
 alias changelog='apt-get changelog'
+
+alias netreset='(nmcli networking off && sleep 10 && nmcli networking on &)'
+
+function zerotierrefresh {
+    echo "Restarting ZeroTier service..."
+    sudo systemctl restart zerotier-one
+    
+    # Wait for interfaces to reappear
+    echo "Waiting for interfaces to initialize..."
+    sleep 2
+
+    # Detect all active ZeroTier interfaces
+    local interfaces=$(sudo zerotier-cli listnetworks | awk '/PRIVATE/{print $(NF-1)}')
+
+    if [ -z "$interfaces" ]; then
+        echo "No ZeroTier networks found. Check if you have joined any networks."
+        return 1
+    fi
+
+    # Disable IPv6 for each detected interface
+    for i in $interfaces; do
+        sudo sysctl -w net.ipv6.conf."$i".disable_ipv6=1
+        echo "IPv6 disabled on $i"
+    done
+    
+    echo "ZeroTier is refreshed and locked to IPv4."
+    ifocnfig
+}
 
 function md2man {
 	[[ -z "$1" ]] || [[ $1 == "--help" ]] && echo "usage: md2man <md-file>, which runs \"man -l <(pandoc -s -f markdown -t man \$1)\"" && return 1 
