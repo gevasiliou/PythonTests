@@ -103,7 +103,7 @@ alias changelog='apt-get changelog'
 
 alias netreset='(nmcli networking off && sleep 10 && nmcli networking on &)'
 
-function zerotierrefresh {
+function zerotierreset {
     echo "Restarting ZeroTier service..."
     sudo systemctl restart zerotier-one
     
