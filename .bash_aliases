@@ -126,7 +126,7 @@ function zerotierreset {
     done
     
     echo "ZeroTier is refreshed and locked to IPv4."
-    ifocnfig
+    ifconfig
 }
 
 function md2man {
