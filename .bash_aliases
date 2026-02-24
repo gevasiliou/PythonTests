@@ -109,7 +109,7 @@ function zerotierreset {
     
     # Wait for interfaces to reappear
     echo "Waiting for interfaces to initialize..."
-    sleep 2
+    sleep 5
 
     # Detect all active ZeroTier interfaces
     # local interfaces=$(sudo zerotier-cli listnetworks | awk '/PRIVATE/{print $(NF-1)}')
