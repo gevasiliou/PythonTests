@@ -112,8 +112,9 @@ function zerotierreset {
     sleep 2
 
     # Detect all active ZeroTier interfaces
-    local interfaces=$(sudo zerotier-cli listnetworks | awk '/PRIVATE/{print $(NF-1)}')
-
+    # local interfaces=$(sudo zerotier-cli listnetworks | awk '/PRIVATE/{print $(NF-1)}')
+    # local interfaces=$(sudo zerotier-cli -j listnetworks | jq -r '.[].portDeviceName')
+    local interfaces=$(ls /sys/class/net | grep '^zt')
     if [ -z "$interfaces" ]; then
         echo "No ZeroTier networks found. Check if you have joined any networks."
         return 1
