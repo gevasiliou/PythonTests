@@ -124,10 +124,11 @@ function zerotierreset {
     for i in $interfaces; do
         sudo sysctl -w net.ipv6.conf."$i".disable_ipv6=1
         echo "IPv6 disabled on $i"
+        ifconfig "$i"
     done
     
     echo "ZeroTier is refreshed and locked to IPv4."
-    ifconfig
+    # ifconfig
 }
 
 function md2man {
