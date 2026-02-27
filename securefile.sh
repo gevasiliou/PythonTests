@@ -2,21 +2,22 @@
 
 # Function to display help menu
 usage() {
-    echo "securefile.sh is a bash script that can encrypt / decrypt a file using openssl"
+    echo "securefile.sh is a bash script that can encrypt / decrypt a file using openssl and your secret passphrase"
+    echo "This tool is great if you want to encrypt a file and upload it to github in a public repository"
     echo "Usage: $0 [OPTIONS] [FILENAME] [PASSPHRASE]"
     echo
     echo "Options:"
     echo "  --encrypt              Encrypts a file using AES-256."
     echo "  --decrypt              Decrypts an encrypted .enc file and displays its content."
     echo "  --decrypt --save       Decrypts .enc file and saves on disk the plaintext file."
-    echo "  --decrypt --edit       Decrypts, edits (geany), and re-encrypts an encrypted file."
+    echo "  --decrypt --edit       Decrypts file, edit file (geany), and re-encrypts an encrypted file."
     echo "  --help                 Displays this help message."
     echo
     echo "[PASSPHRASE]: Your very own password phrase for encryption. You have to provide the same passphrase for decryption"
     echo "              Make sure to enclose your passphrase with single quotes, especially if special characters are used"
     echo
     echo "Rules:"
-    echo "  - Encrypted files will use the '.enc' extension (e.g., myfile.txt will created myfile.txt.enc)."
+    echo "  - Encrypted files will use the '.enc' extension (e.g., myfile.txt will create myfile.txt.enc)."
     echo "  - Decryption only works on '.enc' files."
     echo "  - This script does not require root privileges but may need sudo for certain files."
     echo
