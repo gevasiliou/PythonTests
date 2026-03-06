@@ -1,0 +1,5 @@
+There are various python scripts to be working like transparent proxies.
+The concept is listen to a port (i.e 587) and what ever your plc sends to you forward those data to remote server - remote port. 
+
+in all script you can use --help to see details about usage.
+
