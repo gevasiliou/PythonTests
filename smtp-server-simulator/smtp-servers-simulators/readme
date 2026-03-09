@@ -1,0 +1,4 @@
+smtp-servers-simulators are Python script adjusted to answer to PLCs as a mail server but the responses are coming from Python.
+We have three different versions like nossl, starttls (587 typical), fullssl (465 typical) and we also have a file for "all" servers that you can define
+nossl-starttls-fullssl by a --switch.
+Always use --help for detailed instructions.
