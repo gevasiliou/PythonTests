@@ -105,12 +105,14 @@ def bridge(client_sock, addr, remote_host, remote_port, use_starttls):
             except: pass
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Universal SMTP Transparent Proxy")
-    parser.add_argument("--listenport", type=int, default=587)
-    parser.add_argument("--remoteserver", required=True)
-    parser.add_argument("--remoteport", type=int, default=587)
-    parser.add_argument("--starttls", action="store_true")
-    
+    parser = argparse.ArgumentParser(
+        description="Universal SMTP Transparent Proxy",
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=80)
+    )
+    parser.add_argument("--listenport", type=int, default=587, metavar="PORT", help="Optional; default port is 587")
+    parser.add_argument("--remoteserver", required=True, metavar="SERVER", help="Required - Remote Server IP to forward data")
+    parser.add_argument("--remoteport", type=int, default=587, metavar="PORT", help="Optional; default remote port is 587")
+    parser.add_argument("--starttls", action="store_true", help="Use this flag to make tls connection with remoteserver")
     args = parser.parse_args()
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
