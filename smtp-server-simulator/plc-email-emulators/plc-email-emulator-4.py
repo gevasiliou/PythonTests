@@ -4,8 +4,6 @@ import ssl
 import argparse
 import base64
 import sys
-import hmac
-import hashlib
 import re
 from datetime import datetime
 
@@ -59,7 +57,6 @@ def log_srv(code, msg):
             log_decode(line, label="SRV CHALLENGE")
 
 def check_code(code, msg):
-    """Aborts on error and restores the helpful suggestion for 530 errors."""
     if code >= 400:
         print(f"\n{get_ts()} {C.RED}[!] TERMINAL ERROR {code}: {msg}{C.END}")
         if code == 530:
@@ -99,20 +96,47 @@ def get_ssl_context(verify=True):
     return context
 
 def mimic_plc():
-    parser = argparse.ArgumentParser(description='PLC Email Navigator v4.1.5')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--plain', action='store_true')
-    group.add_argument('--starttls', action='store_true')
-    group.add_argument('--fullssl', action='store_true')
-    parser.add_argument('--remoteserver', required=True)
-    parser.add_argument('--remoteport', type=int, required=True)
-    parser.add_argument('--ehlo-name', default='PLC_STATION_01')
-    parser.add_argument('--username'); parser.add_argument('--password'); parser.add_argument('--auth')
-    parser.add_argument('--no-verify', action='store_true')
-    parser.add_argument('--from-addr', dest='sender', required=True)
-    parser.add_argument('--to-addr', dest='recipient', required=True)
-    parser.add_argument('--subject', default='PLC_STATION_01 Alarm')
-    parser.add_argument('--body', default="PLC_STATION_01 email body")
+    # Help Epilogue Content
+    epilog_msg = f"""
+{C.CYAN}Common PLC Configurations:{C.END}
+  {C.GREEN}Gmail Port 587:{C.END} --remoteserver smtp.gmail.com --remoteport 587 --starttls
+  {C.GREEN}Gmail Port 465:{C.END} --remoteserver smtp.gmail.com --remoteport 465 --fullssl
+  {C.GREEN}Internal Relay:{C.END} --remoteserver 192.168.1.10 --remoteport 25 --plain
+
+{C.CYAN}Troubleshooting:{C.END}
+  {C.YELLOW}WRONG_VERSION_NUMBER:{C.END}   You used --fullssl on a port that expects --plain/--starttls.
+  {C.YELLOW}Unexpectedly closed:{C.END}    You used --plain on a port that requires --fullssl (Implicit SSL).
+  {C.YELLOW}Error 530:{C.END}               The server requires encryption before accepting your command.
+    """
+
+    parser = argparse.ArgumentParser(
+        description='PLC Email Protocol Navigator v4.1.6',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog_msg
+    )
+
+    # Mode Selection
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--plain', action='store_true', help='Standard TCP connection (Port 25/587). No encryption.')
+    mode.add_argument('--starttls', action='store_true', help='Standard TCP connection, then upgrade to TLS (Port 587).')
+    mode.add_argument('--fullssl', action='store_true', help='Implicit SSL/TLS connection from the start (Port 465).')
+
+    # Connection Parameters
+    parser.add_argument('--remoteserver', required=True, help='Hostname or IP of the SMTP server.')
+    parser.add_argument('--remoteport', type=int, required=True, help='Port number (usually 25, 465, or 587).')
+    parser.add_argument('--ehlo-name', default='PLC_STATION_01', help='Identity string for EHLO command (Default: PLC_STATION_01).')
+    
+    # Auth Parameters
+    parser.add_argument('--username', help='SMTP Authentication username (Email address).')
+    parser.add_argument('--password', help='SMTP Authentication password or App Password.')
+    parser.add_argument('--auth', help='Force a specific AUTH method (e.g., LOGIN, PLAIN).')
+    parser.add_argument('--no-verify', action='store_true', help='Ignore SSL certificate verification errors (Self-signed certs).')
+
+    # Email Content
+    parser.add_argument('--from-addr', dest='sender', required=True, help='Address to appear in MAIL FROM.')
+    parser.add_argument('--to-addr', dest='recipient', required=True, help='Recipient address for RCPT TO.')
+    parser.add_argument('--subject', default='PLC_STATION_01 Alarm', help='Subject line of the email.')
+    parser.add_argument('--body', default="PLC_STATION_01 email body", help='Content of the email message.')
 
     args = parser.parse_args()
     email_body = sys.stdin.read() if not sys.stdin.isatty() else args.body
@@ -189,12 +213,10 @@ def mimic_plc():
         log_info("Preparing DATA transaction...")
         msg = f"From: {args.sender}\r\nTo: {args.recipient}\r\nSubject: {args.subject}\r\n\r\n{email_body}"
         
-        # Visual log remains sequential
         log_plc("DATA")
         for line in msg.splitlines(): log_plc(line)
         log_plc(".") 
         
-        # Internal execution synchronized with the visual dot
         code, resp = server.data(msg)
         log_srv(code, resp); check_code(code, resp)
         
