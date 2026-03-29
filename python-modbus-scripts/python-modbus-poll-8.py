@@ -25,12 +25,10 @@ def log_print(*args, **kwargs):
     else:
         msg = f"{msg_body}{end}"
 
-    # Terminal output (unless quiet)
     if not QUIET_MODE:
         sys.stdout.write(msg)
         sys.stdout.flush()
 
-    # Log file output
     if log_file_handle is not None:
         log_file_handle.write(msg)
         log_file_handle.flush()
@@ -126,7 +124,24 @@ def function_name(fc):
     }.get(fc, "Unknown")
 
 
-def decode_registers(regs):
+def reorder_bytes_for_format(r0, r1, fmt):
+    """Return a 4-byte sequence for the given 32-bit format."""
+    A = (r0 >> 8) & 0xFF
+    B = r0 & 0xFF
+    C = (r1 >> 8) & 0xFF
+    D = r1 & 0xFF
+
+    mapping = {
+        "abcd": bytes([A, B, C, D]),
+        "cdab": bytes([C, D, A, B]),
+        "badc": bytes([B, A, D, C]),
+        "dcba": bytes([D, C, B, A]),
+    }
+
+    return mapping[fmt]
+
+
+def decode_registers(regs, floatformat):
     log_print(f'\n[+] Raw registers: {regs}')
 
     for idx, reg in enumerate(regs):
@@ -146,29 +161,59 @@ def decode_registers(regs):
 
     if len(regs) >= 2:
         r0, r1 = regs[0], regs[1]
+
+        log_print('\n=== Combined 32-bit interpretations ===')
+
+        # FLOAT32 decoding
+        float_formats = ["abcd", "cdab", "badc", "dcba"]
+
+        if floatformat == "auto":
+            log_print("\nFloat32 AUTO mode (all formats):")
+            for fmt in float_formats:
+                try:
+                    b = reorder_bytes_for_format(r0, r1, fmt)
+                    val = struct.unpack(">f", b)[0]
+                    log_print(f'FLOAT32 {fmt.upper():4s} : {val}')
+                except:
+                    log_print(f'FLOAT32 {fmt.upper():4s} : <invalid>')
+        else:
+            try:
+                b = reorder_bytes_for_format(r0, r1, floatformat)
+                val = struct.unpack(">f", b)[0]
+                log_print(f'\nFLOAT32 {floatformat.upper()} : {val}')
+            except:
+                log_print(f'\nFLOAT32 {floatformat.upper()} : <invalid>')
+
+        # UINT32 / INT32 decoding
+        log_print("\nInteger 32-bit interpretations:")
+
+        if floatformat == "auto":
+            for fmt in float_formats:
+                try:
+                    b = reorder_bytes_for_format(r0, r1, fmt)
+                    u = struct.unpack(">I", b)[0]
+                    i = struct.unpack(">i", b)[0]
+                    log_print(f'UINT32 {fmt.upper():4s} : {u}')
+                    log_print(f'INT32  {fmt.upper():4s} : {i}')
+                except:
+                    log_print(f'UINT32 {fmt.upper():4s} : <invalid>')
+                    log_print(f'INT32  {fmt.upper():4s} : <invalid>')
+        else:
+            try:
+                b = reorder_bytes_for_format(r0, r1, floatformat)
+                u = struct.unpack(">I", b)[0]
+                i = struct.unpack(">i", b)[0]
+                log_print(f'UINT32 {floatformat.upper()} : {u}')
+                log_print(f'INT32  {floatformat.upper()} : {i}')
+            except:
+                log_print(f'UINT32 {floatformat.upper()} : <invalid>')
+                log_print(f'INT32  {floatformat.upper()} : <invalid>')
+
+        # HEX + ASCII (existing behavior preserved)
         be_bytes = struct.pack('>HH', r0, r1)
         swapped_bytes = struct.pack('>HH', r1, r0)
 
-        log_print('\n=== Combined 32-bit interpretations ===')
-        try:
-            log_print(f'UINT32 BE      : {struct.unpack(">I", be_bytes)[0]}')
-            log_print(f'UINT32 SWAP    : {struct.unpack(">I", swapped_bytes)[0]}')
-        except:
-            pass
-
-        try:
-            log_print(f'INT32 BE       : {struct.unpack(">i", be_bytes)[0]}')
-            log_print(f'INT32 SWAP     : {struct.unpack(">i", swapped_bytes)[0]}')
-        except:
-            pass
-
-        try:
-            log_print(f'FLOAT32 BE     : {struct.unpack(">f", be_bytes)[0]}')
-            log_print(f'FLOAT32 SWAP   : {struct.unpack(">f", swapped_bytes)[0]}')
-        except:
-            pass
-
-        log_print(f'HEX BE         : {hexdump(be_bytes)}')
+        log_print(f'\nHEX BE         : {hexdump(be_bytes)}')
         log_print(f'HEX SWAP       : {hexdump(swapped_bytes)}')
         log_print(f'ASCII BE       : {printable_ascii(be_bytes)}')
         log_print(f'ASCII SWAP     : {printable_ascii(swapped_bytes)}')
@@ -189,9 +234,9 @@ def main():
         description='Universal Modbus TCP register inspector',
         epilog=(
             "Examples:\n"
-            "  (a) python3 python-modbus-poll-7.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
-            "  (b) python3 python-modbus-poll-7.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
-            "  (c) python3 python-modbus-poll-7.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
+            "  (a) python3 python-modbus-poll-8.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
+            "  (b) python3 python-modbus-poll-8.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
+            "  (c) python3 python-modbus-poll-8.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
             "\n"
             "Notes:\n"
             "  - Raw mode (--raw) prints full MBAP + PDU frames for debugging.\n"
@@ -207,22 +252,18 @@ def main():
             "  - In some PLCs , even if Slave ID = 1 is configured within PLC, you need to poll with SlaveID 0\n"
             "  - Modbus Registers are always 16bit words = INT = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
             "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
-            "    Especially for floats, endian makes great impact:\n"
-            "         Big Endian(BE)    = default modbus on most devices) = ABCD = Register0 High word + Register1 Low word = r0_hi r0_lo r1_hi r1_lo\n"
-            "         Big Endian (SWAP) = CDAB = Register1 High word+Register0 Low word = r1_hi r1_lo r0_hi r0_lo \n"
-            "         Little Endian - Byte‑swapped inside each word = BADC\n"
-            "         Little Endian - Full byte‑reversal = DCBA \n"
+            "    Especially for floats, endian makes great impact - Use --floatformat to select the correct interpretation or 'auto' to show all \n"
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
 
-    parser.add_argument('--deviceIP', required=True, help="Device/PLC IP is Required to know where to get connected")
+    parser.add_argument('--deviceIP', required=True)
     parser.add_argument('--port', type=int, default=502, help="Optional, default port = 502")
-    parser.add_argument('--startingregister', type=int, required=True, help="Required Starting Register, i.e 1000")
+    parser.add_argument('--startingregister', type=int, required=True)
     parser.add_argument('--count', type=int, default=2, help="Default = 2")
     parser.add_argument('--slave', type=int, default=0, help="Default = 0")
-    parser.add_argument('--offsetminus1', action='store_true', help="Default=OFF")
-    parser.add_argument('--raw', action='store_true', help="Default=OFF")
+    parser.add_argument('--offsetminus1', action='store_true')
+    parser.add_argument('--raw', action='store_true')
 
     parser.add_argument(
         '--regfunction',
@@ -232,9 +273,23 @@ def main():
     )
 
     parser.add_argument(
+        '--floatformat',
+        choices=['abcd', 'cdab', 'badc', 'dcba', 'auto'],
+        default='auto',
+        help=(
+            "32-bit float endian format:\n"
+            "  abcd = Big Endian standard modbus (A B C D)           - r0_hi r0_lo r1_hi r1_lo\n"
+            "  cdab = Big Endian word swap (C D A B)                 - r0_hi r0_lo r1_hi r1_lo\n"
+            "  badc = Little Endian byte swap inside words (B A D C) - r0_lo r0_hi r1_lo r1_hi\n"
+            "  dcba = Little Endian full reverse (D C B A)           - r1_lo r1_hi r0_lo r0_hi\n"
+            "  auto = decode and display all formats [default=auto]"
+        )
+    )
+
+    parser.add_argument(
         '--log',
         metavar='FILENAME',
-        help='Optional: Also write all output to the specified log file (append mode)'
+        help='Also write all output to the specified log file (append mode)'
     )
 
     parser.add_argument(
@@ -274,13 +329,11 @@ def main():
 
     function_code = function_map[args.regfunction]
 
-    # Separator for new session
     log_print("\n" + "=" * 70)
     log_print("New polling session started")
     log_print(f"Command: {' '.join(sys.argv)}")
     log_print(f"Target: {args.deviceIP}:{args.port}")
 
-    # Print full switch summary
     log_print("=== Modbus Polling Parameters ===")
     log_print(f"[*] Device IP       : {args.deviceIP}")
     log_print(f"[*] Port            : {args.port}")
@@ -290,6 +343,7 @@ def main():
     log_print(f"[*] Offset -1       : {'YES' if args.offsetminus1 else 'NO'}")
     log_print(f"[*] Raw Frames      : {'YES' if args.raw else 'NO'}")
     log_print(f"[*] Reg Function    : {args.regfunction} ({function_code:02X} - {function_name(function_code)})")
+    log_print(f"[*] Float Format    : {args.floatformat}")
     log_print(f"[*] Timestamping    : {'YES' if args.timestamp else 'NO'}")
     log_print(f"[*] Quiet Mode      : {'YES' if args.quiet else 'NO'}")
     if args.log:
@@ -334,7 +388,7 @@ def main():
             log_file_handle.close()
         return
 
-    decode_registers(regs)
+    decode_registers(regs, args.floatformat)
 
     log_print('\n[*] Connection closed')
     log_print("=" * 70)
