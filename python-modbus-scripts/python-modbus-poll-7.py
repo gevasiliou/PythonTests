@@ -205,6 +205,9 @@ def main():
             "  - If --regfunction is not specified, Holding Registers (FC03) are used by default.\n"
             "  - Offset mode (--offsetminus1) subtracts 1 from the starting register.\n"
             "  - In some PLCs , even if Slave ID = 1 is configured within PLC, you need to poll with SlaveID 0\n"
+            "  - Modbus native language is INT = 16bits = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
+            "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
+            "    Especially for floats, endian makes great impact , since floats 32bit decoding can be RegARegB or RegBRegA (depends on the position of most important bytes)\n"
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
