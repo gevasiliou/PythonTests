@@ -1,0 +1,56 @@
+This one works ok, polling register 10341 = 509TB Battery Voltage = 15.1 at the time of polling.
+
+python3 python-modbus-poll-2.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0
+[*] Connecting to 10.242.105.67:502
+[*] Slave ID        : 0
+[*] Start Register  : 10341
+[*] Register Count  : 2
+
+[+] Raw registers: [1510, 0]
+
+--- Register 1 ---
+UINT16         : 1510
+INT16          : 1510
+HEX            : 0x05E6
+BIN            : 0000010111100110
+ASCII          : ..
+Scaled /10     : 151.0
+Scaled /100    : 15.1
+Scaled /1000   : 1.51
+
+--- Register 2 ---
+UINT16         : 0
+INT16          : 0
+HEX            : 0x0000
+BIN            : 0000000000000000
+ASCII          : ..
+Scaled /10     : 0.0
+Scaled /100    : 0.0
+Scaled /1000   : 0.0
+
+=== Combined 32-bit interpretations ===
+UINT32 BE      : 98959360
+UINT32 SWAP    : 1510
+INT32 BE       : 98959360
+INT32 SWAP     : 1510
+FLOAT32 BE     : 2.162909605513009e-35
+FLOAT32 SWAP   : 2.1159606811304738e-42
+HEX BE         : 05 E6 00 00
+HEX SWAP       : 00 00 05 E6
+ASCII BE       : ....
+ASCII SWAP     : ....
+Scaled UINT32 /10   : 9895936.0
+Scaled UINT32 /100  : 989593.6
+Scaled UINT32 /1000 : 98959.36
+
+[*] Connection closed
+
+TYPICAL DATAKOM REGISTERS
+10240 R 32bit x10 Mains phase L1 voltage
+10242 R 32bit x10 Mains phase L2 voltage
+10244 R 32bit x10 Mains phase L3voltage
+10246 R 32bit x10 Genset phase L1 voltage
+10248 R 32bit x10 Genset phase L2 voltage
+10250 R 32bit x10 Genset phase L3 voltage
+10341 R 16bit x100 Battery volt
+10622 R 32bit x100 Counter: engine hours run
