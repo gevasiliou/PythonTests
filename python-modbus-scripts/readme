@@ -1,4 +1,5 @@
 This one works ok, polling register 10341 = 509TB Battery Voltage = 15.1 at the time of polling.
+Note that for polling slave ID had to be zero; though in PLC configuration suite this ID is 1.
 
 python3 python-modbus-poll-2.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0
 [*] Connecting to 10.242.105.67:502
