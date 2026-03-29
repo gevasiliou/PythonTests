@@ -189,9 +189,9 @@ def main():
         description='Universal Modbus TCP register inspector',
         epilog=(
             "Examples:\n"
-            "  (a) python3 python-modbus-poll-6.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
-            "  (b) python3 python-modbus-poll-6.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
-            "  (c) python3 python-modbus-poll-6.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0 --raw\n"
+            "  (a) python3 python-modbus-poll-7.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
+            "  (b) python3 python-modbus-poll-7.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
+            "  (c) python3 python-modbus-poll-7.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
             "\n"
             "Notes:\n"
             "  - Raw mode (--raw) prints full MBAP + PDU frames for debugging.\n"
@@ -209,13 +209,13 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
 
-    parser.add_argument('--deviceIP', required=True)
+    parser.add_argument('--deviceIP', required=True, help="Device/PLC IP is Required to know where to get connected")
     parser.add_argument('--port', type=int, default=502, help="Optional, default port = 502")
-    parser.add_argument('--startingregister', type=int, required=True)
+    parser.add_argument('--startingregister', type=int, required=True, help="Required Starting Register, i.e 1000")
     parser.add_argument('--count', type=int, default=2, help="Default = 2")
     parser.add_argument('--slave', type=int, default=0, help="Default = 0")
-    parser.add_argument('--offsetminus1', action='store_true')
-    parser.add_argument('--raw', action='store_true')
+    parser.add_argument('--offsetminus1', action='store_true', help="Default=OFF")
+    parser.add_argument('--raw', action='store_true', help="Default=OFF")
 
     parser.add_argument(
         '--regfunction',
@@ -227,7 +227,7 @@ def main():
     parser.add_argument(
         '--log',
         metavar='FILENAME',
-        help='Also write all output to the specified log file (append mode)'
+        help='Optional: Also write all output to the specified log file (append mode)'
     )
 
     parser.add_argument(
