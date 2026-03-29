@@ -229,9 +229,10 @@ def main():
         description='Universal Modbus TCP register inspector',
         epilog=(
             "Examples:\n"
-            "  (a) python3 python-modbus-poll-8.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
-            "  (b) python3 python-modbus-poll-8.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
-            "  (c) python3 python-modbus-poll-8.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
+            "  (a) python3 python-modbus-poll-9.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
+            "  (b) python3 python-modbus-poll-9.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
+            "  (c) python3 python-modbus-poll-9.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
+            "  (d) python3 python-modbus-poll-9.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp --floatformat abcd\n"
             "\n"
             "Notes:\n"
             "  - Raw mode (--raw) prints full MBAP + PDU frames for debugging.\n"
