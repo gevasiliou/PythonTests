@@ -158,7 +158,6 @@ def reorder_bytes_for_format(r0, r1, fmt):
 
     return mapping[fmt]
 
-'''
 def decode_registers(regs, floatformat, startreg):
     log_print(f'\n[+] Raw registers: {regs}')
 
@@ -168,6 +167,10 @@ def decode_registers(regs, floatformat, startreg):
         int16 = reg if reg < 0x8000 else reg - 0x10000
         reg_bytes = struct.pack('>H', reg)
 
+        # 8-bit split
+        hi = (reg >> 8) & 0xFF
+        lo = reg & 0xFF
+
         real_reg = startreg + idx
 
         log_print(f'\n--- Register {real_reg} ---')
@@ -176,16 +179,15 @@ def decode_registers(regs, floatformat, startreg):
         log_print(f'HEX            : 0x{reg:04X}')
         log_print(f'BIN            : {reg:016b}')
         log_print(f'ASCII          : {printable_ascii(reg_bytes)}')
-        log_print(f'Scaled /10     : {uint16 / 10}')
-        log_print(f'Scaled /100    : {uint16 / 100}')
-        log_print(f'Scaled /1000   : {uint16 / 1000}')
+        log_print(f'8-bit HI/LO    : {hi}  {lo}')
 
     # --- 32-bit pairwise decoding ---
     if len(regs) >= 2:
         log_print('\n=== Combined 32-bit interpretations (pairwise) ===')
 
         float_formats = ["abcd", "cdab", "badc", "dcba"]
-
+#        float_formats = ["abcd - Big Endian", "cdab - Big Endian Byte Swap", "badc - Little Endian Byte Swap", "dcba - Little Endian Full Reverse"]
+        
         for i in range(0, len(regs) - 1, 2):
             r0 = regs[i]
             r1 = regs[i+1]
@@ -253,123 +255,10 @@ def decode_registers(regs, floatformat, startreg):
     all_bytes = b''.join(struct.pack('>H', r) for r in regs)
 
     log_print("\nFull HEX (all registers)   : " + hexdump(all_bytes))
-    log_print("Full ASCII (all registers) : " + printable_ascii(all_bytes))
 
-    # UTF-16 interpretation
-    try:
-        utf16_text = all_bytes.decode('utf-16-be', errors='replace')
-        log_print("Full UTF16 (all registers) : " + utf16_text)
-    except:
-        log_print("Full UTF16 (all registers) : <decode error>")
-
-    # ASCII (1 byte per char)
-    try:
-        ascii1 = ''.join(chr(b) if 32 <= b <= 126 else '.' for b in all_bytes)
-        log_print("Full ASCII-1B (all registers) : " + ascii1)
-    except:
-        log_print("Full ASCII-1B (all registers) : <decode error>")
-
-    # UTF-8 interpretation
-    try:
-        utf8_text = all_bytes.decode('utf-8', errors='replace')
-        log_print("Full UTF8 (all registers)     : " + utf8_text)
-    except:
-        log_print("Full UTF8 (all registers)     : <decode error>")
-'''
-def decode_registers(regs, floatformat, startreg):
-    log_print(f'\n[+] Raw registers: {regs}')
-
-    # --- Per-register 16-bit breakdown ---
-    for idx, reg in enumerate(regs):
-        uint16 = reg
-        int16 = reg if reg < 0x8000 else reg - 0x10000
-        reg_bytes = struct.pack('>H', reg)
-
-        real_reg = startreg + idx
-
-        log_print(f'\n--- Register {real_reg} ---')
-        log_print(f'UINT16         : {uint16}')
-        log_print(f'INT16          : {int16}')
-        log_print(f'HEX            : 0x{reg:04X}')
-        log_print(f'BIN            : {reg:016b}')
-        log_print(f'ASCII          : {printable_ascii(reg_bytes)}')
-        log_print(f'Scaled /10     : {uint16 / 10}')
-        log_print(f'Scaled /100    : {uint16 / 100}')
-        log_print(f'Scaled /1000   : {uint16 / 1000}')
-
-    # --- 32-bit pairwise decoding ---
-    if len(regs) >= 2:
-        log_print('\n=== Combined 32-bit interpretations (pairwise) ===')
-
-        float_formats = ["abcd", "cdab", "badc", "dcba"]
-
-        for i in range(0, len(regs) - 1, 2):
-            r0 = regs[i]
-            r1 = regs[i+1]
-
-            real_reg1 = startreg + i
-            real_reg2 = startreg + i + 1
-
-            log_print(f"\n--- 32-bit block for registers {real_reg1}–{real_reg2} ---")
-
-            # FLOAT32 decoding
-            if floatformat == "auto":
-                log_print("Float32 AUTO mode (all formats):")
-                for fmt in float_formats:
-                    try:
-                        b = reorder_bytes_for_format(r0, r1, fmt)
-                        val = struct.unpack(">f", b)[0]
-                        log_print(f'FLOAT32 {fmt.upper():4s} : {val}')
-                    except:
-                        log_print(f'FLOAT32 {fmt.upper():4s} : <invalid>')
-            else:
-                try:
-                    b = reorder_bytes_for_format(r0, r1, floatformat)
-                    val = struct.unpack(">f", b)[0]
-                    log_print(f'FLOAT32 {floatformat.upper()} : {val}')
-                except:
-                    log_print(f'FLOAT32 {floatformat.upper()} : <invalid>')
-
-            # INTEGER decoding
-            log_print("\nInteger 32-bit interpretations:")
-            if floatformat == "auto":
-                for fmt in float_formats:
-                    try:
-                        b = reorder_bytes_for_format(r0, r1, fmt)
-                        u = struct.unpack(">I", b)[0]
-                        i32 = struct.unpack(">i", b)[0]
-                        log_print(f'UINT32 {fmt.upper():4s} : {u}')
-                        log_print(f'INT32  {fmt.upper():4s} : {i32}')
-                    except:
-                        log_print(f'UINT32 {fmt.upper():4s} : <invalid>')
-                        log_print(f'INT32  {fmt.upper():4s} : <invalid>')
-            else:
-                try:
-                    b = reorder_bytes_for_format(r0, r1, floatformat)
-                    u = struct.unpack(">I", b)[0]
-                    i32 = struct.unpack(">i", b)[0]
-                    log_print(f'UINT32 {floatformat.upper()} : {u}')
-                    log_print(f'INT32  {floatformat.upper()} : {i32}')
-                except:
-                    log_print(f'UINT32 {floatformat.upper()} : <invalid>')
-                    log_print(f'INT32  {floatformat.upper()} : <invalid>')
-
-            # HEX + ASCII for this pair
-            log_print("\nHEX / ASCII representations:")
-            if floatformat == "auto":
-                for fmt in float_formats:
-                    b = reorder_bytes_for_format(r0, r1, fmt)
-                    log_print(f'HEX   {fmt.upper():4s} : {hexdump(b)}')
-                    log_print(f'ASCII {fmt.upper():4s} : {printable_ascii(b)}')
-            else:
-                b = reorder_bytes_for_format(r0, r1, floatformat)
-                log_print(f'HEX   {floatformat.upper()} : {hexdump(b)}')
-                log_print(f'ASCII {floatformat.upper()} : {printable_ascii(b)}')
-
-    # --- Combined multi-register text interpretations ---
-    all_bytes = b''.join(struct.pack('>H', r) for r in regs)
-
-    log_print("\nFull HEX (all registers)   : " + hexdump(all_bytes))
+    # 8-bit unsigned integers (byte view)
+    byte_values = list(all_bytes)
+    log_print("8-bit unsigned integers    : " + " ".join(str(b) for b in byte_values))
 
     # Full ASCII (packed ASCII)
     ascii_full = printable_ascii(all_bytes)
@@ -432,6 +321,9 @@ def main():
             "  - Modbus Registers are always 16bit words = INT = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
             "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
             "    Especially for floats, endian makes great impact - Use --floatformat to select the correct interpretation or 'auto' to show all \n"
+            "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
+            "    secs=23871; printf \"%02dh %02dm %02ds\n\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
+            "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s) \n"
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
