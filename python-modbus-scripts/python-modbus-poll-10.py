@@ -321,9 +321,13 @@ def main():
             "  - Modbus Registers are always 16bit words = INT = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
             "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
             "    Especially for floats, endian makes great impact - Use --floatformat to select the correct interpretation or 'auto' to show all \n"
+            "  - Some devices pack in one word (16bit=1 register) two different 8bit values and you need to apply 8bit decoding in this case\n"
+            "    This is quite usuall in registers containing IPs. i.e Teltonika IP = Register394+395 = 4 x 8 bits\n"
+            "    Register 394 returns in hex C0A8 and this makes meaning only if decoded as 8bit -> C0 = 192 , A8=168 (similarly for register 395)\n"
+            "    This is why you always need the register map of the device you are polling to be able to correctly decode the returned hex value by the device\n"
             "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
-            "    secs=23871; printf \"%02dh %02dm %02ds\n\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
-            "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s) \n"
+            "    secs=23871; printf \"%02dh %02dm %02ds\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
+            "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s, just human delay switching from terminal to browser) \n"
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
