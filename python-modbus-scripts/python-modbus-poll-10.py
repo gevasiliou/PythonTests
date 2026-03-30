@@ -387,15 +387,41 @@ def decode_registers(regs, floatformat, startreg):
     # --- Combined multi-register text interpretations ---
     all_bytes = b''.join(struct.pack('>H', r) for r in regs)
 
-    log_print("\nFull HEX (all registers)   : " + hexdump(all_bytes))
+    # ABCD (raw)
+    log_print("\nFull HEX (all registers ABCD)       : " + hexdump(all_bytes))
 
-    # >>> ADDITIVE FEATURE: REGISTER BYTE-SWAP <<<
-    swapped = []
+    # CDAB (swap registers per 32-bit pair)
+    cdab_bytes = bytearray()
+    for i in range(0, len(all_bytes), 4):
+        if i + 3 < len(all_bytes):
+            cdab_bytes.extend(all_bytes[i+2:i+4])  # B_hi, B_lo
+            cdab_bytes.extend(all_bytes[i:i+2])    # A_hi, A_lo
+    log_print("Full HEX (all pairs CDAB)          : " +
+              " ".join(f"{b:02X}" for b in cdab_bytes))
+
+    # BADC (byte swap inside each 16-bit register)
+    badc_bytes = bytearray()
     for i in range(0, len(all_bytes), 2):
-        swapped.append(f"{all_bytes[i+1]:02X}")
-        swapped.append(f"{all_bytes[i]:02X}")
-    log_print("Full HEX (all - byte swap) : " + " ".join(swapped))
-    # >>> END ADDITION <<<
+        badc_bytes.append(all_bytes[i+1])
+        badc_bytes.append(all_bytes[i])
+    log_print("Full HEX (all - byte swap BADC)    : " +
+              " ".join(f"{b:02X}" for b in badc_bytes))
+
+    # DCAB (DCBA per 32-bit pair)
+    dcab_bytes = bytearray()
+    for i in range(0, len(all_bytes), 4):
+        if i + 3 < len(all_bytes):
+            dcab_bytes.append(all_bytes[i+3])  # B_lo
+            dcab_bytes.append(all_bytes[i+2])  # B_hi
+            dcab_bytes.append(all_bytes[i+1])  # A_lo
+            dcab_bytes.append(all_bytes[i])    # A_hi
+    log_print("Full HEX (pairs DCAB)              : " +
+              " ".join(f"{b:02X}" for b in dcab_bytes))
+
+    # DCBA (full reverse of entire chunk)
+    dcba_bytes = all_bytes[::-1]
+    log_print("Full HEX (all registers DCBA)      : " +
+              " ".join(f"{b:02X}" for b in dcba_bytes))
 
     # 8-bit unsigned integers (byte view)
     byte_values = list(all_bytes)
