@@ -388,7 +388,7 @@ def decode_registers(regs, floatformat, startreg):
     all_bytes = b''.join(struct.pack('>H', r) for r in regs)
 
     # ABCD (raw)
-    log_print("\nFull HEX (all registers ABCD)       : " + hexdump(all_bytes))
+    log_print("\nFull HEX (all registers ABCD)      : " + hexdump(all_bytes))
 
     # CDAB (swap registers per 32-bit pair)
     cdab_bytes = bytearray()
@@ -396,7 +396,7 @@ def decode_registers(regs, floatformat, startreg):
         if i + 3 < len(all_bytes):
             cdab_bytes.extend(all_bytes[i+2:i+4])  # B_hi, B_lo
             cdab_bytes.extend(all_bytes[i:i+2])    # A_hi, A_lo
-    log_print("Full HEX (all pairs CDAB)          : " +
+    log_print("Full HEX (pairs CDAB)              : " +
               " ".join(f"{b:02X}" for b in cdab_bytes))
 
     # BADC (byte swap inside each 16-bit register)
@@ -404,7 +404,7 @@ def decode_registers(regs, floatformat, startreg):
     for i in range(0, len(all_bytes), 2):
         badc_bytes.append(all_bytes[i+1])
         badc_bytes.append(all_bytes[i])
-    log_print("Full HEX (all - byte swap BADC)    : " +
+    log_print("Full HEX (pairs - byte swap BADC)  : " +
               " ".join(f"{b:02X}" for b in badc_bytes))
 
     # DCAB (DCBA per 32-bit pair)
@@ -415,7 +415,7 @@ def decode_registers(regs, floatformat, startreg):
             dcab_bytes.append(all_bytes[i+2])  # B_hi
             dcab_bytes.append(all_bytes[i+1])  # A_lo
             dcab_bytes.append(all_bytes[i])    # A_hi
-    log_print("Full HEX (pairs DCAB)              : " +
+    log_print("Full HEX (pairs DCBA)              : " +
               " ".join(f"{b:02X}" for b in dcab_bytes))
 
     # DCBA (full reverse of entire chunk)
@@ -425,37 +425,37 @@ def decode_registers(regs, floatformat, startreg):
 
     # 8-bit unsigned integers (byte view)
     byte_values = list(all_bytes)
-    log_print("8-bit unsigned integers    : " + " ".join(str(b) for b in byte_values))
+    log_print("8-bit unsigned integers ABCD       : " + " ".join(str(b) for b in byte_values))
 
     # Full ASCII (packed ASCII)
     ascii_full = printable_ascii(all_bytes)
     has_printable_full = any(32 <= b <= 126 for b in all_bytes)
     if has_printable_full:
-        log_print("Full ASCII (all registers) : " + ascii_full)
+        log_print("Full ASCII (all registers ABCD)    : " + ascii_full)
     else:
-        log_print("Full ASCII (all registers) : <non-printable>")
+        log_print("Full ASCII (all registers ABCD)    : <non-printable>")
 
     # UTF-16 interpretation
     try:
         utf16_text = all_bytes.decode('utf-16-be', errors='replace')
-        log_print("Full UTF16 (all registers) : " + utf16_text)
+        log_print("Full UTF16 (all registers ABCD)    : " + utf16_text)
     except:
-        log_print("Full UTF16 (all registers) : <decode error>")
+        log_print("Full UTF16 (all registers ABCD)    : <decode error>")
 
     # ASCII (1 byte per char)
     ascii1 = ''.join(chr(b) if 32 <= b <= 126 else '.' for b in all_bytes)
     has_printable_1b = any(32 <= b <= 126 for b in all_bytes)
     if has_printable_1b:
-        log_print("Full ASCII-1B (all registers) : " + ascii1)
+        log_print("Full ASCII-1B (all registers ABCD) : " + ascii1)
     else:
-        log_print("Full ASCII-1B (all registers) : <non-printable>")
+        log_print("Full ASCII-1B (all registers ABCD) : <non-printable>")
 
     # UTF-8 interpretation
     try:
         utf8_text = all_bytes.decode('utf-8', errors='replace')
-        log_print("Full UTF8 (all registers)     : " + utf8_text)
+        log_print("Full UTF8 (all registers ABCD)     : " + utf8_text)
     except:
-        log_print("Full UTF8 (all registers)     : <decode error>")
+        log_print("Full UTF8 (all registers ABCD)     : <decode error>")
 
 
 def main():
