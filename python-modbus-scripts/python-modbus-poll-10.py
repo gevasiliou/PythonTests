@@ -301,7 +301,7 @@ def main():
             "  (a) python3 python-modbus-poll-10.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
             "  (b) python3 python-modbus-poll-10.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
             "  (c) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
-            "  (d) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp --floatformat abcd\n"
+            "  (d) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0 --raw --log query290326.log --timestamp --floatformat abcd\n"
             "  (e) python3 python-modbus-poll-10.py --deviceIP 172.28.228.221 --startingregister 7 --count 10 --slave 1 --raw\n"
             "\n"
             "Notes:\n"
