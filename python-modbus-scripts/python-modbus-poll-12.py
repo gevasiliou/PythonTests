@@ -9,6 +9,23 @@ log_file_handle = None
 ENABLE_TIMESTAMP = False
 QUIET_MODE = False
 
+# --- Modbus Exception Codes ---
+MODBUS_EXCEPTIONS = {
+    1: "Illegal Function",
+    2: "Illegal Data Address",
+    3: "Illegal Data Value",
+    4: "Slave Device Failure",
+    5: "Acknowledge",
+    6: "Slave Device Busy",
+    8: "Memory Parity Error",
+    10: "Gateway Path Unavailable",
+    11: "Gateway Target Device Failed to Respond"
+}
+
+def print_raw_frame(label, frame_bytes):
+    log_print(f"\n=== {label} ===")
+    log_print(f"MBAP + PDU HEX : {hexdump(frame_bytes)}")
+
 
 def log_print(*args, **kwargs):
     """Print to stdout and optionally to log file, with optional timestamps."""
@@ -60,77 +77,141 @@ def send_modbus_request(ip, port, frame):
 
 
 def parse_modbus_response(resp):
-    function_code = resp[7]
-    byte_count = resp[8]
-    data = resp[9:9 + byte_count]
+    """
+    Fully patched Modbus response parser.
+    Handles:
+      - Normal register responses
+      - All Modbus exception frames
+      - Malformed frames
+      - Safe return of None on error
+    """
 
+    # Must contain MBAP (7 bytes minimum)
+    if resp is None or len(resp) < 7:
+        log_print("[!] Error: Response too short to contain MBAP header")
+        return None
+
+    # Extract PDU
+    pdu = resp[7:]
+    if len(pdu) < 1:
+        log_print("[!] Error: Response contains no PDU")
+        return None
+
+    function_code = pdu[0]
+
+    # --- EXCEPTION FRAME DETECTION ---
+    if function_code & 0x80:
+        if len(pdu) < 2:
+            log_print("[!] Error: Exception frame missing exception code")
+            return None
+
+        exception_code = pdu[1]
+        explanation = MODBUS_EXCEPTIONS.get(exception_code, "Unknown Exception")
+
+        log_print("\n[!] Modbus Exception Received")
+        log_print(f"    Function: {function_code & 0x7F:02X}")
+        log_print(f"    Exception Code: {exception_code} ({explanation})")
+
+        return None
+
+    # --- NORMAL RESPONSE ---
+    if len(pdu) < 2:
+        log_print("[!] Error: Normal response missing byte count")
+        return None
+
+    byte_count = pdu[1]
+
+    if len(pdu) < 2 + byte_count:
+        log_print("[!] Error: Response shorter than byte count indicates")
+        return None
+
+    data = pdu[2:2 + byte_count]
+
+    # Convert data to list of 16‑bit registers
     registers = []
     for i in range(0, byte_count, 2):
+        if i + 1 >= len(data):
+            log_print("[!] Error: Odd number of bytes in register data")
+            return None
         reg = struct.unpack(">H", data[i:i+2])[0]
         registers.append(reg)
 
     return function_code, byte_count, registers, data
 
 
-def show_raw_frames(slave, register, count, function_code, request_frame, response_frame, registers):
+def show_raw_frames(slave, register, count, function_code, request_frame, response_frame, registers, analyze=False):
+    """
+    Revised version:
+      - In plain mode (analyze=False):
+            * Print ONLY raw query + raw response
+            * No breakdowns at all
+      - In analyze mode (analyze=True):
+            * Print full breakdown for query and response
+      - Exception frames:
+            * Always minimal (raw only), regardless of analyze mode
+    """
+
+    # --- Detect exception frame early ---
+    is_exception = (
+        response_frame is not None and
+        len(response_frame) >= 8 and
+        (response_frame[7] & 0x80)
+    )
+
+    # --- Always print the raw query ---
     log_print('\n=== Raw Modbus TCP Query ===')
     log_print(f'MBAP + PDU HEX : {hexdump(request_frame)}')
 
-    log_print('Breakdown:')
-    log_print(f'  Transaction ID : {request_frame[0]:02X}{request_frame[1]:02X}')
-    log_print(f'  Protocol ID    : {request_frame[2]:02X}{request_frame[3]:02X}')
-    log_print(f'  Length         : {request_frame[4]:02X}{request_frame[5]:02X}')
-    log_print(f'  Unit ID        : {slave:02X}')
-    log_print(f'  Function Code  : {function_code:02X}')
-    log_print(f'  Start Register : {register} (0x{register:04X})')
-    log_print(f'  Register Count : {count} (0x{count:04X})')
+    # --- Query breakdown only in analyze mode AND not exception ---
+    if analyze and not is_exception:
+        log_print('Breakdown:')
+        log_print(f'  Transaction ID : {request_frame[0]:02X}{request_frame[1]:02X}')
+        log_print(f'  Protocol ID    : {request_frame[2]:02X}{request_frame[3]:02X}')
+        log_print(f'  Length         : {request_frame[4]:02X}{request_frame[5]:02X}')
+        log_print(f'  Unit ID        : {slave:02X}')
+        log_print(f'  Function Code  : {function_code:02X}')
+        log_print(f'  Start Register : {register} (0x{register:04X})')
+        log_print(f'  Register Count : {count} (0x{count:04X})')
 
+    # --- Raw response ---
     log_print('\n=== Raw Modbus TCP Response ===')
+
     if response_frame is None:
         log_print('No response received')
         return
 
     log_print(f'MBAP + PDU HEX : {hexdump(response_frame)}')
 
-    fc = response_frame[7]
-    byte_count = response_frame[8]
+    # --- Exception → always minimal ---
+    if is_exception:
+        return
 
-    log_print('Breakdown:')
-    log_print(f'  Transaction ID : {response_frame[0]:02X}{response_frame[1]:02X}')
-    log_print(f'  Protocol ID    : {response_frame[2]:02X}{response_frame[3]:02X}')
-    log_print(f'  Length         : {response_frame[4]:02X}{response_frame[5]:02X}')
-    log_print(f'  Unit ID        : {slave:02X}')
-    log_print(f'  Function Code  : {fc:02X}')
-    log_print(f'  Byte Count     : {byte_count} (0x{byte_count:02X})')
+    # --- Response breakdown only in analyze mode ---
+    if analyze:
+        fc = response_frame[7]
+        byte_count = response_frame[8]
 
+        log_print('Breakdown:')
+        log_print(f'  Transaction ID : {response_frame[0]:02X}{response_frame[1]:02X}')
+        log_print(f'  Protocol ID    : {response_frame[2]:02X}{response_frame[3]:02X}')
+        log_print(f'  Length         : {response_frame[4]:02X}{response_frame[5]:02X}')
+        log_print(f'  Unit ID        : {slave:02X}')
+        log_print(f'  Function Code  : {fc:02X}')
+        log_print(f'  Byte Count     : {byte_count} (0x{byte_count:02X})')
 
-#    for idx, reg in enumerate(registers):
-#        actual_register = register + idx
-#        log_print(
-#            f'  Register {actual_register:5d} : '
-#            f'{reg:6d}   '
-#            f'(0x{reg:04X})'
-#        )
+        pdu = response_frame[7:]
+        log_print(f'  PDU HEX        : {hexdump(pdu)}')
 
-    pdu = response_frame[7:]
-#    log_print(f'  PDU ASCII      : {printable_ascii(pdu)}')
-    log_print(f'  PDU HEX        : {hexdump(pdu)}')
+        data_bytes = response_frame[9:]
+        log_print(f'  PDU DATA HEX   : {hexdump(data_bytes)}')
 
-    # Extract only the DATA portion of the PDU (register values)
-    data_bytes = response_frame[9:]   # skip FC and ByteCount
+        ascii_text = printable_ascii(data_bytes)
+        has_printable = any(32 <= b <= 126 for b in data_bytes)
 
-    # Show DATA HEX (register values only)
-    log_print(f'  PDU DATA HEX   : {hexdump(data_bytes)}')
-
-    # Determine if DATA contains printable ASCII
-    ascii_text = printable_ascii(data_bytes)
-    has_printable = any(32 <= b <= 126 for b in data_bytes)
-
-    # Show ASCII only if meaningful
-    if has_printable:
-        log_print(f'  PDU DATA ASCII : {ascii_text}')
-    else:
-        log_print('  PDU DATA ASCII : <non-printable>')
+        if has_printable:
+            log_print(f'  PDU DATA ASCII : {ascii_text}')
+        else:
+            log_print('  PDU DATA ASCII : <non-printable>')
 
 
 def function_name(fc):
@@ -329,87 +410,47 @@ def main():
 
     parser = argparse.ArgumentParser(
         description='Universal Modbus TCP register inspector',
-        epilog=(
-            "Examples:\n"
-            "  (a) python3 python-modbus-poll-10.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
-            "  (b) python3 python-modbus-poll-10.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
-            "  (c) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
-            "  (d) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0 --raw --log query290326.log --timestamp --floatformat abcd\n"
-            "  (e) python3 python-modbus-poll-10.py --deviceIP 172.28.228.221 --startingregister 7 --count 10 --slave 1 --raw\n"
-            "\n"
-            "Notes:\n"
-            "  - Raw mode (--raw) prints full MBAP + PDU frames for debugging.\n"
-            "    hex query of (c) example send by python to device is like this:\n"
-            "        MBAP + PDU HEX : 00 01 00 00 00 06 00 03 28 65 00 02\n"
-            "        Device Response:\n"
-            "        MBAP + PDU HEX : 00 01 00 00 00 07 00 03 04 05 E7 00 00\n"
-            "    For troubleshooting, you can manually send raw query to your client (in hex) and expect the result: \n"
-            "        printf '\\x00\\x01\\x00\\x00\\x00\\x06\\x00\\x03\\x28\\x65\\x00\\x02' | ncat 10.242.105.67 502 | xxd \n"
-            "        00000000: 0001 0000 0007 0003 0405 e700 00         .............\n"
-            "    Once you have the hex response, you can also check the response with something like this:\n"
-            "        echo \"54 65 6C 74 6F 6E 69 6B 61 2D 52 55 54 39 35 30 2E 63 6F 6D\" | xxd -r -p && echo \n"
-            "  - If --regfunction is not specified, Holding Registers (FC03) are used by default.\n"
-            "  - Offset mode (--offsetminus1) subtracts 1 from the starting register.\n"
-            "  - In some PLCs , even if Slave ID = 1 is configured within PLC, you need to poll with SlaveID 0\n"
-            "  - Modbus Registers are always 16bit words = INT = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
-            "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
-            "    Especially for floats, endian makes great impact - Use --floatformat to select the correct interpretation or 'auto' to show all \n"
-            "  - Some devices pack in one word (16bit=1 register) two different 8bit values and you need to apply 8bit decoding in this case\n"
-            "    This is quite usuall in registers containing IPs. i.e Teltonika IP = Register394+395 = 4 x 8 bits\n"
-            "    Register 394 returns in hex C0A8 and this makes meaning only if decoded as 8bit -> C0 = 192 , A8=168 (similarly for register 395)\n"
-            "    This is why you always need the register map of the device you are polling to be able to correctly decode the returned hex value by the device\n"
-            "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
-            "    secs=23871; printf \"%02dh %02dm %02ds\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
-            "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s, just human delay switching from terminal to browser) \n"
-        ),
         formatter_class=argparse.RawTextHelpFormatter
     )
 
     parser.add_argument('--deviceIP', required=True)
-    parser.add_argument('--port', type=int, default=502, help="Optional, default port = 502")
+    parser.add_argument('--port', type=int, default=502)
     parser.add_argument('--startingregister', type=int, required=True)
-    parser.add_argument('--count', type=int, default=2, help="Default = 2")
-    parser.add_argument('--slave', type=int, default=0, help="Default = 0")
+    parser.add_argument('--count', type=int, default=2)
+    parser.add_argument('--slave', type=int, default=0)
     parser.add_argument('--offsetminus1', action='store_true')
     parser.add_argument('--raw', action='store_true')
 
+#    parser.add_argument('--regfunction', choices=['holding', 'input', 'coil', 'discrete'], default='holding')
     parser.add_argument(
         '--regfunction',
-        choices=['holding', 'input', 'coil', 'discrete'],
-        default='holding',
-        help='Register function: holding (FC03), input (FC04), coil (FC01), discrete (FC02) [default=holding]'
+        choices=['01', '02', '03', '04'],
+        default='03',
+        help=(
+            "Modbus Function Code:\n"
+            "  01 = Read Coils\n"
+            "  02 = Read Discrete Inputs\n"
+            "  03 = Read Holding Registers\n"
+            "  04 = Read Input Registers\n"
+            "Default = 03 (Holding Registers)"
+        )
     )
 
     parser.add_argument(
         '--floatformat',
         choices=['abcd', 'cdab', 'badc', 'dcba', 'auto'],
-        default='auto',
-        help=(
-            "32-bit float endian format:\n"
-            "  abcd = Big Endian standard modbus (A B C D)           - r0_hi r0_lo r1_hi r1_lo\n"
-            "  cdab = Big Endian word swap (C D A B)                 - r1_hi r1_lo r0_hi r0_lo\n"
-            "  badc = Little Endian byte swap inside words (B A D C) - r0_lo r0_hi r1_lo r1_hi\n"
-            "  dcba = Little Endian full reverse (D C B A)           - r1_lo r1_hi r0_lo r0_hi\n"
-            "  auto = decode and display all formats [default=auto]"
-        )
+        default='auto'
     )
 
-    parser.add_argument(
-        '--log',
-        metavar='FILENAME',
-        help='Also write all output to the specified log file (append mode)'
-    )
+    parser.add_argument('--log', metavar='FILENAME')
+    parser.add_argument('--timestamp', action='store_true')
+    parser.add_argument('--quiet', action='store_true')
 
+    # NEW: analysis mode
     parser.add_argument(
-        '--timestamp',
+        '--analyze',
         action='store_true',
-        help='Enable timestamps in output and log [default=no timestamps]'
-    )
-
-    parser.add_argument(
-        '--quiet',
-        action='store_true',
-        help='Suppress terminal output (log file still receives full output)'
+        help='Enable full breakdown and register analysis'
     )
 
     args = parser.parse_args()
@@ -428,35 +469,51 @@ def main():
     if args.offsetminus1:
         register -= 1
 
+#    function_map = { 'holding': 3, 'input': 4, 'coil': 1, 'discrete': 2 }
     function_map = {
-        'holding': 3,
-        'input': 4,
-        'coil': 1,
-        'discrete': 2
+        '01': 1,   # Read Coils
+        '02': 2,   # Read Discrete Inputs
+        '03': 3,   # Read Holding Registers
+        '04': 4    # Read Input Registers
     }
 
     function_code = function_map[args.regfunction]
 
+    # ============================================================
+    # NEW: Plain-mode header
+    # ============================================================
     log_print("\n" + "=" * 70)
     log_print("New polling session started")
-    log_print(f"Command: {' '.join(sys.argv)}")
-    log_print(f"Target: {args.deviceIP}:{args.port}")
 
-    log_print("=== Modbus Polling Parameters ===")
-    log_print(f"[*] Device IP       : {args.deviceIP}")
-    log_print(f"[*] Port            : {args.port}")
-    log_print(f"[*] Slave ID        : {args.slave}")
-    log_print(f"[*] Start Register  : {register}")
-    log_print(f"[*] Register Count  : {args.count}")
-    log_print(f"[*] Offset -1       : {'YES' if args.offsetminus1 else 'NO'}")
-    log_print(f"[*] Raw Frames      : {'YES' if args.raw else 'NO'}")
-    log_print(f"[*] Reg Function    : {args.regfunction} ({function_code:02X} - {function_name(function_code)})")
-    log_print(f"[*] Float Format    : {args.floatformat}")
-    log_print(f"[*] Timestamping    : {'YES' if args.timestamp else 'NO'}")
-    log_print(f"[*] Quiet Mode      : {'YES' if args.quiet else 'NO'}")
-    if args.log:
-        log_print(f"[*] Log File        : {args.log}")
-    log_print("=================================\n")
+    log_print(
+        f"Polling Target: {args.deviceIP}:{args.port} , "
+        f"SlaveID {args.slave} , "
+        f"StartingRegister {register} , "
+        f"Count {args.count} , "
+        #f"RegFunction {args.regfunction}"
+        f"RegFunction {args.regfunction} ({function_map[args.regfunction]:02X} - {function_name(function_map[args.regfunction])})"
+
+    )
+
+    # ============================================================
+    # Only show detailed parameters in ANALYZE mode
+    # ============================================================
+    if args.analyze:
+        log_print("\n=== Modbus Polling Parameters ===")
+        log_print(f"[*] Device IP       : {args.deviceIP}")
+        log_print(f"[*] Port            : {args.port}")
+        log_print(f"[*] Slave ID        : {args.slave}")
+        log_print(f"[*] Start Register  : {register}")
+        log_print(f"[*] Register Count  : {args.count}")
+        log_print(f"[*] Offset -1       : {'YES' if args.offsetminus1 else 'NO'}")
+        log_print(f"[*] Raw Frames      : {'YES' if args.raw else 'NO'}")
+        log_print(f"[*] Reg Function    : {args.regfunction} ({function_code:02X} - {function_name(function_code)})")
+        log_print(f"[*] Float Format    : {args.floatformat}")
+        log_print(f"[*] Timestamping    : {'YES' if args.timestamp else 'NO'}")
+        log_print(f"[*] Quiet Mode      : {'YES' if args.quiet else 'NO'}")
+        if args.log:
+            log_print(f"[*] Log File        : {args.log}")
+        log_print("=================================\n")
 
     log_print(f'[*] Connecting to {args.deviceIP}:{args.port}')
 
@@ -477,27 +534,41 @@ def main():
             log_file_handle.close()
         return
 
+    # --- RAW MODE HANDLING ---
     if args.raw:
-        try:
-            fc, byte_count, regs, data = parse_modbus_response(response_frame)
-            show_raw_frames(args.slave, register, args.count, function_code,
-                            request_frame, response_frame, regs)
-        except Exception:
-            log_print('[!] Failed to parse raw response')
+        parsed = parse_modbus_response(response_frame)
+
+        if parsed is None:
+            show_raw_frames(
+                args.slave, register, args.count, function_code,
+                request_frame, response_frame, [],
+                analyze=args.analyze
+            )
             if log_file_handle:
                 log_file_handle.close()
             return
 
-    try:
-        fc, byte_count, regs, data = parse_modbus_response(response_frame)
-    except Exception as e:
-        log_print(f'[!] Failed to parse response: {e}')
+        fc, byte_count, regs, data = parsed
+        show_raw_frames(
+            args.slave, register, args.count, function_code,
+            request_frame, response_frame, regs,
+            analyze=args.analyze
+        )
+
+    # --- NORMAL PARSE ---
+    parsed = parse_modbus_response(response_frame)
+    if parsed is None:
         if log_file_handle:
             log_file_handle.close()
         return
 
-    #decode_registers(regs, args.floatformat)
-    decode_registers(regs, args.floatformat, args.startingregister)
+    fc, byte_count, regs, data = parsed
+
+    # NEW: Only analyze when requested
+    if args.analyze:
+        decode_registers(regs, args.floatformat, args.startingregister)
+    else:
+        log_print(f"\n[+] Raw registers: {regs}")
 
     log_print('\n[*] Connection closed')
     log_print("=" * 70)
