@@ -410,16 +410,50 @@ def main():
 
     parser = argparse.ArgumentParser(
         description='Universal Modbus TCP register inspector',
+        epilog=(
+            "Examples:\n"
+            "  (a) python3 python-modbus-poll-10.py --deviceIP 192.168.1.10 --startingregister 100 --count 4\n"
+            "  (b) python3 python-modbus-poll-10.py --deviceIP 10.0.0.5 --startingregister 300 --regfunction input --raw\n"
+            "  (c) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query290326.log --timestamp\n"
+            "  (d) python3 python-modbus-poll-10.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0 --raw --log query290326.log --timestamp --floatformat abcd\n"
+            "  (e) python3 python-modbus-poll-10.py --deviceIP 172.28.228.221 --startingregister 7 --count 10 --slave 1 --raw\n"
+            "  (f) python3 python-modbus-poll-12.py --deviceIP 10.242.105.67 --slave 1 --raw --startingregister 1036 --count 6 --analyze\n"
+            "\n"
+            "Notes:\n"
+            "  - Raw mode (--raw) prints full MBAP + PDU frames for debugging.\n"
+            "    hex query of (c) example send by python to device is like this:\n"
+            "        MBAP + PDU HEX : 00 01 00 00 00 06 00 03 28 65 00 02\n"
+            "        Device Response:\n"
+            "        MBAP + PDU HEX : 00 01 00 00 00 07 00 03 04 05 E7 00 00\n"
+            "    For troubleshooting, you can manually send raw query to your client (in hex) and expect the result: \n"
+            "        printf '\\x00\\x01\\x00\\x00\\x00\\x06\\x00\\x03\\x28\\x65\\x00\\x02' | ncat 10.242.105.67 502 | xxd \n"
+            "        00000000: 0001 0000 0007 0003 0405 e700 00         .............\n"
+            "    Once you have the hex response, you can also check the response with something like this:\n"
+            "        echo \"54 65 6C 74 6F 6E 69 6B 61 2D 52 55 54 39 35 30 2E 63 6F 6D\" | xxd -r -p && echo \n"
+            "  - If --regfunction is not specified, Holding Registers (FC03) are used by default.\n"
+            "  - Offset mode (--offsetminus1) subtracts 1 from the starting register.\n"
+            "  - In some PLCs , even if Slave ID = 1 is configured within PLC, you need to poll with SlaveID 0\n"
+            "  - Modbus Registers are always 16bit words = INT = 1 Register. Float Numbers require 32bits = 2 consecutive 16bit registers\n"
+            "    This is the reason why this script polls for 2 registers as default - to handle floats\n"
+            "    Especially for floats, endian makes great impact - Use --floatformat to select the correct interpretation or 'auto' to show all \n"
+            "  - Some devices pack in one word (16bit=1 register) two different 8bit values and you need to apply 8bit decoding in this case\n"
+            "    This is quite usuall in registers containing IPs. i.e Teltonika IP = Register394+395 = 4 x 8 bits\n"
+            "    Register 394 returns in hex C0A8 and this makes meaning only if decoded as 8bit -> C0 = 192 , A8=168 (similarly for register 395)\n"
+            "    This is why you always need the register map of the device you are polling to be able to correctly decode the returned hex value by the device\n"
+            "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
+            "    secs=23871; printf \"%02dh %02dm %02ds\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
+            "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s, just human delay switching from terminal to browser) \n"
+        ),
         formatter_class=argparse.RawTextHelpFormatter
     )
 
     parser.add_argument('--deviceIP', required=True)
-    parser.add_argument('--port', type=int, default=502)
+    parser.add_argument('--port', type=int, default=502, help='Slave Port , default=502')
     parser.add_argument('--startingregister', type=int, required=True)
-    parser.add_argument('--count', type=int, default=2)
-    parser.add_argument('--slave', type=int, default=0)
-    parser.add_argument('--offsetminus1', action='store_true')
-    parser.add_argument('--raw', action='store_true')
+    parser.add_argument('--count', type=int, default=2, help='Number of registers to read, default=2')
+    parser.add_argument('--slave', type=int, default=1, help='Slave Modbus ID, default=1')
+    parser.add_argument('--offsetminus1', action='store_true', help='When applied, requested registers are reduced by 1')
+    parser.add_argument('--raw', action='store_true', help='print raw query and response in hex / byte format')
 
 #    parser.add_argument('--regfunction', choices=['holding', 'input', 'coil', 'discrete'], default='holding')
     parser.add_argument(
@@ -436,21 +470,37 @@ def main():
         )
     )
 
+    '''
     parser.add_argument(
         '--floatformat',
         choices=['abcd', 'cdab', 'badc', 'dcba', 'auto'],
         default='auto'
     )
+    '''
 
-    parser.add_argument('--log', metavar='FILENAME')
-    parser.add_argument('--timestamp', action='store_true')
-    parser.add_argument('--quiet', action='store_true')
+    parser.add_argument(
+        '--floatformat',
+        choices=['abcd', 'cdab', 'badc', 'dcba', 'auto'],
+        default='auto',
+        help=(
+            "32-bit float endian format:\n"
+            "  abcd = Big Endian standard modbus (A B C D)           - r0_hi r0_lo r1_hi r1_lo\n"
+            "  cdab = Big Endian word swap (C D A B)                 - r1_hi r1_lo r0_hi r0_lo\n"
+            "  badc = Little Endian byte swap inside words (B A D C) - r0_lo r0_hi r1_lo r1_hi\n"
+            "  dcba = Little Endian full reverse (D C B A)           - r1_lo r1_hi r0_lo r0_hi\n"
+            "  auto = decode and display all formats [default=auto]"
+        )
+    )
+
+    parser.add_argument('--log', metavar='FILENAME', help='Also write all output to the specified log file (append mode)')
+    parser.add_argument('--timestamp', action='store_true', help='Enable timestamps in output and log [default=no timestamps]')
+    parser.add_argument('--quiet', action='store_true', help='Suppress terminal output (log file still receives full output)')
 
     # NEW: analysis mode
     parser.add_argument(
         '--analyze',
         action='store_true',
-        help='Enable full breakdown and register analysis'
+        help='Enable full breakdown and register analysis, default = simple / do noy analyze'
     )
 
     args = parser.parse_args()
