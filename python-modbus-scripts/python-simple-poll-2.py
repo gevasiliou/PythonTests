@@ -119,7 +119,7 @@ def main():
             # Helpful hint for the most common real-world case
             if exc_code == 4:
                 print("    Hint: Device rejected the request. "
-                      "Try reducing --count or check register boundaries.")
+                      "Try reducing --count or poll other registers.")
             return
 
     except Exception as e:
