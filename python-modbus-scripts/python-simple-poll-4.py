@@ -11,7 +11,7 @@ MODBUS_EXCEPTIONS = {
     1: "Illegal Function",
     2: "Illegal Data Address",
     3: "Illegal Data Value",
-    4: "Slave Device Failure",
+    4: "Slave Device Failure and/or bad request",
     5: "Acknowledge",
     6: "Slave Device Busy",
     8: "Memory Parity Error",
