@@ -1182,16 +1182,6 @@ ssh -p 2222 -i ~/.ssh/gvssh gv@your.server.ip
 nano /etc/ssh/sshd_config 
 set --> PasswordAuthentication no
 
-.B Restart SSH --> 
-systemctl restart ssh
-
-.B Using scp (securecopy) with ssh key
-Local to Remote          --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
-Remote to Local          --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
-Recursive Directory Copy --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
-
-ps: mind the capital -P required by scp
-
 .B Add an SSH config entry to make ssh login easy. 
 Bellow trick makes Geany, SFTP, SSH and SSHFS work smoothly
 
@@ -1209,6 +1199,18 @@ ps: It is possible that file ~/.ssh/config does not exist at all or if exist to 
 Result: 
 To verify if above operates correctly, log in to your vps with just --> ssh cloudzy
 If everything is correct, it will just login!
+
+.B Restart SSH --> 
+systemctl restart ssh
+
+.B Using scp (securecopy) with ssh key
+Local to Remote          --> scp ./local-file cloudzy:/home/gv/pytests
+Local to Remote          --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
+Remote to Local          --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
+Recursive Directory Copy --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
+
+ps: mind the capital -P required by scp
+
 
 .B Geany over ssh--> 
 Geany -> Open -> Other Locations -> Connect to Server ->
