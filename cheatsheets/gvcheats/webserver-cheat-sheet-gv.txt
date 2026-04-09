@@ -1221,7 +1221,7 @@ Geany’s “ssh://” and “sftp://” handlers do NOT automatically use your 
 So it is mandatory if you want to use geany to add to your local .ssh/config the lines above about Host cloudzy
 
 Also, you need to ensure SFTP is enabled in your vps --> 
-.I grep -i sftp /etc/ssh/sshd_config
+grep -i sftp /etc/ssh/sshd_config
 
 You should see:
 Subsystem sftp /usr/lib/openssh/sftp-server
@@ -1231,3 +1231,40 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 mkdir ~/vps
 sshfs -p 2222 gv@vpsIP:/home/gv ~/vps
 
+##Run Python services on VPS (background) with systemd
+.B Create a systemd service file
+sudo nano /etc/systemd/system/rm-proxy.service
+[Unit]
+Description=Custom Datakom Rainbow Proxy
+After=network.target
+
+[Service]
+User=gv
+WorkingDirectory=/home/gv/pytests
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ExecStart=/usr/bin/python3 -u /home/gv/pytests/mitm-global-proxy.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/rm-proxy.log
+StandardError=append:/var/log/rm-proxy.log
+
+[Install]
+WantedBy=multi-user.target
+
+.B Adjust systemd
+chown gv:gv /var/log/rm-proxy.log
+sudo systemctl daemon-reload
+sudo systemctl enable rm-proxy
+sudo systemctl start rm-proxy
+
+.B Verify if the service is up and running --> 
+sudo systemctl status rm-proxy
+
+.B View the logs --> 
+tail -f /var/log/rm-proxy.log
+
+.B Modify .service file 
+If you need to make changes to the .service file you can reload the service --> sudo systemctl daemon-reload && sudo systemctl restart rm-proxy
+
+.B Stop the systemd service
+sudo systemctl stop rm-proxy
