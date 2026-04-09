@@ -1117,3 +1117,115 @@ const formData = require('form-data');
 
 PS: Above code gives error claiming that the user is not identified and that sandbox accounts are for testing only.
 
+##CLOUDZY VPS
+Assuming that you have already paid for a cloudzy vps, based on Debian.
+Cloudzy offers a root password for login (see the password in cloudzy web dashboard)
+Cloudzy vps does not include any normal user but you can create it (i.e gv)
+Cloudzy allows ssh to your vps server (even as root by default) using the format ssh user@vpsIP (you will be prompted to enter user password)
+You can also create ssh keys for automated login to your vps with ssh.
+Cloudzy by default disables smtp outgoing traffic to prevent spamming (ports 587,465 and 25 are blocked).
+ps: You can submit a ticket to cloudzy support to unblock 587/465 smtp outgoing ports, you have though to have a valid domain name (FWDN) pointing to cloudzy vps.
+
+
+.B  Generate SSH key on your local machine -> 
+ssh-keygen -t ed25519
+This command generates a private key using the ed25519 curve , and a public key that your server uses to verify your identity
+
+ps1: ed25519 is a modern, high‑security public‑key signature algorithm used for SSH keys. 
+It’s part of the Elliptic Curve Cryptography (ECC) family and is considered one of the safest and fastest algorithms available today.
+
+ps2: I use to rename my sshkey to some name that i can easily remember (i.e gvssh)
+
+.B  Copy your public key to the VPS -> 
+ssh-copy-id -i ~/.ssh/gvssh.pub gv@vps-ip
+
+Verify that the public key is indeed copied to vps: -> ls -l ~/.ssh/gvssh ~/.ssh/gvssh.pub
+
+ps: Common mistake -> make sure you copied to vps server the PUBLIC key, not the private key.
+
+.B Verify permissions on your vps
+Correct permissions must be:
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+ps: if permissions are wrong, SSH ignores the key.
+
+.B Ensure that vps ssh config is correct.
+Example of working ssh config in cloudzy vps:
+gv@debian-Utah-1gb:~/pytests$ cat /etc/ssh/sshd_config |grep -v '^[#]' |grep -v '^$'
+    Include /etc/ssh/sshd_config.d/*.conf
+    Port 2222
+    PermitRootLogin yes
+    PasswordAuthentication no
+    KbdInteractiveAuthentication no
+    UsePAM yes
+    X11Forwarding yes
+    PrintMotd no
+    AcceptEnv LANG LC_*
+    Subsystem	sftp	/usr/lib/openssh/sftp-server
+    ClientAliveInterval 120
+    Match User gv
+        PasswordAuthentication no
+
+ps1: is always good idea to change the default ssh port (22) to something else to get rid of bot scanning / bruteforcing that hits ssh servers at port 22.
+ps2: If you have a firewall installed like ufw, you need to "open" this custom ssh port 2222 ---> 
+sudo ufw allow 2222/tcp
+OR 
+sudo iptables -A INPUT -p tcp --dport 2222 -j ACCEPT
+
+ps3: after confirming that new port is working, disable old port (22):
+sudo ufw delete allow 22/tcp
+
+.B  Log in using the SSH key -> 
+ssh -p 2222 -i ~/.ssh/gvssh gv@your.server.ip
+
+.B  Disable password login (after confirming sshkey login works), 
+nano /etc/ssh/sshd_config 
+set --> PasswordAuthentication no
+
+.B Restart SSH --> 
+systemctl restart ssh
+
+.B Using scp (securecopy) with ssh key
+Local to Remote          --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
+Remote to Local          --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
+Recursive Directory Copy --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
+
+ps: mind the capital -P required by scp
+
+.B Add an SSH config entry to make ssh login easy. 
+Bellow trick makes Geany, SFTP, SSH and SSHFS work smoothly
+
+nano ~/.ssh/config
+Add:
+Host cloudzy
+    HostName vpsIP
+    User gv
+    Port 2222
+    IdentityFile ~/.ssh/gvssh
+    IdentitiesOnly yes
+
+ps: It is possible that file ~/.ssh/config does not exist at all or if exist to be empty. This is ok, just create the file and add above lines.
+
+Result: 
+To verify if above operates correctly, log in to your vps with just --> ssh cloudzy
+If everything is correct, it will just login!
+
+.B Geany over ssh--> 
+Geany -> Open -> Other Locations -> Connect to Server ->
+sftp://cloudzy/home/gv/pytests/smtp-proxy-asynchronous-v2.py
+
+Remark: 
+Geany’s “ssh://” and “sftp://” handlers do NOT automatically use your SSH key or your custom port, even though your terminal does.
+So it is mandatory if you want to use geany to add to your local .ssh/config the lines above about Host cloudzy
+
+Also, you need to ensure SFTP is enabled in your vps --> 
+.I grep -i sftp /etc/ssh/sshd_config
+
+You should see:
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+
+.B Mount the VPS locally as a drive/mount point using SSHFS:
+mkdir ~/vps
+sshfs -p 2222 gv@vpsIP:/home/gv ~/vps
+
