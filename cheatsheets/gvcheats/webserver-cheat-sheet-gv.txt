@@ -929,6 +929,23 @@ htop | seashells --delay 5
 seashells can be used to display on a web page output data of various scripts, i.e nodejs scripts.
 Being able to see the results of node program.js in a web page, you don’t have to use ssh.
 
+##TTYD
+Another utility (not available for apt install in Debian) that will bring your terminal to web (view only).
+This one runs as a standalone utility. No web server (apache, nginx, etc) are required.
+wget https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64
+chmod +x ttyd.x86_64
+sudo mv ttyd.x86_64 /usr/local/bin/ttyd
+ttyd -p 9000 tail -f /var/log/smtp-proxy.log
+
+Just visit http://vpsname-or-vpsIP:9000 and view the tail -f live by your office...
+
+##PYTHON simple http server module
+Python has a built-in module that can serve a file over web.
+It is one-off , not following (like tail-f)
+
+Run it --> python3 -m http.server 8080 --directory /var/log
+Use it --> http://YOUR_SERVER_IP:8080/smtp-proxy.log
+
 ##Bastillion
 https://github.com/bastillion-io/Bastillion
 Bastilion is a full working web-based CLI, based on xterm.js
@@ -951,9 +968,19 @@ password:changeme
 Note: When using the AMI instance, the password is defaulted to the <Instance ID>. Also, the AMI uses port 443 as in https://<Instance IP>:443
 
 
+##RTTY
+rtty is a remote TTY tunnel system. It works like this:
+    You run a small client (rtty) on your VPS
+    It connects outbound to a central server (rttys)
+    You open a browser to the server
+    You get a full interactive shell on the VPS
+
+Process flow: Browser --> rttys server --> outbound connection --> rtty client → your VPS shell
+It’s basically a reverse shell over WebSocket, with a web UI.
+
 ##More cool resources based on xterm.js
 https://github.com/xtermjs/xterm.js#real-world-uses
-Check rtty: https://github.com/zhaojh329/rtty
+
 
 ##DNS Hosting
 https://www.hostingkey.com/dnhosting.php
@@ -1268,3 +1295,4 @@ If you need to make changes to the .service file you can reload the service --> 
 
 .B Stop the systemd service
 sudo systemctl stop rm-proxy
+
