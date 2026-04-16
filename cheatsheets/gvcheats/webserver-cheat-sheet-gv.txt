@@ -930,14 +930,124 @@ seashells can be used to display on a web page output data of various scripts, i
 Being able to see the results of node program.js in a web page, you don’t have to use ssh.
 
 ##TTYD
+TTYD exposes your terminal on the web. By default is read-only unless --writable flag is given to ttyd.
+
+Used for view logs on the web by browser (live / following logs with tail -f) instead of ssh to my vps
 Another utility (not available for apt install in Debian) that will bring your terminal to web (view only).
 This one runs as a standalone utility. No web server (apache, nginx, etc) are required.
+
+.B Installation (not available for apt install in Debian 13)
 wget https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64
 chmod +x ttyd.x86_64
 sudo mv ttyd.x86_64 /usr/local/bin/ttyd
-ttyd -p 9000 tail -f /var/log/smtp-proxy.log
 
-Just visit http://vpsname-or-vpsIP:9000 and view the tail -f live by your office...
+tip: 
+Is recommened to also install the following package that supports various terminals encodings --> sudo apt install ncurses-term
+
+.B Usage:
+ttyd -p 9000 tail -f /var/log/smtp-proxy.log
+Just visit http://vpsname-or-vpsIP:9000 and view the tail -f live by your desk...
+
+.B Use it interactivelly (dangerous...)
+ttyd -p 9000 --writable bash -lc "less /var/log/smtp-proxy.log"
+ttyd -p 9000 --writable bash
+
+.B Usage with a log file menu
+ttyd --writable -p 9000 bash -lc '
+logmenu() {
+    while true; do
+        clear
+        echo "Select log to view:"
+        echo "1) SMTP Proxy Log"
+        echo "2) RM Proxy Log"
+        echo "3) Exit"
+        read -p "> " choice
+        case "$choice" in
+            1) less /var/log/smtp-proxy.log ;;
+            2) less /var/log/rm-proxy.log ;;
+            3) exit 0 ;;
+            *) echo "Invalid choice"; sleep 1 ;;
+        esac
+    done
+}
+logmenu
+'
+
+##GOTTY (not tested)
+GOTTY is a golang tty that can be used also interactivelly (user can enter commands by browser)
+You can see live log streams exactly like tail -f. 
+Colors are preserved - Scrollback works - No SSH needed.
+You can also run it as a systemd service to runit permanently on the background.
+
+.B Installation: 
+    sudo apt install golang-go
+    go install github.com/yudai/gotty@latest
+
+Binary will be in:
+    ~/go/bin/gotty
+
+.B Run it in your vps:
+    ~/go/bin/gotty --permit-write=false tail -f /var/log/smtp-proxy.log              #port 8080 = default gotty port
+    ~/go/bin/gotty --port 9090 --permit-write=false tail -f /var/log/smtp-proxy.log  #custom port
+    sudo ~/go/bin/gotty -p 80 --permit-write=false tail -f /var/log/smtp-proxy.log   #priveleged port < 1024
+
+tip:
+--permit-write=false --> disables user interaction by browser - force "view only" mode
+priveleged ports can be used by normal users / normal systemd services without sudo if first you do this:
+sudo setcap 'cap_net_bind_service=+ep' ~/go/bin/gotty
+
+.B View by Browser:
+    http://your-vps-ip:8080
+
+.B Create a systemd service:
+    sudo nano /etc/systemd/system/gotty.service
+
+gotty.service contents:
+[Unit]
+Description=Gotty Web Terminal for Log Viewing
+After=network.target
+
+[Service]
+Type=simple
+User=gv
+Group=gv
+WorkingDirectory=/home/gv
+
+# Adjust the port and command as needed
+ExecStart=/home/gv/go/bin/gotty --port 9090 --permit-write=false tail -f /var/log/smtp-proxy.log
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
+TIPS:
+    --permit-write=false    --> browser session is read‑only - user cannot type commands
+    ProtectSystem=full      --> prevents accidental file modifications
+    ProtectHome=true        --> blocks access to home directories
+    NoNewPrivileges=true    --> prevents privilege escalation
+
+.B Load - Enable - Run the new systemd service:
+    sudo systemctl daemon-reload
+    sudo systemctl enable gotty.service
+    sudo systemctl start gotty.service
+    sudo systemctl status gotty.service
+
+
+##WEBSOCAT
+websocat (raw WebSocket streaming) - pure streaming solution without a terminal:
+
+sudo apt install websocat
+tail -f /var/log/smtp-proxy.log | websocat ws-l:0.0.0.0:8081
+
+Then connect from browser to your vps IP:8081 with a tiny HTML page.
 
 ##PYTHON simple http server module
 Python has a built-in module that can serve a file over web.
@@ -1258,7 +1368,7 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 mkdir ~/vps
 sshfs -p 2222 gv@vpsIP:/home/gv ~/vps
 
-##Run Python services on VPS (background) with systemd
+##Run Python Proxy services on VPS (background) with systemd
 .B Create a systemd service file
 sudo nano /etc/systemd/system/rm-proxy.service
 [Unit]
@@ -1278,21 +1388,24 @@ StandardError=append:/var/log/rm-proxy.log
 [Install]
 WantedBy=multi-user.target
 
-.B Adjust systemd
+.B Load and Enable the new systemd service
 chown gv:gv /var/log/rm-proxy.log
 sudo systemctl daemon-reload
 sudo systemctl enable rm-proxy
 sudo systemctl start rm-proxy
-
-.B Verify if the service is up and running --> 
 sudo systemctl status rm-proxy
 
-.B View the logs --> 
-tail -f /var/log/rm-proxy.log
+.B View the systemd service logs --> 
+Live Log View            --> tail -f /var/log/rm-proxy.log
+View the last 100 lines  --> tail -n100 /var/log/rm-proxy.log
 
 .B Modify .service file 
-If you need to make changes to the .service file you can reload the service --> sudo systemctl daemon-reload && sudo systemctl restart rm-proxy
+If you need to make changes to the .service file :
+    Edit the systemd file      --> sudo nano /etc/systemd/system/rm-proxy.service
+    Reload the systemd service --> sudo systemctl daemon-reload && sudo systemctl restart rm-proxy && sudo systemctl status rm-proxy
 
-.B Stop the systemd service
+.B Manually Start & Stop the systemd service
 sudo systemctl stop rm-proxy
+sudo systemctl start rm-proxy
+
 
