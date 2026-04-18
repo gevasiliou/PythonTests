@@ -31,7 +31,7 @@ def get_ts():
     return datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 def signal_handler(sig, frame):
-    print(f"\n{GREEN}[*] Titan Proxy Shutting down...{RESET}")
+    print(f"\n{GREEN}[{get_ts()}][*] Titan Proxy Shutting down...{RESET}")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -89,7 +89,7 @@ def disconnect_ip(ip_str):
         except:
             pass
 
-        print(f"{RED}[!] Forced disconnect of {ip_str} — newly added to block list{RESET}")
+        print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} — newly added to block list{RESET}")
 
 def load_rules():
     global WHITELIST, BLACKLIST, OLD_BLACKLIST, rules_mtime
@@ -123,7 +123,7 @@ def load_rules():
                 OLD_BLACKLIST = BLACKLIST.copy()
                 rules_mtime = mtime
 
-            print(f"{YELLOW}[!] Rules reloaded: {len(WHITELIST)} allow, {len(BLACKLIST)} block{RESET}")
+            print(f"{YELLOW}[{get_ts()}] [!] Rules reloaded: {len(WHITELIST)} allow, {len(BLACKLIST)} block{RESET}")
 
             # Forced disconnect for newly added blocked IPs
             for rule in newly_blocked:
@@ -189,7 +189,7 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, sh
     with active_lock:
         ACTIVE_CONNECTIONS[conn_id] = {"ip": client_ip, "socket": client_sock}
 
-    print(f"{GREEN}[+] [ID:#{conn_id}] CONNECTED: {client_ip} (Active: {connection_count}){RESET}")
+    print(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip} (Active: {connection_count}){RESET}")
 
     remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -212,7 +212,7 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, sh
         t2.join()
 
     except Exception as e:
-        print(f"{RED}[!] [ID:#{conn_id}] Error: {e}{RESET}")
+        print(f"{RED}[{get_ts()}][!] [ID:#{conn_id}] Error: {e}{RESET}")
 
     finally:
         with counter_lock:
@@ -221,7 +221,7 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, sh
         with active_lock:
             ACTIVE_CONNECTIONS.pop(conn_id, None)
 
-        print(f"{MAGENTA}[-] [ID:#{conn_id}] DISCONNECTED {client_ip} (Active: {connection_count}){RESET}")
+        print(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} (Active: {connection_count}){RESET}")
 
         for s in (client_sock, remote_sock):
             try: s.close()
@@ -304,10 +304,10 @@ def packet_sniffer(listen_port, remote_host, remote_port):
 
         sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
     except Exception as e:
-        print(f"{RED}[!] TCP sniffer init failed: {e}{RESET}")
+        print(f"{RED}[{get_ts()}][!] TCP sniffer init failed: {e}{RESET}")
         return
 
-    print(f"{CYAN}[*] TCP handshake sniffer ACTIVE on port {listen_port} (AF_PACKET){RESET}")
+    print(f"{CYAN}[{get_ts()}][*] TCP handshake sniffer ACTIVE on port {listen_port} (AF_PACKET){RESET}")
 
     while True:
         try:
@@ -383,9 +383,9 @@ if __name__ == "__main__":
     server.listen(100)
 
     total_conn_ever = 0
-    print(f"{GREEN}[*] TITAN v14.1 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
+    print(f"{GREEN}[{get_ts()}][*] TITAN v14.1 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
     if args.tcp_sniff:
-        print(f"{CYAN}[*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
+        print(f"{CYAN}[{get_ts()}][*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
 
     while True:
         c, a = server.accept()
