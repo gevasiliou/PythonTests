@@ -1352,9 +1352,10 @@ Local to Remote                 --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/f
 Remote to Local                 --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
 Recursive Directory Copy        --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
 Remote to Local with profile    --> scp cloudzy:/home/gv/pytests/rm-proxy-ip-list ./smtp-python-scripts/smtp-mitm-proxy/rm-proxy-ip-list
+Local to Remote with profile    --> scp /path/to/local/file cloudzy:/path/to/remote/
 
-ps: mind the capital -P required by scp to define the port.
-
+ps1: mind the capital -P required by scp to define the port.
+ps2: You need to run scp from your local machine and not from remote (vps) machine. Your ssh profile and ssh key exist in your local machine.
 
 .B Geany over ssh--> 
 Geany -> Open -> Other Locations -> Connect to Server ->
@@ -1362,13 +1363,11 @@ sftp://cloudzy/home/gv/pytests/smtp-proxy-asynchronous-v2.py
 
 Remark: 
 Geany’s “ssh://” and “sftp://” handlers do NOT automatically use your SSH key or your custom port, even though your terminal does.
-So it is mandatory if you want to use geany to add to your local .ssh/config the lines above about Host cloudzy
+So it is mandatory if you want to use geany to add to your local .ssh/config the lines above and create a ssh profile = cloudzy
 
-Also, you need to ensure SFTP is enabled in your vps --> 
-grep -i sftp /etc/ssh/sshd_config
+Also, you need to ensure SFTP is enabled in your vps -->  grep -i sftp /etc/ssh/sshd_config
 
-You should see:
-Subsystem sftp /usr/lib/openssh/sftp-server
+You should see --> Subsystem sftp /usr/lib/openssh/sftp-server
 
 
 .B Mount the VPS locally as a drive/mount point using SSHFS:
