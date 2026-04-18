@@ -1256,12 +1256,16 @@ PS: Above code gives error claiming that the user is not identified and that san
 
 ##CLOUDZY VPS
 Assuming that you have already paid for a cloudzy vps, based on Debian.
-Cloudzy offers a root password for login (see the password in cloudzy web dashboard)
-Cloudzy vps does not include any normal user but you can create it (i.e gv)
-Cloudzy allows ssh to your vps server (even as root by default) using the format ssh user@vpsIP (you will be prompted to enter user password)
-You can also create ssh keys for automated login to your vps with ssh.
-Cloudzy by default disables smtp outgoing traffic to prevent spamming (ports 587,465 and 25 are blocked).
-ps: You can submit a ticket to cloudzy support to unblock 587/465 smtp outgoing ports, you have though to have a valid domain name (FWDN) pointing to cloudzy vps.
+* Cloudzy offers a root password for login - root password is only provided ONCE by cloudzy just after vps creation. 
+* Cloudzy vps does not include any normal user but you can create it (i.e gv)
+* Cloudzy allows ssh to your vps server (even as root by default) using the format ssh user@vpsIP (you will be prompted to enter user password)
+* You can also create ssh keys for automated login to your vps with ssh.
+* Cloudzy by default disables smtp outgoing traffic to prevent spamming (ports 587,465 and 25 are blocked).
+
+ps: You can submit a ticket to cloudzy support to unblock 587/465 smtp outgoing ports. 
+For port unlocking you will need to have a valid domain name (FWDN) pointing to cloudzy vps (i.e somedomain.online) and you also need
+to have a minimal web page (can be just a portable python3 webserver module printing hello. Cloudzy wants to be sure that you own the domain name
+and also that you do control the vps web server. 
 
 
 .B  Generate SSH key on your local machine -> 
@@ -1273,12 +1277,14 @@ It’s part of the Elliptic Curve Cryptography (ECC) family and is considered on
 
 ps2: I use to rename my sshkey to some name that i can easily remember (i.e gvssh)
 
-.B  Copy your public key to the VPS -> 
+ps3: If you don't rename the sshkey generated, you will be able to use ssh without -i switch; ssh knows where to find the default named ssh key in your laptop.
+
+.B  Copy your public key (.pub file) to the VPS -> 
 ssh-copy-id -i ~/.ssh/gvssh.pub gv@vps-ip
 
 Verify that the public key is indeed copied to vps: -> ls -l ~/.ssh/gvssh ~/.ssh/gvssh.pub
 
-ps: Common mistake -> make sure you copied to vps server the PUBLIC key, not the private key.
+ps: Common mistake -> make sure you copied to vps server the PUBLIC key (.pub) and not the private key that should remain in your laptop.
 
 .B Verify permissions on your vps
 Correct permissions must be:
@@ -1340,13 +1346,14 @@ If everything is correct, it will just login!
 .B Restart SSH --> 
 systemctl restart ssh
 
-.B Using scp (securecopy) with ssh key
-Local to Remote          --> scp ./local-file cloudzy:/home/gv/pytests
-Local to Remote          --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
-Remote to Local          --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
-Recursive Directory Copy --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
+.B Using scp (securecopy) with ssh key or ssh profile
+Local to Remote                 --> scp ./local-file cloudzy:/home/gv/pytests
+Local to Remote                 --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
+Remote to Local                 --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/
+Recursive Directory Copy        --> scp -i ~/.ssh/gvssh -P 2222 -r /local/dir gv@vpsIP:/remote/dir
+Remote to Local with profile    --> scp cloudzy:/home/gv/pytests/rm-proxy-ip-list ./smtp-python-scripts/smtp-mitm-proxy/rm-proxy-ip-list
 
-ps: mind the capital -P required by scp
+ps: mind the capital -P required by scp to define the port.
 
 
 .B Geany over ssh--> 
@@ -1369,6 +1376,9 @@ mkdir ~/vps
 sshfs -p 2222 gv@vpsIP:/home/gv ~/vps
 
 ##Run Python Proxy services on VPS (background) with systemd
+Running a python server with just '&' at the end is fragile and stops easily in various circumstances.
+Systemd can auto restart, you can drive stdout and stderr to a log file, and many other possibilities.
+
 .B Create a systemd service file
 sudo nano /etc/systemd/system/rm-proxy.service
 [Unit]
