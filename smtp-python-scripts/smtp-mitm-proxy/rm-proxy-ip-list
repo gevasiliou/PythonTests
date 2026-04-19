@@ -1,6 +1,7 @@
 allow 78.87.123.42   # rokas-kalogiros
 allow 62.169.230.178 # 509TB-Lab IP & Office IP
 allow 213.249.49.50  # celestino
+allow 46.177.142.5   # home ip
 block 66.240.205.34
 block 79.124.40.174
 block 193.124.20.254
@@ -37,3 +38,14 @@ block 98.84.1.175
 block 176.120.22.139
 block 144.91.67.73
 block 69.164.217.245
+block 43.228.157.68
+block 193.124.20.246
+block 194.88.98.90
+block 104.155.11.101
+block 45.33.12.214
+block 146.70.224.22
+block 217.76.61.220
+block 45.33.109.18
+block 157.245.77.56
+#block 0.0.0.0/0
+
