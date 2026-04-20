@@ -1408,13 +1408,18 @@ sudo systemctl status rm-proxy
 Live Log View            --> tail -f /var/log/rm-proxy.log
 View the last 100 lines  --> tail -n100 /var/log/rm-proxy.log
 
+.B Manually Start & Stop the systemd service
+sudo systemctl stop rm-proxy
+sudo systemctl start rm-proxy
+
 .B Modify .service file 
 If you need to make changes to the .service file :
     Edit the systemd file      --> sudo nano /etc/systemd/system/rm-proxy.service
     Reload the systemd service --> sudo systemctl daemon-reload && sudo systemctl restart rm-proxy && sudo systemctl status rm-proxy
 
-.B Manually Start & Stop the systemd service
-sudo systemctl stop rm-proxy
-sudo systemctl start rm-proxy
+Full command:
+sudo systemctl stop rm-proxy && sleep 2 && sudo systemctl daemon-reload && sleep 2 && sudo systemctl start rm-proxy && sudo systemctl status rm-proxy
 
 
+.B Monitor your server by web
+nohup ttyd -p 8080 watch -n 60 'echo "=== $(date) ==="; curl -s http://127.0.0.1:9999/status' 2>&1 &
