@@ -2,6 +2,11 @@ allow 78.87.123.42   # rokas-kalogiros
 allow 62.169.230.178 # 509TB-Lab IP & Office IP
 allow 213.249.49.50  # celestino
 allow 46.177.142.5   # home ip
+allow 91.138.210.70  # mega panel
+allow 195.167.126.140 # circana
+allow 94.68.237.227   # moxy
+allow 195.167.8.8     # Sport FM Studio probably
+#block 0.0.0.0/0
 block 66.240.205.34
 block 79.124.40.174
 block 193.124.20.254
@@ -47,5 +52,48 @@ block 146.70.224.22
 block 217.76.61.220
 block 45.33.109.18
 block 157.245.77.56
-#block 0.0.0.0/0
-
+block 46.105.38.210
+block 159.203.115.143
+block 18.143.235.216
+block 85.239.147.7
+block 163.5.214.40
+block 20.212.0.99
+block 43.164.190.149
+block 195.178.110.161
+block 193.124.20.252
+block 173.255.221.189
+block 209.38.201.239
+block 2606:4700:10::/64
+block 205.210.31.184
+block 144.202.82.88
+block 2606:4700:10::ac42/64
+block 2606:4700:10::6814/64
+block 2606:4700:10::ac42
+block 45.56.79.53
+block 3.88.62.48
+block 51.68.111.218
+block 134.209.252.42
+block 216.73.216.228
+block 146.190.26.184
+block 124.156.226.179
+block 18.235.110.182
+block 195.211.191.112
+block 45.79.207.129
+block 66.132.195.38
+block 77.83.39.94
+block 71.6.232.28
+block 45.79.207.111
+block 45.153.34.16
+block 172.236.228.229
+block 185.231.33.46
+block 5.61.209.107
+block 143.198.13.188
+block 172.236.228.218
+block 195.3.220.99
+block 195.3.220.99
+block 195.3.220.99
+block 195.3.220.99
+block 176.65.149.253
+block 64.227.76.184 # auto block by abuse - score 100
+block 172.236.228.198 # auto block by abuse - score 100
+block 142.93.224.178 # auto block by abuse - score 100
