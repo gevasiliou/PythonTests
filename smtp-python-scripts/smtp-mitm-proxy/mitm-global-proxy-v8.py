@@ -3,8 +3,34 @@ import socket, ssl, threading, argparse, sys, signal, datetime, os, time, ipaddr
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-''' Multi-Line Comment
-'''
+HTTP_PORT_HELP = """\
+HTTP control port for Titan.
+Default Port: 9999
+
+Endpoints:
+  /status                 GET     List active connections (json)
+  /statustable            GET     List active connections (ascii table)
+  /rules                  GET     Show allow/block rules (json)
+  /rulesallowtable        GET     Show allow rules (ascii table)
+  /rulesblockedtable      GET     Show blocked rules (ascii table)
+  /stats                  GET     Show counters (json)
+  /autoblocked            GET     Autoblocked IPs (json)
+  /autoblockedtable       GET     Autoblocked IPs (ascii table)
+  /disconnect?ip=X        POST    Disconnect all sessions for IP
+  /disconnect_oldest?ip=X POST    Disconnect oldest session for IP
+  /disconnect_id?ID=X     POST    Disconnect specific connection ID
+  /hexdump/on             POST    Enable hexdump
+  /hexdump/off            POST    Disable hexdump
+
+Usage examples:
+  curl -X POST http://127.0.0.1:9999/hexdump/off
+  curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
+  curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
+  curl -s http://127.0.0.1:9999/stats
+  curl -s http://127.0.0.1:9999/rules
+  curl -s http://127.0.0.1:9999/status
+"""
+
 
 # ANSI Colors
 RED, BLUE, GREEN, YELLOW, CYAN, MAGENTA, RESET = (
@@ -618,6 +644,15 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+        elif parsed.path == "/help":
+            help_text = HTTP_PORT_HELP
+            body = help_text.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         else:
             self._json(404, {"error": "not found"})
 
@@ -721,33 +756,7 @@ if __name__ == "__main__":
     parser.add_argument("--hexdump", action="store_true")
     parser.add_argument("--tcp-sniff", action="store_true", help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
     #parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT)
-    parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT, help="""
-        HTTP control port for Titan."
-        Default: 9999
-        Used for /status, /rules, /statustable, etc.
-        Endpoint	            Method	    Purpose
-        /status	                GET	        List active connections (json)
-        /statustable            GET         List active connections (ascii table)
-        /rules	                GET	        Show allow/block rules (json)
-        /rulesallowtable        GET         Show allow rules (ascii table)
-        /rulesblockedtable      GET         Show blocked rules (ascii table)
-        /stats	                GET	        Show counters - json (accepted, blocked, abuse, etc.)
-        /autoblocked            GET         Get's autoblocked IPs in json format (current session)
-        /autoblockedtable       GET         Get's autoblocked IPs in ascii table (current session)
-        /disconnect?ip=X	    POST	    Force disconnect an IP
-        /disconnect_oldest?ip=X POST    Force disconnect oldest IP session (IP based)
-        /disconnect_id?id=X     POST    Force disconnect a specific connection ID 
-        /hexdump/on	            POST	    Enable hexdump
-        /hexdump/off	        POST	    Disable hexdump
-        
-        Usage examples:
-        curl -X POST http://127.0.0.1:9999/hexdump/off
-        curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
-        curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
-        curl -s http://127.0.0.1:9999/stats
-        curl -s http://127.0.0.1:9999/rules
-        curl -s http://127.0.0.1:9999/status
-        """)
+    parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT, help=HTTP_PORT_HELP )
 
     args = parser.parse_args()
 
