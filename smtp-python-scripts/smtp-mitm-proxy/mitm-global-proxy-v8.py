@@ -743,6 +743,7 @@ if __name__ == "__main__":
         Usage examples:
         curl -X POST http://127.0.0.1:9999/hexdump/off
         curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
+        curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
         curl -s http://127.0.0.1:9999/stats
         curl -s http://127.0.0.1:9999/rules
         curl -s http://127.0.0.1:9999/status
