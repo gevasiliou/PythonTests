@@ -1421,6 +1421,8 @@ Full command:
 sudo systemctl stop rm-proxy && sleep 2 && sudo systemctl daemon-reload && sleep 2 && sudo systemctl start rm-proxy && sudo systemctl status rm-proxy
 
 scp cloudzy:/home/gv/pytests/rm-proxy-ip-list /home/gv/Desktop/PythonTests/smtp-python-scripts/smtp-mitm-proxy/rm-proxy-ip-list
+scp cloudzy:/home/gv/pytests/mitm-global-proxy-v8.py /home/gv/Desktop/PythonTests/smtp-python-scripts/smtp-mitm-proxy/
+
 
 .B Monitor your server by web
 to monitor: nohup ttyd -p 8080 watch -n 60 'echo "=== $(date) ==="; curl -s http://127.0.0.1:9999/status' 2>&1 &
