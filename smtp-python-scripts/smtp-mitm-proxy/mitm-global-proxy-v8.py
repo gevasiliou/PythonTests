@@ -4,29 +4,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 ''' Multi-Line Comment
-This Titan Version supports web calls for monitoring and also adjusting things while proxy is running.
-Endpoint	        Method	    Purpose
-/status	            GET	        List active connections (json)
-/statustable        GET         List active connections (ascii table)
-/rules	            GET	        Show allow/block rules (json)
-/rulesallowtable    GET         Show allow rules (ascii table)
-/rulesblockedtable  GET         Show blocked rules (ascii table)
-/stats	            GET	        Show counters - json (accepted, blocked, abuse, etc.)
-/autoblocked        GET         Get's autoblocked IPs in json format (current session)
-/autoblockedtable   GET         Get's autoblocked IPs in ascii table (current session)
-/disconnect?ip=X	POST	    Force disconnect an IP
-/hexdump/on	        POST	    Enable hexdump
-/hexdump/off	    POST	    Disable hexdump
-
-
-Usage examples:
-curl -X POST http://127.0.0.1:9999/hexdump/off
-curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
-curl -s http://127.0.0.1:9999/stats
-curl -s http://127.0.0.1:9999/rules
-curl -s http://127.0.0.1:9999/status
-
-
 Also this version of Titan is using AbuseIPDB API to check if a newcomer is blacklisted by AbuseIPDB.
 Known IPs (allow or blocked) are not re-tested for abuse.
 If an ip (newcomer) has abuse score > 80% then this new IP is auto blocked (auto appended to file rm-proxy-ip-list with block entry and #auto-block comment).
@@ -666,14 +643,43 @@ def http_control_loop():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Titan v15.3 Proxy (packet-aware + forced disconnect + AbuseIPDB + HTTP control)")
+    #parser = argparse.ArgumentParser(description="Titan v15.3 Proxy (packet-aware + forced disconnect + AbuseIPDB + HTTP control)")
+    parser = argparse.ArgumentParser(description="""Titan v15.3 Proxy
+    This version of Titan is using AbuseIPDB API to check new IPs abuse score
+    Known IPs (allow or blocked) are not re-tested for abuse.
+    If an ip (newcomer) has abuse score > 80% then this new IP is auto blocked (auto appended to file rm-proxy-ip-list with block entry and #auto-block comment).
+    """, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--listenport", type=int, required=True)
     parser.add_argument("--remoteserver", required=True)
     parser.add_argument("--remoteport", type=int, required=True)
     parser.add_argument("--ssl", action="store_true")
     parser.add_argument("--hexdump", action="store_true")
     parser.add_argument("--tcp-sniff", action="store_true", help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
-    parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT)
+    #parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT)
+    parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT, help="""
+        HTTP control port for Titan."
+        Default: 9999
+        Used for /status, /rules, /statustable, etc.
+        Endpoint	        Method	    Purpose
+        /status	            GET	        List active connections (json)
+        /statustable        GET         List active connections (ascii table)
+        /rules	            GET	        Show allow/block rules (json)
+        /rulesallowtable    GET         Show allow rules (ascii table)
+        /rulesblockedtable  GET         Show blocked rules (ascii table)
+        /stats	            GET	        Show counters - json (accepted, blocked, abuse, etc.)
+        /autoblocked        GET         Get's autoblocked IPs in json format (current session)
+        /autoblockedtable   GET         Get's autoblocked IPs in ascii table (current session)
+        /disconnect?ip=X	POST	    Force disconnect an IP
+        /hexdump/on	        POST	    Enable hexdump
+        /hexdump/off	    POST	    Disable hexdump
+        Usage examples:
+        curl -X POST http://127.0.0.1:9999/hexdump/off
+        curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
+        curl -s http://127.0.0.1:9999/stats
+        curl -s http://127.0.0.1:9999/rules
+        curl -s http://127.0.0.1:9999/status
+        """)
+
     args = parser.parse_args()
 
     HTTP_CTRL_PORT = args.http_port
