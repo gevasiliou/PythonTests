@@ -131,6 +131,26 @@ def disconnect_ip(ip_str):
 
     return killed
 
+def disconnect_connection_id(cid):
+    with active_lock:
+        info = ACTIVE_CONNECTIONS.get(cid)
+        if not info:
+            return False
+
+        ip = info.get("ip", "unknown")
+        sock = info["socket"]
+
+        try:
+            sock.close()
+        except:
+            pass
+
+        del ACTIVE_CONNECTIONS[cid]
+
+        print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
+        return True
+
+
 
 def load_rules():
     global WHITELIST, BLACKLIST, OLD_BLACKLIST, rules_mtime
@@ -614,7 +634,56 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 return
             killed = disconnect_ip(ip)
             self._json(200, {"ip": ip, "disconnected": killed})
+        elif parsed.path == "/disconnect_oldest":
+            ip = qs.get("ip", [None])[0]
+            if not ip:
+                self._json(400, {"error": "missing ip"})
+                return
 
+            # find all connections for this IP
+            matches = []
+            with active_lock:
+                for cid, info in ACTIVE_CONNECTIONS.items():
+                    if info["ip"] == ip:
+                        matches.append((cid, info["connected_ts"]))
+
+            if not matches:
+                self._json(200, {"ip": ip, "disconnected": None, "reason": "no active connections"})
+                return
+
+            # sort by connected_ts (oldest first)
+            matches.sort(key=lambda x: x[1])
+            oldest_cid = matches[0][0]
+
+            # disconnect only that connection
+            killed = disconnect_connection_id(oldest_cid)
+
+            self._json(200, {
+                "ip": ip,
+                "disconnected_id": oldest_cid,
+                "remaining_connections": len(matches) - 1
+            })
+            return
+        elif parsed.path == "/disconnect_id":
+            cid_raw = qs.get("ID", [None])[0]
+            if cid_raw is None:
+                self._json(400, {"error": "missing ID"})
+                return
+
+            try:
+                cid = int(cid_raw)
+            except ValueError:
+                self._json(400, {"error": "ID must be an integer"})
+                return
+
+            killed = disconnect_connection_id(cid)
+
+            if not killed:
+                self._json(404, {"error": f"connection ID {cid} not found"})
+                return
+
+            self._json(200, {"disconnected_id": cid})
+            return
         elif parsed.path == "/hexdump/on":
             with hexdump_lock:
                 HEXDUMP_ENABLED = True
@@ -656,18 +725,21 @@ if __name__ == "__main__":
         HTTP control port for Titan."
         Default: 9999
         Used for /status, /rules, /statustable, etc.
-        Endpoint	        Method	    Purpose
-        /status	            GET	        List active connections (json)
-        /statustable        GET         List active connections (ascii table)
-        /rules	            GET	        Show allow/block rules (json)
-        /rulesallowtable    GET         Show allow rules (ascii table)
-        /rulesblockedtable  GET         Show blocked rules (ascii table)
-        /stats	            GET	        Show counters - json (accepted, blocked, abuse, etc.)
-        /autoblocked        GET         Get's autoblocked IPs in json format (current session)
-        /autoblockedtable   GET         Get's autoblocked IPs in ascii table (current session)
-        /disconnect?ip=X	POST	    Force disconnect an IP
-        /hexdump/on	        POST	    Enable hexdump
-        /hexdump/off	    POST	    Disable hexdump
+        Endpoint	            Method	    Purpose
+        /status	                GET	        List active connections (json)
+        /statustable            GET         List active connections (ascii table)
+        /rules	                GET	        Show allow/block rules (json)
+        /rulesallowtable        GET         Show allow rules (ascii table)
+        /rulesblockedtable      GET         Show blocked rules (ascii table)
+        /stats	                GET	        Show counters - json (accepted, blocked, abuse, etc.)
+        /autoblocked            GET         Get's autoblocked IPs in json format (current session)
+        /autoblockedtable       GET         Get's autoblocked IPs in ascii table (current session)
+        /disconnect?ip=X	    POST	    Force disconnect an IP
+        /disconnect_oldest?ip=X POST    Force disconnect oldest IP session (IP based)
+        /disconnect_id?id=X     POST    Force disconnect a specific connection ID 
+        /hexdump/on	            POST	    Enable hexdump
+        /hexdump/off	        POST	    Disable hexdump
+        
         Usage examples:
         curl -X POST http://127.0.0.1:9999/hexdump/off
         curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"

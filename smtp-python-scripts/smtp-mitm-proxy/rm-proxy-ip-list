@@ -134,3 +134,13 @@ block 172.236.119.165 # auto block by abuse - score 100
 block 45.148.10.67 # auto block by abuse - score 100
 block 74.235.122.210 # auto block by abuse - score 100
 block 172.236.228.197 # auto block by abuse - score 100
+block 34.77.219.71 # auto block by abuse - score 100
+block 85.217.140.3 # auto block by abuse - score 100
+block 80.94.95.169 # auto block by abuse - score 100
+block 13.86.104.46 # auto block by abuse - score 100
+block 72.14.178.148 # auto block by abuse - score 100
+block 66.228.53.157 # auto block by abuse - score 100
+block 184.105.247.194 # auto block by abuse - score 100
+block 45.79.207.252 # auto block by abuse - score 100
+block 81.29.142.100 # auto block by abuse - score 100
+block 157.245.228.194 # auto block by abuse - score 100
