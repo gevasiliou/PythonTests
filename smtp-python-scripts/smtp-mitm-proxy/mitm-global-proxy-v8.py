@@ -4,10 +4,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 ''' Multi-Line Comment
-Also this version of Titan is using AbuseIPDB API to check if a newcomer is blacklisted by AbuseIPDB.
-Known IPs (allow or blocked) are not re-tested for abuse.
-If an ip (newcomer) has abuse score > 80% then this new IP is auto blocked (auto appended to file rm-proxy-ip-list with block entry and #auto-block comment).
-
 '''
 
 # ANSI Colors
