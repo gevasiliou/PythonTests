@@ -687,7 +687,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 return
 
             # sort by connected_ts (oldest first)
-            matches.sort(key=lambda x: x[1])
+            from datetime import datetime
+            matches.sort(key=lambda x: datetime.strptime(x[1], "%H:%M:%S.%f"))
             oldest_cid = matches[0][0]
 
             # disconnect only that connection
