@@ -153,3 +153,61 @@ block 49.51.183.15 # auto block by abuse - score 100
 block 3.130.168.2
 block 87.236.176.229
 block 162.243.208.127
+block 172.104.11.34 # auto block by abuse - score 100
+172.236.127.133 # auto-blocked by abuse - score 100
+185.12.59.117 # auto-blocked by abuse - score 100
+172.236.228.86 # auto-blocked by abuse - score 100
+43.133.91.48 # auto-blocked by abuse - score 100
+13.203.110.115 # auto-blocked by abuse - score 100
+49.51.183.15 # auto-blocked by abuse - score 100
+3.125.168.113 # auto-blocked by abuse - score 100
+47.250.89.1 # auto-blocked by abuse - score 100
+37.10.113.220 # auto-blocked by abuse - score 100
+20.163.1.211 # auto-blocked by abuse - score 100
+40.76.116.105 # auto-blocked by abuse - score 100
+172.105.128.13 # auto-blocked by abuse - score 100
+66.240.236.109 # auto-blocked by abuse - score 100
+20.98.153.37 # auto-blocked by abuse - score 100
+24.144.115.57 # auto-blocked by abuse - score 100
+37.10.113.214 # auto-blocked by abuse - score 100
+185.226.197.72 # auto-blocked by abuse - score 100
+20.14.74.210 # auto-blocked by abuse - score 100
+185.100.87.136 # auto-blocked by abuse - score 100
+101.33.80.42 # auto-blocked by abuse - score 100
+192.253.248.169 # auto-blocked by abuse - score 100
+213.209.159.175 # auto-blocked by abuse - score 100
+45.129.18.216 # auto-blocked by abuse - score 90
+104.140.148.58 # auto-blocked by abuse - score 100
+45.79.128.205 # auto-blocked by abuse - score 100
+172.104.11.46 # auto-blocked by abuse - score 100
+45.33.12.122 # auto-blocked by abuse - score 100
+94.202.12.124 # auto-blocked by abuse - score 100
+66.132.195.32 # auto-blocked by abuse - score 100
+3.134.216.108 # auto-blocked by abuse - score 100
+45.79.5.11 # auto-blocked by abuse - score 100
+43.159.138.217 # auto-blocked by abuse - score 100
+89.208.216.13 # auto-blocked by abuse - score 100
+43.135.134.127 # auto-blocked by abuse - score 100
+152.32.211.139 # auto-blocked by abuse - score 100
+16.176.125.201 # auto-blocked by abuse - score 100
+172.236.228.115 # auto-blocked by abuse - score 100
+45.156.129.52 # auto-blocked by abuse - score 100
+45.156.129.130 # auto-blocked by abuse - score 100
+3.92.182.111 # auto-blocked by abuse - score 100
+13.222.179.236 # auto-blocked by abuse - score 100
+34.203.200.187 # auto-blocked by abuse - score 100
+185.38.148.2 # auto-blocked by abuse - score 100
+66.175.213.4 # auto-blocked by abuse - score 100
+40.124.174.199 # auto-blocked by abuse - score 100
+98.90.43.197 # auto-blocked by abuse - score 100
+172.233.178.66 # auto-blocked by abuse - score 100
+172.104.11.51 # auto-blocked by abuse - score 100
+103.120.189.74 # auto-blocked by abuse - score 100
+150.107.36.236 # auto-blocked by abuse - score 100
+45.227.254.155 # auto-blocked by abuse - score 100
+192.241.222.196 # auto-blocked by abuse - score 100
+66.228.53.78 # auto-blocked by abuse - score 100
+172.236.228.38 # auto-blocked by abuse - score 100
+183.96.173.196 # auto-blocked by abuse - score 100
+172.104.11.34 # auto-blocked by abuse - score 100
+block 20.64.105.47 # auto block by abuse - score 100
