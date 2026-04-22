@@ -26,7 +26,6 @@ block 198.235.24.59
 block 176.32.193.16
 block 45.79.115.59
 block 50.116.26.161
-block 195.140.214.28
 block 87.236.176.101
 block 162.216.150.167
 block 45.79.207.181
@@ -154,11 +153,9 @@ block 3.130.168.2
 block 87.236.176.229
 block 162.243.208.127
 block 172.104.11.34 # auto block by abuse - score 100
-block 172.236.127.133 # auto-blocked by abuse - score 100
 block 185.12.59.117 # auto-blocked by abuse - score 100
 block 172.236.228.86 # auto-blocked by abuse - score 100
 block 43.133.91.48 # auto-blocked by abuse - score 100
-block 13.203.110.115 # auto-blocked by abuse - score 100
 block 49.51.183.15 # auto-blocked by abuse - score 100
 block 3.125.168.113 # auto-blocked by abuse - score 100
 block 47.250.89.1 # auto-blocked by abuse - score 100
@@ -209,7 +206,6 @@ block 192.241.222.196 # auto-blocked by abuse - score 100
 block 66.228.53.78 # auto-blocked by abuse - score 100
 block 172.236.228.38 # auto-blocked by abuse - score 100
 block 183.96.173.196 # auto-blocked by abuse - score 100
-block 172.104.11.34 # auto-blocked by abuse - score 100
 block 20.64.105.47 # auto block by abuse - score 100
 block 185.100.87.136 # auto block by abuse - score 100
 block 71.6.134.235 # auto block by abuse - score 100
@@ -217,7 +213,6 @@ block 135.237.127.54 # auto block by abuse - score 100
 block 66.228.53.4 # auto block by abuse - score 100
 block 46.101.169.158 # auto block by abuse - score 100
 block 172.105.128.12 # auto block by abuse - score 100
-block 172.236.228.115 # auto block by abuse - score 100
 block 172.105.128.11 # auto block by abuse - score 100
 block 43.166.240.231 # auto block by abuse - score 100
 block 192.81.129.159 # auto block by abuse - score 100
@@ -234,3 +229,4 @@ block 47.91.125.252 # auto block by abuse - score 100
 block 45.79.115.134 # auto block by abuse - score 100
 block 184.105.247.196 # auto block by abuse - score 100
 block 135.237.125.27 # auto block by abuse - score 100
+block 20.221.71.226 # auto block by abuse - score 100
