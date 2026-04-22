@@ -1427,5 +1427,6 @@ scp cloudzy:/home/gv/pytests/mitm-global-proxy-v8.py /home/gv/Desktop/PythonTest
 .B Monitor your server by web
 to monitor: nohup ttyd -p 8080 watch -n 1 'echo "=== $(date) ==="; curl -s http://127.0.0.1:9999/statustable' 2>&1 &
 to view: http://144.172.96.163:8080/
+         nohup ttyd --writable -p 8090 -c username:'password' ./titan-menu.sh 2>&1 &
 to stop: ssh to cloudzy and run sudo killall ttyd
 

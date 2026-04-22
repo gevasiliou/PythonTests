@@ -211,3 +211,5 @@ block 172.104.11.34 # auto block by abuse - score 100
 183.96.173.196 # auto-blocked by abuse - score 100
 172.104.11.34 # auto-blocked by abuse - score 100
 block 20.64.105.47 # auto block by abuse - score 100
+block 185.100.87.136 # auto block by abuse - score 100
+block 71.6.134.235 # auto block by abuse - score 100
