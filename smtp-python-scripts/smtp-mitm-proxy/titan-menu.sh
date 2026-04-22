@@ -19,7 +19,7 @@ while true; do
     echo
     echo "POST endpoints:"
     echo "  6) /disconnect?ip=X"
-    echo "  7) /disconnect_oldest?ip=X"
+    echo "  7) /disconnect_oldest?ip=X or ID=X"
     echo "  8) /disconnect_id?ID=X"
     echo "  9) /hexdump/on"
     echo " 10) /hexdump/off"
@@ -40,9 +40,16 @@ while true; do
             curl -s -X POST "http://$HOST:$PORT/disconnect?ip=$ip"
             ;;
         7)
-            read -p "Enter IP (or q to abort): " ip
-            [[ "$ip" == "q" || "$ip" == "Q" ]] && continue
-            curl -s -X POST "http://$HOST:$PORT/disconnect_oldest?ip=$ip"
+            read -p "Enter IP or ID (or q to abort): " target
+            [[ "$target" == "q" || "$target" == "Q" ]] && continue
+
+            # If numeric → treat as ID
+            if [[ "$target" =~ ^[0-9]+$ ]]; then
+                curl -s -X POST "http://$HOST:$PORT/disconnect_oldest?ID=$target"
+            else
+                # Otherwise treat as IP
+                curl -s -X POST "http://$HOST:$PORT/disconnect_oldest?ip=$target"
+            fi
             ;;
         8)
             read -p "Enter ID(s), comma separated (or q to abort): " cidlist

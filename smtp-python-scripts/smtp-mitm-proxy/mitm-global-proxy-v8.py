@@ -670,17 +670,36 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             killed = disconnect_ip(ip)
             self._json(200, {"ip": ip, "disconnected": killed})
         elif parsed.path == "/disconnect_oldest":
+            # Accept either IP or ID
             ip = qs.get("ip", [None])[0]
+            cid_raw = qs.get("ID", [None])[0]
+
+            # If ID is provided, resolve IP from ACTIVE_CONNECTIONS
+            if cid_raw is not None:
+                try:
+                    cid = int(cid_raw)
+                except ValueError:
+                    self._json(400, {"error": "ID must be an integer"})
+                    return
+
+                with active_lock:
+                    info = ACTIVE_CONNECTIONS.get(cid)
+                    if not info:
+                        self._json(404, {"error": f"connection ID {cid} not found"})
+                        return
+                    ip = info["ip"]
+
+            # If no IP found at all, error
             if not ip:
-                self._json(400, {"error": "missing ip"})
+                self._json(400, {"error": "missing ip or ID"})
                 return
 
             # find all connections for this IP
             matches = []
             with active_lock:
-                for cid, info in ACTIVE_CONNECTIONS.items():
-                    if info["ip"] == ip:
-                        matches.append((cid, info["connected_ts"]))
+                for cid2, info2 in ACTIVE_CONNECTIONS.items():
+                    if info2["ip"] == ip:
+                        matches.append((cid2, info2["connected_ts"]))
 
             if not matches:
                 self._json(200, {"ip": ip, "disconnected": None, "reason": "no active connections"})
@@ -689,17 +708,24 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             # sort by connected_ts (oldest first)
             from datetime import datetime
             matches.sort(key=lambda x: datetime.strptime(x[1], "%H:%M:%S.%f"))
-            oldest_cid = matches[0][0]
 
-            # disconnect only that connection
-            killed = disconnect_connection_id(oldest_cid)
+            # newest connection is the LAST one
+            newest_cid = matches[-1][0]
+
+            # disconnect all except newest
+            disconnected = []
+            for cid2, ts in matches[:-1]:
+                if disconnect_connection_id(cid2):
+                    disconnected.append(cid2)
 
             self._json(200, {
                 "ip": ip,
-                "disconnected_id": oldest_cid,
-                "remaining_connections": len(matches) - 1
+                "kept_id": newest_cid,
+                "disconnected_ids": disconnected,
+                "remaining_connections": 1
             })
             return
+
         elif parsed.path == "/disconnect_id":
             cid_raw = qs.get("ID", [None])[0]
             if cid_raw is None:
