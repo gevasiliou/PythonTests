@@ -1430,3 +1430,24 @@ to view: http://144.172.96.163:8080/
          nohup ttyd --writable -p 8090 -c username:'password' ./titan-menu.sh 2>&1 &
 to stop: ssh to cloudzy and run sudo killall ttyd
 
+.B Testing Services and Proxies for new features
+Set up a netcat simple http server like this:
+    while true; do  echo -e "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok" | sudo nc -lp 4444; done
+or even better like this:
+    c=1; while true; do msg="welcome-number $c"; length=${#msg};echo -e "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: $length\r\nConnection: close\r\n\r\n$msg" | sudo nc -lp 4444;((c++));done
+
+ps: without while, the echo is consumed by the first client connected and rest clients (if connected) get nothing = hanging web page.
+
+Set up your proxy to work like this:
+sudo python3 mitm-global-proxy-v9.py --listenport 80 --remoteserver 127.0.0.1 --remoteport 4444 
+So actually your proxy is listening on port 80 and forwards traffic locally to netcat. 
+You can test it by any browser by just visiting http://144.172.96.163/ -> a single ok will be printed on your browser.
+
+With port 80 open, you will get a lot of hits (bots,scammers, scanners, etc) to test your abuseblock behavior:
+    --abuseblock 90 --> [22:47:49.552][INFO] AbuseIPDB score for 204.76.203.18: 100
+                        [22:47:49.553][!] 204.76.203.18 flagged by AbuseIPDB (score 100) — auto-blocking
+                        [22:47:49.553][*] No rules file — auto-blocking 204.76.203.18 in memory only
+                        [22:47:51.363] RUNTIME BLOCKLIST: blocked 204.76.203.18
+
+cat mitm-509tblab-hexdump.log |grep -E '^[0-9a-f]{4} ' | cut -c 7-53 |tr -d ' ' |tr -d '\n'
+
