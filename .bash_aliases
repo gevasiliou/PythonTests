@@ -1256,19 +1256,26 @@ function rebootat {
 	[[ "$an" == "yes-rebootnow" ]] && sleep 10 && reboot || echo "aborting... $an selected" 
 }
 
-function toascii {
+function toasciicoding {
 [[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
 #Not tested alternatives:
 #FILE=$1;if [ ! -z "$FILE" ]; then exec 0< "$FILE";fi
 #file="${1}";if [ "${file}" = "-" ] ; then file=/dev/stdin;fi # "toascii -" to read from terminal OR "cmd | toascii -" for pipe or "toascii file" 
+echo "This function takes as input a readable ascii text and prints the corresponding ascii codes"
 echo "Warning : Possible null chars have been removed by bash. Pipe to od -tx1c instead"
 echo -e "Var:\c";echo "$st" | od -w40 -An -tc
 echo -e "Dec:\c";echo "$st" | od -w40 -An -tu1 
 echo -e "Oct:\c";echo "$st" | od -w40 -An -to1 
-echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c |sed -n '1p'
+#echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c |sed -n '1p'
+echo -e "Hex:\c";echo "$st" | od -w40 -An -tx1c
 #Also this works: od -An -t uC
 }
 
+function toascii {
+[[ -z $1 ]] && local st=$(</dev/stdin) || local st="$1" #if $1 is empty, use dev/stdin = work like a pipe. Otherwise use $1
+echo "This function accepts hex bytes and prints them in ascii (if applicable) using xxd -r -p"
+echo -e "Ascii Representation:"; echo "$st" | xxd -r -p
+}
 
 function dupes {
 echo "dupes: Find duplicate files under cwd , including subdirectories. Pipe to grep to limit the results returned" >&2
