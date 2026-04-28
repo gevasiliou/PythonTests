@@ -4,31 +4,25 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 HTTP_PORT_HELP = """\
-This is Titan v16.0 - Is supports http control while running (Default Port: 9999)
-and it also supports upstream connection monitoring/listing/killing manually. 
+Titan v15.8 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
+  /status                           GET     List active connections (json)
+  /statustable                      GET     List active connections (ascii table)
+  /rules                            GET     Show allow/block rules (json)
+  /rulesallowtable                  GET     Show allow rules (ascii table)
+  /rulesblockedtable                GET     Show blocked rules (ascii table)
+  /stats                            GET     Show counters (json)
+  /autoblocked                      GET     Autoblocked IPs in running session (json)
+  /autoblockedtable                 GET     Autoblocked IPs in running session (ascii table)
+  /disconnect?ip=X                  POST    Disconnect all sessions for IP
+  /disconnect_oldest?ip=X or ID=X   POST    Disconnect oldest session for a give IP or given ID
+  /disconnect_id?ID=X               POST    Disconnect specific connection ID
+  /hexdump/on                       POST    Enable hexdump
+  /hexdump/off                      POST    Disable hexdump
 
-Available http Endpoints:
-  /status                     GET     List connections (json)
-  /statustable                GET     List connections (ascii table)
-  /rules                      GET     Show allow/block rules (json)
-  /rulesallowtable            GET     Show allow rules (ascii table)
-  /rulesblockedtable          GET     Show blocked rules (ascii table)
-  /stats                      GET     Show counters (json)
-  /autoblocked                GET     Autoblocked IPs (json)
-  /autoblockedtable           GET     Autoblocked IPs (ascii table)
-  /disconnect?ip=X            POST    Disconnect all sessions for IP (up+down)
-  /disconnect_oldest?ip=X     POST    Keep newest, disconnect older for IP
-  /disconnect_oldest?ID=X     POST    Same, but IP resolved from connection ID
-  /disconnect_id?ID=X         POST    Disconnect specific connection ID (up+down)
-  /disconnect_upstream?ID=X   POST    Disconnect upstream (and downstream) for ID
-  /hexdump/on                 POST    Enable hexdump
-  /hexdump/off                POST    Disable hexdump
-
-Usage examples:
+Usage examples (when --httpexpose is enabled):
   curl -X POST http://127.0.0.1:9999/hexdump/off
   curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
   curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
-  curl -s -X POST "http://127.0.0.1:9999/disconnect_upstream?ID=2"
   curl -s http://127.0.0.1:9999/stats
   curl -s http://127.0.0.1:9999/rules
   curl -s http://127.0.0.1:9999/status
@@ -41,16 +35,23 @@ RED, BLUE, GREEN, YELLOW, CYAN, MAGENTA, RESET = (
 
 CERTFILE = 'cert.pem'
 KEYFILE = 'key.pem'
-RULEFILE = 'rm-proxy-ip-list'
+RULEFILE = None
 
 # HTTP control
 HTTP_CTRL_HOST = "127.0.0.1"
-HTTP_CTRL_PORT = 9999
+HTTP_CTRL_PORT = 9999  # default port - used only if --httpexpose is provided
 
-# AbuseIPDB settings
-ABUSE_API_KEY = "430afd618fc099e20b869c0def897dd691b721758a0d49c41712217b032f184cf23d79c1de6dddba"
-ABUSE_THRESHOLD = 80
-AUTO_BLOCKED_IPS = []
+# New in 15.7: runtime in-memory blocklist + abuseblock flag
+RUNTIME_BLOCKLIST = set()
+ABUSEBLOCK_ENABLED = False
+
+# AbuseIPDB runtime cache (NEW)
+ABUSE_CACHE = {}   # { ip: (score, timestamp) }
+ABUSE_CACHE_TTL = 3600  # seconds (1 hour)
+abuse_cache_lock = threading.Lock()
+
+# New in 15.7: Datakom RM Cloud mode flag (reserved for future UID logic)
+DATAKOM_RMCLOUD_ENABLED = False
 
 connection_count = 0
 counter_lock = threading.Lock()
@@ -62,18 +63,6 @@ OLD_BLACKLIST = []
 rules_mtime = 0
 rules_lock = threading.Lock()
 
-# ACTIVE_CONNECTIONS[cid] in v16:
-# {
-#   "ip": str,
-#   "connected_ts": str,
-#   "last_update_ts": str,
-#   "downstream_sock": socket.socket or None,
-#   "upstream_sock": socket.socket or None,
-#   "state_down": "active" | "closed",
-#   "state_up": "active" | "closed",
-#   "last_event": str,
-#   "last_event_ts": str,
-# }
 ACTIVE_CONNECTIONS = {}
 active_lock = threading.Lock()
 
@@ -88,16 +77,34 @@ STATS = {
 }
 stats_lock = threading.Lock()
 
-CID_COUNTER = 0
-cid_lock = threading.Lock()
+# AbuseIPDB settings
+def load_api_key(source=None):
+    # Priority 1: environment variable
+    #key = os.getenv("ABUSE_API_KEY")
+    #if key:
+    #    return key.strip()
 
+    # Priority 2: CLI argument (file OR raw key)
+    if source:
+        # If it's a valid file path → read it
+        if os.path.isfile(source):
+            try:
+                with open(source, "r") as f:
+                    return f.read().strip()
+            except Exception:
+                pass
+        else:
+            # Treat directly as API key
+            return source.strip()
+
+    return None
+
+ABUSE_API_KEY = load_api_key()
+ABUSE_THRESHOLD = 80
+AUTO_BLOCKED_IPS = []
 
 def get_ts():
     return datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-
-
-def now_ts_str():
-    return datetime.datetime.now().strftime("%H:%M:%S.%f")
 
 
 def log(msg):
@@ -110,13 +117,6 @@ def signal_handler(sig, frame):
 
 
 signal.signal(signal.SIGINT, signal_handler)
-
-
-def next_cid():
-    global CID_COUNTER
-    with cid_lock:
-        CID_COUNTER += 1
-        return CID_COUNTER
 
 
 def parse_rule(line):
@@ -156,89 +156,27 @@ def check_rules(ip_str):
     return "ALLOW"
 
 
-def _safe_close(sock):
-    if not sock:
-        return
-    try:
-        sock.close()
-    except Exception:
-        pass
-
-
-def _mark_downstream_closed_natural_and_kill_upstream(cid, reason):
-    ts = now_ts_str()
-    with active_lock:
-        info = ACTIVE_CONNECTIONS.get(cid)
-        if not info:
-            return
-
-        if info["state_down"] == "active" and info["downstream_sock"]:
-            _safe_close(info["downstream_sock"])
-            info["downstream_sock"] = None
-        info["state_down"] = "closed"
-
-        if info["state_up"] == "active" and info["upstream_sock"]:
-            _safe_close(info["upstream_sock"])
-            info["upstream_sock"] = None
-            info["state_up"] = "closed"
-            info["last_event"] = f"{reason}_auto_killed_upstream"
-        else:
-            info["last_event"] = reason
-
-        info["last_event_ts"] = ts
-
-
-def _mark_upstream_closed_natural_and_kill_downstream(cid, reason):
-    ts = now_ts_str()
-    with active_lock:
-        info = ACTIVE_CONNECTIONS.get(cid)
-        if not info:
-            return
-
-        if info["state_up"] == "active" and info["upstream_sock"]:
-            _safe_close(info["upstream_sock"])
-            info["upstream_sock"] = None
-        info["state_up"] = "closed"
-
-        if info["state_down"] == "active" and info["downstream_sock"]:
-            _safe_close(info["downstream_sock"])
-            info["downstream_sock"] = None
-            info["state_down"] = "closed"
-            info["last_event"] = f"{reason}_auto_killed_downstream"
-        else:
-            info["last_event"] = reason
-
-        info["last_event_ts"] = ts
-
-
 def disconnect_ip(ip_str):
-    killed = 0
-    ts = now_ts_str()
     with active_lock:
-        targets = [cid for cid, info in ACTIVE_CONNECTIONS.items() if info["ip"] == ip_str]
+        to_kill = [cid for cid, info in ACTIVE_CONNECTIONS.items() if info["ip"] == ip_str]
 
-    for cid in targets:
+    killed = 0
+    for cid in to_kill:
         with active_lock:
-            info = ACTIVE_CONNECTIONS.get(cid)
-            if not info:
-                continue
-            ds = info.get("downstream_sock")
-            us = info.get("upstream_sock")
-
-            if info["state_down"] == "active" and ds:
-                _safe_close(ds)
-                info["downstream_sock"] = None
-                info["state_down"] = "closed"
-
-            if info["state_up"] == "active" and us:
-                _safe_close(us)
-                info["upstream_sock"] = None
-                info["state_up"] = "closed"
-
-            info["last_event"] = "manual_disconnect_ip_closed_both"
-            info["last_event_ts"] = ts
-
-        print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} (ID {cid}) — newly added to block list{RESET}")
+            sock = ACTIVE_CONNECTIONS.get(cid, {}).get("socket")
+        if not sock:
+            continue
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
+        try:
+            sock.close()
+        except Exception:
+            pass
+        with active_lock:
+            ACTIVE_CONNECTIONS.pop(cid, None)
+        print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} — newly added to block list{RESET}")
         killed += 1
 
     if killed:
@@ -249,69 +187,31 @@ def disconnect_ip(ip_str):
 
 
 def disconnect_connection_id(cid):
-    ts = now_ts_str()
     with active_lock:
         info = ACTIVE_CONNECTIONS.get(cid)
         if not info:
             return False
 
         ip = info.get("ip", "unknown")
-        ds = info.get("downstream_sock")
-        us = info.get("upstream_sock")
+        sock = info["socket"]
 
-        if info["state_down"] == "active" and ds:
-            _safe_close(ds)
-            info["downstream_sock"] = None
-            info["state_down"] = "closed"
+        try:
+            sock.close()
+        except:
+            pass
 
-        if info["state_up"] == "active" and us:
-            _safe_close(us)
-            info["upstream_sock"] = None
-            info["state_up"] = "closed"
+        del ACTIVE_CONNECTIONS[cid]
 
-        info["last_event"] = "manual_downstream_kill_closed_both"
-        info["last_event_ts"] = ts
-
-    with stats_lock:
-        STATS["disconnected"] += 1
-
-    print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
-    return True
-
-
-def disconnect_upstream_id(cid):
-    ts = now_ts_str()
-    with active_lock:
-        info = ACTIVE_CONNECTIONS.get(cid)
-        if not info:
-            return False
-
-        ip = info.get("ip", "unknown")
-        ds = info.get("downstream_sock")
-        us = info.get("upstream_sock")
-
-        if info["state_up"] == "active" and us:
-            _safe_close(us)
-            info["upstream_sock"] = None
-            info["state_up"] = "closed"
-
-        if info["state_down"] == "active" and ds:
-            _safe_close(ds)
-            info["downstream_sock"] = None
-            info["state_down"] = "closed"
-
-        info["last_event"] = "manual_upstream_kill_closed_both"
-        info["last_event_ts"] = ts
-
-    with stats_lock:
-        STATS["disconnected"] += 1
-
-    print(f"[{get_ts()}][!] Forced upstream disconnect of connection ID {cid} ({ip})")
-    return True
+        print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
+        return True
 
 
 def load_rules():
     global WHITELIST, BLACKLIST, OLD_BLACKLIST, rules_mtime
+    if RULEFILE is None:
+        print(f"{YELLOW}[{get_ts()}][!] No Rule Files specified - all connections are allowed")
+        return
+    
     try:
         mtime = os.path.getmtime(RULEFILE)
     except FileNotFoundError:
@@ -359,7 +259,7 @@ def load_rules():
             OLD_BLACKLIST = BLACKLIST.copy()
             rules_mtime = mtime
 
-        print(f"{YELLOW}[{get_ts()}][!] Rules reloaded: {len(WHITELIST)} allow, {len(BLACKLIST)} block{RESET}")
+        print(f"{YELLOW}[{get_ts()}][!] Rules reloaded from file {RULEFILE}: {len(WHITELIST)} allow, {len(BLACKLIST)} block{RESET}")
 
         for entry in newly_blocked:
             rule = entry["obj"]
@@ -401,26 +301,18 @@ def format_hexdump(data):
     return "\n".join(lines)
 
 
-def pipe(source, destination, label, color, conn_id, client_ip, direction):
-    """
-    direction: "down_to_up" or "up_to_down"
-    If one side dies naturally (recv=0 or error), auto-kill the other side.
-    """
+def pipe(source, destination, label, color, conn_id, client_ip):
     try:
         while True:
             data = source.recv(8192)
             if not data:
-                # Natural close
-                if direction == "down_to_up":
-                    _mark_downstream_closed_natural_and_kill_upstream(conn_id, "downstream_closed_natural")
-                else:
-                    _mark_upstream_closed_natural_and_kill_downstream(conn_id, "upstream_closed_natural")
                 break
 
             with active_lock:
                 info = ACTIVE_CONNECTIONS.get(conn_id)
                 if info is not None:
-                    info["last_update_ts"] = get_ts()
+                    #info["last_update_ts"] = get_ts()
+                    info["last_update_ts"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
             with rules_lock:
                 entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
@@ -438,17 +330,29 @@ def pipe(source, destination, label, color, conn_id, client_ip, direction):
                     print(f"{color}{msg}{RESET}")
             destination.sendall(data)
     except Exception:
-        # Treat as natural error close
-        if direction == "down_to_up":
-            _mark_downstream_closed_natural_and_kill_upstream(conn_id, "downstream_error_natural")
-        else:
-            _mark_upstream_closed_natural_and_kill_downstream(conn_id, "upstream_error_natural")
+        pass
 
 
 def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id):
     global connection_count
 
-    connected_ts = get_ts()
+    #connected_ts = get_ts()
+    connected_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    with active_lock:
+        ACTIVE_CONNECTIONS[conn_id] = {
+            "ip": client_ip,
+            "socket": client_sock,
+            "connected_ts": connected_ts,
+            "last_update_ts": connected_ts,
+        }
+
+    with rules_lock:
+        entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
+
+    tag = " (white-listed)" if entry else "(newcommer)"
+    comment = f"  # {entry['comment']}" if entry and entry["comment"] else ""
+
+    print(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip}{tag}{comment} (Active: {connection_count}){RESET}")
 
     remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -462,37 +366,8 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
         else:
             c_conn, r_conn = client_sock, remote_sock
 
-        with active_lock:
-            ACTIVE_CONNECTIONS[conn_id] = {
-                "ip": client_ip,
-                "connected_ts": connected_ts,
-                "last_update_ts": connected_ts,
-                "downstream_sock": c_conn,
-                "upstream_sock": r_conn,
-                "state_down": "active",
-                "state_up": "active",
-                "last_event": "connected",
-                "last_event_ts": now_ts_str(),
-            }
-
-        with rules_lock:
-            entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
-
-        tag = " (white-listed)" if entry else "(newcommer)"
-        comment = f"  # {entry['comment']}" if entry and entry["comment"] else ""
-
-        print(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip}{tag}{comment} (Active: {connection_count}){RESET}")
-
-        t1 = threading.Thread(
-            target=pipe,
-            args=(c_conn, r_conn, "CLIENT->REMOTE", BLUE, conn_id, client_ip, "down_to_up"),
-            daemon=True
-        )
-        t2 = threading.Thread(
-            target=pipe,
-            args=(r_conn, c_conn, "REMOTE->CLIENT", RED, conn_id, client_ip, "up_to_down"),
-            daemon=True
-        )
+        t1 = threading.Thread(target=pipe, args=(c_conn, r_conn, "CLIENT->REMOTE", BLUE, conn_id, client_ip), daemon=True)
+        t2 = threading.Thread(target=pipe, args=(r_conn, c_conn, "REMOTE->CLIENT", RED, conn_id, client_ip), daemon=True)
 
         t1.start()
         t2.start()
@@ -505,6 +380,9 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
     finally:
         with counter_lock:
             connection_count -= 1
+
+        with active_lock:
+            ACTIVE_CONNECTIONS.pop(conn_id, None)
 
         print(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} (Active: {connection_count}){RESET}")
 
@@ -673,6 +551,24 @@ def abuse_lookup(ip):
         print(f"{RED}[{get_ts()}][!] AbuseIPDB lookup failed for {ip}: {e}{RESET}")
         return None
 
+def abuse_lookup_cached(ip):
+    now = time.time()
+
+    with abuse_cache_lock:
+        entry = ABUSE_CACHE.get(ip)
+        if entry:
+            score, ts = entry
+            if now - ts < ABUSE_CACHE_TTL:
+                return score, "cache"
+
+    # Not cached or expired → API call
+    score = abuse_lookup(ip)
+
+    if score is not None:
+        with abuse_cache_lock:
+            ABUSE_CACHE[ip] = (score, now)
+
+    return score, "api"
 
 def make_table(rows, headers):
     widths = [len(h) for h in headers]
@@ -699,7 +595,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/status":
-            with active_lock, rules_lock:
+            with active_lock, rules_lock, stats_lock:
                 active = []
                 for cid, info in ACTIVE_CONNECTIONS.items():
                     ip = info["ip"]
@@ -707,22 +603,23 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     comment = entry["comment"] if entry and entry["comment"] else ""
                     connected_ts = info.get("connected_ts", "")
                     last_update_ts = info.get("last_update_ts", "")
-                    state_down = info.get("state_down", "")
-                    state_up = info.get("state_up", "")
-                    last_event = info.get("last_event", "")
-                    last_event_ts = info.get("last_event_ts", "")
                     active.append({
                         "id": cid,
                         "ip": ip,
                         "comment": comment,
                         "connected_ts": connected_ts,
                         "last_update_ts": last_update_ts,
-                        "state_down": state_down,
-                        "state_up": state_up,
-                        "last_event": last_event,
-                        "last_event_ts": last_event_ts,
                     })
-            self._json(200, {"active": active})
+                status = {
+                    "active": active,
+                    "rulesfile": RULEFILE,
+                    "abuse_threshold": ABUSE_THRESHOLD,
+                    "abuseblock_enabled": ABUSEBLOCK_ENABLED,
+                    "runtime_blocklist_size": len(RUNTIME_BLOCKLIST),
+                    "datakomrmcloud": DATAKOM_RMCLOUD_ENABLED,
+                    "stats": dict(STATS),
+                }
+            self._json(200, status)
 
         elif parsed.path == "/rules":
             with rules_lock:
@@ -797,12 +694,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     comment = entry["comment"] if entry and entry["comment"] else ""
                     connected_ts = info.get("connected_ts", "")
                     last_update_ts = info.get("last_update_ts", "")
-                    state_down = info.get("state_down", "")
-                    state_up = info.get("state_up", "")
-                    last_event = info.get("last_event", "")
-                    rows.append([cid, ip, comment, connected_ts, last_update_ts, state_down, state_up, last_event])
+                    rows.append([cid, ip, comment, connected_ts, last_update_ts])
 
-            headers = ["ID", "IP", "Comment", "Connected", "Last Update", "Down", "Up", "Last Event"]
+            headers = ["ID", "IP", "Comment", "Connected", "Last Update"]
             table = make_table(rows, headers)
 
             body = table.encode("utf-8")
@@ -837,12 +731,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 return
             killed = disconnect_ip(ip)
             self._json(200, {"ip": ip, "disconnected": killed})
-
         elif parsed.path == "/disconnect_oldest":
             # Accept either IP or ID
             ip = qs.get("ip", [None])[0]
             cid_raw = qs.get("ID", [None])[0]
 
+            # If ID is provided, resolve IP from ACTIVE_CONNECTIONS
             if cid_raw is not None:
                 try:
                     cid = int(cid_raw)
@@ -857,10 +751,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         return
                     ip = info["ip"]
 
+            # If no IP found at all, error
             if not ip:
                 self._json(400, {"error": "missing ip or ID"})
                 return
 
+            # find all connections for this IP
             matches = []
             with active_lock:
                 for cid2, info2 in ACTIVE_CONNECTIONS.items():
@@ -871,13 +767,17 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 self._json(200, {"ip": ip, "disconnected": None, "reason": "no active connections"})
                 return
 
-            from datetime import datetime as _dt
-            matches.sort(key=lambda x: _dt.strptime(x[1], "%H:%M:%S.%f"))
+            # sort by connected_ts (oldest first)
+            from datetime import datetime
+            #matches.sort(key=lambda x: datetime.strptime(x[1], "%H:%M:%S.%f"))
+            matches.sort(key=lambda x: datetime.datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
 
+            # newest connection is the LAST one
             newest_cid = matches[-1][0]
 
+            # disconnect all except newest
             disconnected = []
-            for cid2, ts_conn in matches[:-1]:
+            for cid2, ts in matches[:-1]:
                 if disconnect_connection_id(cid2):
                     disconnected.append(cid2)
 
@@ -909,27 +809,45 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
             self._json(200, {"disconnected_id": cid})
             return
+        elif parsed.path == "/autodisconnectoldest":
+            disconnected = {}
+            with active_lock:
+                # build per-IP groups
+                ip_groups = {}
+                for cid, info in ACTIVE_CONNECTIONS.items():
+                    ip = info["ip"]
+                    ts = info.get("connected_ts", "")
+                    ip_groups.setdefault(ip, []).append((cid, ts))
 
-        elif parsed.path == "/disconnect_upstream":
-            cid_raw = qs.get("ID", [None])[0]
-            if cid_raw is None:
-                self._json(400, {"error": "missing ID"})
-                return
+            from datetime import datetime
 
-            try:
-                cid = int(cid_raw)
-            except ValueError:
-                self._json(400, {"error": "ID must be an integer"})
-                return
+            for ip, items in ip_groups.items():
+                if len(items) <= 1:
+                    continue
 
-            killed = disconnect_upstream_id(cid)
-            if not killed:
-                self._json(404, {"error": f"connection ID {cid} not found"})
-                return
+                # sort oldest → newest
+                items.sort(key=lambda x: datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
 
-            self._json(200, {"disconnected_upstream_id": cid})
+                # keep newest
+                keep = items[-1][0]
+                to_kill = [cid for cid, _ in items[:-1]]
+
+                killed = []
+                for cid in to_kill:
+                    if disconnect_connection_id(cid):
+                        killed.append(cid)
+
+                if killed:
+                    disconnected[ip] = {
+                        "kept_id": keep,
+                        "disconnected_ids": killed
+                    }
+
+            self._json(200, {
+                "result": "ok",
+                "disconnected_groups": disconnected
+            })
             return
-
         elif parsed.path == "/hexdump/on":
             with hexdump_lock:
                 HEXDUMP_ENABLED = True
@@ -949,34 +867,73 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v16.0 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v15.8 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Titan v16.0 Proxy
-    This version of Titan:
-      - Tracks both downstream (PLC->Titan) and upstream (Titan->Cloud) per connection ID.
-      - If one side dies naturally (TCP close/reset), the other side is auto-closed (no timeouts).
-      - Manual kills (/disconnect, /disconnect_id, /disconnect_upstream, /disconnect_oldest) close both sides.
-      - Uses AbuseIPDB API to check new IPs abuse score.
-      - Auto-blocks newcomers with abuse score > 80%% by appending to rm-proxy-ip-list.
+    parser = argparse.ArgumentParser(description="""Titan v15.8 Proxy
+    This version of Titan is using AbuseIPDB API to check new IPs abuse score.
+    Known IPs (allow or blocked) are not re-tested for abuse.
+    If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
+    HTTP control is optional and must be explicitly enabled with --httpexpose <port>.
     """, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--listenport", type=int, required=True)
-    parser.add_argument("--remoteserver", required=True)
-    parser.add_argument("--remoteport", type=int, required=True)
+    parser.add_argument("--listenport", type=int, required=True, help="Mandatory Option - Listening Port of Proxy")
+    parser.add_argument("--remoteserver", required=True, help="Mandatory Option - address to forward data transparently")
+    parser.add_argument("--remoteport", type=int, required=True, help="Mandatory Option - port of remote server server for data forwarding")
     parser.add_argument("--ssl", action="store_true")
-    parser.add_argument("--hexdump", action="store_true")
+    parser.add_argument("--hexdump", action="store_true", help="Enable hex data dumping on the screen")
     parser.add_argument("--tcp-sniff", action="store_true", help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
-    parser.add_argument("--http-port", type=int, default=HTTP_CTRL_PORT, help=HTTP_PORT_HELP)
+    parser.add_argument("--httpexpose", type=int,  metavar="HTTPPORT", help=HTTP_PORT_HELP)
+
+    # New in 15.7: override rules file path
+    parser.add_argument("--rulesfile", type=str, help="Rules file for allow/block entries (default = none)")
+
+    # New in 15.7: configurable AbuseIPDB threshold
+    parser.add_argument("--abuseblock", type=int, help="Enable AbuseIPDB auto-check & block with given threshold abuse score")
+    parser.add_argument("--abuseapikey", type=str, help="Path to AbuseIPDB API key file OR raw API key")
+    
+    # New in 15.7: Datakom RM Cloud mode flag (reserved)
+    parser.add_argument("--datakomrmcloud", action="store_true", help="Enable Datakom RM Cloud UID mode (reserved)")
 
     args = parser.parse_args()
 
-    HTTP_CTRL_PORT = args.http_port
+    # HTTP control: only enabled if --httpexpose is provided
+    if args.httpexpose is not None:
+        HTTP_CTRL_PORT = args.httpexpose
+        http_enabled = True
+    else:
+        http_enabled = False
 
-    load_rules()
-    watcher_thread = threading.Thread(target=rules_watcher, daemon=True)
-    watcher_thread.start()
+    if args.rulesfile:
+        RULEFILE = args.rulesfile
+    else:
+        RULEFILE = None
+
+    if args.abuseblock is not None:
+        ABUSE_THRESHOLD = args.abuseblock
+        ABUSEBLOCK_ENABLED = True
+        print(f"{YELLOW}[{get_ts()}][*] Abuse score switch enabled - abuse score threshold set to {ABUSE_THRESHOLD}")
+    else:
+        ABUSEBLOCK_ENABLED = False
+        print(f"{YELLOW}[{get_ts()}][*] Abuse score switch not provided — all newcomer IPs will be allowed without AbuseIPDB checking")
+
+    ABUSE_API_KEY = load_api_key(args.abuseapikey)
+    # Graceful downgrade if key missing
+    if ABUSEBLOCK_ENABLED and not ABUSE_API_KEY:
+        print(f"{YELLOW}[{get_ts()}][!] AbuseIPDB switch enabled but no API key provided - disabling abuse check{RESET}")
+        ABUSEBLOCK_ENABLED = False
+
+    if args.datakomrmcloud:
+        DATAKOM_RMCLOUD_ENABLED = True
+        log("[*] Datakom RM Cloud mode flag enabled (--datakomrmcloud)")
+
+    if RULEFILE is not None:
+        load_rules()
+        watcher_thread = threading.Thread(target=rules_watcher, daemon=True)
+        watcher_thread.start()
+    else:
+        print(f"{YELLOW}[{get_ts()}][*] No rules file provided — rule watcher disabled - all IPs are allowed")
 
     if args.hexdump:
         with hexdump_lock:
@@ -989,7 +946,10 @@ if __name__ == "__main__":
             daemon=True
         ).start()
 
-    threading.Thread(target=http_control_loop, daemon=True).start()
+    if http_enabled:
+        threading.Thread(target=http_control_loop, daemon=True).start()
+    else:
+        print(f"{YELLOW}[{get_ts()}][*] HTTP control interface disabled (no --httpexpose provided){RESET}")
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -997,7 +957,28 @@ if __name__ == "__main__":
     server.listen(100)
 
     total_conn_ever = 0
-    print(f"{GREEN}[{get_ts()}][*] TITAN v16.0 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
+    print(f"{CYAN}[{get_ts()}][*] ---- Titan Startup Summary ----")
+
+    print(f"{CYAN}[{get_ts()}][*] Listen Port:            {args.listenport}")
+    print(f"{CYAN}[{get_ts()}][*] Remote Server:          {args.remoteserver}:{args.remoteport}")
+    print(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:           "
+          f"{'Enabled on port ' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}")
+
+    print(f"{CYAN}[{get_ts()}][*] Hexdump Mode:           {'Enabled' if args.hexdump else 'Disabled'}")
+    print(f"{CYAN}[{get_ts()}][*] TCP Sniff Mode:         {'Enabled' if args.tcp_sniff else 'Disabled'}")
+
+    print(f"{CYAN}[{get_ts()}][*] Rules File:             "
+          f"{RULEFILE if RULEFILE is not None else 'None (rules disabled)'}")
+
+    print(f"{CYAN}[{get_ts()}][*] Abuse Score Checking:   "
+          f"{'Enabled (threshold ' + str(ABUSE_THRESHOLD) + ')' if ABUSEBLOCK_ENABLED else 'Disabled'}")
+
+    print(f"{CYAN}[{get_ts()}][*] Datakom RM Cloud Mode:  "
+          f"{'Enabled' if DATAKOM_RMCLOUD_ENABLED else 'Disabled'}")
+
+    print(f"{CYAN}[{get_ts()}][*] --------------------------------")
+
+
     if args.tcp_sniff:
         print(f"{CYAN}[{get_ts()}][*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
 
@@ -1011,10 +992,26 @@ if __name__ == "__main__":
         client_ip = a[0]
         ip_obj = ipaddress.ip_address(client_ip)
 
+        # New in 15.7: runtime in-memory blocklist check
+        if client_ip in RUNTIME_BLOCKLIST:
+            print(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}")
+            with stats_lock:
+                STATS["blocked"] += 1
+            try:
+                c.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+            try:
+                c.close()
+            except Exception:
+                pass
+            continue
+
         with rules_lock:
             white_entry = ip_in_list(ip_obj, WHITELIST, return_entry=True)
             black_entry = ip_in_list(ip_obj, BLACKLIST, return_entry=True)
 
+        # Explicit blacklist → block immediately, no AbuseIPDB
         if black_entry:
             print(f"{RED}[{get_ts()}] BLOCKED ATTEMPT from {client_ip}{RESET}")
             with stats_lock:
@@ -1031,15 +1028,27 @@ if __name__ == "__main__":
 
         is_white = bool(white_entry)
 
-        if not is_white:
-            score = abuse_lookup(client_ip)
+        # Only unknown IPs get AbuseIPDB check
+        if not is_white and ABUSEBLOCK_ENABLED:
+            #score = abuse_lookup(client_ip)
+            #score = abuse_lookup_cached(client_ip)
+            score, source = abuse_lookup_cached(client_ip)
             if score is not None:
-                print(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score}{RESET}")
+                print(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score} (by {source}){RESET}")
                 if score >= ABUSE_THRESHOLD:
                     print(f"{RED}[{get_ts()}][!] {client_ip} flagged by AbuseIPDB (score {score}) — auto-blocking{RESET}")
-                    add_block_rule(client_ip, score)
-                    load_rules()
+
+                    if RULEFILE is not None:
+                        # Persistent mode
+                        add_block_rule(client_ip, score)
+                        load_rules()
+                    else:
+                        # Pure in-memory mode
+                        print(f"{YELLOW}[{get_ts()}][*] No rules file — auto-blocking {client_ip} in memory only{RESET}")
+
                     disconnect_ip(client_ip)
+                    RUNTIME_BLOCKLIST.add(client_ip)
+
                     with stats_lock:
                         STATS["abuse_autoblocked"] += 1
                         AUTO_BLOCKED_IPS.append({
@@ -1047,14 +1056,7 @@ if __name__ == "__main__":
                             "score": score,
                             "ts": get_ts()
                         })
-                    try:
-                        c.shutdown(socket.SHUT_RDWR)
-                    except Exception:
-                        pass
-                    try:
-                        c.close()
-                    except Exception:
-                        pass
+
                     continue
 
         total_conn_ever += 1
@@ -1063,9 +1065,8 @@ if __name__ == "__main__":
         with stats_lock:
             STATS["accepted"] += 1
 
-        cid = next_cid()
         threading.Thread(
             target=bridge,
-            args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, cid),
+            args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
             daemon=True
         ).start()

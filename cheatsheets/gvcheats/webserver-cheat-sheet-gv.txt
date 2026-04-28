@@ -1451,3 +1451,5 @@ With port 80 open, you will get a lot of hits (bots,scammers, scanners, etc) to 
 
 cat mitm-509tblab-hexdump.log |grep -E '^[0-9a-f]{4} ' | cut -c 7-53 |tr -d ' ' |tr -d '\n'
 
+sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-2.list --httpexpose 10000 >/home/gv/pytests/proxyv9.log 2>&1 &
+[1] 1503260
