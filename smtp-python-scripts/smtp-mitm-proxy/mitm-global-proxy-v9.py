@@ -982,6 +982,95 @@ if __name__ == "__main__":
     if args.tcp_sniff:
         print(f"{CYAN}[{get_ts()}][*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
 
+
+    while True:
+        try:
+            c, a = server.accept()
+        except Exception as e:
+            print(f"{RED}[{get_ts()}][!] Accept error: {e}{RESET}")
+            continue
+
+        client_ip = a[0]
+        ip_obj = ipaddress.ip_address(client_ip)
+
+        # Runtime in-memory blocklist check
+        if client_ip in RUNTIME_BLOCKLIST:
+            print(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}")
+            with stats_lock:
+                STATS["blocked"] += 1
+            try:
+                c.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+            try:
+                c.close()
+            except Exception:
+                pass
+            continue
+
+        with rules_lock:
+            white_entry = ip_in_list(ip_obj, WHITELIST, return_entry=True)
+            black_entry = ip_in_list(ip_obj, BLACKLIST, return_entry=True)
+
+        is_white = bool(white_entry)
+
+        # ✅ FIX: whitelist has absolute priority
+        if not is_white and black_entry:
+            print(f"{RED}[{get_ts()}] BLOCKED ATTEMPT from {client_ip}{RESET}")
+            with stats_lock:
+                STATS["blocked"] += 1
+            try:
+                c.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+            try:
+                c.close()
+            except Exception:
+                pass
+            continue
+
+        # Only unknown (non-whitelisted) IPs get AbuseIPDB check
+        if not is_white and ABUSEBLOCK_ENABLED:
+            score, source = abuse_lookup_cached(client_ip)
+            if score is not None:
+                print(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score} (by {source}){RESET}")
+                if score >= ABUSE_THRESHOLD:
+                    print(f"{RED}[{get_ts()}][!] {client_ip} flagged by AbuseIPDB (score {score}) — auto-blocking{RESET}")
+
+                    if RULEFILE is not None:
+                        # Persistent mode
+                        add_block_rule(client_ip, score)
+                        load_rules()
+                    else:
+                        # In-memory only
+                        print(f"{YELLOW}[{get_ts()}][*] No rules file — auto-blocking {client_ip} in memory only{RESET}")
+
+                    disconnect_ip(client_ip)
+                    RUNTIME_BLOCKLIST.add(client_ip)
+
+                    with stats_lock:
+                        STATS["abuse_autoblocked"] += 1
+                        AUTO_BLOCKED_IPS.append({
+                            "ip": client_ip,
+                            "score": score,
+                            "ts": get_ts()
+                        })
+
+                    continue
+
+        total_conn_ever += 1
+        with counter_lock:
+            connection_count += 1
+        with stats_lock:
+            STATS["accepted"] += 1
+
+        threading.Thread(
+            target=bridge,
+            args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
+            daemon=True
+        ).start()
+
+'''
     while True:
         try:
             c, a = server.accept()
@@ -1070,3 +1159,4 @@ if __name__ == "__main__":
             args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
             daemon=True
         ).start()
+'''
