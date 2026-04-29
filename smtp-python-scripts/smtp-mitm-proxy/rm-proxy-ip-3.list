@@ -1,0 +1,13 @@
+allow 62.169.230.178
+block 0.0.0.0/0
+#allowUID 1980ff11800c08afb55c8958 #509TB-Lab unique id
+#block 199.45.155.101 # auto block by abuse - score 100
+#block 69.164.217.245 # auto block by abuse - score 100
+#block 182.42.104.32 # auto block by abuse - score 100
+#block 54.236.18.154 # auto block by abuse - score 100
+#block 85.217.140.40 # auto block by abuse - score 100
+#block 69.5.169.88 # auto block by abuse - score 100
+#block 81.19.216.112 # auto block by abuse - score 100
+#block 81.19.216.114 # auto block by abuse - score 100
+#block 193.176.31.204 # auto block by abuse - score 100
+#block 74.82.47.2 # auto block by abuse - score 100
