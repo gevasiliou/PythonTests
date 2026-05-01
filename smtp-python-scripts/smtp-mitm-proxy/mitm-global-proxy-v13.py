@@ -2,12 +2,33 @@
 import socket, ssl, threading, argparse, sys, signal, datetime, os, time, ipaddress, struct, json, requests
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+from collections import deque
+
+SESSION_HISTORY = deque(maxlen=1000)
+session_history_lock = threading.Lock()
+
+CLOSE_REASONS = {}  # {conn_id: reason} — set by disconnect functions, read by bridge() finally
+close_reasons_lock = threading.Lock()
+
+VERBOSE_ENABLED = False
+verbose_lock = threading.Lock()
 
 HTTP_PORT_HELP = """\
-Titan v10 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
+Titan v13 - Change Log:
+v13:    --verbose cli add and new POST endpoint /verbose?enable/disable logic added - 
+        when disabled (default) only connect/disconnect/abuse messages are shown - no byte data printing
+v12:    new endpoint /sessiontable - include last 1000 connections (active or closed)
+v12:    new endpoint /closedconnectionstable - show only closed connections
+v11:    updated pipe() & bridge() logic -> force close upstream sockets (remoteserver side) when downstream sockets (clients to proxy) are closed (naturally or forced).
+v10<:   No upstream socket manipulation by pipe()
+v8:     Last known stable version without upstream socket manipulation
+
+Current Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
   /stats                                GET     Show counters about current session (json)
   /status                               GET     List active connections (json)
   /statustable                          GET     List active connections (ascii table)
+  /closedconnectionstable               GET     List closed connections (ascii table)
+  /sessiontable                         GET     List all last 1000 connections (active & closed - ascii table)
   /rules                                GET     Show allow/block rules (json)
   /rulesallowtable                      GET     Show allow rules (ascii table)
   /rulesblockedtable                    GET     Show blocked rules (ascii table)
@@ -18,16 +39,20 @@ Titan v10 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
   /disconnect_id?ID=X                   POST    Disconnect specific given connection ID
   /hexdump?enable/disable               POST    Enables or Disables bytes hexdump in screen & logs
   /autodisconnectoldest                 POST    Automaticall checks ALL active connections and autodisconnects old connections, keeping only the newest
+  /disconnectall                        POST    Forcibly disconnect ALL active connections (no blocking)
   /newcomerabusecheck?disable/enable    POST    Enable/Disable newcomer abusecheck in runtime (default=enable) - When disabled, rules file is active but abuse check for new IPs is skipped
   /allowall?enable/disable              POST    Enable/Disable allow all IPs (default=disable) - When enabled abuse check skipped, rulesfile is ignored = everybody is allowed!
+  /verbose?enable/disable               POST    Enable/Disable verbose data logging (default=disable)
 
 Usage examples (when --httpexpose is enabled):
-  curl -X POST http://127.0.0.1:9999/hexdump/off
-  curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
-  curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
-  curl -s http://127.0.0.1:9999/stats
-  curl -s http://127.0.0.1:9999/rules
-  curl -s http://127.0.0.1:9999/status
+    curl -X POST http://127.0.0.1:9999/hexdump/off
+    curl -X POST "http://127.0.0.1:9999/disconnect?ip=78.87.123.42"
+    curl -s -X POST "http://127.0.0.1:9999/disconnect_id?ID=2"
+    curl -s http://127.0.0.1:9999/stats
+    curl -s http://127.0.0.1:9999/rules
+    curl -s http://127.0.0.1:9999/status
+    curl -s -X POST "http://127.0.0.1:10002/verbose?enable"
+    curl -s -X POST "http://127.0.0.1:10002/verbose?disable"
 """
 
 # ANSI Colors
@@ -45,6 +70,7 @@ HTTP_CTRL_PORT = 9999  # default port - used only if --httpexpose is provided
 
 # New in 15.7: runtime in-memory blocklist + abuseblock flag
 RUNTIME_BLOCKLIST = set()
+runtime_blocklist_lock = threading.Lock()
 ABUSEBLOCK_ENABLED = False
 
 # AbuseIPDB runtime cache (NEW)
@@ -101,6 +127,7 @@ def load_api_key(source=None):
 ABUSE_API_KEY = load_api_key()
 ABUSE_THRESHOLD = 80
 AUTO_BLOCKED_IPS = []
+auto_blocked_lock = threading.Lock()
 
 ALLOWALL_ENABLED = False
 _ALLOWALL_SNAPSHOT = {}  # stores state before allowall was activated
@@ -159,7 +186,6 @@ def check_rules(ip_str):
     return "ALLOW"
 
 
-#def disconnect_ip(ip_str):
 def disconnect_ip(ip_str, reason="block list"):
     with active_lock:
         to_kill = [cid for cid, info in ACTIVE_CONNECTIONS.items() if info["ip"] == ip_str]
@@ -168,14 +194,20 @@ def disconnect_ip(ip_str, reason="block list"):
     for cid in to_kill:
         with active_lock:
             sock = ACTIVE_CONNECTIONS.get(cid, {}).get("socket")
+        
         if not sock:
             continue
+
+        with close_reasons_lock:
+            CLOSE_REASONS[cid] = reason 
+        
         try:
             sock.shutdown(socket.SHUT_RDWR)
         except OSError:
             pass
         except Exception as e:
             print(f"{YELLOW}[{get_ts()}][dbg] shutdown() {ip_str}: {e}{RESET}")
+        
         try:
             sock.close()
         except OSError:
@@ -195,72 +227,31 @@ def disconnect_ip(ip_str, reason="block list"):
 
     return killed
 
-
-"""
 def disconnect_connection_id(cid, reason="operator request"):
     with active_lock:
         info = ACTIVE_CONNECTIONS.get(cid)
         if not info:
             return False
-
         ip = info.get("ip", "unknown")
         sock = info["socket"]
-
         try:
             sock.shutdown(socket.SHUT_RDWR)
         except OSError:
-            pass  # expected — socket already closed or broken
+            pass
         except Exception as e:
             print(f"{YELLOW}[{get_ts()}][dbg] shutdown() ID {cid} ({ip}): {e}{RESET}")
-
         try:
             sock.close()
         except OSError:
-            pass  # expected
+            pass
         except Exception as e:
             print(f"{YELLOW}[{get_ts()}][dbg] close() ID {cid} ({ip}): {e}{RESET}")
-
         del ACTIVE_CONNECTIONS[cid]
-
-        # >>> ADD THIS BLOCK <<<
-        with stats_lock:
-            STATS["disconnected"] += 1
-        # <<< END >>>
-
-        #print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
-        print(f"{RED}[{get_ts()}][!] Forced disconnect of ID:#{cid} ({ip}) — {reason}{RESET}")
-        return True
-"""
-
-def disconnect_connection_id(cid, reason="operator request"):
-    with active_lock:
-        info = ACTIVE_CONNECTIONS.get(cid)
-        if not info:
-            return False
-
-        ip = info.get("ip", "unknown")
-        sock = info["socket"]
-
-        try:
-            sock.shutdown(socket.SHUT_RDWR)
-        except OSError:
-            pass  # expected — socket already closed or broken
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] shutdown() ID {cid} ({ip}): {e}{RESET}")
-
-        try:
-            sock.close()
-        except OSError:
-            pass  # expected
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] close() ID {cid} ({ip}): {e}{RESET}")
-
-        del ACTIVE_CONNECTIONS[cid]
-
-    # active_lock released before acquiring stats_lock — no nested lock risk
+    # Both locks released separately — no nesting
+    with close_reasons_lock:
+        CLOSE_REASONS[cid] = reason
     with stats_lock:
         STATS["disconnected"] += 1
-
     print(f"{RED}[{get_ts()}][!] Forced disconnect of ID:#{cid} ({ip}) — {reason}{RESET}")
     return True
 
@@ -366,46 +357,64 @@ def pipe(source, destination, label, color, conn_id, client_ip):
         while True:
             data = source.recv(8192)
             if not data:
+                # Either side closed — force close the other side immediately
+                try:
+                    destination.shutdown(socket.SHUT_RDWR)
+                except Exception:
+                    pass
                 break
 
             with active_lock:
                 info = ACTIVE_CONNECTIONS.get(conn_id)
                 if info is not None:
-                    #info["last_update_ts"] = get_ts()
-                    info["last_update_ts"] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-                    #info["last_update_ts"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                    ts_now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
+                    if label == "CLIENT->REMOTE":
+                        info["last_client_ts"] = ts_now
+                    else:
+                        info["last_remote_ts"] = ts_now
 
             with rules_lock:
                 entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
                 comment = f"  # {entry['comment']}" if entry and entry["comment"] else ""
 
-            print(f"{color}[{get_ts()}] [ID:#{conn_id}] ({client_ip}) {label}:{comment}{RESET}")
+            with verbose_lock:
+                show_verbose = VERBOSE_ENABLED
 
-            with hexdump_lock:
-                show_hex = HEXDUMP_ENABLED
-            if show_hex:
-                print(format_hexdump(data))
-            else:
-                msg = data.decode(errors='ignore').strip()
-                if msg:
-                    print(f"{color}{msg}{RESET}")
+            if show_verbose:
+                print(f"{color}[{get_ts()}] [ID:#{conn_id}] ({client_ip}) {label}:{comment}{RESET}")
+
+                with hexdump_lock:
+                    show_hex = HEXDUMP_ENABLED
+                if show_hex:
+                    print(format_hexdump(data))
+                else:
+                    msg = data.decode(errors='ignore').strip()
+                    if msg:
+                        print(f"{color}{msg}{RESET}")
+
             destination.sendall(data)
-    except Exception:
-        pass
 
+    except Exception:
+        # Exception on either side — force close the other side
+        try:
+            destination.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
 
 def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id):
     global connection_count
 
     #connected_ts = get_ts()
     #connected_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
     connected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
     with active_lock:
         ACTIVE_CONNECTIONS[conn_id] = {
             "ip": client_ip,
             "socket": client_sock,
             "connected_ts": connected_ts,
-            "last_update_ts": connected_ts,
+            "last_client_ts": connected_ts,  # updated by CLIENT->REMOTE pipe
+            "last_remote_ts": connected_ts,  # updated by REMOTE->CLIENT pipe
         }
 
     with rules_lock:
@@ -440,22 +449,58 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
         print(f"{RED}[{get_ts()}][!] [ID:#{conn_id}] Error: {e}{RESET}")
 
     finally:
-        with counter_lock:
-            connection_count -= 1
+            disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
 
-        with active_lock:
-            ACTIVE_CONNECTIONS.pop(conn_id, None)
+            with counter_lock:
+                connection_count -= 1
 
-        print(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} (Active: {connection_count}){RESET}")
+            with active_lock:
+                info = ACTIVE_CONNECTIONS.pop(conn_id, None)
 
-        for s in (client_sock, remote_sock):
+            # Read close reason — set by disconnect functions, or default if natural close
+            with close_reasons_lock:
+                close_reason = CLOSE_REASONS.pop(conn_id, "natural disconnect")
+
+            last_client_ts = info.get("last_client_ts", "") if info else ""
+            last_remote_ts = info.get("last_remote_ts", "") if info else ""
+
+            # Calculate duration
             try:
-                s.close()
+                dt_conn = datetime.datetime.strptime(connected_ts, "%d-%m-%Y %H:%M:%S.%f")
+                dt_disc = datetime.datetime.strptime(disconnected_ts, "%d-%m-%Y %H:%M:%S.%f")
+                dur_secs = int((dt_disc - dt_conn).total_seconds())
+                if dur_secs < 60:
+                    duration = f"{dur_secs}s"
+                elif dur_secs < 3600:
+                    duration = f"{dur_secs // 60}m {dur_secs % 60}s"
+                else:
+                    duration = f"{dur_secs // 3600}h {(dur_secs % 3600) // 60}m"
             except Exception:
-                pass
+                duration = "?"
 
-        with stats_lock:
-            STATS["disconnected"] += 1
+            with session_history_lock:
+                SESSION_HISTORY.append({
+                    "id": conn_id,
+                    "ip": client_ip,
+                    "connected_ts": connected_ts,
+                    "disconnected_ts": disconnected_ts,
+                    "duration": duration,
+                    "last_client_ts": last_client_ts,
+                    "last_remote_ts": last_remote_ts,
+                    "close_reason": close_reason,
+                })
+
+            print(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
+                  f"(Active: {connection_count}) — {close_reason}{RESET}")
+
+            for s in (client_sock, remote_sock):
+                try:
+                    s.close()
+                except Exception:
+                    pass
+
+            with stats_lock:
+                STATS["disconnected"] += 1
 
 
 def parse_ethernet_header(data):
@@ -657,20 +702,21 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/status":
-            with active_lock, rules_lock, stats_lock:
+            with active_lock, rules_lock, stats_lock, runtime_blocklist_lock:
                 active = []
                 for cid, info in ACTIVE_CONNECTIONS.items():
                     ip = info["ip"]
                     entry = ip_in_list(ipaddress.ip_address(ip), WHITELIST, return_entry=True)
                     comment = entry["comment"] if entry and entry["comment"] else ""
                     connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
+                    #last_update_ts = info.get("last_update_ts", "")
                     active.append({
                         "id": cid,
                         "ip": ip,
                         "comment": comment,
                         "connected_ts": connected_ts,
-                        "last_update_ts": last_update_ts,
+                        "last_client_ts": info.get("last_client_ts", ""),
+                        "last_remote_ts": info.get("last_remote_ts", ""),
                     })
                 status = {
                     "active": active,
@@ -689,11 +735,6 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 block = [str(e["obj"]) for e in BLACKLIST]
             self._json(200, {"allow": allow, "block": block})
         
-#        elif parsed.path == "/stats":
-#            with stats_lock:
-#                stats_copy = dict(STATS)
-#            self._json(200, stats_copy)
-        
         elif parsed.path == "/stats":
             with stats_lock, counter_lock, active_lock:
                 stats_copy = dict(STATS)
@@ -702,11 +743,17 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             self._json(200, stats_copy)
         
         elif parsed.path == "/autoblocked":
-            self._json(200, {"autoblocked": AUTO_BLOCKED_IPS})
+            with auto_blocked_lock:
+                snapshot = list(AUTO_BLOCKED_IPS)
+            self._json(200, {"autoblocked": snapshot})
         
+
+
         elif parsed.path == "/autoblockedtable":
+            with auto_blocked_lock:
+                snapshot = list(AUTO_BLOCKED_IPS)
             rows = []
-            for entry in AUTO_BLOCKED_IPS:
+            for entry in snapshot:
                 ip = entry.get("ip", "")
                 score = entry.get("score", "")
                 ts = entry.get("ts", "")
@@ -760,18 +807,63 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         
+        # ~ elif parsed.path == "/statustable":
+            # ~ with active_lock, rules_lock:
+                # ~ rows = []
+                # ~ for cid, info in ACTIVE_CONNECTIONS.items():
+                    # ~ ip = info["ip"]
+                    # ~ entry = ip_in_list(ipaddress.ip_address(ip), WHITELIST, return_entry=True)
+                    # ~ comment = entry["comment"] if entry and entry["comment"] else ""
+                    # ~ connected_ts = info.get("connected_ts", "")
+                    # ~ last_client_ts = info.get("last_client_ts", "")
+                    # ~ last_remote_ts = info.get("last_remote_ts", "")
+                    # ~ rows.append([cid, ip, comment, connected_ts, last_client_ts, last_remote_ts])
+
+            # ~ headers = ["ID", "IP", "Comment", "Connected", "Last From Client", "Last From Remote"]
+            # ~ table = make_table(rows, headers)
+
+            # ~ body = table.encode("utf-8")
+            # ~ self.send_response(200)
+            # ~ self.send_header("Content-Type", "text/plain")
+            # ~ self.send_header("Content-Length", str(len(body)))
+            # ~ self.end_headers()
+            # ~ self.wfile.write(body)
+            # ~ return
+
         elif parsed.path == "/statustable":
+            now = datetime.datetime.now()
+            rows = []
+
             with active_lock, rules_lock:
-                rows = []
                 for cid, info in ACTIVE_CONNECTIONS.items():
                     ip = info["ip"]
+                    connected_ts = info.get("connected_ts", "")
+                    last_client_ts = info.get("last_client_ts", "")
+                    last_remote_ts = info.get("last_remote_ts", "")
+
+                    # Get comment from whitelist entry
                     entry = ip_in_list(ipaddress.ip_address(ip), WHITELIST, return_entry=True)
                     comment = entry["comment"] if entry and entry["comment"] else ""
-                    connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
-                    rows.append([cid, ip, comment, connected_ts, last_update_ts])
 
-            headers = ["ID", "IP", "Comment", "Connected", "Last Update"]
+                    try:
+                        last_dt = datetime.datetime.strptime(last_remote_ts, "%d-%m-%Y %H:%M:%S.%f")
+                        idle_secs = int((now - last_dt).total_seconds())
+                    except Exception:
+                        idle_secs = -1
+
+                    if idle_secs < 0:
+                        idle_str = "?"
+                    elif idle_secs < 60:
+                        idle_str = f"{idle_secs}s"
+                    elif idle_secs < 3600:
+                        idle_str = f"{idle_secs // 60}m {idle_secs % 60}s"
+                    else:
+                        idle_str = f"{idle_secs // 3600}h {(idle_secs % 3600) // 60}m"
+
+                    rows.append([cid, ip, comment, connected_ts, last_client_ts, last_remote_ts, idle_str])
+
+            headers = ["ID", "IP", "Comment", "Connected", "Last From Client", "Last From Remote", "Upstream Idle"]
+
             table = make_table(rows, headers)
 
             body = table.encode("utf-8")
@@ -782,50 +874,88 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
 
-        elif parsed.path == "/upstreamtable":
+        elif parsed.path == "/closedconnectionstable":
+            with session_history_lock:
+                snapshot = list(SESSION_HISTORY)
+
+            rows = []
+            for s in snapshot:
+                rows.append([
+                    s.get("id", ""),
+                    s.get("ip", ""),
+                    s.get("connected_ts", ""),
+                    s.get("disconnected_ts", ""),
+                    s.get("duration", ""),
+                    s.get("last_client_ts", ""),
+                    s.get("last_remote_ts", ""),
+                    s.get("close_reason", ""),
+                ])
+
+            headers = ["ID", "IP", "Connected", "Disconnected", "Duration", "Last Client", "Last Remote", "Reason"]
+            table = make_table(rows, headers)
+
+            body = table.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        elif parsed.path == "/sessiontable":
             now = datetime.datetime.now()
+
             rows = []
 
+            # Active connections first
             with active_lock:
                 for cid, info in ACTIVE_CONNECTIONS.items():
-                    ip = info["ip"]
+                    ip = info.get("ip", "")
                     connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
+                    last_client_ts = info.get("last_client_ts", "")
+                    last_remote_ts = info.get("last_remote_ts", "")
 
-                    # Calculate seconds since last activity
+                    # Calculate current duration
                     try:
-                        last_dt = datetime.datetime.strptime(last_update_ts, "%d-%m-%Y %H:%M:%S.%f")
-                        idle_secs = int((now - last_dt).total_seconds())
+                        dt_conn = datetime.datetime.strptime(connected_ts, "%d-%m-%Y %H:%M:%S.%f")
+                        dur_secs = int((now - dt_conn).total_seconds())
+                        if dur_secs < 60:
+                            duration = f"{dur_secs}s"
+                        elif dur_secs < 3600:
+                            duration = f"{dur_secs // 60}m {dur_secs % 60}s"
+                        else:
+                            duration = f"{dur_secs // 3600}h {(dur_secs % 3600) // 60}m"
                     except Exception:
-                        idle_secs = -1
+                        duration = "?"
 
-                    # Determine status
-                    if connected_ts == last_update_ts:
-                        status = "NEW"
-                    elif idle_secs < 0:
-                        status = "UNKNOWN"
-                    elif idle_secs < 120:
-                        status = "ACTIVE"
-                    elif idle_secs < 300:
-                        status = "IDLE"
-                    elif idle_secs < 600:
-                        status = "STALE"
-                    else:
-                        status = "DEAD"
+                    rows.append([
+                        cid,
+                        ip,
+                        connected_ts,
+                        "--- ACTIVE ---",
+                        duration,
+                        last_client_ts,
+                        last_remote_ts,
+                        "active",
+                    ])
 
-                    # Format idle time nicely
-                    if idle_secs < 0:
-                        idle_str = "?"
-                    elif idle_secs < 60:
-                        idle_str = f"{idle_secs}s"
-                    elif idle_secs < 3600:
-                        idle_str = f"{idle_secs // 60}m {idle_secs % 60}s"
-                    else:
-                        idle_str = f"{idle_secs // 3600}h {(idle_secs % 3600) // 60}m"
+            # Closed connections from history
+            with session_history_lock:
+                snapshot = list(SESSION_HISTORY)
 
-                    rows.append([cid, ip, connected_ts, last_update_ts, idle_str, status])
+            for s in snapshot:
+                rows.append([
+                    s.get("id", ""),
+                    s.get("ip", ""),
+                    s.get("connected_ts", ""),
+                    s.get("disconnected_ts", ""),
+                    s.get("duration", ""),
+                    s.get("last_client_ts", ""),
+                    s.get("last_remote_ts", ""),
+                    s.get("close_reason", ""),
+                ])
 
-            headers = ["ID", "IP", "Connected", "Last Activity", "Idle", "Status"]
+            headers = ["ID", "IP", "Connected", "Disconnected", "Duration", "Last Client", "Last Remote", "Reason"]
             table = make_table(rows, headers)
 
             body = table.encode("utf-8")
@@ -1061,6 +1191,51 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                             "allowall": ALLOWALL_ENABLED
                         })
 
+        elif parsed.path == "/disconnectall":
+            with active_lock:
+                unique_ips = list(set(info["ip"] for info in ACTIVE_CONNECTIONS.values()))
+
+            if not unique_ips:
+                self._json(200, {
+                    "result": "ok",
+                    "note": "No active connections",
+                    "disconnected_ips": []
+                })
+                return
+
+            total_killed = 0
+            for ip in unique_ips:
+                killed = disconnect_ip(ip, reason="HTTP operator — disconnectall")
+                total_killed += killed
+
+            print(f"{YELLOW}[{get_ts()}][*] DISCONNECTALL executed via HTTP — {total_killed} connections terminated{RESET}")
+            self._json(200, {
+                "result": "ok",
+                "disconnected_ips": unique_ips,
+                "total_disconnected": total_killed
+            })
+            return
+
+        elif parsed.path == "/verbose":
+            global VERBOSE_ENABLED
+            if parsed.query == "enable":
+                with verbose_lock:
+                    VERBOSE_ENABLED = True
+                print(f"{YELLOW}[{get_ts()}][*] Verbose logging ENABLED via HTTP control{RESET}")
+                self._json(200, {"verbose": True})
+            elif parsed.query == "disable":
+                with verbose_lock:
+                    VERBOSE_ENABLED = False
+                print(f"{YELLOW}[{get_ts()}][*] Verbose logging DISABLED via HTTP control{RESET}")
+                self._json(200, {"verbose": False})
+            else:
+                with verbose_lock:
+                    current = VERBOSE_ENABLED
+                self._json(400, {
+                    "error": "Missing parameter. Use ?enable or ?disable",
+                    "verbose": current
+                })
+
         elif parsed.path == "/newcomerabusecheck":
                     if parsed.query == "enable":
                         if not ABUSE_API_KEY:
@@ -1096,12 +1271,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v15.8 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v11 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Titan v15.8 Proxy
+    parser = argparse.ArgumentParser(description="""Titan v11 Proxy
     This version of Titan is using AbuseIPDB API to check new IPs abuse score.
     Known IPs (allow or blocked) are not re-tested for abuse.
     If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
@@ -1121,8 +1296,13 @@ if __name__ == "__main__":
     # New in 15.7: configurable AbuseIPDB threshold
     parser.add_argument("--abuseblock", type=int, help="Enable AbuseIPDB auto-check & block with given threshold abuse score")
     parser.add_argument("--abuseapikey", type=str, help="Path to AbuseIPDB API key file OR raw API key")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging of data traffic (default=disabled)")
     
     args = parser.parse_args()
+
+    if args.verbose:
+        with verbose_lock:
+            VERBOSE_ENABLED = True
 
     # HTTP control: only enabled if --httpexpose is provided
     if args.httpexpose is not None:
@@ -1183,9 +1363,10 @@ if __name__ == "__main__":
 
     print(f"{CYAN}[{get_ts()}][*] Listen Port:            {args.listenport}")
     print(f"{CYAN}[{get_ts()}][*] Remote Server:          {args.remoteserver}:{args.remoteport}")
-    print(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:       "
+    print(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:   "
           f"{'Enabled on port ' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}")
 
+    print(f"{CYAN}[{get_ts()}][*] Verbose Logging:        {'Enabled' if args.verbose else 'Disabled'}")
     print(f"{CYAN}[{get_ts()}][*] Hexdump Mode:           {'Enabled' if args.hexdump else 'Disabled'}")
     print(f"{CYAN}[{get_ts()}][*] TCP Sniff Mode:         {'Enabled' if args.tcp_sniff else 'Disabled'}")
 
@@ -1228,7 +1409,10 @@ if __name__ == "__main__":
             continue
 
         # Runtime in-memory blocklist check
-        if client_ip in RUNTIME_BLOCKLIST:
+        with runtime_blocklist_lock:
+            in_blocklist = client_ip in RUNTIME_BLOCKLIST
+        
+        if in_blocklist:
             print(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}")
             with stats_lock:
                 STATS["blocked"] += 1
@@ -1281,16 +1465,18 @@ if __name__ == "__main__":
 
                     #disconnect_ip(client_ip)
                     disconnect_ip(client_ip, reason=f"AbuseIPDB auto-block (score {score})")
-                    RUNTIME_BLOCKLIST.add(client_ip)
+                    with runtime_blocklist_lock:
+                        RUNTIME_BLOCKLIST.add(client_ip)
 
                     with stats_lock:
                         STATS["abuse_autoblocked"] += 1
+                    with auto_blocked_lock:
                         AUTO_BLOCKED_IPS.append({
                             "ip": client_ip,
                             "score": score,
                             "ts": get_ts()
                         })
-
+                    
                     continue
 
         total_conn_ever += 1

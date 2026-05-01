@@ -4,7 +4,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 HTTP_PORT_HELP = """\
-Titan v10 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
+Titan v11 - updated pipe() forcing close upstream sockets when downstream sockets are closed (naturally or forced).
+Titan v11 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
   /stats                                GET     Show counters about current session (json)
   /status                               GET     List active connections (json)
   /statustable                          GET     List active connections (ascii table)
@@ -366,14 +367,21 @@ def pipe(source, destination, label, color, conn_id, client_ip):
         while True:
             data = source.recv(8192)
             if not data:
+                # Either side closed — force close the other side immediately
+                try:
+                    destination.shutdown(socket.SHUT_RDWR)
+                except Exception:
+                    pass
                 break
 
             with active_lock:
                 info = ACTIVE_CONNECTIONS.get(conn_id)
                 if info is not None:
-                    #info["last_update_ts"] = get_ts()
-                    info["last_update_ts"] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-                    #info["last_update_ts"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                    ts_now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
+                    if label == "CLIENT->REMOTE":
+                        info["last_client_ts"] = ts_now
+                    else:
+                        info["last_remote_ts"] = ts_now
 
             with rules_lock:
                 entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
@@ -390,22 +398,28 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                 if msg:
                     print(f"{color}{msg}{RESET}")
             destination.sendall(data)
-    except Exception:
-        pass
 
+    except Exception:
+        # Exception on either side — force close the other side
+        try:
+            destination.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
 
 def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id):
     global connection_count
 
     #connected_ts = get_ts()
     #connected_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
     connected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
     with active_lock:
         ACTIVE_CONNECTIONS[conn_id] = {
             "ip": client_ip,
             "socket": client_sock,
             "connected_ts": connected_ts,
-            "last_update_ts": connected_ts,
+            "last_client_ts": connected_ts,  # updated by CLIENT->REMOTE pipe
+            "last_remote_ts": connected_ts,  # updated by REMOTE->CLIENT pipe
         }
 
     with rules_lock:
@@ -670,7 +684,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         "ip": ip,
                         "comment": comment,
                         "connected_ts": connected_ts,
-                        "last_update_ts": last_update_ts,
+                        "last_client_ts": info.get("last_client_ts", ""),
+                        "last_remote_ts": info.get("last_remote_ts", ""),
                     })
                 status = {
                     "active": active,
@@ -768,10 +783,11 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     entry = ip_in_list(ipaddress.ip_address(ip), WHITELIST, return_entry=True)
                     comment = entry["comment"] if entry and entry["comment"] else ""
                     connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
-                    rows.append([cid, ip, comment, connected_ts, last_update_ts])
+                    last_client_ts = info.get("last_client_ts", "")
+                    last_remote_ts = info.get("last_remote_ts", "")
+                    rows.append([cid, ip, comment, connected_ts, last_client_ts, last_remote_ts])
 
-            headers = ["ID", "IP", "Comment", "Connected", "Last Update"]
+            headers = ["ID", "IP", "Comment", "Connected", "Last From Client", "Last From Remote"]
             table = make_table(rows, headers)
 
             body = table.encode("utf-8")
@@ -790,30 +806,15 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 for cid, info in ACTIVE_CONNECTIONS.items():
                     ip = info["ip"]
                     connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
+                    last_client_ts = info.get("last_client_ts", "")
+                    last_remote_ts = info.get("last_remote_ts", "")
 
-                    # Calculate seconds since last activity
+                    # Status based purely on upstream (REMOTE->CLIENT) activity
                     try:
-                        last_dt = datetime.datetime.strptime(last_update_ts, "%d-%m-%Y %H:%M:%S.%f")
+                        last_dt = datetime.datetime.strptime(last_remote_ts, "%d-%m-%Y %H:%M:%S.%f")
                         idle_secs = int((now - last_dt).total_seconds())
                     except Exception:
                         idle_secs = -1
-
-                    # Determine status
-                    if connected_ts == last_update_ts:
-                        status = "NEW"
-                    elif idle_secs < 0:
-                        status = "UNKNOWN"
-                    elif idle_secs < 120:
-                        status = "ACTIVE"
-                    elif idle_secs < 300:
-                        status = "IDLE"
-                    elif idle_secs < 600:
-                        status = "STALE"
-                    else:
-                        status = "DEAD"
-
-                    # Format idle time nicely
                     if idle_secs < 0:
                         idle_str = "?"
                     elif idle_secs < 60:
@@ -823,9 +824,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     else:
                         idle_str = f"{idle_secs // 3600}h {(idle_secs % 3600) // 60}m"
 
-                    rows.append([cid, ip, connected_ts, last_update_ts, idle_str, status])
+                    rows.append([cid, ip, connected_ts, last_client_ts, last_remote_ts, idle_str])
 
-            headers = ["ID", "IP", "Connected", "Last Activity", "Idle", "Status"]
+            headers = ["ID", "IP", "Connected", "Last From Client", "Last From Remote", "Upstream Idle"]
             table = make_table(rows, headers)
 
             body = table.encode("utf-8")
@@ -1096,12 +1097,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v15.8 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v11 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Titan v15.8 Proxy
+    parser = argparse.ArgumentParser(description="""Titan v11 Proxy
     This version of Titan is using AbuseIPDB API to check new IPs abuse score.
     Known IPs (allow or blocked) are not re-tested for abuse.
     If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
