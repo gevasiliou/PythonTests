@@ -1,13 +1,183 @@
-allow 62.169.230.178
-block 0.0.0.0/0
+allow 62.169.230.178 #Verinso
+#block 0.0.0.0/0
 #allowUID 1980ff11800c08afb55c8958 #509TB-Lab unique id
-#block 199.45.155.101 # auto block by abuse - score 100
-#block 69.164.217.245 # auto block by abuse - score 100
-#block 182.42.104.32 # auto block by abuse - score 100
-#block 54.236.18.154 # auto block by abuse - score 100
-#block 85.217.140.40 # auto block by abuse - score 100
-#block 69.5.169.88 # auto block by abuse - score 100
-#block 81.19.216.112 # auto block by abuse - score 100
-#block 81.19.216.114 # auto block by abuse - score 100
-#block 193.176.31.204 # auto block by abuse - score 100
-#block 74.82.47.2 # auto block by abuse - score 100
+block 199.45.155.101 # auto block by abuse - score 100
+block 69.164.217.245 # auto block by abuse - score 100
+block 182.42.104.32 # auto block by abuse - score 100
+block 54.236.18.154 # auto block by abuse - score 100
+block 85.217.140.40 # auto block by abuse - score 100
+block 69.5.169.88 # auto block by abuse - score 100
+block 81.19.216.112 # auto block by abuse - score 100
+block 81.19.216.114 # auto block by abuse - score 100
+block 193.176.31.204 # auto block by abuse - score 100
+block 74.82.47.2 # auto block by abuse - score 100
+block 195.184.76.26 # auto block by abuse - score 100
+block 195.184.76.24 # auto block by abuse - score 100
+block 190.145.231.14 # auto block by abuse - score 100
+block 58.33.193.59 # auto block by abuse - score 100
+#block 89.33.222.4 #add by user - low abuse score
+block 103.213.234.148 # auto block by abuse - score 81
+block 114.9.48.34 # auto block by abuse - score 80
+block 85.217.149.13 # auto block by abuse - score 100
+block 85.217.140.31 # auto block by abuse - score 100
+block 85.217.149.35 # auto block by abuse - score 100
+block 85.217.140.48 # auto block by abuse - score 100
+block 85.217.149.26 # auto block by abuse - score 100
+block 31.14.32.7 # auto block by abuse - score 100
+block 85.217.149.32 # auto block by abuse - score 100
+block 185.236.64.166 # auto block by abuse - score 94
+block 85.217.149.1 # auto block by abuse - score 100
+block 85.217.149.6 # auto block by abuse - score 100
+block 94.230.131.151 # auto block by abuse - score 96
+block 85.217.149.61 # auto block by abuse - score 100
+block 125.209.67.58 # auto block by abuse - score 66
+block 3.130.168.2 # auto block by abuse - score 100
+block 111.61.77.228 # auto block by abuse - score 88
+block 59.125.2.190 # auto block by abuse - score 69
+block 149.126.21.154 # auto block by abuse - score 56
+block 34.14.33.150 # auto block by abuse - score 100
+block 85.217.149.14 # auto block by abuse - score 100
+block 1.9.164.197 # auto block by abuse - score 100
+block 79.127.64.1 #blocked by user - 445 scanner
+block 203.205.52.137 # auto block by abuse - score 62
+block 210.213.202.107 # auto block by abuse - score 74
+block 20.65.194.90 # auto block by abuse - score 100
+block 111.93.7.1 # auto block by abuse - score 100
+block 85.26.202.102 # auto block by abuse - score 81
+block 85.217.149.0 # auto block by abuse - score 100
+block 115.186.167.167 # auto block by abuse - score 64
+block 211.140.151.5 # auto block by abuse - score 67
+block 81.10.54.140 # auto block by abuse - score 62
+block 88.249.63.88 # auto block by abuse - score 70
+block 103.4.233.104 # auto block by abuse - score 69
+block 85.217.149.28 # auto block by abuse - score 100
+block 189.154.112.124 # auto block by abuse - score 51
+block 200.11.230.117 # auto block by abuse - score 90
+block 196.191.151.0 # auto block by abuse - score 100
+block 196.191.151.2 # auto block by abuse - score 100
+block 213.174.21.163 # auto block by abuse - score 60
+block 203.94.67.2 # auto block by abuse - score 100
+block 187.0.127.34 # auto block by abuse - score 64
+block 85.217.149.56 # auto block by abuse - score 100
+block 85.217.140.16 # auto block by abuse - score 100
+block 178.124.203.58 # auto block by abuse - score 70
+block 52.128.53.134 # auto block by abuse - score 100
+block 39.184.146.79 # auto block by abuse - score 92
+block 46.199.248.4 # auto block by abuse - score 54
+block 36.129.147.206 # auto block by abuse - score 50
+block 122.226.38.134 # auto block by abuse - score 100
+block 41.46.17.112 # auto block by abuse - score 57
+block 87.236.176.44 # auto block by abuse - score 100
+block 87.236.176.59 # auto block by abuse - score 100
+block 87.236.176.66 # auto block by abuse - score 100
+block 87.236.176.67 # auto block by abuse - score 100
+block 87.236.176.58 # auto block by abuse - score 100
+block 185.247.137.60 # auto block by abuse - score 100
+block 87.236.176.42 # auto block by abuse - score 100
+block 189.137.211.131 # auto block by abuse - score 100
+block 177.36.187.95 # auto block by abuse - score 100
+block 170.155.12.31 # auto block by abuse - score 78
+block 217.118.177.195 # auto block by abuse - score 92
+block 122.160.3.199 # auto block by abuse - score 100
+block 35.241.166.201 # auto block by abuse - score 100
+block 36.91.166.10 # auto block by abuse - score 87
+block 201.248.67.246 # auto block by abuse - score 100
+block 91.196.152.222 # auto block by abuse - score 100
+block 91.196.152.186 # auto block by abuse - score 100
+block 37.230.150.207 # auto block by abuse - score 50
+block 121.122.138.2 # auto block by abuse - score 95
+block 66.132.186.198 # auto block by abuse - score 100
+block 113.161.162.153 # auto block by abuse - score 61
+block 5.58.179.69 # auto block by abuse - score 52
+block 103.11.193.33 # auto block by abuse - score 56
+block 200.61.14.78 # auto block by abuse - score 79
+block 183.87.215.205 # auto block by abuse - score 62
+block 82.208.70.243 # auto block by abuse - score 77
+block 183.82.108.234 # auto block by abuse - score 93
+block 41.214.45.102 # auto block by abuse - score 100
+block 128.203.203.196 # auto block by abuse - score 100
+block 157.20.172.118 # auto block by abuse - score 71
+block 103.213.114.53 # auto block by abuse - score 100
+block 58.181.99.122 # auto block by abuse - score 100
+block 103.120.130.118 # auto block by abuse - score 69
+block 91.228.196.72 # auto block by abuse - score 100
+block 196.203.66.66 # auto block by abuse - score 99
+block 194.165.16.162 # auto block by abuse - score 100
+block 178.91.94.146 # auto block by abuse - score 100
+block 193.32.162.28 # auto block by abuse - score 100
+block 186.1.167.92 # auto block by abuse - score 100
+block 194.67.49.202 # auto block by abuse - score 53
+block 203.153.33.156 # auto block by abuse - score 71
+block 69.164.217.74 # auto block by abuse - score 100
+block 94.242.160.226 # auto block by abuse - score 55
+block 170.155.12.21 # auto block by abuse - score 100
+block 190.103.29.46 # auto block by abuse - score 67
+block 200.79.93.20 # auto block by abuse - score 59
+block 5.63.101.186 # auto block by abuse - score 100
+block 169.255.236.74 # auto block by abuse - score 100
+block 196.189.55.99 #injected by dashboard
+block 154.242.187.216 #injected by dashboard
+block 102.185.198.77 #injected by dashboard
+block 103.119.147.126 #injected by dashboard
+block 217.118.32.7 #injected by dashboard
+block 81.161.120.16 #injected by dashboard
+block 196.1.229.197 #injected by dashboard
+block 195.191.231.207 #injected by dashboard
+block 92.46.108.218 # auto block by abuse - score 55
+block 160.119.76.44 # auto block by abuse - score 100
+block 37.32.76.21 #injected by dashboard
+block 85.105.136.134 # auto block by abuse - score 100
+block 178.124.167.75 # auto block by abuse - score 100
+block 43.225.164.6 # auto block by abuse - score 100
+block 187.95.137.4 # auto block by abuse - score 61
+block 187.226.36.78 # auto block by abuse - score 88
+block 60.163.63.222 #injected by dashboard
+block 125.22.42.210 # auto block by abuse - score 100
+block 201.219.64.250 # auto block by abuse - score 99
+block 187.224.144.99 # auto block by abuse - score 100
+block 122.225.52.246 # auto block by abuse - score 62
+block 14.238.86.174 # auto block by abuse - score 62
+block 201.164.155.186 # auto block by abuse - score 79
+block 179.108.83.130 # auto block by abuse - score 100
+block 103.158.162.242 # auto block by abuse - score 83
+block 181.211.248.102 # auto block by abuse - score 65
+block 16.58.56.214 # auto block by abuse - score 100
+block 190.103.31.164 # auto block by abuse - score 71
+block 182.160.125.35 # auto block by abuse - score 70
+block 118.69.67.248 # auto block by abuse - score 77
+block 203.115.19.35 # auto block by abuse - score 78
+block 123.231.50.2 # auto block by abuse - score 67
+block 222.165.183.226 # auto block by abuse - score 68
+block 120.211.32.165 # auto block by abuse - score 100
+block 180.250.33.132 # auto block by abuse - score 70
+block 35.195.138.45 # auto block by abuse - score 100
+block 89.33.222.4 # auto block by abuse - score 71
+block 185.247.137.174 # auto block by abuse - score 100
+block 159.65.219.252 # auto block by abuse - score 100
+block 104.152.52.149 # auto block by abuse - score 100
+block 104.152.52.139 # auto block by abuse - score 100
+block 104.152.52.134 # auto block by abuse - score 100
+block 104.152.52.140 # auto block by abuse - score 100
+block 104.152.52.128 # auto block by abuse - score 100
+block 104.152.52.130 # auto block by abuse - score 100
+block 104.152.52.132 # auto block by abuse - score 100
+block 104.152.52.147 # auto block by abuse - score 100
+block 104.152.52.138 # auto block by abuse - score 100
+block 104.152.52.137 # auto block by abuse - score 100
+block 104.152.52.141 # auto block by abuse - score 100
+block 104.152.52.129 # auto block by abuse - score 100
+block 104.152.52.148 # auto block by abuse - score 100
+block 104.152.52.146 # auto block by abuse - score 100
+block 104.152.52.125 # auto block by abuse - score 100
+block 104.152.52.127 # auto block by abuse - score 100
+block 104.152.52.126 # auto block by abuse - score 100
+block 104.152.52.143 # auto block by abuse - score 100
+block 103.83.137.10 # auto block by abuse - score 100
+block 89.33.222.6 # auto block by abuse - score 52
+block 103.199.126.51 # auto block by abuse - score 77
+block 202.53.15.130 # auto block by abuse - score 100
+block 83.171.96.58 # auto block by abuse - score 51
+allow 195.97.78.222 #comsys
+allow 84.254.17.242 #comsys
+block 74.207.237.5 # auto block by abuse - score 100
+block 20.29.56.192 # auto block by abuse - score 100

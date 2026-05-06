@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titan — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #111827;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  width: 380px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 600;
+  color: #10b981;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+  margin-bottom: 32px;
+}
+
+.divider {
+  height: 1px;
+  background: #374151;
+  margin-bottom: 28px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #f3f4f6;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  margin-bottom: 18px;
+}
+input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+}
+input::placeholder { color: #4b5563; }
+
+button[type="submit"] {
+  width: 100%;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  margin-top: 6px;
+}
+button[type="submit"]:hover {
+  background: #059669;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+
+.error {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 6px;
+  color: #f87171;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.version {
+  text-align: center;
+  color: #4b5563;
+  font-size: 11px;
+  margin-top: 24px;
+  font-family: 'JetBrains Mono', monospace;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">TITAN</div>
+  <div class="subtitle">Proxy Dashboard — Secure Access</div>
+  <div class="divider"></div>
+
+  <div id="error-box" class="error" style="display:none">
+    Invalid credentials. Please try again.
+  </div>
+
+  <form method="POST" action="/dashboard/login">
+    <label>Username</label>
+    <input type="text" name="username" placeholder="Enter username" autocomplete="off" autofocus>
+    <label>Password</label>
+    <input type="password" name="password" placeholder="Enter password">
+    <button type="submit">Sign In</button>
+  </form>
+
+  <div class="version">Titan Proxy v18</div>
+</div>
+
+<script>
+  if (new URLSearchParams(window.location.search).get('error')) {
+    document.getElementById('error-box').style.display = 'block';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titan Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #111827;
+  --surface:  #1f2937;
+  --surface2: #273548;
+  --border:   #374151;
+  --border2:  #4b5563;
+  --text:     #f3f4f6;
+  --text2:    #d1d5db;
+  --dim:      #7aa898;
+  --green:    #10b981;
+  --green-bg: rgba(16,185,129,0.12);
+  --amber:    #f59e0b;
+  --amber-bg: rgba(245,158,11,0.12);
+  --red:      #ef4444;
+  --red-bg:   rgba(239,68,68,0.12);
+  --blue:     #3b82f6;
+  --blue-bg:  rgba(59,130,246,0.12);
+  --purple:   #a78bfa;
+  --purple-bg:rgba(167,139,250,0.12);
+  --font:     'Inter', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:14px; }
+body {
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  height:100vh; overflow:hidden; display:flex; flex-direction:column; line-height:1.5;
+}
+
+/* ── HEADER ── */
+.header {
+  flex-shrink:0; background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 20px; display:flex; align-items:center; gap:8px; height:56px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.3); z-index:200;
+}
+.logo { font-family:var(--mono); font-size:18px; font-weight:600; color:var(--green); letter-spacing:0.1em; white-space:nowrap; margin-right:4px; }
+.vsep { width:1px; height:28px; background:var(--border); flex-shrink:0; margin:0 4px; }
+.uptime-label { color:var(--dim); font-size:12px; white-space:nowrap; margin-right:4px; }
+.uptime-label span { color:var(--text2); font-family:var(--mono); }
+.hbadge {
+  font-size:11px; font-weight:600; padding:4px 10px; border-radius:4px; border:1px solid;
+  white-space:nowrap; cursor:pointer; user-select:none; transition:all 0.15s; font-family:var(--font); background:transparent;
+}
+.hbadge.off { color:var(--dim); border-color:var(--border); }
+.hbadge.off:hover { color:var(--text2); border-color:var(--border2); background:rgba(255,255,255,0.05); }
+.hbadge.on  { color:#fff; background:var(--green); border-color:var(--green); }
+.hbadge.on:hover { opacity:0.85; }
+.hbadge.warn { color:#fff; background:var(--amber); border-color:var(--amber); }
+.hbadge.warn:hover { opacity:0.85; }
+.hbadge-info { font-size:11px; font-weight:600; padding:4px 10px; border-radius:4px; border:1px solid; white-space:nowrap; user-select:none; }
+.hbadge-info.on  { color:var(--green); border-color:rgba(16,185,129,0.35); background:var(--green-bg); }
+.hbadge-info.off { color:var(--dim);   border-color:var(--border); background:transparent; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.active-count { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--dim); }
+.active-count strong { font-size:22px; color:var(--green); font-family:var(--mono); }
+.pulse { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.logout-btn { background:transparent; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:12px; font-weight:500; padding:6px 14px; border-radius:5px; cursor:pointer; transition:all 0.15s; }
+.logout-btn:hover { color:var(--red); border-color:rgba(239,68,68,0.5); background:var(--red-bg); }
+
+/* ── LAYOUT ── */
+.layout { display:grid; grid-template-columns:1fr 220px; flex:1; min-height:0; overflow-y:auto; }
+.main { border-right:1px solid var(--border); }
+.side { background:var(--surface); }
+
+/* ── PANELS ── */
+.panel { border-bottom:1px solid var(--border); }
+.panel-title { font-size:12px; font-weight:700; color:var(--dim); letter-spacing:0.08em; text-transform:uppercase; }
+.btn { background:transparent; border:1px solid var(--border); color:var(--text2); font-family:var(--font); font-size:12px; font-weight:500; padding:5px 12px; border-radius:5px; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.btn:hover { background:var(--surface2); border-color:var(--border2); color:var(--text); }
+.btn.danger { color:var(--red); border-color:rgba(239,68,68,0.3); }
+.btn.danger:hover { background:var(--red-bg); border-color:var(--red); }
+.rdot { width:7px; height:7px; border-radius:50%; background:var(--border2); transition:background 0.1s; flex-shrink:0; }
+.rdot.flash { background:var(--green); }
+
+/* ── TABLES ── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th { text-align:left; padding:8px 12px; font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--dim); background:rgba(0,0,0,0.15); border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody tr { border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.1s; }
+tbody tr:hover { background:rgba(255,255,255,0.04); }
+tbody tr:last-child { border-bottom:none; }
+tbody td { padding:9px 12px; vertical-align:middle; }
+tbody tr.row-active  { border-left:3px solid var(--green); }
+tbody tr.row-rclosed { border-left:3px solid var(--amber); }
+tbody tr.row-hist    { border-left:3px solid rgba(255,255,255,0.12); }
+tbody tr.row-block   { border-left:3px solid var(--red); }
+tbody tr.row-white   { border-left:3px solid var(--blue); }
+.cell-id      { color:var(--dim); font-family:var(--mono); font-size:12px; }
+.cell-ip      { font-family:var(--mono); font-weight:600; color:var(--text); font-size:13px; }
+.cell-comment { color:var(--green); font-size:12px; }
+.cell-ts      { color:var(--dim); font-family:var(--mono); font-size:11px; white-space:nowrap; cursor:help; }
+.cell-dur     { color:var(--amber); font-family:var(--mono); font-size:12px; font-weight:600; }
+.tag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+.tag.green  { color:var(--green);  background:var(--green-bg); }
+.tag.amber  { color:var(--amber);  background:var(--amber-bg); }
+.tag.red    { color:var(--red);    background:var(--red-bg); }
+.tag.blue   { color:var(--blue);   background:var(--blue-bg); }
+.tag.purple { color:var(--purple); background:var(--purple-bg); }
+.tag.gray   { color:var(--dim);    background:rgba(107,114,128,0.12); }
+.dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.dot-green { background:var(--green); }
+.dot-amber { background:var(--amber); }
+.dot-gray  { background:var(--dim); }
+.disc-btn { background:transparent; border:1px solid rgba(239,68,68,0.25); color:rgba(239,68,68,0.6); font-family:var(--mono); font-size:10px; font-weight:600; padding:3px 8px; border-radius:4px; cursor:pointer; transition:all 0.15s; }
+.disc-btn:hover { color:var(--red); border-color:var(--red); background:var(--red-bg); }
+.empty-row td { padding:24px 20px; color:var(--dim); font-size:13px; text-align:center; font-style:italic; }
+
+/* ── COLLAPSIBLE ── */
+.collapsible-header { padding:12px 20px; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); transition:background 0.1s; }
+.collapsible-header:hover { background:rgba(255,255,255,0.03); }
+.caret { color:var(--dim); font-size:11px; transition:transform 0.2s; margin-left:auto; }
+.caret.open { transform:rotate(180deg); }
+.collapsible-body { display:none; }
+.collapsible-body.open { display:block; }
+
+/* ── SIDE ── */
+.side-section { padding:16px 16px 12px; border-bottom:1px solid var(--border); }
+.side-title { font-size:11px; font-weight:700; color:var(--dim); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px; }
+.side-btn { width:100%; margin-bottom:8px; background:transparent; border:1px solid var(--border); color:var(--text2); font-family:var(--font); font-size:12px; font-weight:500; padding:8px; border-radius:5px; cursor:pointer; transition:all 0.15s; text-align:left; }
+.side-btn:hover { background:var(--surface2); border-color:var(--border2); color:var(--text); }
+.side-btn:last-child { margin-bottom:0; }
+.side-btn.danger { color:rgba(239,68,68,0.7); border-color:rgba(239,68,68,0.25); }
+.side-btn.danger:hover { color:var(--red); border-color:var(--red); background:var(--red-bg); }
+.info-row { display:flex; justify-content:space-between; align-items:flex-start; padding:5px 0; gap:8px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:12px; }
+.info-row:last-child { border-bottom:none; }
+.info-key { color:var(--dim); flex-shrink:0; }
+.info-val { color:var(--text2); text-align:right; font-family:var(--mono); font-size:11px; word-break:break-all; }
+.info-val.green { color:var(--green); font-weight:600; }
+.info-val.amber { color:var(--amber); font-weight:600; }
+/* Abuse threshold inline editor */
+.abuse-edit { display:flex; gap:6px; align-items:center; margin-top:8px; }
+.abuse-input { background:rgba(0,0,0,0.3); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:5px 8px; border-radius:4px; width:60px; outline:none; }
+.abuse-input:focus { border-color:var(--amber); }
+.abuse-save { background:transparent; border:1px solid rgba(245,158,11,0.3); color:var(--amber); font-family:var(--font); font-size:11px; font-weight:600; padding:5px 10px; border-radius:4px; cursor:pointer; transition:all 0.15s; }
+.abuse-save:hover { background:var(--amber-bg); border-color:var(--amber); }
+
+/* ── LOG ── */
+.log-section { border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+.log-header { padding:10px 20px; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; border-bottom:1px solid transparent; transition:background 0.1s; }
+.log-header:hover { background:rgba(255,255,255,0.03); }
+.log-header.open { border-bottom-color:var(--border); }
+.log-body { max-height:220px; overflow-y:auto; padding:6px 0; }
+.log-line { padding:3px 20px; font-family:var(--mono); font-size:11.5px; line-height:1.55; border-left:3px solid transparent; }
+.log-line:hover { background:rgba(255,255,255,0.03); }
+.log-ts { color:var(--dim); margin-right:10px; }
+.log-line.CONNECT    { color:#6ee7b7; border-left-color:var(--green); }
+.log-line.DISCONNECT { color:#93c5fd; border-left-color:var(--blue); }
+.log-line.BLOCK      { color:#fca5a5; border-left-color:var(--red); }
+.log-line.ABUSE      { color:#fcd34d; border-left-color:var(--amber); }
+.log-line.CONTROL    { color:#c4b5fd; border-left-color:#a78bfa; }
+.log-line.INFO       { color:var(--dim); }
+.log-line.ERROR      { color:var(--red); border-left-color:var(--red); }
+
+/* ── CONTEXT MENU ── */
+.ctx-menu { position:fixed; z-index:1000; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; min-width:200px; box-shadow:0 8px 32px rgba(0,0,0,0.5); display:none; overflow:hidden; animation:ctxIn 0.1s ease; }
+@keyframes ctxIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+.ctx-menu.show { display:block; }
+.ctx-label { padding:8px 14px 4px; font-size:10px; font-weight:700; color:var(--dim); letter-spacing:0.08em; text-transform:uppercase; font-family:var(--mono); }
+.ctx-sep { height:1px; background:var(--border); margin:4px 0; }
+.ctx-item { padding:9px 14px; font-size:13px; color:var(--text2); cursor:pointer; display:flex; align-items:center; gap:10px; transition:background 0.1s; }
+.ctx-item:hover { background:rgba(255,255,255,0.07); color:var(--text); }
+.ctx-item.danger:hover  { background:var(--red-bg);    color:var(--red); }
+.ctx-item.warning:hover { background:var(--amber-bg);  color:var(--amber); }
+.ctx-item.success:hover { background:var(--blue-bg);   color:var(--blue); }
+.ctx-item.hidden { display:none; }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; animation:fadeIn 0.15s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:8px; width:560px; max-width:92vw; max-height:82vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.6); animation:slideIn 0.15s ease; }
+.modal.wide { width:700px; }
+@keyframes slideIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+.modal-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+.modal-title { font-size:14px; font-weight:700; color:var(--text); }
+.modal-ip { font-family:var(--mono); font-size:13px; color:var(--green); }
+.modal-close { margin-left:auto; background:transparent; border:none; color:var(--dim); font-size:18px; cursor:pointer; padding:0 4px; line-height:1; transition:color 0.15s; }
+.modal-close:hover { color:var(--text); }
+.modal-body { padding:20px; overflow-y:auto; flex:1; }
+.modal-loading { text-align:center; padding:32px; color:var(--dim); font-size:13px; }
+.spinner { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.info-grid { display:grid; grid-template-columns:140px 1fr; gap:0; border:1px solid var(--border); border-radius:6px; overflow:hidden; font-size:13px; }
+.info-grid .row { display:contents; }
+.info-grid .row:not(:last-child) .k,
+.info-grid .row:not(:last-child) .v { border-bottom:1px solid var(--border); }
+.info-grid .k { padding:8px 12px; background:rgba(0,0,0,0.2); color:var(--dim); font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; }
+.info-grid .v { padding:8px 12px; color:var(--text2); font-family:var(--mono); font-size:12px; word-break:break-all; }
+.info-grid .v.green { color:var(--green); font-weight:600; }
+.info-grid .v.red   { color:var(--red);   font-weight:600; }
+.info-grid .v.amber { color:var(--amber); font-weight:600; }
+.modal-footer { padding:12px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+.modal-btn { background:transparent; border:1px solid var(--border); color:var(--text2); font-family:var(--font); font-size:12px; font-weight:600; padding:7px 16px; border-radius:5px; cursor:pointer; transition:all 0.15s; }
+.modal-btn:hover { background:var(--surface2); border-color:var(--border2); color:var(--text); }
+.modal-btn.red   { color:var(--red);   border-color:rgba(239,68,68,0.3); }
+.modal-btn.red:hover   { background:var(--red-bg);   border-color:var(--red); }
+.modal-btn.amber { color:var(--amber); border-color:rgba(245,158,11,0.3); }
+.modal-btn.amber:hover { background:var(--amber-bg); border-color:var(--amber); }
+.modal-btn.blue  { color:var(--blue);  border-color:rgba(59,130,246,0.3); }
+.modal-btn.blue:hover  { background:var(--blue-bg);  border-color:var(--blue); }
+.modal-btn.purple { color:var(--purple); border-color:rgba(167,139,250,0.3); }
+.modal-btn.purple:hover { background:var(--purple-bg); border-color:var(--purple); }
+.error-box { background:var(--red-bg); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:10px 14px; color:#fca5a5; font-size:12px; }
+/* Help content */
+.help-pre { font-family:var(--mono); font-size:11px; color:var(--text2); white-space:pre-wrap; line-height:1.6; background:rgba(0,0,0,0.2); padding:16px; border-radius:6px; border:1px solid var(--border); }
+.help-section { margin-top:16px; }
+.help-section-title { font-size:12px; font-weight:700; color:var(--green); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:8px; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:20px; right:20px; z-index:3000; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; padding:10px 18px; font-size:13px; font-weight:500; opacity:0; transform:translateY(6px); transition:all 0.2s; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.green { border-color:rgba(16,185,129,0.4); color:var(--green); }
+.toast.red   { border-color:rgba(239,68,68,0.4);  color:var(--red); }
+.toast.amber { border-color:rgba(245,158,11,0.4);  color:var(--amber); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:#6b7280; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">TITAN</div>
+  <div class="vsep"></div>
+  <div class="uptime-label">Up <span id="uptime-val">—</span></div>
+  <div class="vsep"></div>
+  <button class="hbadge off" id="hb-verbose"    onclick="toggleFlag('verbose')"    title="Toggle verbose logging">Verbose: OFF</button>
+  <button class="hbadge off" id="hb-hexdump"    onclick="toggleFlag('hexdump')"    title="Toggle hex dump">Hexdump: OFF</button>
+  <button class="hbadge off" id="hb-allowall"   onclick="toggleFlag('allowall')"   title="Toggle allow-all mode">AllowAll: OFF</button>
+  <button class="hbadge off" id="hb-abusecheck" onclick="toggleFlag('abusecheck')" title="Toggle newcomer AbuseIPDB check">AbuseChk: OFF</button>
+  <div class="vsep"></div>
+  <span class="hbadge-info off" id="hb-remote"   title="--closeremotebyclient (set at startup)">→Remote: OFF</span>
+  <span class="hbadge-info off" id="hb-client"   title="--closeclientbyremote (set at startup)">→Client: OFF</span>
+  <button class="hbadge off" id="hb-tcpsniff" onclick="toggleFlag('tcpsniff')" title="Toggle TCP handshake sniffing">TCPSniff: OFF</button>
+  <div class="header-right">
+    <div class="active-count"><div class="pulse"></div><strong id="conn-count">0</strong> active</div>
+    <div class="vsep"></div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <div class="main">
+
+    <!-- Active Connections -->
+    <div class="panel">
+      <div class="collapsible-header" onclick="toggleSection('active')">
+        <div class="panel-title">Active Connections</div>
+        <div class="rdot" id="rdot-active"></div>
+        <div onclick="event.stopPropagation()" style="margin-left:auto;">
+          <button class="btn danger" onclick="confirmDisconnectAll()">Disconnect All</button>
+        </div>
+        <div class="caret open" id="caret-active" style="margin-left:8px;">▼</div>
+      </div>
+      <div class="collapsible-body open" id="body-active">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>IP Address</th><th>Comment</th><th>Connected</th><th>Last Client</th><th>Last Remote</th><th>Idle</th><th>Remote</th><th></th></tr></thead>
+            <tbody id="active-tbody"><tr class="empty-row"><td colspan="9">No active connections</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session History -->
+    <div class="panel">
+      <div class="collapsible-header" onclick="toggleSection('hist')">
+        <div class="panel-title">Session History</div>
+        <div class="rdot" id="rdot-hist"></div>
+        <div class="caret" id="caret-hist">▼</div>
+      </div>
+      <div class="collapsible-body" id="body-hist">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>IP Address</th><th>Comment</th><th>Connected</th><th>Disconnected</th><th>Duration</th><th>Reason</th><th>Remote</th></tr></thead>
+            <tbody id="hist-tbody"><tr class="empty-row"><td colspan="8">No history yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto-blocked -->
+    <div class="panel">
+      <div class="collapsible-header" onclick="toggleSection('blocked')">
+        <div class="panel-title">Auto-Blocked IPs</div>
+        <div class="caret" id="caret-blocked">▼</div>
+      </div>
+      <div class="collapsible-body" id="body-blocked">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>IP Address</th><th>Abuse Score</th><th>Blocked At</th></tr></thead>
+            <tbody id="blocked-tbody"><tr class="empty-row"><td colspan="3">No auto-blocked IPs</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Whitelisted IPs -->
+    <div class="panel">
+      <div class="collapsible-header" onclick="toggleSection('white')">
+        <div class="panel-title">Whitelisted IPs</div>
+        <div class="caret" id="caret-white">▼</div>
+      </div>
+      <div class="collapsible-body" id="body-white">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>IP / Network</th><th>Comment</th></tr></thead>
+            <tbody id="white-tbody"><tr class="empty-row"><td colspan="2">No whitelist rules</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- SIDE -->
+  <div class="side">
+
+    <div class="side-section">
+      <div class="side-title">Quick Actions</div>
+      <button class="side-btn danger" onclick="confirmDisconnectAll()">⚡ Disconnect All</button>
+      <button class="side-btn" onclick="autoDisconnectOldest()">⏱ Auto Disconnect Oldest</button>
+      <button class="side-btn" onclick="openHelp()">📖 Help</button>
+    </div>
+
+    <div class="side-section">
+      <div class="side-title">Configuration</div>
+      <div id="config-info"></div>
+      <div class="abuse-edit">
+        <span style="font-size:11px;color:var(--dim)">Abuse threshold:</span>
+        <input class="abuse-input" type="number" id="abuse-threshold-input" min="0" max="100" placeholder="0-100">
+        <button class="abuse-save" onclick="saveAbuseThreshold()">Set</button>
+      </div>
+    </div>
+
+    <div class="side-section">
+      <div class="side-title">Rules & Blocking</div>
+      <div id="rules-info"></div>
+    </div>
+
+  </div><!-- /side -->
+</div><!-- /layout -->
+
+<!-- LOG -->
+<div class="log-section">
+  <div class="log-header open" id="log-header" onclick="toggleLog()">
+    <div class="panel-title">Live Log</div>
+    <div class="rdot" id="rdot-log"></div>
+    <div style="margin-left:auto;font-size:12px;color:var(--dim)" id="log-lbl">▼ Hide</div>
+  </div>
+  <div class="log-body" id="log-body" style="display:block"></div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-label" id="ctx-ip-lbl">—</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item"         id="ctx-whois"     onclick="openWhois()">🔍 &nbsp;Whois Lookup</div>
+  <div class="ctx-item"         id="ctx-abuse"     onclick="openAbuse()">🛡 &nbsp;AbuseIPDB Check</div>
+  <div class="ctx-sep"          id="ctx-sep2"></div>
+  <div class="ctx-item success" id="ctx-whitelist" onclick="openWhitelist()">✅ &nbsp;Add to Whitelist</div>
+  <div class="ctx-item warning" id="ctx-blacklist" onclick="openBlacklist()">⛔ &nbsp;Add to Blacklist</div>
+  <div class="ctx-item danger"  id="ctx-disc"      onclick="ctxDisc()">✕ &nbsp;Disconnect</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Info</div>
+      <div class="modal-ip"    id="modal-ip"></div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body"   id="modal-body"><div class="modal-loading"><div class="spinner"></div>Loading...</div></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let flags      = { verbose:false, hexdump:false, allowall:false, abusecheck:false, tcpsniff:false };
+let ctxConn    = null;
+let ctxSource  = null;
+let logOpen    = true;
+let lastLogSeq = 0;
+let autoScroll = true;
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  refreshAll();
+  setInterval(refreshAll, 3000);
+  setInterval(refreshLog, 2000);
+  document.addEventListener('click', e => {
+    if (!document.getElementById('ctx-menu').contains(e.target)) hideCtx();
+  });
+  document.getElementById('log-body').addEventListener('scroll', function() {
+    autoScroll = this.scrollHeight - this.scrollTop - this.clientHeight < 50;
+  });
+});
+
+// ── Data refresh ───────────────────────────────────────────────────────────
+async function refreshAll() {
+  try {
+    const r = await fetch('/dashboard/data');
+    if (r.status === 401 || r.status === 403) { location.href='/dashboard/login'; return; }
+    const d = await r.json();
+    flash('rdot-active'); flash('rdot-hist');
+    renderActive(d.connections.active);
+    renderHistory(d.connections.history);
+    renderBlocked(d.autoblocked);
+    renderWhitelist(d.whitelist || []);
+    renderFlags(d.flags);
+    renderConfig(d);
+    renderRules(d);
+    document.getElementById('conn-count').textContent = d.connections.active.length;
+    document.getElementById('uptime-val').textContent = fmtUptime(d.uptime_seconds);
+    // Update abuse threshold input placeholder
+    const inp = document.getElementById('abuse-threshold-input');
+    if (inp && !document.activeElement === inp) inp.placeholder = d.flags.abuse_threshold;
+  } catch(e) {}
+}
+
+// ── Active table ───────────────────────────────────────────────────────────
+function renderActive(list) {
+  const tb = document.getElementById('active-tbody');
+  if (!list || !list.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="9">No active connections</td></tr>'; return; }
+  tb.innerHTML = list.map(c => {
+    const remTag = c.remote_closed
+      ? `<span class="tag amber"><span class="dot dot-amber"></span>closed</span>`
+      : `<span class="tag green"><span class="dot dot-green"></span>open</span>`;
+    const rowCls = c.remote_closed ? 'row-active row-rclosed' : 'row-active';
+    return `<tr class="${rowCls}" oncontextmenu="showCtx(event,${c.id},'${esc(c.ip)}','active')" data-id="${c.id}">
+      <td class="cell-id">#${c.id}</td>
+      <td class="cell-ip">${esc(c.ip)}</td>
+      <td class="cell-comment">${esc(c.comment||'')}</td>
+      <td class="cell-ts" title="${esc(c.connected_ts)}">${shortTs(c.connected_ts)}</td>
+      <td class="cell-ts" title="${esc(c.last_client_ts)}">${shortTs(c.last_client_ts)}</td>
+      <td class="cell-ts" title="${esc(c.last_remote_ts)}">${shortTs(c.last_remote_ts)}</td>
+      <td class="cell-dur">${esc(c.idle||'?')}</td>
+      <td>${remTag}</td>
+      <td><button class="disc-btn" onclick="discId(${c.id},event)">Disc</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── History table ──────────────────────────────────────────────────────────
+function renderHistory(list) {
+  const tb = document.getElementById('hist-tbody');
+  if (!list || !list.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="8">No history yet</td></tr>'; return; }
+  tb.innerHTML = list.map(s => {
+    const isActive = s.disconnected_ts === '--- ACTIVE ---';
+    const discCell = isActive ? `<span class="tag green">ACTIVE</span>` : `<span class="cell-ts" title="${esc(s.disconnected_ts)}">${shortTs(s.disconnected_ts)}</span>`;
+    const r = s.close_reason||'';
+    let reasonTag = `<span class="tag gray">${esc(r)}</span>`;
+    if      (r==='active')             reasonTag=`<span class="tag green">active</span>`;
+    else if (r==='natural disc.')      reasonTag=`<span class="tag gray">natural</span>`;
+    else if (r.includes('HTTP'))       reasonTag=`<span class="tag blue">operator</span>`;
+    else if (r.includes('AbuseIPDB'))  reasonTag=`<span class="tag amber">abuse block</span>`;
+    else if (r.includes('block list')) reasonTag=`<span class="tag red">blocklist</span>`;
+    else if (r.includes('dashboard'))  reasonTag=`<span class="tag red">dashboard</span>`;
+    const remTag = isActive
+      ? (s.remote_status==='closed' ? `<span class="tag amber"><span class="dot dot-amber"></span>closed</span>` : `<span class="tag green"><span class="dot dot-green"></span>open</span>`)
+      : (s.remote_status==='closed' ? `<span class="tag gray"><span class="dot dot-gray"></span>closed</span>`  : `<span class="tag amber"><span class="dot dot-amber"></span>open</span>`);
+    return `<tr class="${isActive?'row-active':'row-hist'}" oncontextmenu="showCtx(event,${isActive?s.id:null},'${esc(s.ip)}','hist')">
+      <td class="cell-id">#${s.id}</td>
+      <td class="cell-ip">${esc(s.ip)}</td>
+      <td class="cell-comment">${esc(s.comment||'')}</td>
+      <td class="cell-ts" title="${esc(s.connected_ts)}">${shortTs(s.connected_ts)}</td>
+      <td>${discCell}</td>
+      <td class="cell-dur">${esc(s.duration||'')}</td>
+      <td>${reasonTag}</td>
+      <td>${remTag}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Blocked table ──────────────────────────────────────────────────────────
+function renderBlocked(list) {
+  const tb = document.getElementById('blocked-tbody');
+  if (!list || !list.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="3">No auto-blocked IPs</td></tr>'; return; }
+  tb.innerHTML = list.map(b =>
+    `<tr class="row-block" oncontextmenu="showCtx(event,null,'${esc(b.ip)}','blocked')">
+      <td class="cell-ip">${esc(b.ip)}</td>
+      <td><span class="tag red">${b.score}</span></td>
+      <td class="cell-ts" title="${esc(b.ts)}">${shortTs(b.ts)}</td>
+    </tr>`
+  ).join('');
+}
+
+// ── Whitelist table ────────────────────────────────────────────────────────
+function renderWhitelist(list) {
+  const tb = document.getElementById('white-tbody');
+  if (!list || !list.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="2">No whitelist rules</td></tr>'; return; }
+  tb.innerHTML = list.map(w =>
+    `<tr class="row-white" oncontextmenu="showCtx(event,null,'${esc(w.ip)}','white')">
+      <td class="cell-ip">${esc(w.ip)}</td>
+      <td class="cell-comment">${esc(w.comment||'')}</td>
+    </tr>`
+  ).join('');
+}
+
+// ── Flags ──────────────────────────────────────────────────────────────────
+function renderFlags(f) {
+  flags = { verbose:f.verbose, hexdump:f.hexdump, allowall:f.allowall, abusecheck:f.abuseblock_enabled, tcpsniff:f.tcp_sniff||false };
+  setBadge('hb-verbose',    flags.verbose,    false, 'Verbose');
+  setBadge('hb-hexdump',    flags.hexdump,    false, 'Hexdump');
+  setBadge('hb-allowall',   flags.allowall,   true,  'AllowAll');
+  setBadge('hb-abusecheck', flags.abusecheck, false, 'AbuseChk');
+  setInfoBadge('hb-remote',   f.close_remote_by_client, '→Remote');
+  setInfoBadge('hb-client',   f.close_client_by_remote, '→Client');
+  setBadge('hb-tcpsniff', f.tcp_sniff||false, false, 'TCPSniff');
+}
+function setBadge(id, val, isWarn, label) {
+  const el = document.getElementById(id); if (!el) return;
+  el.textContent = `${label}: ${val?'ON':'OFF'}`;
+  el.className   = `hbadge ${val?(isWarn?'warn':'on'):'off'}`;
+}
+function setInfoBadge(id, val, label) {
+  const el = document.getElementById(id); if (!el) return;
+  el.textContent = `${label}: ${val?'ON':'OFF'}`;
+  el.className   = `hbadge-info ${val?'on':'off'}`;
+}
+
+function renderConfig(d) {
+  document.getElementById('config-info').innerHTML = [
+    ['Listen',  d.listen_port],
+    ['Remote',  d.remote_server],
+    ['Abuse',   d.flags.abuseblock_enabled?`on (≥${d.flags.abuse_threshold})`:'off'],
+    ['→Remote', d.flags.close_remote_by_client?'on':'off'],
+    ['→Client', d.flags.close_client_by_remote?'on':'off'],
+  ].map(([k,v])=>`<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${esc(String(v))}</span></div>`).join('');
+  // Set placeholder to current threshold
+  const inp = document.getElementById('abuse-threshold-input');
+  if (inp) inp.placeholder = `current: ${d.flags.abuse_threshold}`;
+}
+
+function renderRules(d) {
+  document.getElementById('rules-info').innerHTML = `
+    <div class="info-row"><span class="info-key">Allow</span><span class="info-val green">${d.rules.allow_count}</span></div>
+    <div class="info-row"><span class="info-key">Block</span><span class="info-val amber">${d.rules.block_count}</span></div>
+    <div class="info-row"><span class="info-key">Auto-blocked</span><span class="info-val amber">${d.autoblocked.length}</span></div>
+    <div class="info-row"><span class="info-key">File</span><span class="info-val" style="font-size:10px">${esc(d.rules_file||'none')}</span></div>`;
+}
+
+// ── Log refresh ────────────────────────────────────────────────────────────
+async function refreshLog() {
+  try {
+    const r = await fetch(`/dashboard/log?since=${lastLogSeq}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.lines || !d.lines.length) return;
+    flash('rdot-log');
+    const body = document.getElementById('log-body');
+    d.lines.forEach(l => {
+      if (l.seq > lastLogSeq) lastLogSeq = l.seq;
+      const el = document.createElement('div');
+      el.className = 'log-line ' + (l.level||'INFO');
+      el.innerHTML = `<span class="log-ts">${l.ts}</span>${esc(l.msg)}`;
+      body.appendChild(el);
+    });
+    while (body.children.length > 400) body.removeChild(body.firstChild);
+    if (autoScroll && logOpen) body.scrollTop = body.scrollHeight;
+  } catch(e) {}
+}
+
+// ── Flag toggles ───────────────────────────────────────────────────────────
+const epMap = { verbose:'verbose', hexdump:'hexdump', allowall:'allowall', abusecheck:'newcomerabusecheck', tcpsniff:'tcpsniff' };
+async function toggleFlag(key) {
+  const action = flags[key]?'disable':'enable';
+  try {
+    const r = await fetch(`/${epMap[key]}?${action}`, {method:'POST'});
+    const d = await r.json();
+    if (r.status===409) { toast(d.error,'red'); return; }
+    toast(`${key} ${action}d`, 'green');
+    refreshAll();
+  } catch(e) { toast('Request failed','red'); }
+}
+
+// ── Abuse threshold save ───────────────────────────────────────────────────
+async function saveAbuseThreshold() {
+  const inp = document.getElementById('abuse-threshold-input');
+  const val = inp.value.trim();
+  if (!val) { toast('Enter a value 0-100', 'amber'); return; }
+  try {
+    const r = await fetch(`/dashboard/abuseconfig?threshold=${val}`, {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) { toast(d.error||'Failed', 'red'); return; }
+    toast(`Abuse threshold set to ${d.threshold}`, 'green');
+    inp.value = '';
+    refreshAll();
+  } catch(e) { toast('Request failed','red'); }
+}
+
+// ── Disconnect ─────────────────────────────────────────────────────────────
+async function discId(id, e) {
+  e && e.stopPropagation();
+  try {
+    await fetch(`/disconnect_id?ID=${id}`, {method:'POST'});
+    toast(`Connection #${id} disconnected`, 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { toast('Failed','red'); }
+}
+
+// Replace browser confirm() with dashboard-style modal
+function confirmDisconnectAll() {
+  showModal('Disconnect All', '');
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;">
+      This will forcibly disconnect <strong style="color:var(--red)">all active connections</strong>.<br>
+      No IPs will be blocked — clients may reconnect.
+    </p>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="modal-btn" onclick="closeModal()">Cancel</button>
+    <button class="modal-btn red" onclick="closeModal();doDisconnectAll()">⚡ Disconnect All</button>`;
+}
+
+async function doDisconnectAll() {
+  try {
+    const r = await fetch('/disconnectall', {method:'POST'});
+    const d = await r.json();
+    toast(`${d.total_disconnected||0} connections disconnected`, 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { toast('Failed','red'); }
+}
+
+async function autoDisconnectOldest() {
+  try {
+    const r = await fetch('/autodisconnectoldest', {method:'POST'});
+    const d = await r.json();
+    const groups = d.disconnected_groups || {};
+    const count  = Object.values(groups).reduce((s,g)=>s+(g.disconnected_ids||[]).length,0);
+    toast(count ? `${count} old connections disconnected` : 'Nothing to disconnect', 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { toast('Failed','red'); }
+}
+
+// ── Context menu ───────────────────────────────────────────────────────────
+function showCtx(e, id, ip, source) {
+  e.preventDefault();
+  ctxConn = {id, ip}; ctxSource = source;
+  document.getElementById('ctx-ip-lbl').textContent = ip;
+  const showBlacklist  = (source !== 'blocked');
+  const showWhitelist  = (source !== 'white');
+  const showDisc       = (source === 'active') || (source === 'hist' && id !== null);
+  const showSep2       = showBlacklist || showWhitelist || showDisc;
+  document.getElementById('ctx-blacklist').classList.toggle('hidden', !showBlacklist);
+  document.getElementById('ctx-whitelist').classList.toggle('hidden', !showWhitelist);
+  document.getElementById('ctx-disc').classList.toggle('hidden', !showDisc);
+  document.getElementById('ctx-sep2').classList.toggle('hidden', !showSep2);
+  const menu = document.getElementById('ctx-menu');
+  menu.style.left = Math.min(e.clientX, window.innerWidth-210)+'px';
+  menu.style.top  = Math.min(e.clientY, window.innerHeight-200)+'px';
+  menu.classList.add('show');
+}
+function hideCtx() { document.getElementById('ctx-menu').classList.remove('show'); }
+function ctxDisc() { if(ctxConn&&ctxConn.id!==null) discId(ctxConn.id,null); hideCtx(); }
+
+// ── Whois modal ────────────────────────────────────────────────────────────
+async function openWhois() {
+  if (!ctxConn) return;
+  const ip = ctxConn.ip; hideCtx();
+  showModal('Whois Lookup', ip);
+  if (ctxConn.id !== null) document.getElementById('modal-ip').textContent = `#${ctxConn.id} — ${ip}`;
+  try {
+    const r = await fetch(`/dashboard/whois?ip=${ip}`);
+    const d = await r.json();
+    if (d.error) { modalError(d.error); return; }
+    const fields = [
+      ['IP',          d.ip||ip], ['Hostname',    d.hostname||'—'],
+      ['City',        d.city||'—'], ['Region',      d.region||'—'],
+      ['Country',     d.country||'—'], ['Organisation',d.org||'—'],
+      ['Timezone',    d.timezone||'—'], ['Postal',      d.postal||'—'], ['Location',    d.loc||'—'],
+    ];
+    document.getElementById('modal-body').innerHTML =
+      `<div class="info-grid">${fields.map(([k,v])=>`<div class="row"><div class="k">${k}</div><div class="v">${esc(String(v))}</div></div>`).join('')}</div>
+      <p style="margin-top:12px;font-size:11px;color:var(--dim)">Data from ipinfo.io</p>`;
+    document.getElementById('modal-footer').innerHTML = `
+      <button class="modal-btn amber"  onclick="closeModal();openBlacklistFor('${esc(ip)}')">⛔ Blacklist</button>
+      <button class="modal-btn blue"   onclick="closeModal();openWhitelistFor('${esc(ip)}')">✅ Whitelist</button>
+      <button class="modal-btn purple" onclick="closeModal();openAbuseFor('${esc(ip)}')">🛡 Abuse Check</button>
+      <button class="modal-btn" onclick="closeModal()">Close</button>`;
+  } catch(e) { modalError('Request failed: '+e.message); }
+}
+
+// ── AbuseIPDB modal ────────────────────────────────────────────────────────
+async function openAbuse() {
+  if (!ctxConn) return;
+  const ip = ctxConn.ip; hideCtx();
+  showModal('AbuseIPDB Check', ip);
+  if (ctxConn.id !== null) document.getElementById('modal-ip').textContent = `#${ctxConn.id} — ${ip}`;
+  try {
+    const r = await fetch(`/dashboard/abusecheck?ip=${ip}`);
+    const d = await r.json();
+    if (d.error) { modalError(d.error); return; }
+    const score    = d.abuseConfidenceScore ?? '—';
+    const scoreCls = score >= 80 ? 'red' : score >= 30 ? 'amber' : 'green';
+    const fields = [
+      ['IP Address',   d.ipAddress||ip], ['Abuse Score',  score],
+      ['Country',      d.countryCode||'—'], ['ISP',          d.isp||'—'],
+      ['Domain',       d.domain||'—'], ['Usage Type',   d.usageType||'—'],
+      ['Total Reports',d.totalReports??'—'], ['Last Reported',d.lastReportedAt||'never'],
+      ['Whitelisted',  d.isWhitelisted?'Yes':'No'], ['Is Public',    d.isPublic?'Yes':'No'],
+    ];
+    document.getElementById('modal-body').innerHTML =
+      `<div class="info-grid">${fields.map(([k,v])=>{
+        const cls=(k==='Abuse Score')?scoreCls:'';
+        return `<div class="row"><div class="k">${k}</div><div class="v ${cls}">${esc(String(v))}</div></div>`;
+      }).join('')}</div>
+      <p style="margin-top:12px;font-size:11px;color:var(--dim)">Data from AbuseIPDB — max age 90 days</p>`;
+    document.getElementById('modal-footer').innerHTML = `
+      <button class="modal-btn amber" onclick="closeModal();openBlacklistFor('${esc(ip)}')">⛔ Blacklist</button>
+      <button class="modal-btn blue"  onclick="closeModal();openWhitelistFor('${esc(ip)}')">✅ Whitelist</button>
+      <button class="modal-btn" onclick="closeModal()">Close</button>`;
+  } catch(e) { modalError('Request failed: '+e.message); }
+}
+
+function openAbuseFor(ip) {
+  ctxConn = { id: null, ip: ip };
+  openAbuse();
+}
+
+// ── Whitelist modal ────────────────────────────────────────────────────────
+function openWhitelist() { if (!ctxConn) return; openWhitelistFor(ctxConn.ip); hideCtx(); }
+function openWhitelistFor(ip) {
+  showModal('Add to Whitelist', ip);
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:13px;color:var(--text2);line-height:1.6;">
+      This will whitelist <strong style="color:var(--blue);font-family:var(--mono)">${esc(ip)}</strong>:
+    </p>
+    <ul style="margin:12px 0 0 16px;font-size:13px;color:var(--dim);line-height:2;">
+      <li>Append <code style="color:var(--green)">allow ${esc(ip)} #whitelisted by dashboard</code> to rules file</li>
+      <li>Whitelisted IPs bypass AbuseIPDB checks on next connect</li>
+      <li>Requires a rules file to be configured at startup</li>
+    </ul>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="modal-btn" onclick="closeModal()">Cancel</button>
+    <button class="modal-btn blue" onclick="confirmWhitelist('${esc(ip)}')">✅ Confirm Whitelist</button>`;
+}
+async function confirmWhitelist(ip) {
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><div class="spinner"></div>Adding to whitelist...</div>';
+  document.getElementById('modal-footer').innerHTML = '';
+  try {
+    const r = await fetch(`/dashboard/whitelist?ip=${ip}`, {method:'GET'});
+    const d = await r.json();
+    if (d.status === 'error') { modalError(d.error); return; }
+    document.getElementById('modal-body').innerHTML = `
+      <div class="info-grid">
+        <div class="row"><div class="k">IP</div><div class="v green">${esc(ip)}</div></div>
+        <div class="row"><div class="k">Status</div><div class="v green">WHITELISTED</div></div>
+        <div class="row"><div class="k">Persistent</div><div class="v ${d.persistent?'green':'amber'}">${d.persistent?'yes — added to file':'no — file not configured'}</div></div>
+      </div>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal()">Close</button>`;
+    toast(`${ip} whitelisted`, 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { modalError('Request failed: '+e.message); }
+}
+
+// ── Blacklist modal ────────────────────────────────────────────────────────
+function openBlacklist() { if (!ctxConn) return; openBlacklistFor(ctxConn.ip); hideCtx(); }
+function openBlacklistFor(ip) {
+  showModal('Add to Blacklist', ip);
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:13px;color:var(--text2);line-height:1.6;">
+      This will immediately block <strong style="color:var(--red);font-family:var(--mono)">${esc(ip)}</strong>:
+    </p>
+    <ul style="margin:12px 0 0 16px;font-size:13px;color:var(--dim);line-height:2;">
+      <li>Disconnect any active sessions for this IP</li>
+      <li>Add to runtime blocklist (immediate effect)</li>
+      <li>Append <code style="color:var(--amber)">block ${esc(ip)} #injected by dashboard</code> to rules file (if configured)</li>
+    </ul>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="modal-btn" onclick="closeModal()">Cancel</button>
+    <button class="modal-btn red" onclick="confirmBlacklist('${esc(ip)}')">⛔ Confirm Block</button>`;
+}
+async function confirmBlacklist(ip) {
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><div class="spinner"></div>Blocking...</div>';
+  document.getElementById('modal-footer').innerHTML = '';
+  try {
+    const r = await fetch(`/dashboard/blacklist?ip=${ip}`, {method:'POST'});
+    const d = await r.json();
+    document.getElementById('modal-body').innerHTML = `
+      <div class="info-grid">
+        <div class="row"><div class="k">IP</div><div class="v red">${esc(ip)}</div></div>
+        <div class="row"><div class="k">Status</div><div class="v red">BLOCKED</div></div>
+        <div class="row"><div class="k">Sessions</div><div class="v">disconnected</div></div>
+        <div class="row"><div class="k">Persistent</div><div class="v ${d.persistent?'green':'amber'}">${d.persistent?'yes — added to file':'no — runtime only'}</div></div>
+      </div>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal()">Close</button>`;
+    toast(`${ip} blocked`, 'red');
+    setTimeout(refreshAll, 300);
+  } catch(e) { modalError('Request failed: '+e.message); }
+}
+
+// ── Help modal ─────────────────────────────────────────────────────────────
+async function openHelp() {
+  const modal = document.getElementById('modal');
+  modal.classList.add('wide');
+  showModal('Titan Help', '');
+  try {
+    const r = await fetch('/help');
+    const text = await r.text();
+    document.getElementById('modal-body').innerHTML = `
+      <div class="help-section">
+        <div class="help-section-title">Titan API Endpoints</div>
+        <pre class="help-pre">${esc(text)}</pre>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">Dashboard Guide</div>
+        <pre class="help-pre">HEADER BADGES (clickable)
+  Verbose    — toggle verbose data logging in Titan logs and Live Log
+  Hexdump    — toggle hex dump of data in logs
+  AllowAll   — bypass all IP checks (blacklist, whitelist, AbuseIPDB)
+  AbuseChk   — toggle AbuseIPDB newcomer check
+
+HEADER BADGES (read-only — set at startup)
+  →Remote    — --closeremotebyclient: client disconnect forces remote close
+  →Client    — --closeclientbyremote: remote disconnect forces client close
+  TCPSniff   — --tcp-sniff: AF_PACKET TCP handshake logging
+
+RIGHT-CLICK MENU (on any row in tables)
+  Whois Lookup     — query ipinfo.io for IP geolocation/org data
+  AbuseIPDB Check  — full AbuseIPDB abuse score lookup (fresh, not cached)
+  Add to Whitelist — append allow rule to rules file
+  Add to Blacklist — disconnect + runtime block + append block rule to file
+  Disconnect       — forcibly disconnect active connection (active rows only)
+
+QUICK ACTIONS
+  Disconnect All        — disconnect all active connections (no blocking)
+  Auto Disconnect Oldest— per IP: keep newest connection, disconnect older
+  Help                  — this help window
+
+ABUSE THRESHOLD (Configuration panel)
+  Enter 0-100 and click Set to change the AbuseIPDB block threshold at runtime.
+  Lower = more strict. Default is set at startup with --abuseblock.
+
+LIVE LOG
+  Shows Titan events in real time. Color coded:
+  Green=CONNECT  Blue=DISCONNECT  Red=BLOCK  Yellow=ABUSE  Purple=CONTROL
+  Verbose mode must be ON to see data direction lines and content.</pre>
+      </div>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
+  } catch(e) {
+    modalError('Could not load help: '+e.message);
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
+  }
+}
+
+// ── Modal helpers ──────────────────────────────────────────────────────────
+function showModal(title, ip) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-ip').textContent    = ip||'';
+  document.getElementById('modal-body').innerHTML    = '<div class="modal-loading"><div class="spinner"></div>Loading...</div>';
+  document.getElementById('modal-footer').innerHTML  = '';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  document.getElementById('modal').classList.remove('wide');
+}
+function closeModalOutside(e) { if (e.target===document.getElementById('modal-overlay')) closeModal(); }
+function modalError(msg) {
+  document.getElementById('modal-body').innerHTML = `<div class="error-box">${esc(msg)}</div>`;
+  document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal()">Close</button>`;
+}
+
+// ── Section toggles ────────────────────────────────────────────────────────
+function toggleSection(name) {
+  const body=document.getElementById('body-'+name), caret=document.getElementById('caret-'+name);
+  const open=body.classList.toggle('open');
+  if (caret) caret.classList.toggle('open', open);
+}
+function toggleLog() {
+  logOpen=!logOpen;
+  const body=document.getElementById('log-body'), hdr=document.getElementById('log-header'), lbl=document.getElementById('log-lbl');
+  body.style.display=logOpen?'block':'none';
+  lbl.textContent=logOpen?'▼ Hide':'▲ Show';
+  hdr.classList.toggle('open', logOpen);
+  if (logOpen) body.scrollTop=body.scrollHeight;
+}
+
+// ── Logout ─────────────────────────────────────────────────────────────────
+async function doLogout() { await fetch('/dashboard/logout',{method:'POST'}); location.href='/dashboard/login'; }
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function flash(id) {
+  const el=document.getElementById(id); if (!el) return;
+  el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),300);
+}
+function toast(msg, type='green') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2500);
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shortTs(ts) {
+  if (!ts||ts==='--- ACTIVE ---') return ts||'';
+  const parts=ts.split(' ');
+  return parts.length>1?parts[1].split('.')[0]:ts;
+}
+function fmtUptime(secs) {
+  if (!secs) return '0s';
+  if (secs<60) return secs+'s';
+  if (secs<3600) return Math.floor(secs/60)+'m '+(secs%60)+'s';
+  return Math.floor(secs/3600)+'h '+Math.floor((secs%3600)/60)+'m';
+}
+</script>
+</body>
+</html>
