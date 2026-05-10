@@ -22,6 +22,7 @@ dashboard_sessions_lock = threading.Lock()
 DASHBOARD_USER      = None
 DASHBOARD_PASS_HASH = None
 DASHBOARD_PATH      = None             # path to titan-dashboard/ folder
+DASHBOARD_HTML      = "dashboard23.html"
 TITAN_START_TIME    = time.time()
 
 # Set in __main__ so dashboard/data can report them
@@ -94,9 +95,18 @@ verbose_lock = threading.Lock()
 VERBOSE_WATCH = set()   # conn_ids to verbosely log
 verbose_watch_lock = threading.Lock()
 
-TITAN_VERSION = 22
+HEXDUMP_WATCH      = set()  # conn_ids with per-id hexdump enabled
+HEXDUMP_WATCH_PREV = {}     # {conn_id: bool} watch state before hex on
+hexdump_watch_lock = threading.Lock()
+
+TITAN_VERSION = 23
 TITAN_DESCRIPTION = f"""\
 Titan v{TITAN_VERSION} - Change Log:
+v23:    Enable per ID hex dump to avoid global enabling hex dump for all ids (log flood)
+        Add Column LAST CLIENT to Session History
+        Add "disconnect" action (id click & right click) in session history entries that show ACTIVE in Disconnected column.
+        Fixed a bug that when watch was enabled but dashboard was refreshed , watch was appearing as disabled but in reality has been preserved
+        enabled (prior enabling before refresh). Fix applies also to perID hex dump.
 v22:    Provide IP Temp Block for a time period. Temp Blocks appear on Auto-Blocked Tables. User can "unblock" a previously temp blocked IP
         Provide "Watch" Button in active connections table - This enables verbose for particular ID = printing detailed message data of this ID.
         When watch is pressed it is changed to "watching". Re-pressing "watching" restores/turns off ID verbosing. 
@@ -115,12 +125,12 @@ v21:    Include Country Field for Abuse Auto Block dashboard table
         Improved close-reason detail on dashboard connection tables
         Disconnect confirmation modal for the Disc small button on the active connections table
         Dashboard Last Updated time changed to 24H clock from 12H clock (browser time)
-v20:    Implementation to forcibly close remote socket if it has remained open due to remoteserver bug (session table only).
-        Add helper texts in each previously "except Exception: pass" code block - we don't like silent passes
+v20:    Implementation to forcibly close remote socket if it has remained open due to remoteserver bug (session table only - right click Force Remote Close).
+        Add helper texts in each previously "except Exception: pass" code block to avoid silent pass and print debuging messages
         New GET endpoint /dashboard/mobile for better support of dashboard in mobile phones (redirects to dashboard-mobile.html)
         Extend sorting on ALL dashboard table columns 
         Apply seperate Dashboard Refresh Intervals for connection tables (faster) and rest web page (slower)
-v19:    Make the closeclientbyremote and closeremotebyclient dashboard badges to work like buttons and change behavior at runtime by dashboard.
+v19:    Make the closeclientbyremote and closeremotebyclient dashboard badges in Dashboard to work like buttons and change behavior at runtime by dashboard.
 v18:    Web dashboard served at http://vpsip:httpexpose port/dashboard (requires --dashboardpath and --dashboardauth).
         Separate HTML files — login.html and dashboard.html — stored in --dashboardpath folder.
         New --httpbind flag (default 127.0.0.1) to expose HTTP control externally (usage: --httpbind 0.0.0.0)
@@ -192,7 +202,7 @@ v09:    Httpcontrol at port 9999 made Optional (--httpexpose <port>)
         fix: set Whitelist priority Bug over blacklist (BL could previously override WL)
         fix: Fixed Timestamps Time to include Full date + time
         fix: Startup output Single line Full summary banner
-v08(*): Last stable version — TCP isolation baseline.
+v08(*): Last stable version — TCP isolation baseline (client sockets and remote sockets not managed by Titan)
 v04:    --tcp-snif cli added - 
 v03:    This version of Titan supports IP black-list &  white-list. IPs allow/block rules are stored in a local file rm-proxy-ip-list.
         For new IPs coming to Titan default action is allow.
@@ -205,17 +215,19 @@ v01:    Simple TCP transparent proxy - listens on one port , forwards data to re
 Usage:
   # Legacy mode (v8 behavior, localhost API only):
   sudo python3 -u mitm-global-proxy-v18.py \\
-    --listenport 445 --remoteserver 127.0.0.1 --remoteport 4450 \\
+    --listenport 443 --remoteserver 127.0.0.1 --remoteport 4450 \\
     --httpexpose 10001
 
   # With web dashboard (accessible from browser):
   sudo python3 -u mitm-global-proxy-v18.py \\
-    --listenport 445 --remoteserver rm.com --remoteport 90 \\
+    --listenport 443 --remoteserver rm.com --remoteport 90 \\
     --abuseblock 50 /path/to/key --rulesfile /path/to/rules \\
     --httpexpose 10001 --httpbind 0.0.0.0 \\
     --dashboardpath /home/gv/pytests/titan-dashboard --closeclientbyremote --closeremotebyclient \\
     --dashboardauth admin:'mysecretpassword' 
-    ps: always include passoword in single quotes.
+    ps1: always include passoword in single quotes.
+    ps2: for systemd services password should be included in double quotes and special chars like % should be escaped with % -> %%
+    ps3: rules file include allow IP and block IP entries. Allow entries have higher priority over block entries.
 """
 
 HTTP_PORT_HELP = f"""\
@@ -559,8 +571,10 @@ def pipe(source, destination, label, color, conn_id, client_ip):
             tlog(f"{color}[{get_ts()}] [ID:#{conn_id}] ({client_ip}) {label}:{comment}{RESET}", "INFO")
             with verbose_lock: show_verbose = VERBOSE_ENABLED
             with verbose_watch_lock: show_verbose = show_verbose or (conn_id in VERBOSE_WATCH)
+            with hexdump_watch_lock: show_hex_watch = conn_id in HEXDUMP_WATCH
             if show_verbose:
-                with hexdump_lock: show_hex = HEXDUMP_ENABLED
+                #with hexdump_lock: show_hex = HEXDUMP_ENABLED
+                with hexdump_lock: show_hex = HEXDUMP_ENABLED or show_hex_watch
                 if show_hex: 
                     #print(format_hexdump(data), flush=True)
                     #tlog(format_hexdump(data), "DATA")
@@ -660,6 +674,9 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
         disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
         with counter_lock: connection_count -= 1
         with verbose_watch_lock: VERBOSE_WATCH.discard(conn_id)
+        with hexdump_watch_lock:                        # <- add
+            HEXDUMP_WATCH.discard(conn_id)              # <- add
+            HEXDUMP_WATCH_PREV.pop(conn_id, None)       # <- add
         with active_lock: info = ACTIVE_CONNECTIONS.pop(conn_id, None)
         with close_reasons_lock: close_reason = CLOSE_REASONS.pop(conn_id, "natural disc.")
         if info is not None:
@@ -960,7 +977,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
         # ── Dashboard routes ──────────────────────────────────────────────
         if path == "/dashboard" or path == "/dashboard/":
             if not self._require_auth(): return
-            self._serve_html("dashboard22.html"); return
+            self._serve_html(DASHBOARD_HTML); return
 
         if path == "/dashboard/login":
             self._serve_html("login.html"); return
@@ -1136,12 +1153,14 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s" 
                                if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m") 
                     except Exception: dur = "?"                                    
-                    hist_active.append({                                            
-                        "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""), 
-                        "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---", 
-                        "duration": dur, "close_reason": "active",                 
-                        "remote_status": "closed" if info.get("remote_closed", False) else "open", 
-                    })                                                              
+                    
+                    hist_active.append({
+                        "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""),
+                        "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---",
+                        "duration": dur, "close_reason": "active",
+                        "last_client_ts": info.get("last_client_ts",""),   # <- add
+                        "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                    })
             with session_history_lock: hist_closed = list(SESSION_HISTORY)         
             hist_closed.sort(key=lambda s: s.get("id", 0))                        
             self._json(200, {                                                       
@@ -1193,13 +1212,14 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s"
                            if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m")
                 except Exception: dur = "?"
+                
                 hist_active.append({
                     "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""),
                     "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---",
                     "duration": dur, "close_reason": "active",
+                    "last_client_ts": info.get("last_client_ts",""),   # <- add
                     "remote_status": "closed" if info.get("remote_closed", False) else "open",
                 })
-
         with session_history_lock: hist_closed = list(SESSION_HISTORY)
         hist_closed.sort(key=lambda s: s.get("id", 0))
         history = hist_active + hist_closed
@@ -1214,6 +1234,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
         with verbose_lock: verb = VERBOSE_ENABLED
         with hexdump_lock: hexd = HEXDUMP_ENABLED
+        with verbose_watch_lock: watched     = set(VERBOSE_WATCH)      # <- add
+        with hexdump_watch_lock: hex_watched = set(HEXDUMP_WATCH)      # <- add
 
         payload = {
             "version": TITAN_VERSION,
@@ -1235,6 +1257,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 "active":  active_list,
                 "history": history,
             },
+            "watched_ids":     list(watched),       # <- add
+            "hex_watched_ids": list(hex_watched),   # <- add
             "autoblocked": autoblocked,
             "rules": {"allow_count": allow_count, "block_count": block_count},
             "whitelist": whitelist_snapshot,
@@ -1380,6 +1404,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 self._json(200, {"verbose":True})
             elif parsed.query == "disable":
                 with verbose_lock: VERBOSE_ENABLED = False
+                with hexdump_watch_lock: hex_watched = set(HEXDUMP_WATCH)       # <- add case c
+                if hex_watched:                                                  # <- add case c
+                    with verbose_watch_lock: VERBOSE_WATCH.update(hex_watched)  # <- add case c
                 tlog(f"{YELLOW}[{get_ts()}][*] Verbose logging DISABLED via HTTP control{RESET}", "CONTROL")
                 self._json(200, {"verbose":False})
             else:
@@ -1582,12 +1609,50 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             if cid_raw is None: self._json(400, {"error": "missing id"}); return
             try: cid = int(cid_raw)
             except ValueError: self._json(400, {"error": "id must be integer"}); return
+            
             with verbose_watch_lock:
                 was_present = cid in VERBOSE_WATCH
                 VERBOSE_WATCH.discard(cid)
+            with hexdump_watch_lock:                # <- add: disable hex when watch disabled
+                HEXDUMP_WATCH.discard(cid)          # <- add
+                HEXDUMP_WATCH_PREV.pop(cid, None)   # <- add
             with active_lock: ip = ACTIVE_CONNECTIONS.get(cid, {}).get("ip","?")
             tlog(f"{YELLOW}[{get_ts()}][*] Verbose watch DISABLED for ID:#{cid} ({ip}){RESET}", "CONTROL")
             self._json(200, {"id": cid, "ip": ip, "watch": False}); return
+
+        if path == "/dashboard/hexwatch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with active_lock: exists = cid in ACTIVE_CONNECTIONS
+            if not exists: self._json(404, {"error": f"connection ID {cid} not active"}); return
+            with verbose_watch_lock: was_watching = cid in VERBOSE_WATCH
+            with hexdump_watch_lock:
+                HEXDUMP_WATCH.add(cid)
+                HEXDUMP_WATCH_PREV[cid] = was_watching
+            with verbose_lock: global_verbose = VERBOSE_ENABLED
+            if not global_verbose:
+                with verbose_watch_lock: VERBOSE_WATCH.add(cid)
+            with active_lock: ip = ACTIVE_CONNECTIONS[cid].get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Hex watch ENABLED for ID:#{cid} ({ip}) — was_watching={was_watching}{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "hex_watch": True, "was_watching": was_watching}); return
+
+        if path == "/dashboard/hexunwatch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with hexdump_watch_lock:
+                HEXDUMP_WATCH.discard(cid)
+                was_watching = HEXDUMP_WATCH_PREV.pop(cid, False)
+            if not was_watching:
+                with verbose_watch_lock: VERBOSE_WATCH.discard(cid)
+            with active_lock: ip = ACTIVE_CONNECTIONS.get(cid, {}).get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Hex watch DISABLED for ID:#{cid} ({ip}) — watch_restored={was_watching}{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "hex_watch": False, "watch_restored": was_watching}); return
 
         self._json(404, {"error": "not found"})
 
@@ -1597,8 +1662,11 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 class TitanHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
     def handle_error(self, request, client_address):
+        import traceback
         exc = sys.exc_info()[1]
+        tb  = traceback.format_exc()
         tlog(f"{YELLOW}[{get_ts()}][!] HTTP handler error from {client_address[0]}:{client_address[1]} — {type(exc).__name__}: {exc}{RESET}", "ERROR")
+        tlog(f"{YELLOW}{tb}{RESET}", "ERROR")
 
 def http_control_loop():
     srv = TitanHTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
@@ -1719,6 +1787,7 @@ if __name__ == "__main__":
     tlog(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:     "
          f"{'Enabled on ' + HTTP_CTRL_HOST + ':' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}", "INFO")
     tlog(f"{CYAN}[{get_ts()}][*] Web Dashboard:            {dashboard_status}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Dashboard File:           {DASHBOARD_HTML}", "INFO")
     tlog(f"{CYAN}[{get_ts()}][*] Verbose Logging:          {'Enabled' if args.verbose else 'Disabled'}", "INFO")
     tlog(f"{CYAN}[{get_ts()}][*] Hexdump Mode:             {'Enabled' if args.hexdump else 'Disabled'}", "INFO")
     tlog(f"{CYAN}[{get_ts()}][*] TCP Sniff Mode:           {'Enabled' if args.tcp_sniff else 'Disabled'}", "INFO")

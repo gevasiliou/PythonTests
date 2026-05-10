@@ -301,10 +301,11 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
                 <th class="sortable" id="ath-idle"      onclick="setActiveSort('idle_secs')">Idle</th>
                 <th class="sortable" id="ath-remstatus" onclick="setActiveSort('remote_status')">Remote</th>
                 <th>Watch</th>
+                <th>Hex</th>
                 <th></th>
               </tr>
             </thead>
-            <tbody id="active-tbody"><tr class="empty-row"><td colspan="10">No active connections</td></tr></tbody>
+            <tbody id="active-tbody"><tr class="empty-row"><td colspan="11">No active connections</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -331,6 +332,7 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
                 <th class="sortable" id="hth-ip"        onclick="setHistSort('ip')">IP Address</th>
                 <th class="sortable" id="hth-comment"   onclick="setHistSort('comment')">Comment</th>
                 <th class="sortable" id="hth-conn"      onclick="setHistSort('connected_ts')">Connected</th>
+                <th class="sortable" id="hth-client"    onclick="setHistSort('last_client_ts')">Last Client</th>
                 <th class="sortable" id="hth-disc"      onclick="setHistSort('disconnected_ts')">Disconnected</th>
                 <th class="sortable" id="hth-dur"       onclick="setHistSort('duration_secs')">Duration</th>
                 <th class="sortable" id="hth-reason"    onclick="setHistSort('close_reason')">Reason</th>
@@ -467,7 +469,11 @@ let autoScroll = true;
 let logLines       = [];
 let logSearchVal   = '';
 let logHideTraffic = false;
-let watchedIds = new Set();
+
+// ── Per-connection watch / hex state ───────────────────────────────────────
+let watchedIds    = new Set();
+let hexWatchedIds = new Set();
+let hexWatchPrev  = {};   // {id: bool} — was per-id watch active before hex was enabled
 
 // ── Active table filter / sort state ──────────────────────────────────────
 let activeFilter  = '';
@@ -500,12 +506,15 @@ async function refreshAll() {
     if (r.status === 401 || r.status === 403 || r.redirected) { location.href='/dashboard/login'; return; }
     const d = await r.json();
     flash('rdot-active'); flash('rdot-hist');
+    // renderFlags BEFORE renderActive so hex buttons render with correct flag state
+    renderFlags(d.flags);
     renderActive(d.connections.active);
-    watchedIds = new Set([...watchedIds].filter(id => d.connections.active.some(c => c.id === id)));
+    watchedIds    = new Set((d.watched_ids     || []).filter(id => d.connections.active.some(c => c.id === id)));
+    hexWatchedIds = new Set((d.hex_watched_ids || []).filter(id => d.connections.active.some(c => c.id === id)));
+    Object.keys(hexWatchPrev).forEach(k => { if (!hexWatchedIds.has(parseInt(k))) delete hexWatchPrev[k]; });
     renderHistory(d.connections.history);
     renderBlocked(d.autoblocked);
     renderWhitelist(d.whitelist || []);
-    renderFlags(d.flags);
     renderConfig(d);
     renderRules(d);
     document.getElementById('conn-count').textContent = d.connections.active.length;
@@ -524,7 +533,9 @@ async function refreshTables() {
     const d = await r.json();
     flash('rdot-active'); flash('rdot-hist');
     renderActive(d.active);
-    watchedIds = new Set([...watchedIds].filter(id => d.active.some(c => c.id === id)));
+    watchedIds    = new Set([...watchedIds].filter(id => d.active.some(c => c.id === id)));
+    hexWatchedIds = new Set([...hexWatchedIds].filter(id => d.active.some(c => c.id === id)));
+    Object.keys(hexWatchPrev).forEach(k => { if (!hexWatchedIds.has(parseInt(k))) delete hexWatchPrev[k]; });
     renderHistory(d.history);
     document.getElementById('conn-count').textContent = d.active_count;
     document.getElementById('last-updated-val').textContent = new Date().toLocaleTimeString('en-GB');
@@ -570,6 +581,20 @@ function renderWatchBtn(id) {
   return `<button class="disc-btn" id="watch-btn-${id}" ${data} onclick="toggleWatch(${id},this)" style="${style}">${label}</button>`;
 }
 
+function renderHexWatchBtn(id) {
+  // Case d: global hexdump ON — per-id hex has no meaning, gray it out
+  if (flags.hexdump) {
+    return `<button class="disc-btn" disabled title="Global hexdump is ON" style="opacity:0.3;cursor:not-allowed;border-color:var(--border);color:var(--dim);">⬡ Hex</button>`;
+  }
+  const hexing = hexWatchedIds.has(id);
+  const style = hexing
+    ? `border-color:var(--amber);color:#fff;background:var(--amber)`
+    : `border-color:rgba(245,158,11,0.3);color:var(--amber)`;
+  const label = hexing ? '⬡ Hexing' : '⬡ Hex';
+  const data  = hexing ? `data-hexing="1"` : `data-hexing="0"`;
+  return `<button class="disc-btn" id="hex-btn-${id}" ${data} onclick="toggleHexWatch(${id},this)" style="${style}">${label}</button>`;
+}
+
 function applyActiveFilterSort() {
   const tb = document.getElementById('active-tbody');
   let list = activeDataRaw.slice();
@@ -587,7 +612,7 @@ function applyActiveFilterSort() {
   } else { list.sort((a, b) => (a.id??0) - (b.id??0)); }
   updateCount('active-count', list.length, activeDataRaw.length, activeFilter);
   if (!list.length) {
-    tb.innerHTML = `<tr class="empty-row"><td colspan="10">${activeFilter ? 'No matches for "'+esc(activeFilter)+'"' : 'No active connections'}</td></tr>`;
+    tb.innerHTML = `<tr class="empty-row"><td colspan="11">${activeFilter ? 'No matches for "'+esc(activeFilter)+'"' : 'No active connections'}</td></tr>`;
     return;
   }
   tb.innerHTML = list.map(c => {
@@ -605,6 +630,7 @@ function applyActiveFilterSort() {
       <td class="cell-dur">${esc(c.idle||'?')}</td>
       <td>${remTag}</td>
       <td>${renderWatchBtn(c.id)}</td>
+      <td>${renderHexWatchBtn(c.id)}</td>
       <td><button class="disc-btn" onclick="showCtx(event,${c.id},'${esc(c.ip)}','active')" style="border-color:var(--border2);color:var(--text2);">⋮ Actions</button></td>
     </tr>`;
   }).join('');
@@ -627,6 +653,7 @@ function clearHistFilter() {
   syncHighlight('hist-filter', '');
   applyHistFilterSort();
 }
+
 function setHistSort(col) {
   if (histSort.col === col) {
     histSort.dir === 1 ? (histSort.dir = -1) : (histSort.col = null, histSort.dir = 1);
@@ -634,10 +661,12 @@ function setHistSort(col) {
   updateSortHeaders({
     id:'hth-id', ip:'hth-ip', comment:'hth-comment', connected_ts:'hth-conn',
     disconnected_ts:'hth-disc', duration_secs:'hth-dur',
+    last_client_ts:'hth-client',
     close_reason:'hth-reason', remote_status:'hth-remstatus'
-  }, histSort);
+  }, histSort);  
   applyHistFilterSort();
 }
+
 function applyHistFilterSort() {
   const tb = document.getElementById('hist-tbody');
   let list = histDataRaw.slice();
@@ -665,7 +694,7 @@ function applyHistFilterSort() {
   }
   updateCount('hist-count', list.length, histDataRaw.length, histFilter);
   if (!list.length) {
-    tb.innerHTML = `<tr class="empty-row"><td colspan="8">${histFilter ? 'No matches for "'+esc(histFilter)+'"' : 'No history yet'}</td></tr>`;
+    tb.innerHTML = '<tr class="empty-row"><td colspan="9">' + (histFilter ? 'No matches for "'+esc(histFilter)+'"' : 'No history yet') + '</td></tr>';
     return;
   }
   tb.innerHTML = list.map(s => {
@@ -694,6 +723,7 @@ function applyHistFilterSort() {
       <td class="cell-ip">${esc(s.ip)}</td>
       <td class="cell-comment">${esc(s.comment||'')}</td>
       <td class="cell-ts" title="${esc(s.connected_ts)}">${shortTs(s.connected_ts)}</td>
+      <td class="cell-ts" title="${esc(s.last_client_ts||'')}">${shortTs(s.last_client_ts||'')}</td>
       <td>${discCell}</td>
       <td class="cell-dur">${esc(s.duration||'')}</td>
       <td>${reasonTag}</td>
@@ -710,7 +740,7 @@ function showCtx(e, id, ip, source, remoteOpen, isActiveHistRow) {
   document.getElementById('ctx-ip-lbl').textContent = ip;
   const showBlacklist     = (source !== 'blocked');
   const showWhitelist     = (source !== 'white');
-  const showDisc          = (source === 'active');
+  const showDisc          = (source === 'active') || (source === 'hist' && isActiveHistRow === true);
   const showCloseRemote   = (source === 'hist' && remoteOpen === true);
   const showRemoveHistory = (source === 'hist' && !isActiveHistRow);
   const showTempBlock     = (source === 'active' || (source === 'hist' && !isActiveHistRow));
@@ -1006,7 +1036,7 @@ function renderLogLines() {
     : `${logLines.length} lines`;
   body.innerHTML = filtered.map(l =>
     `<div class="log-line ${l.level||'INFO'}">` +
-    `<span class="log-ts">${esc(l.ts)}</span>${esc(l.msg)}</div>`
+    `<span class="log-ts">${esc(l.ts)}</span>${esc(l.msg).replace(/\r\n/g,'<br>').replace(/\r/g,'<br>').replace(/\n/g,'<br>')}</div>`
   ).join('');
   if (autoScroll && logOpen) body.scrollTop = body.scrollHeight;
 }
@@ -1137,6 +1167,7 @@ function confirmDiscId(id, ip, e) {
     <button class="modal-btn red" onclick="closeModal();discId(${id},null)">✕ Disconnect</button>`;
 }
 
+// ── Watch toggle ───────────────────────────────────────────────────────────
 async function toggleWatch(id, btn) {
   const isWatching = btn.dataset.watching === '1';
   const endpoint = isWatching ? 'unwatch' : 'watch';
@@ -1145,14 +1176,29 @@ async function toggleWatch(id, btn) {
     const d = await r.json();
     if (!r.ok) { toast(d.error || 'Failed', 'red'); return; }
     if (isWatching) {
+      // Disable watch
       btn.dataset.watching = '0';
       btn.textContent = '👁 Watch';
       btn.style.borderColor = 'rgba(167,139,250,0.3)';
       btn.style.color = 'var(--purple)';
       btn.style.background = '';
       watchedIds.delete(id);
+      // Disable hex too (server already cleaned it up via /dashboard/unwatch)
+      if (hexWatchedIds.has(id)) {
+        hexWatchedIds.delete(id);
+        delete hexWatchPrev[id];
+        const hexBtn = document.getElementById(`hex-btn-${id}`);
+        if (hexBtn) {
+          hexBtn.dataset.hexing = '0';
+          hexBtn.textContent = '⬡ Hex';
+          hexBtn.style.borderColor = 'rgba(245,158,11,0.3)';
+          hexBtn.style.color = 'var(--amber)';
+          hexBtn.style.background = '';
+        }
+      }
       toast(`Watch disabled for #${id}`, 'amber');
     } else {
+      // Enable watch
       btn.dataset.watching = '1';
       btn.textContent = '👁 Watching';
       btn.style.borderColor = 'var(--purple)';
@@ -1160,6 +1206,63 @@ async function toggleWatch(id, btn) {
       btn.style.background = 'var(--purple)';
       watchedIds.add(id);
       toast(`Watching ID:#${id} — filter log by ID:#${id} to inspect`, 'green');
+    }
+  } catch(e) { toast('Request failed', 'red'); }
+}
+
+// ── Hex watch toggle ───────────────────────────────────────────────────────
+async function toggleHexWatch(id, btn) {
+  const isHexing = btn.dataset.hexing === '1';
+  const endpoint = isHexing ? 'hexunwatch' : 'hexwatch';
+  try {
+    const r = await fetch(`/dashboard/${endpoint}?id=${id}`, {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Failed', 'red'); return; }
+    if (isHexing) {
+      // Disable hex
+      btn.dataset.hexing = '0';
+      btn.textContent = '⬡ Hex';
+      btn.style.borderColor = 'rgba(245,158,11,0.3)';
+      btn.style.color = 'var(--amber)';
+      btn.style.background = '';
+      hexWatchedIds.delete(id);
+      delete hexWatchPrev[id];
+      // Restore watch button state based on server response
+      const watchBtn = document.getElementById(`watch-btn-${id}`);
+      if (watchBtn && !d.watch_restored) {
+        // watch was OFF before hex — server turned it off, reflect that
+        watchBtn.dataset.watching = '0';
+        watchBtn.textContent = '👁 Watch';
+        watchBtn.style.borderColor = 'rgba(167,139,250,0.3)';
+        watchBtn.style.color = 'var(--purple)';
+        watchBtn.style.background = '';
+        watchedIds.delete(id);
+      }
+      // If d.watch_restored === true, watch was already on — leave watch button as is
+      toast(`Hex watch disabled for #${id}`, 'amber');
+    } else {
+      // Enable hex — record current watch state before enabling
+      const wasWatching = watchedIds.has(id);
+      hexWatchPrev[id] = wasWatching;
+      btn.dataset.hexing = '1';
+      btn.textContent = '⬡ Hexing';
+      btn.style.borderColor = 'var(--amber)';
+      btn.style.color = '#fff';
+      btn.style.background = 'var(--amber)';
+      hexWatchedIds.add(id);
+      // Case a: global verbose OFF and wasn't already watching — server added to VERBOSE_WATCH
+      if (!flags.verbose && !wasWatching) {
+        const watchBtn = document.getElementById(`watch-btn-${id}`);
+        if (watchBtn) {
+          watchBtn.dataset.watching = '1';
+          watchBtn.textContent = '👁 Watching';
+          watchBtn.style.borderColor = 'var(--purple)';
+          watchBtn.style.color = '#fff';
+          watchBtn.style.background = 'var(--purple)';
+          watchedIds.add(id);
+        }
+      }
+      toast(`Hex watch enabled for #${id} — filter log by ID:#${id} to inspect`, 'amber');
     }
   } catch(e) { toast('Request failed', 'red'); }
 }
@@ -1238,7 +1341,6 @@ function openWhitelistFor(ip){
     <button class="modal-btn" onclick="closeModal()">Cancel</button>
     <button class="modal-btn blue" onclick="confirmWhitelist('${esc(ip)}')">✅ Confirm Whitelist</button>`;
 }
-
 async function confirmWhitelist(ip){
   document.getElementById('modal-body').innerHTML='<div class="modal-loading"><div class="spinner"></div>Adding to whitelist...</div>';
   document.getElementById('modal-footer').innerHTML='';
@@ -1301,7 +1403,7 @@ async function openHelp(){
       <div class="help-section"><div class="help-section-title">Titan API Endpoints</div><pre class="help-pre">${esc(text)}</pre></div>
       <div class="help-section"><div class="help-section-title">Dashboard Guide</div><pre class="help-pre">HEADER BADGES (clickable)
   Verbose    — toggle verbose data logging
-  Hexdump    — toggle hex dump of data in logs
+  Hexdump    — toggle hex dump of data in logs (global)
   AllowAll   — bypass all IP checks
   AbuseChk   — toggle AbuseIPDB newcomer check
   →Remote    — toggle closeremotebyclient at runtime (confirmation required)
@@ -1314,67 +1416,48 @@ FILTER &amp; SORT  (Active Connections and Session History — independently)
   ✕ Clear     — resets filter for that table only
   Sortable column headers — click: asc ▲ → desc ▼ → reset (3rd click)
 
-  Active Connections sortable: ID, IP, Comment, Connected, Last Client, Last Remote, Idle, Remote
-  Session History sortable: ID, IP, Comment, Connected, Disconnected, Duration, Reason, Remote
-  Session History default: active rows first by ID, then closed by ID
-
 LIVE LOG
   Search box     — grep by any keyword or IP; matches in msg or timestamp
-  Search turns amber when active; counter shows matched / total lines
-  Traffic: ON/OFF — when OFF hides:
-    • INFO lines containing CLIENT→REMOTE or REMOTE→CLIENT (directional events)
-    • DATA lines (verbose payload content — hex or text)
-  Both filters stack — e.g. hide traffic AND grep an IP simultaneously
-  ✕ Clear        — clears search field only; traffic toggle is independent
-  Verbose warning — if Traffic is OFF and you enable Verbose, a modal appears
-                    offering to restore Traffic so DATA lines are visible
+  Traffic: ON/OFF — when OFF hides INFO CLIENT/REMOTE lines and DATA lines
+  Both filters stack; ✕ Clear resets search only
 
-RIGHT-CLICK MENU (available on any table row)
-  🔎 Filter this IP       — filters ONLY the table you right-clicked on
+RIGHT-CLICK MENU (ID column click or ⋮ Actions button or right-click)
+  🔎 Filter this IP       — filters the table you clicked on
   🔍 Whois Lookup         — query ipinfo.io for geolocation/org data
   🛡 AbuseIPDB Check      — full abuse score lookup (fresh, not cached)
   ✅ Add to Whitelist      — append allow rule to rules file
-  ⛔ Add to Blacklist      — disconnect + block + append block rule to file (permanent)
-  ⏱ Temp Block            — block IP for a chosen duration without writing to rules file
-                            available on active rows and disconnected history rows
-                            options: session only / 30m / 1h / 6h / 24h
-                            temp-blocked IPs show in Auto-Blocked panel with amber "temp" tag
-                            use Unblock button in panel to lift early
-  ✕ Disconnect            — forcibly disconnect connection (active rows only)
-  🔌 Force Close Remote   — close open remote socket (history rows with remote=open only)
-  🗑 Remove from list     — remove entry from session history (disconnected rows only)
-                            no blocking or rules change — memory only, not persistent
+  ⛔ Add to Blacklist      — disconnect + block + write to rules file (permanent)
+                            duplicate check: skips write if rule already exists
+                            opposite rule removal: removes existing allow/block before writing new
+  ⏱ Temp Block            — block for session / 30m / 1h / 6h / 24h (no file write)
+  ✕ Disconnect            — forcibly disconnect (active rows only)
+  🔌 Force Close Remote   — close open remote socket (history rows only)
+  🗑 Remove from list     — remove entry from session history (memory only)
 
 WATCH (per-connection verbose)
-  👁 Watch button         — on each active connection row; click to enable verbose data
-                            logging for that specific connection only
-  While watching          — button turns purple/filled; label changes to "👁 Watching"
-  Inspect data            — type ID:#N in the log search box to see only that connection
-  Stop watching           — click again to disable; cleans up automatically on disconnect
-  Works independently     — watch is additive; global Verbose does not need to be ON
+  👁 Watch button         — enable verbose data logging for that specific connection
+  While watching          — button turns purple; label changes to "👁 Watching"
+  Stop watching           — click again; auto-cleaned on disconnect
+  Filter log              — type ID:#N in log search to inspect that connection only
 
-AUTO-BLOCKED IPs panel
-  auto tag (red)          — AbuseIPDB auto-block (permanent until restart or rule change)
-  temp tag (amber)        — manual temp block with expiry time or "session"
-  Unblock button          — appears on temp rows only; lifts block immediately
+HEX WATCH (per-connection hexdump) — v23
+  ⬡ Hex button            — enable hexdump for a specific connection independently
+  Button grayed out       — when global Hexdump is ON (case d: per-id hex has no meaning)
+  Enabling Hex            — if global verbose is OFF, implicitly enables Watch for that ID (case a)
+                            if global verbose is ON, only enables per-id hex (case b)
+  Disabling global verbose while per-id hex active: Watch is auto-enabled for hex connections (case c)
+  Disabling Hex           — restores Watch to its state before Hex was enabled:
+                            if Watch was ON before Hex → Watch stays ON
+                            if Watch was OFF before Hex → Watch turns OFF
+  Disabling Watch         — also disables Hex for that connection
+  Filter log              — type ID:#N in log search to see hexdump lines for that connection
 
-QUICK ACTIONS
-  Disconnect All         — disconnect all active connections (no blocking)
-  Auto Disconnect Oldest — per IP: keep newest, disconnect older ones
+AUTO-BLOCKED IPs
+  auto tag (red)   — AbuseIPDB auto-block
+  temp tag (amber) — manual temp block; Unblock button lifts it early
 
-ABUSE THRESHOLD
-  Enter 0-100 in Configuration panel and click Set to update at runtime.
-
-CLOSE REASONS (Session History — Reason column)
-  FIN           — clean TCP close (peer sent FIN)
-  RST           — connection reset (peer sent RST / ECONNRESET)
-  socket error  — OS-level error with errno or exception type shown
-  natural       — legacy natural disc. label (pre-v21 sessions)
-  temp block    — manually temp-blocked via dashboard
-  operator      — HTTP API disconnect request
-  blocklist     — IP added to block list
-  dashboard     — blacklisted via dashboard UI
-  abuse block   — AbuseIPDB auto-block</pre></div>`;
+CLOSE REASONS
+  FIN / RST / socket error / natural / temp block / operator / blocklist / dashboard / abuse block</pre></div>`;
     document.getElementById('modal-footer').innerHTML=`
       <button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
   }catch(e){
