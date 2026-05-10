@@ -1,5 +1,58 @@
-There are various python scripts to be working like transparent proxies.
-The concept is listen to a port (i.e 587) and what ever your plc sends to you forward those data to remote server - remote port. 
 
-in all script you can use --help to see details about usage.
+gv        178403  0.0  0.1   2296  1748 ?        S    Apr22   1:48 ttyd -p 8080 watch -n 1 echo "=== $(date) ==="; curl -s http://127.0.0.1:9999/statustable
+gv        178534  0.0  0.1   2296  1748 ?        S    Apr22   0:09 ttyd -p 8081 watch -n 1 echo "=== $(date) ==="; curl -s http://127.0.0.1:9999/autoblockedtable
+gv        398329  0.0  0.1 255936  1188 ?        Sl   Apr23   0:15 ttyd --writable -p 8090 -c gvasiliou:p%8!2!8Pp%8!2!8Pp%8!2!8P ./titan-menu.sh
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ExecStart=/usr/bin/python3 -u mitm-global-proxy-v20.py --listenport 587 --remoteserver mail.datakom.com.tr --remoteport 587 --verbose --abuseblock 30 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 22222 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P"
+
+ExecStart=/usr/bin/python3 -u /home/gv/pytests/smtp-proxy-asynchronous-v5.py --listenport 587 --remoteserver mail.datakom.com.tr --remoteport 587
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ExecStart=/usr/bin/python3 -u mitm-global-proxy-v20.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 30 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P"
+
+ExecStart=/usr/bin/python3 -u /home/gv/pytests/mitm-global-proxy-v8.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+sudo nohup python3 -u mitm-global-proxy-v19.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 30 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --httpexpose 10001 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:'p%8!2!8Pp%8!2!8Pp%8!2!8Pp%8!2!8P' --closeclientbyremote --closeremotebyclient >proxy19.log 2>&1 &
+
+
+sudo python3 -u mitm-global-proxy-v18.py --listenport 445 --remoteserver 127.0.0.1 --remoteport 4450 --abuseblock 50 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --httpexpose 10002 --httpbind 0.0.0.0 --closeclientbyremote --closeremotebyclient --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:admin
+
+
+sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v17.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 30 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --closeclientbyremote --closeremotebyclient --httpexpose 10001 >>proxy17.log 2>&1 &
+
+
+sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v11.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 50 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --httpexpose 10001  >titan11.log 2>&1 &
+
+sudo python3 -u /home/gv/pytests/mitm-global-proxy-v11.py --listenport 445 --remoteserver 127.0.0.1 --remoteport 4450 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --httpexpose 10001
+
+
+sudo python3 -u /home/gv/pytests/mitm-global-proxy-v10.py --listenport 445 --remoteserver 127.0.0.1 --remoteport 4450 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-3.list --httpexpose 10001
+
+
+sudo python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 445 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 80 --abuseapikey home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-list --httpexpose 10000
+
+
+sudo python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 445 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-2.list --httpexpose 10000
+
+
+sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-2.list --httpexpose 10000 >/home/gv/pytests/proxyv9.log 2>&1 &
+[1] 1503260
+
+scp cloudzy:/home/gv/pytests/rm-proxy-ip-list /home/gv/Desktop/PythonTests/smtp-python-scripts/smtp-mitm-proxy/rm-proxy-ip-list
+
+scp cloudzy:/home/gv/pytests/mitm-global-proxy-v8.py /home/gv/Desktop/PythonTests/smtp-python-scripts/smtp-mitm-proxy/
+
+scp cloudzy:/home/gv/pytests/multi-connect-test.py /home/gv/Desktop/PythonTests/smtp-python-scripts/smtp-mitm-proxy/
+
+Last good working version without upstream sockets handling: Titan v8.
+Current version with upstream sockets handling (forced disconnec) -> Titan v11.
+When v8 is forced to stop (ctrl+c) , rm.datakom.com.tr keeps showing controllers connected (=upstream socket remained open).
+When v11 is forced to stop, immediately rm showing controllers disconnected (=upstream socket forcilby closed )
+Moreover in V11 when we kill (disconnect) an ID the corresponding upstream socket is killed as well.
+Titan Bug V11 - /autodisconnectoldest -> it will fail in case from the same IP more controllers are connected ..... since this routine is grouping connections purely
+based on their IP.....
