@@ -1453,3 +1453,30 @@ cat mitm-509tblab-hexdump.log |grep -E '^[0-9a-f]{4} ' | cut -c 7-53 |tr -d ' ' 
 
 sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 65443 --remoteserver rm.datakom.com.tr --remoteport 90 --abuseblock 80 --abuseapikey /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip-2.list --httpexpose 10000 >/home/gv/pytests/proxyv9.log 2>&1 &
 [1] 1503260
+
+
+.B TCP dump on Titan TCP Proxy 
+Capture Traffic from PLC to Titan:
+nohup sudo tcpdump -i eth0 host 62.169.230.178 and port 65443 -w /home/gv/pytests/plc_to_titan.pcap &
+
+Capture Traffic from Titan to remote cloud:
+nohup sudo tcpdump -i eth0 host 31.207.87.179 and port 90 -w /home/gv/pytests/titan_to_cloud.pcap &
+
+Important:
+from titan to cloud a lot of plcs are connected and in all of them the parameters are the same:
+host is 31.207.87.179 and port 90 for all connections outgoing to remote cloud
+source ip is 144.172.96.163 (titan ip) for all connections.
+
+When you open the pcap with wireshark, you can try to "separate" plcs by using payload filtering (i.e plc name, plc id) at display filters.
+Display Filter Example:     tcp contains "509TB-LAB"
+
+This is working only for PUSH (PSH) that includes payload. TCP operations like ACK, FIN, RST , etc does NOT include payload so above display filter fails. 
+
+Trick: Filter by Stream Index
+Open any PSH packet (with TCP Contains) and find the "Stream Index" (Transmission Control Protocol on the bottom left pane)
+Apply Display Filter like "tcp.stream eq 3" - the stream index remains the same for the particular tcp chain so this filter will bring all TCP operations.
+
+Bug: If the PLC to Cloud connection breaks (PLC disconnected, cloud close sockets,etc) the new PLC session will get a new stream index
+
+Combined Display Filter:     tcp.stream eq 3 or tcp.stream eq 7 or tcp.stream eq 15 or tcp.stream eq 22
+

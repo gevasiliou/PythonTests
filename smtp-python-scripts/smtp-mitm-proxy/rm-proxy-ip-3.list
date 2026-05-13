@@ -177,7 +177,41 @@ block 89.33.222.6 # auto block by abuse - score 52
 block 103.199.126.51 # auto block by abuse - score 77
 block 202.53.15.130 # auto block by abuse - score 100
 block 83.171.96.58 # auto block by abuse - score 51
-allow 195.97.78.222 #comsys
-allow 84.254.17.242 #comsys
+allow 195.97.78.222 #comsys-main
+allow 84.254.17.242 #comsys-alt
 block 74.207.237.5 # auto block by abuse - score 100
 block 20.29.56.192 # auto block by abuse - score 100
+block 85.217.149.12 # auto block by abuse - score 100
+block 85.217.149.25 # auto block by abuse - score 100
+block 160.119.76.55 # auto block by abuse - score 100
+block 85.217.140.12 # auto block by abuse - score 100
+block 40.124.175.184 # auto block by abuse - score 100
+block 85.217.140.6 # auto block by abuse - score 100
+block 194.164.107.4 # auto block by abuse - score 100
+block 85.217.140.50 # auto block by abuse - score 100
+block 192.253.248.110 # auto block by abuse - score 56
+block 20.169.104.239 # auto block by abuse - score 100
+block 151.243.11.34 # auto block by abuse - score 100
+block 93.174.95.106 # auto block by abuse - score 100
+block 185.242.226.17 # auto block by abuse - score 100
+block 93.174.93.12 # auto block by abuse - score 100
+block 167.250.226.29 # auto block by abuse - score 100
+block 20.163.15.93 # auto block by abuse - score 100
+block 44.220.185.135 # auto block by abuse - score 58
+block 185.242.226.112 # auto block by abuse - score 96
+block 176.65.139.254 # auto block by abuse - score 100
+block 34.239.122.61 # auto block by abuse - score 100
+block 45.148.10.67 # auto block by abuse - score 100
+block 20.64.105.53 # auto block by abuse - score 100
+block 45.82.78.105 # auto block by abuse - score 100
+block 45.156.128.76 # auto block by abuse - score 100
+block 45.156.128.78 # auto block by abuse - score 100
+block 45.156.128.79 # auto block by abuse - score 100
+block 20.40.218.197 # auto block by abuse - score 100
+block 198.58.118.133 # auto block by abuse - score 100
+block 40.124.183.177 # auto block by abuse - score 100
+block 87.251.64.125 # auto block by abuse - score 100
+block 192.253.248.111 # auto block by abuse - score 82
+block 5.187.35.142 # auto block by abuse - score 100
+block 195.184.76.244 # auto block by abuse - score 100
+block 195.184.76.246 # auto block by abuse - score 100
