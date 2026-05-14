@@ -1455,7 +1455,7 @@ sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v9.py --listenport 6544
 [1] 1503260
 
 
-.B TCP dump on Titan TCP Proxy 
+.B TCP dump on VPS Linux - Titan TCP Proxy 
 Capture Traffic from PLC to Titan:
 nohup sudo tcpdump -i eth0 host 62.169.230.178 and port 65443 -w /home/gv/pytests/plc_to_titan.pcap &
 
@@ -1478,5 +1478,15 @@ Apply Display Filter like "tcp.stream eq 3" - the stream index remains the same 
 
 Bug: If the PLC to Cloud connection breaks (PLC disconnected, cloud close sockets,etc) the new PLC session will get a new stream index
 
-Combined Display Filter:     tcp.stream eq 3 or tcp.stream eq 7 or tcp.stream eq 15 or tcp.stream eq 22
+Combined Display Wireshark Filter:     tcp.stream eq 3 or tcp.stream eq 7 or tcp.stream eq 15 or tcp.stream eq 22
 
+Extract those packets (of specific streams) to a seperate file: tshark -r titan_to_cloud.pcap -Y "tcp.stream == 0 or tcp.stream == 31" -w titan_to_cloud_labplc.pcap
+Remark: In the new file the stream numbering will reset and new numbering will apply (0,1,2, etc).
+
+Combine two pcap files:                         mergecap -w full_chain_labplc.pcap plc_to_titan.pcap titan_to_cloud_labplc.pcap
+ps: verify that generated file full_chain includes all the lines from the files: 
+    tshark -r plc_to_titan.pcap | wc -l             Lines of first file = 1665
+    tshark -r titan_to_cloud_labplc.pcap | wc -l    Lines of second file = 1641
+    tshark -r full_chain_labplc.pcap | wc -l        Lines of combined file = 3306
+
+Delete specific pakets from a pcap file:        editcap -r full_chain_labplc.pcap full_chain_clean.pcap 11-3306 - writes packets 11 to 3306 to a new file (with new numbering offcourse)
