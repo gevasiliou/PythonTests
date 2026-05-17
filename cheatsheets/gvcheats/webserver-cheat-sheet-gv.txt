@@ -1491,3 +1491,6 @@ ps: verify that generated file full_chain includes all the lines from the files:
     tshark -r full_chain_labplc.pcap | wc -l        Lines of combined file = 3306
 
 Delete specific pakets from a pcap file:        editcap -r full_chain_labplc.pcap full_chain_clean.pcap 11-3306 - writes packets 11 to 3306 to a new file (with new numbering offcourse)
+
+.B Tip - Do not forget to encrypt sensitive files (like abuse api key) before uploading to github.
+Use securefile.sh for this purpose (see --help for usage options and examples).
