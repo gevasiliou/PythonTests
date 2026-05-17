@@ -27,7 +27,10 @@ v10:    No upstream socket manipulation by pipe() -
 v09:    We kept only 3 core mandatory switches and all other functionalities became optional.
         core switches: --listenport , --remoteserver, --remoteport
         optional switches: --ssl, --hexdump, --tcp-sniff, --httpexpose, --rulesfile, --abusblock, --abuseapikey
-v08:     Last known stable version without upstream socket manipulation - a lot of extra functionalities (like abusecheck) are built-in
+v08:     Last known stable version without upstream socket manipulation - a lot of extra functionalities (like abusecheck) are built-in:
+            abuse api key = builtin
+            http monitor = enabled by default , port can be adjusted though by --http-port
+            
 
 Titan Usage examples by cli:
 sudo nohup python3 -u /home/gv/pytests/mitm-global-proxy-v14.py --listenport 65443 --remoteserver rm.com --remoteport 90 \
@@ -337,7 +340,7 @@ def load_rules():
 
             if isinstance(rule, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
                 #disconnect_ip(str(rule))
-                disconnect_ip(str(rule), reason="newly added to block list")
+                disconnect_ip(str(rule), reason="added to block list")
             else:
                 with active_lock:
                     for cid, info in list(ACTIVE_CONNECTIONS.items()):
@@ -347,7 +350,7 @@ def load_rules():
                             continue
                         if ip in rule:
                             #disconnect_ip(info["ip"])
-                            disconnect_ip(info["ip"], reason="newly added to block list")
+                            disconnect_ip(info["ip"], reason="added to block list")
 
     except Exception as e:
         print(f"{RED}[{get_ts()}][!] load_rules() failed: {e}{RESET}")
@@ -827,29 +830,6 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         
-        # ~ elif parsed.path == "/statustable":
-            # ~ with active_lock, rules_lock:
-                # ~ rows = []
-                # ~ for cid, info in ACTIVE_CONNECTIONS.items():
-                    # ~ ip = info["ip"]
-                    # ~ entry = ip_in_list(ipaddress.ip_address(ip), WHITELIST, return_entry=True)
-                    # ~ comment = entry["comment"] if entry and entry["comment"] else ""
-                    # ~ connected_ts = info.get("connected_ts", "")
-                    # ~ last_client_ts = info.get("last_client_ts", "")
-                    # ~ last_remote_ts = info.get("last_remote_ts", "")
-                    # ~ rows.append([cid, ip, comment, connected_ts, last_client_ts, last_remote_ts])
-
-            # ~ headers = ["ID", "IP", "Comment", "Connected", "Last From Client", "Last From Remote"]
-            # ~ table = make_table(rows, headers)
-
-            # ~ body = table.encode("utf-8")
-            # ~ self.send_response(200)
-            # ~ self.send_header("Content-Type", "text/plain")
-            # ~ self.send_header("Content-Length", str(len(body)))
-            # ~ self.end_headers()
-            # ~ self.wfile.write(body)
-            # ~ return
-
         elif parsed.path == "/statustable":
             now = datetime.datetime.now()
             rows = []

@@ -6,6 +6,9 @@ from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from collections import deque
 
+DASHBOARD_HTML = "dashboard27.html"
+TITAN_VERSION  = 27
+
 TCP_SNIFF_ENABLED = False
 # ── v18: directional flags (unchanged from v17) ───────────────────────────
 CLOSE_REMOTE_BY_CLIENT = False
@@ -22,6 +25,7 @@ dashboard_sessions_lock = threading.Lock()
 DASHBOARD_USER      = None
 DASHBOARD_PASS_HASH = None
 DASHBOARD_PATH      = None             # path to titan-dashboard/ folder
+
 TITAN_START_TIME    = time.time()
 
 # Set in __main__ so dashboard/data can report them
@@ -91,15 +95,78 @@ close_reasons_lock = threading.Lock()
 VERBOSE_ENABLED = False
 verbose_lock = threading.Lock()
 
-TITAN_VERSION = 20
-TITAN_DESCRIPTION = f"""\
-Titan v{TITAN_VERSION} - Change Log:
-v20:    Implementation to forcibly close remote socket if it has remained open due to remoteserver bug (session table only).
-        Add helper texts in each previously "except Exception: pass" code block.
-        Include GET endpoint /dashboard/mobile for better support in mobile phones (redirects to dashboard-mobile.html)
-        dashboard20: Extend Filtering on dashboard columns (now all columns in active connections / history connection can be sortable)
-        dashboard20: Seperate Refresh Intervals for connection tables and rest web page
-v19:    Make the closeclientbyremote and closeremotebyclient dashboard badges to work like buttons and change behavior at runtime.
+VERBOSE_WATCH = set()   # conn_ids to verbosely log
+verbose_watch_lock = threading.Lock()
+
+HEXDUMP_WATCH      = set()  # conn_ids with per-id hexdump enabled
+HEXDUMP_WATCH_PREV = {}     # {conn_id: bool} watch state before hex on
+hexdump_watch_lock = threading.Lock()
+
+TCP_WATCH      = set()   # <- add  conn_ids with per-id tcp sniff enabled
+TCP_WATCH_PREV = {}      # <- add  {conn_id: bool} watch state before global tcp sniff on
+tcp_watch_lock = threading.Lock()  # <- add
+
+REMOTE_PORT_MAP      = {}                   # <- add  {ephemeral_port: conn_id}
+remote_port_map_lock = threading.Lock()     # <- add
+
+CLIENT_PORT_MAP      = {}
+client_port_map_lock = threading.Lock()
+
+TITAN_CHANGELOG = f"""\
+TITAN TCP Proxy Changelog
+Current Titan Version is v{TITAN_VERSION}
+
+TODO:   Since after v26 tcp sniff is by default enabled (but not printed) we can now easily provide per-ID tcp-sniff printing.
+        Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
+        Configurable idle timeout watchdog that auto-disconnects connections where Idle exceeds a threshold.
+        Change the logic of auto disconnect oldest in dashboard - now that we have "IDLE" counter in Active Connections, auto disconnect oldest can just
+        check the IDLE time versus a treshold (i.e > 1 hour) and auto disconnect frozen clients
+v27:    Changes to tcp sniff - add detection of last client type tcp status with AF_PACKET (ack, etc).
+        TCP Labels updated to include all combinations (i.e ACK, SYN, ACK/SYN, etc)
+        Last Client Type (C.Type) Column added to Active & History Connection Tables.
+        implementing per-ID TCP Sniff Logging (magenta color)
+        new button in Dashboard Live Log to hide TCP Traffic (now separated from the regular traffic lines)
+v26:    Last Remote Type column (R.Type) added to Active & History Connections (helps to detect anomalies in frozen connections using ACK, RST, FIN, SYN,PSH, etc)
+        Fix a bug about temp blocking - ip was unblocked after X time, but the block table in dashboard was not updated.
+        Fix a bug about scanners hitting httpexpose port causing python exception calls and ugly log lines
+        Seperate titan changelog text from titan help text - new arg --changelog added (previously --help was printing changelog+help together)
+v25:    Last Remote ts was inaccurate - previous implementation counts as Last Remote only payload responses (data bytes) - ACK, SYN, FIN are not counted 
+        Provide Option to unblock an IP - not white-list it , just unblock it
+        Column Last Remote now visible also in Session History Table.
+v24:    Enhancements to tcp sniffer function to correctly differentate states of tcp (ack, syn,rst,fin, etc)
+        WhiteList comment editing
+        Active Connections Comment refresh live bug fixed
+        Autoblocked Table became Session Blocked table that contains entries that were autoblocked but also user blocks
+        Session History Table - new action "Remove all IPs rows" to massively remove from the list all IDs of the same IP
+v23:    Enable per ID hex dump to avoid global enabling hex dump for all ids (log flood)
+        Add Column LAST CLIENT to Session History
+        Add "disconnect" action (id click & right click) in session history entries that show ACTIVE in Disconnected column.
+        Fixed a bug that when watch was enabled but dashboard was refreshed , watch was appearing as disabled but in reality has been preserved
+        enabled (prior enabling before refresh). Fix applies also to perID hex dump.
+v22:    Provide IP Temp Block for a time period. Temp Blocks appear on Auto-Blocked Tables. User can "unblock" a previously temp blocked IP
+        Provide "Watch" Button in active connections table - This enables verbose for particular ID = printing detailed message data of this ID.
+        When watch is pressed it is changed to "watching". Re-pressing "watching" restores/turns off ID verbosing. 
+        Enrich verbose data printing in the logs / live logs with including ID+IP so live log filtering can catch those lines
+        Convert to clickable : ID column of Active Connections & History Connections dashboard tables (bring context right click menu)
+        Convert to clickable : IP Column of auto-blocked table in dashboard (bring right click context menu)
+        Changes to Titan Python Code: 
+            if "add to blacklist" is pressed, check first if an entry is already present as block in --rulesfile to avoid duplicate block records
+            Same logic (first check , then write) applied also to "add to whitelist" function.
+            if "add to whitelist" is pressed, check and remove a previously block rule for the same IP to avoid allow + block lines in rulesfile for the same IP
+            Same logic (remove opposite rule, write new rule) applies also to "add to blacklist" dashboard action.
+v21:    Include Country Field for Abuse Auto Block dashboard table
+        Possible to remove entry from Session History Table in dashboard (right click context menu)
+        Provide grep style search in dashboard live log
+        Provide Traffic button (on/off) to display/hide traffic messages on dashboard live log window - usefull to hide the trafic and inspect autoblocks, etc
+        Improved close-reason detail on dashboard connection tables
+        Disconnect confirmation modal for the Disc small button on the active connections table
+        Dashboard Last Updated time changed to 24H clock from 12H clock (browser time)
+v20:    Implementation to forcibly close remote socket if it has remained open due to remoteserver bug (session table only - right click Force Remote Close).
+        Add helper texts in each previously "except Exception: pass" code block to avoid silent pass and print debuging messages
+        New GET endpoint /dashboard/mobile for better support of dashboard in mobile phones (redirects to dashboard-mobile.html)
+        Extend sorting on ALL dashboard table columns 
+        Apply seperate Dashboard Refresh Intervals for connection tables (faster) and rest web page (slower)
+v19:    Make the closeclientbyremote and closeremotebyclient dashboard badges in Dashboard to work like buttons and change behavior at runtime by dashboard.
 v18:    Web dashboard served at http://vpsip:httpexpose port/dashboard (requires --dashboardpath and --dashboardauth).
         Separate HTML files — login.html and dashboard.html — stored in --dashboardpath folder.
         New --httpbind flag (default 127.0.0.1) to expose HTTP control externally (usage: --httpbind 0.0.0.0)
@@ -135,7 +202,7 @@ v13:    --verbose CLI + /verbose endpoint.
         new: verbose mode introduced — disabled by default, only connect/disconnect/abuse messages are printed; byte data is suppressed entirely
         new: --verbose CLI flag added to enable verbose logging at startup - also new /verbose?enable/disable HTTP endpoint added to toggle verbose mode at runtime
         improvement: pipe() now gates all data output (both plain text and hexdump) behind the VERBOSE_ENABLED flag
-        improvement: whitelist comment is now stored directly inside the ACTIVE_CONNECTIONS entry at connection time in bridge(), rather than being looked up live from the whitelist on each read
+        whitelist comment now stored in ACTIVE_CONNECTIONS at connection time in bridge() instead of checking whitelist on each read
         improvement: comment field added to session history records — /closedconnectionstable and /sessiontable now include a Comment column showing the whitelist comment for each connection
 v12:    /sessiontable, /closedconnectionstable.
         new: session history introduced — last 1000 connections (active and closed) tracked in a deque (SESSION_HISTORY)
@@ -171,7 +238,7 @@ v09:    Httpcontrol at port 9999 made Optional (--httpexpose <port>)
         fix: set Whitelist priority Bug over blacklist (BL could previously override WL)
         fix: Fixed Timestamps Time to include Full date + time
         fix: Startup output Single line Full summary banner
-v08(*): Last stable version — TCP isolation baseline.
+v08(*): Last stable version — TCP isolation baseline (client sockets and remote sockets not managed by Titan)
 v04:    --tcp-snif cli added - 
 v03:    This version of Titan supports IP black-list &  white-list. IPs allow/block rules are stored in a local file rm-proxy-ip-list.
         For new IPs coming to Titan default action is allow.
@@ -180,21 +247,26 @@ v02:    pipe() signature(source, destination, label, color, conn_id, show_hex) A
         now shown per data eventThread creation in bridge()Passes 6 args to pipePasses 7 args, adding addr[0] (the client IP)
 v01:    Simple TCP transparent proxy - listens on one port , forwards data to remoteserver:remoteport.
         Args: --listenport <port> , --remoteserver <hostname or ip> , --remoteport <port>, --ssl (force ssl from Titan to upstream), --hexdump 
+"""
 
-Usage:
+
+TITAN_HELP = f"""\
+Titan v{TITAN_VERSION} - Usage:
   # Legacy mode (v8 behavior, localhost API only):
   sudo python3 -u mitm-global-proxy-v18.py \\
-    --listenport 445 --remoteserver 127.0.0.1 --remoteport 4450 \\
+    --listenport 443 --remoteserver 127.0.0.1 --remoteport 4450 \\
     --httpexpose 10001
 
   # With web dashboard (accessible from browser):
-  sudo python3 -u mitm-global-proxy-v18.py \\
-    --listenport 445 --remoteserver rm.com --remoteport 90 \\
+  sudo python3 -u mitm-global-proxy-v26.py \\
+    --listenport 443 --remoteserver rm.com --remoteport 90 \\
     --abuseblock 50 /path/to/key --rulesfile /path/to/rules \\
     --httpexpose 10001 --httpbind 0.0.0.0 \\
     --dashboardpath /home/gv/pytests/titan-dashboard --closeclientbyremote --closeremotebyclient \\
     --dashboardauth admin:'mysecretpassword' 
-    ps: always include passoword in single quotes.
+    ps1: always include password in single quotes.
+    ps2: for systemd services password should be included in double quotes and special chars like % should be escaped with % -> %%
+    ps3: rules file include allow IP and block IP entries. Allow entries have higher priority over block entries.
 """
 
 HTTP_PORT_HELP = f"""\
@@ -265,6 +337,9 @@ ABUSE_API_KEY   = None
 ABUSE_THRESHOLD = 80
 AUTO_BLOCKED_IPS = []
 auto_blocked_lock = threading.Lock()
+
+TIMED_BLOCKLIST      = {}   # <- add  {ip: expiry_timestamp or None (session-only)}
+timed_blocklist_lock = threading.Lock()  # <- add
 
 ALLOWALL_ENABLED   = False
 _ALLOWALL_SNAPSHOT = {}
@@ -374,12 +449,45 @@ def load_rules():
     except Exception as e:
         tlog(f"{RED}[{get_ts()}][!] load_rules() failed: {e}{RESET}", "ERROR")
 
+# new function — add after load_rules(), before rules_watcher()
+def _refresh_active_comments():
+    """After a whitelist change, update comment field for all active connections."""
+    with active_lock, rules_lock:
+        for cid, info in ACTIVE_CONNECTIONS.items():
+            try:
+                ip_obj = ipaddress.ip_address(info["ip"])
+                entry = ip_in_list(ip_obj, WHITELIST, return_entry=True)
+                info["comment"] = entry["comment"] if entry and entry["comment"] else ""
+            except Exception:
+                pass
+
 def rules_watcher():
     while True:
         try: load_rules()
         except Exception as e:
             tlog(f"{RED}[{get_ts()}][!] Rule watcher error: {e}{RESET}", "ERROR")
         time.sleep(5)
+
+# new function — add after rules_watcher()
+def timed_block_watcher():
+    while True:
+        now = time.time()
+        expired = []
+        with timed_blocklist_lock:
+            for ip, expiry in list(TIMED_BLOCKLIST.items()):
+                if expiry is not None and now >= expiry:
+                    expired.append(ip)
+            for ip in expired:
+                del TIMED_BLOCKLIST[ip]
+        for ip in expired:
+            with runtime_blocklist_lock:
+                RUNTIME_BLOCKLIST.discard(ip)
+            with auto_blocked_lock:                                          # <- add
+                AUTO_BLOCKED_IPS[:] = [e for e in AUTO_BLOCKED_IPS         # <- add
+                                       if not (e.get("ip") == ip           # <- add
+                                       and e.get("type") == "temp")]       # <- add
+            tlog(f"{YELLOW}[{get_ts()}][*] Temp block expired for {ip} — removed from blocklist{RESET}", "CONTROL")
+        time.sleep(30)
 
 
 # ── Disconnect functions ──────────────────────────────────────────────────
@@ -414,11 +522,18 @@ def disconnect_ip(ip_str, reason="block list"):
             tlog(f"{YELLOW}[{get_ts()}][dbg] close() {ip_str}: {e}{RESET}", "ERROR")
         last_client_ts = info.get("last_client_ts","") if info else ""
         last_remote_ts = info.get("last_remote_ts","") if info else ""
+        last_client_type = info.get("last_client_type","?") if info else "?"
         conn_comment   = info.get("comment","")         if info else ""
         connected_ts   = info.get("connected_ts","")    if info else ""
         remote_sock_ref = info.get("remote_socket") if info else None
-        with active_lock: ACTIVE_CONNECTIONS.pop(cid, None)
-        disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
+        
+        with active_lock: _popped = ACTIVE_CONNECTIONS.pop(cid, None)
+        if _popped is None:                                              # <- add
+            tlog(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} (ID:#{cid}) — {reason}{RESET}", "CONTROL")  # <- add
+            killed += 1                                                  # <- add
+            continue                                                     # <- add
+        disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]        
+        
         duration = _calc_duration(connected_ts, disconnected_ts)
         remote_status = "closed" if CLOSE_REMOTE_BY_CLIENT else "open"
         entry_dict = {
@@ -426,6 +541,7 @@ def disconnect_ip(ip_str, reason="block list"):
             "connected_ts": connected_ts, "disconnected_ts": disconnected_ts,
             "duration": duration, "last_client_ts": last_client_ts,
             "last_remote_ts": last_remote_ts, "close_reason": reason,
+            "last_client_type": last_client_type,
             "remote_status": remote_status,
         }
         with session_history_lock: SESSION_HISTORY.append(entry_dict)
@@ -454,6 +570,7 @@ def disconnect_connection_id(cid, reason="operator request"):
             tlog(f"{YELLOW}[{get_ts()}][dbg] close() ID {cid} ({ip}): {e}{RESET}", "ERROR")
         last_client_ts = info.get("last_client_ts",""); last_remote_ts = info.get("last_remote_ts","")
         conn_comment = info.get("comment",""); connected_ts = info.get("connected_ts","")
+        last_client_type = info.get("last_client_type","?")
         remote_sock_ref = info.get("remote_socket")
         del ACTIVE_CONNECTIONS[cid]
     with close_reasons_lock: CLOSE_REASONS[cid] = reason
@@ -465,6 +582,7 @@ def disconnect_connection_id(cid, reason="operator request"):
         "connected_ts": connected_ts, "disconnected_ts": disconnected_ts,
         "duration": duration, "last_client_ts": last_client_ts,
         "last_remote_ts": last_remote_ts, "close_reason": reason,
+        "last_client_type": last_client_type,
         "remote_status": remote_status,
     }
     with session_history_lock: SESSION_HISTORY.append(entry_dict)
@@ -488,10 +606,14 @@ def format_hexdump(data):
     return "\n".join(lines)
 
 def pipe(source, destination, label, color, conn_id, client_ip):
+    _pipe_close_reason = "natural disc."
+    _pipe_close_tag    = ""
     try:
         while True:
             data = source.recv(8192)
             if not data:
+                _pipe_close_reason = "natural close [FIN]"
+                _pipe_close_tag    = "[FIN]"
                 if label == "CLIENT->REMOTE" and CLOSE_REMOTE_BY_CLIENT:
                     try: destination.shutdown(socket.SHUT_RDWR)
                     except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] shutdown() destination (no-data CLIENT->REMOTE): {e}{RESET}", "ERROR")
@@ -514,18 +636,34 @@ def pipe(source, destination, label, color, conn_id, client_ip):
             #print(f"{color}[{get_ts()}] [ID:#{conn_id}] ({client_ip}) {label}:{comment}{RESET}", flush=True)
             tlog(f"{color}[{get_ts()}] [ID:#{conn_id}] ({client_ip}) {label}:{comment}{RESET}", "INFO")
             with verbose_lock: show_verbose = VERBOSE_ENABLED
+            with verbose_watch_lock: show_verbose = show_verbose or (conn_id in VERBOSE_WATCH)
+            with hexdump_watch_lock: show_hex_watch = conn_id in HEXDUMP_WATCH
             if show_verbose:
-                with hexdump_lock: show_hex = HEXDUMP_ENABLED
+                #with hexdump_lock: show_hex = HEXDUMP_ENABLED
+                with hexdump_lock: show_hex = HEXDUMP_ENABLED or show_hex_watch
                 if show_hex: 
                     #print(format_hexdump(data), flush=True)
-                    tlog(format_hexdump(data), "INFO")
+                    #tlog(format_hexdump(data), "DATA")
+                    tlog(f"[ID:#{conn_id}] ({client_ip}) {label} HEXDUMP:\n{format_hexdump(data)}", "DATA")
                 else:
                     msg = data.decode(errors='ignore').strip()
                     if msg: 
                         #print(f"{color}{msg}{RESET}", flush=True)
-                        tlog(f"{color}{msg}{RESET}", "INFO")
+                        #tlog(f"{color}{msg}{RESET}", "DATA")
+                        tlog(f"{color}[ID:#{conn_id}] ({client_ip}) {label} DATA: {msg}{RESET}", "DATA")
             destination.sendall(data)
-    except Exception:
+
+    except Exception as _e:                                              # <- modify (was: except Exception:)
+        _eno = getattr(_e, 'errno', None)                               
+        if isinstance(_e, ConnectionResetError) or _eno in (104, 10054):
+            _pipe_close_reason = "natural close [RST]"                  
+            _pipe_close_tag    = "[RST]"                                
+        elif _eno is not None:                                          
+            _pipe_close_reason = f"socket error [errno {_eno}]"        
+            _pipe_close_tag    = f"[errno {_eno}]"                     
+        else:                                                           
+            _pipe_close_reason = f"socket error [{type(_e).__name__}]" 
+            _pipe_close_tag    = f"[{type(_e).__name__}]"              
         if label == "CLIENT->REMOTE" and CLOSE_REMOTE_BY_CLIENT:
             try: destination.shutdown(socket.SHUT_RDWR)
             except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] shutdown() destination (error CLIENT->REMOTE): {e}{RESET}", "ERROR")
@@ -534,15 +672,29 @@ def pipe(source, destination, label, color, conn_id, client_ip):
             except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] shutdown() destination (error REMOTE->CLIENT): {e}{RESET}", "ERROR")
     finally:
         if label == "REMOTE->CLIENT":
-            with active_lock:
-                info = ACTIVE_CONNECTIONS.get(conn_id)
+            if _pipe_close_tag == "[FIN]":                                       # <- add this line
+                _rclose_type = "FIN"                                             # <- add this line
+            elif _pipe_close_tag == "[RST]":                                     # <- add this line
+                _rclose_type = "RST"                                             # <- add this line
+            elif _pipe_close_tag:                                                 # <- add this line
+                _rclose_type = _pipe_close_tag.strip("[]")                       # <- add this line
+            else:                                                                 # <- add this line
+                _rclose_type = "?"                                               # <- add this line
+            with active_lock:                                                    # (anchor - unchanged)
+                info = ACTIVE_CONNECTIONS.get(conn_id)                          # (anchor - unchanged)
                 if info is not None:
                     info["remote_closed"] = True
-                    tlog(f"{YELLOW}[{get_ts()}][*] [ID:#{conn_id}] Remote socket closed by remote server{RESET}", "INFO")
+                    info["last_remote_type"] = _rclose_type                      # <- add this line
+                    tlog(f"{YELLOW}[{get_ts()}][*] [ID:#{conn_id}] Remote socket closed by remote server {_pipe_close_tag}{RESET}", "INFO")
+            with session_history_pending_lock:                                   # <- add this line
+                _pending = SESSION_HISTORY_PENDING.get(conn_id)                 # <- add this line
+                if _pending is not None:                                         # <- add this line
+                    _pending["last_remote_type"] = _rclose_type                 # <- add this line
         elif label == "CLIENT->REMOTE":
             with active_lock: info = ACTIVE_CONNECTIONS.pop(conn_id, None)
             if info is None: return
-            with close_reasons_lock: close_reason = CLOSE_REASONS.pop(conn_id, "natural disc.")
+            with close_reasons_lock: close_reason = CLOSE_REASONS.pop(conn_id, None)
+            if close_reason is None: close_reason = _pipe_close_reason
             disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
             duration = _calc_duration(info.get("connected_ts",""), disconnected_ts)
             remote_closed = info.get("remote_closed", False)
@@ -552,14 +704,17 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                 "connected_ts": info.get("connected_ts",""), "disconnected_ts": disconnected_ts,
                 "duration": duration, "last_client_ts": info.get("last_client_ts",""),
                 "last_remote_ts": info.get("last_remote_ts",""),
+                "last_remote_type": info.get("last_remote_type","?"),
+                "last_client_type": info.get("last_client_type","?"),
                 "close_reason": close_reason, "remote_status": remote_status,
             }
             with session_history_lock: SESSION_HISTORY.append(entry_dict)
             if remote_status == "open":
                 with session_history_pending_lock: SESSION_HISTORY_PENDING[conn_id] = entry_dict
                 with pending_remote_sockets_lock: PENDING_REMOTE_SOCKETS[conn_id] = destination 
-            tlog(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
+            tlog(f"{RED}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
                  f"— {close_reason} (remote: {remote_status}){RESET}", "DISCONNECT")
+
 
 def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id):
     global connection_count
@@ -574,14 +729,23 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
             "ip": client_ip, "socket": client_sock,
             "connected_ts": connected_ts,
             "last_client_ts": connected_ts, "last_remote_ts": connected_ts,
+            "last_remote_type": "?",
+            "last_client_type": "?",
             "comment": conn_comment,
         }
     tlog(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip}{tag}{comment} "
          f"(Active: {connection_count}){RESET}", "CONNECT")
+    with client_port_map_lock:                  # <- add this line
+        CLIENT_PORT_MAP[addr[1]] = conn_id      # <- add this line
+        
+    ephemeral_port = None                                              # <- add this line
     remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         remote_sock.connect((remote_host, remote_port))
-        
+        ephemeral_port = remote_sock.getsockname()[1]                  # <- add this line
+        with remote_port_map_lock:                                     # <- add this line
+            REMOTE_PORT_MAP[ephemeral_port] = conn_id                  # <- add this line
+
         if force_ssl:
             ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             ctx.load_cert_chain(certfile=CERTFILE, keyfile=KEYFILE)
@@ -600,6 +764,18 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
     finally:
         disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
         with counter_lock: connection_count -= 1
+        if ephemeral_port is not None:                                 # <- add this line
+            with remote_port_map_lock:                                 # <- add this line
+                REMOTE_PORT_MAP.pop(ephemeral_port, None)              # <- add this line
+        with client_port_map_lock:              # <- add this line
+            CLIENT_PORT_MAP.pop(addr[1], None)  # <- add this line
+        with verbose_watch_lock: VERBOSE_WATCH.discard(conn_id)
+        with hexdump_watch_lock:
+            HEXDUMP_WATCH.discard(conn_id)
+            HEXDUMP_WATCH_PREV.pop(conn_id, None)
+        with tcp_watch_lock:                        # <- add
+            TCP_WATCH.discard(conn_id)              # <- add
+            TCP_WATCH_PREV.pop(conn_id, None)       # <- add
         with active_lock: info = ACTIVE_CONNECTIONS.pop(conn_id, None)
         with close_reasons_lock: close_reason = CLOSE_REASONS.pop(conn_id, "natural disc.")
         if info is not None:
@@ -610,20 +786,21 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
                     "connected_ts": connected_ts, "disconnected_ts": disconnected_ts,
                     "duration": duration, "last_client_ts": info.get("last_client_ts",""),
                     "last_remote_ts": info.get("last_remote_ts",""),
+                    "last_remote_type": info.get("last_remote_type","?"),
+                    "last_client_type": info.get("last_client_type","?"),
                     "close_reason": close_reason, "remote_status": "closed",
                 })
-            tlog(f"{MAGENTA}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
+            tlog(f"{RED}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
                  f"(Active: {connection_count}) — {close_reason}{RESET}", "DISCONNECT")
         else:
             with session_history_pending_lock: pending_entry = SESSION_HISTORY_PENDING.pop(conn_id, None)
-            with pending_remote_sockets_lock: PENDING_REMOTE_SOCKETS.pop(conn_id, None) 
+            with pending_remote_sockets_lock: PENDING_REMOTE_SOCKETS.pop(conn_id, None)
             if pending_entry is not None:
                 pending_entry["remote_status"] = "closed"
                 tlog(f"{YELLOW}[{get_ts()}][*] [ID:#{conn_id}] Remote socket now closed{RESET}", "INFO")
         for s in (client_sock, remote_sock):
             try: s.close()
             except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] close() in bridge() finally: {e}{RESET}", "ERROR")
-
 
 # ── TCP Sniffer ───────────────────────────────────────────────────────────
 
@@ -644,15 +821,28 @@ def parse_tcp_header(data):
     if len(data) < 20: return None
     tcph = struct.unpack('!HHLLBBHHH', data[:20])
     return {'src_port': tcph[0], 'dst_port': tcph[1], 'seq': tcph[2],
-            'ack_seq': tcph[3], 'data_offset': (tcph[4] >> 4) * 4, 'flags': tcph[5]}
+            'ack_seq': tcph[3], 'data_offset': (tcph[4] >> 4) * 4, 'flags': tcph[5],
+            'window': tcph[6]}
 
 def tcp_flag_labels(flags):
-    if flags & 0x02 and flags & 0x10: return "SYN/ACK"
-    if flags & 0x02: return "SYN"
-    if flags & 0x01: return "FIN"
-    if flags & 0x04: return "RST"
-    if flags & 0x10: return "ACK"
+    fin = bool(flags & 0x01)
+    syn = bool(flags & 0x02)
+    rst = bool(flags & 0x04)
+    psh = bool(flags & 0x08)
+    ack = bool(flags & 0x10)
+    urg = bool(flags & 0x20)
+    if syn and ack:             return "SYN/ACK"    # <- modify
+    if syn:                     return "SYN"         # <- modify
+    if rst and ack:             return "RST/ACK"     # <- add
+    if rst:                     return "RST"         # <- modify
+    if fin and psh and ack:     return "FIN/PSH/ACK" # <- add
+    if fin and ack:             return "FIN/ACK"     # <- add
+    if fin:                     return "FIN"         # <- modify
+    if psh and ack:             return "PSH/ACK"     # <- modify
+    if urg and ack:             return "URG/ACK"     # <- add
+    if ack:                     return "ACK"         # <- modify
     return None
+
 
 def packet_sniffer(listen_port, remote_host, remote_port):
     try:
@@ -661,7 +851,7 @@ def packet_sniffer(listen_port, remote_host, remote_port):
         sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
     except Exception as e:
         tlog(f"{RED}[{get_ts()}][!] TCP sniffer init failed: {e}{RESET}", "ERROR"); return
-    tlog(f"{CYAN}[{get_ts()}][*] TCP handshake sniffer ACTIVE on port {listen_port} (AF_PACKET){RESET}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] TCP sniffer ACTIVE on port {listen_port} (AF_PACKET){RESET}", "INFO")
     seen = {}
     while True:
         try: raw_data, _ = sniffer.recvfrom(65535)
@@ -675,10 +865,33 @@ def packet_sniffer(listen_port, remote_host, remote_port):
         if not tcphdr: continue
         sp, dp = tcphdr['src_port'], tcphdr['dst_port']
         if not (sp == listen_port or dp == listen_port or sp == remote_port or dp == remote_port): continue
-        label = tcp_flag_labels(tcphdr['flags'])
-        if not label: continue
 
-        # <- ADD: dedup block start
+        # Update last_remote_ts for ANY packet from remote (including pure ACKs Len=0)
+        # This runs before dedup so every packet updates the timestamp
+        if iphdr['src_ip'] == remote_ip and sp == remote_port:
+            with remote_port_map_lock:
+                cid = REMOTE_PORT_MAP.get(dp)
+            if cid is not None:
+                ts_now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
+                with active_lock:
+                    info = ACTIVE_CONNECTIONS.get(cid)
+                    if info is not None:
+                        info["last_remote_ts"] = ts_now
+                        info["last_remote_type"] = tcp_flag_labels(tcphdr['flags']) or "?"
+
+        if dp == listen_port:                                                # <- add this line
+            with client_port_map_lock:                                       # <- add this line
+                cid_c = CLIENT_PORT_MAP.get(sp)                              # <- add this line
+            if cid_c is not None:                                            # <- add this line
+                with active_lock:                                            # <- add this line
+                    info_c = ACTIVE_CONNECTIONS.get(cid_c)                  # <- add this line
+                    if info_c is not None:                                   # <- add this line
+                        info_c["last_client_type"] = tcp_flag_labels(tcphdr['flags']) or "?"  # <- add this line
+
+        label = tcp_flag_labels(tcphdr['flags'])
+        if not label: label = "UNKNOWN"
+        payload_len = iphdr['total_length'] - iphdr['ihl'] - tcphdr['data_offset']
+        len_str = f" Len={payload_len}" if payload_len > 0 else " Len=0"
         key = (iphdr['src_ip'], sp, iphdr['dst_ip'], dp, tcphdr['flags'], tcphdr['seq'])
         now = time.time()
         if key in seen and now - seen[key] < 0.05:
@@ -686,14 +899,26 @@ def packet_sniffer(listen_port, remote_host, remote_port):
         seen[key] = now
         if len(seen) > 500:
             seen = {k: v for k, v in seen.items() if now - v < 0.05}
-        # <- ADD: dedup block end
 
         def pip(ip): return remote_host if ip == remote_ip else ip
-        #print(f"{YELLOW}[{get_ts()}] [TCP] [{label}] {pip(iphdr['src_ip'])}:{sp} -> {pip(iphdr['dst_ip'])}:{dp}{RESET}", flush=True)
-        if TCP_SNIFF_ENABLED:
-            tlog(f"{YELLOW}[{get_ts()}] [TCP] [{label}] {pip(iphdr['src_ip'])}:{sp} -> {pip(iphdr['dst_ip'])}:{dp}{RESET}", "INFO")
-
-
+        with remote_port_map_lock:                                                    # <- modify
+            is_mine = (sp == listen_port or dp == listen_port or                     # <- modify
+                       sp in REMOTE_PORT_MAP or dp in REMOTE_PORT_MAP)               # <- modify
+        if not is_mine: continue                                                      # <- modify
+        log_cid = None                                                                # <- add
+        with remote_port_map_lock:                                                    # <- add
+            log_cid = REMOTE_PORT_MAP.get(dp) or REMOTE_PORT_MAP.get(sp)             # <- add
+        if log_cid is None:                                                           # <- add
+            with client_port_map_lock:                                                # <- add
+                log_cid = CLIENT_PORT_MAP.get(sp) or CLIENT_PORT_MAP.get(dp)         # <- add
+        with tcp_watch_lock: per_id_enabled = log_cid in TCP_WATCH if log_cid else False  # <- add
+        if TCP_SNIFF_ENABLED or per_id_enabled:                                       # <- modify
+            id_tag = f" [ID:#{log_cid}]" if log_cid is not None else ""              # <- add
+            tlog(f"{MAGENTA}[{get_ts()}] [TCP]{id_tag}"                          # <- modify
+                 f" {pip(iphdr['src_ip'])}:{sp} -> {pip(iphdr['dst_ip'])}:{dp}"  # <- modify
+                 f" [{label}] Seq={tcphdr['seq']} Ack={tcphdr['ack_seq']}"       # <- modify
+                 f" Win={tcphdr['window']}{len_str}{RESET}", "TCP")               # <- modify            
+        
 # ── AbuseIPDB ─────────────────────────────────────────────────────────────
 
 def add_block_rule(ip, score=None):
@@ -709,20 +934,29 @@ def abuse_lookup(ip):
         r = requests.get("https://api.abuseipdb.com/api/v2/check",
                          headers={"Key": ABUSE_API_KEY, "Accept": "application/json"},
                          params={"ipAddress": ip, "maxAgeInDays": "90"}, timeout=3)
-        return r.json()["data"]["abuseConfidenceScore"]
+        #return r.json()["data"]["abuseConfidenceScore"]
+        data = r.json()["data"]
+        return data["abuseConfidenceScore"], data.get("countryCode","")
     except Exception as e:
         tlog(f"{RED}[{get_ts()}][!] AbuseIPDB lookup failed for {ip}: {e}{RESET}", "ERROR")
-        return None
+        return None, "" 
+        #return None
 
 def abuse_lookup_cached(ip):
     now = time.time()
     with abuse_cache_lock:
         entry = ABUSE_CACHE.get(ip)
-        if entry and now - entry[1] < ABUSE_CACHE_TTL: return entry[0], "cache"
-    score = abuse_lookup(ip)
+        if entry and now - entry[1] < ABUSE_CACHE_TTL: 
+            country = entry[2] if len(entry) > 2 else ""
+            return entry[0], country, "cache" 
+            #return entry[0], "cache"
+    score, country = abuse_lookup(ip)
+    #score = abuse_lookup(ip)
     if score is not None:
-        with abuse_cache_lock: ABUSE_CACHE[ip] = (score, now)
-    return score, "api"
+        #with abuse_cache_lock: ABUSE_CACHE[ip] = (score, now)
+        with abuse_cache_lock: ABUSE_CACHE[ip] = (score, now, country)
+    return score, country, "api" 
+    #return score, "api"
 
 
 def whois_lookup(ip):
@@ -771,10 +1005,26 @@ def abuse_lookup_full(ip):
 def dashboard_blacklist(ip):
     """Block IP — write to file and let rules_watcher disconnect, or runtime-only if no file."""
     if RULEFILE:
+        #try:
+            #with open(RULEFILE, "a") as f:
+                #f.write(f"block {ip} #injected by dashboard\n")
         try:
+            try:
+                with open(RULEFILE, "r") as f: lines = f.readlines()
+            except Exception: lines = []
+            if any(f"block {ip}" in l for l in lines):
+                return {"ip": ip, "status": "already blocked", "persistent": True, "file": RULEFILE, "note": "already present in rules file"}
+            lines = [l for l in lines if f"allow {ip}" not in l]          # <- add
+            with open(RULEFILE, "w") as f: f.writelines(lines)             # <- add
             with open(RULEFILE, "a") as f:
                 f.write(f"block {ip} #injected by dashboard\n")
+        #end of old try        
             tlog(f"{RED}[{get_ts()}][!] Dashboard blacklisted {ip} — added to {RULEFILE}{RESET}", "BLOCK")
+            with auto_blocked_lock:                                                    # <- add this line
+                if not any(e.get("ip") == ip for e in AUTO_BLOCKED_IPS):              # <- add this line
+                    AUTO_BLOCKED_IPS.append({"ip": ip, "score": "—", "country": "—", # <- add this line
+                        "ts": get_ts(), "type": "blacklist", "expires": "—"})         # <- add this line
+                        
             # rules_watcher will pick this up within 5 seconds and call disconnect_ip()
             return {"ip": ip, "status": "blocked", "persistent": True, "file": RULEFILE,
                     "note": "disconnect pending — rules watcher will apply within 5s"}
@@ -787,16 +1037,30 @@ def dashboard_blacklist(ip):
             RUNTIME_BLOCKLIST.add(ip)
         disconnect_ip(ip, reason="dashboard blacklist")
         tlog(f"{RED}[{get_ts()}][!] Dashboard blacklisted {ip} — runtime only (no rules file){RESET}", "BLOCK")
+        with auto_blocked_lock:                                                        # <- add this line
+            if not any(e.get("ip") == ip for e in AUTO_BLOCKED_IPS):                  # <- add this line
+                AUTO_BLOCKED_IPS.append({"ip": ip, "score": "—", "country": "—",     # <- add this line
+                    "ts": get_ts(), "type": "blacklist", "expires": "—"})             # <- add this line
         return {"ip": ip, "status": "blocked", "persistent": False,
                 "note": "runtime block only — no rules file configured"}
 
-def whitelist_ip(ip):
+
+def whitelist_ip(ip, comment="whitelisted by dashboard"):  # <- modify this line (add comment param)
     """Add IP to whitelist — write to file if available."""
     if RULEFILE:
         try:
+            try:
+                with open(RULEFILE, "r") as f: lines = f.readlines()
+            except Exception: lines = []
+            if any(f"allow {ip}" in l for l in lines):
+                return {"ip": ip, "status": "already whitelisted", "persistent": True, "file": RULEFILE, "note": "already present in rules file"}
+            lines = [l for l in lines if f"block {ip}" not in l]
+            with open(RULEFILE, "w") as f: f.writelines(lines)
+            comment_str = f" #{comment}" if comment else ""  # <- add this line
             with open(RULEFILE, "a") as f:
-                f.write(f"allow {ip} #whitelisted by dashboard\n")
+                f.write(f"allow {ip}{comment_str}\n")        # <- modify this line
             load_rules()
+            _refresh_active_comments()                        # <- add this line
             tlog(f"{GREEN}[{get_ts()}][*] Dashboard whitelisted {ip} — added to {RULEFILE}{RESET}", "CONTROL")
             return {"ip": ip, "status": "whitelisted", "persistent": True, "file": RULEFILE}
         except Exception as e:
@@ -806,6 +1070,68 @@ def whitelist_ip(ip):
         tlog(f"{YELLOW}[{get_ts()}][*] Dashboard whitelist request for {ip} — no rules file{RESET}", "CONTROL")
         return {"ip": ip, "status": "error", "error": "No rules file configured"}
 
+# new function — add after whitelist_ip()
+def edit_whitelist_comment(ip, comment):
+    """Edit the comment of an existing allow rule in the rules file."""
+    if not RULEFILE:
+        return {"ip": ip, "status": "error", "error": "No rules file configured"}
+    try:
+        try:
+            with open(RULEFILE, "r") as f: lines = f.readlines()
+        except Exception: lines = []
+        new_lines = []
+        found = False
+        comment_str = f" #{comment}" if comment else ""
+        for line in lines:
+            stripped = line.split("#", 1)[0].strip()
+            parts = stripped.split()
+            if len(parts) == 2 and parts[0] == "allow" and parts[1] == ip:
+                new_lines.append(f"allow {ip}{comment_str}\n")
+                found = True
+            else:
+                new_lines.append(line)
+        if not found:
+            return {"ip": ip, "status": "error", "error": f"No allow rule found for {ip}"}
+        with open(RULEFILE, "w") as f: f.writelines(new_lines)
+        load_rules()
+        _refresh_active_comments()
+        tlog(f"{GREEN}[{get_ts()}][*] Dashboard edited whitelist comment for {ip} — '{comment}'{RESET}", "CONTROL")
+        return {"ip": ip, "status": "updated", "comment": comment}
+    except Exception as e:
+        tlog(f"{RED}[{get_ts()}][!] Failed to edit whitelist comment for {ip}: {e}{RESET}", "ERROR")
+        return {"ip": ip, "status": "error", "error": str(e)}
+
+
+def unblock_ip(ip):
+    """Remove block rule from rules file and runtime blocklist — does NOT whitelist."""
+    removed_from_file = False
+    if RULEFILE:
+        try:
+            try:
+                with open(RULEFILE, "r") as f: lines = f.readlines()
+            except Exception: lines = []
+            new_lines = [l for l in lines if f"block {ip}" not in l]
+            if len(new_lines) < len(lines):
+                with open(RULEFILE, "w") as f: f.writelines(new_lines)
+                removed_from_file = True
+                load_rules()
+                tlog(f"{GREEN}[{get_ts()}][*] Dashboard unblocked {ip} — block rule removed from {RULEFILE}{RESET}", "CONTROL")
+            else:
+                tlog(f"{YELLOW}[{get_ts()}][*] Dashboard unblock {ip} — no block rule found in file{RESET}", "CONTROL")
+        except Exception as e:
+            tlog(f"{RED}[{get_ts()}][!] Failed to unblock {ip}: {e}{RESET}", "ERROR")
+            return {"ip": ip, "status": "error", "error": str(e)}
+    with runtime_blocklist_lock:
+        RUNTIME_BLOCKLIST.discard(ip)
+    with auto_blocked_lock:
+        AUTO_BLOCKED_IPS[:] = [e for e in AUTO_BLOCKED_IPS
+                                if not (e.get("ip") == ip and e.get("type") in ("auto", "blacklist"))]
+    return {
+        "ip": ip, "status": "unblocked",
+        "removed_from_file": removed_from_file,
+        "note": f"block rule removed from {RULEFILE}" if removed_from_file else "removed from runtime blocklist only"
+    }
+    
 # ── HTTP Handler ──────────────────────────────────────────────────────────
 
 def make_table(rows, headers):
@@ -868,7 +1194,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
         # ── Dashboard routes ──────────────────────────────────────────────
         if path == "/dashboard" or path == "/dashboard/":
             if not self._require_auth(): return
-            self._serve_html("dashboard20.html"); return
+            self._serve_html(DASHBOARD_HTML); return
 
         if path == "/dashboard/login":
             self._serve_html("login.html"); return
@@ -885,7 +1211,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     if not self._require_auth(): return
                     ip = parse_qs(parsed.query).get("ip", [None])[0]
                     if not ip: self._json(400, {"error": "missing ip"}); return
-                    self._json(200, whitelist_ip(ip)); return
+                    comment = parse_qs(parsed.query).get("comment", ["whitelisted by dashboard"])[0]
+                    self._json(200, whitelist_ip(ip, comment)); return
 
         # ── Existing API routes ───────────────────────────────────────────
         if path == "/status":
@@ -1029,13 +1356,15 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                                if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m") 
                     except Exception: dur = "?"                                    
                     active_list.append({                                            
-                        "id": cid, "ip": ip, "comment": info.get("comment",""),   
-                        "connected_ts": info.get("connected_ts",""),               
-                        "last_client_ts": info.get("last_client_ts",""),           
-                        "last_remote_ts": last_remote_ts,                          
-                        "duration": dur, "idle": idle_str,                         
-                        "remote_closed": info.get("remote_closed", False),         
-                    })                                                              
+                        "id": cid, "ip": ip, "comment": info.get("comment",""),
+                        "connected_ts": info.get("connected_ts",""),
+                        "last_client_ts": info.get("last_client_ts",""),
+                        "last_remote_ts": last_remote_ts,
+                        "last_remote_type": info.get("last_remote_type","?"),
+                        "last_client_type": info.get("last_client_type","?"),
+                        "duration": dur, "idle": idle_str,
+                        "remote_closed": info.get("remote_closed", False),
+                    })
             hist_active = []                                                        
             with active_lock:                                                       
                 for cid, info in ACTIVE_CONNECTIONS.items():                       
@@ -1044,12 +1373,17 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s" 
                                if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m") 
                     except Exception: dur = "?"                                    
-                    hist_active.append({                                            
-                        "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""), 
-                        "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---", 
-                        "duration": dur, "close_reason": "active",                 
-                        "remote_status": "closed" if info.get("remote_closed", False) else "open", 
-                    })                                                              
+                    
+                    hist_active.append({
+                        "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""),
+                        "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---",
+                        "duration": dur, "close_reason": "active",
+                        "last_client_ts": info.get("last_client_ts",""),   # <- add
+                        "last_remote_ts": info.get("last_remote_ts",""),
+                        "last_remote_type": info.get("last_remote_type","?"),
+                        "last_client_type": info.get("last_client_type","?"),
+                        "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                    })
             with session_history_lock: hist_closed = list(SESSION_HISTORY)         
             hist_closed.sort(key=lambda s: s.get("id", 0))                        
             self._json(200, {                                                       
@@ -1088,6 +1422,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "connected_ts":   info.get("connected_ts",""),
                     "last_client_ts": info.get("last_client_ts",""),
                     "last_remote_ts": last_remote_ts,
+                    "last_remote_type": info.get("last_remote_type","?"),
+                    "last_client_type": info.get("last_client_type","?"),
                     "duration": dur, "idle": idle_str,
                     "remote_closed": info.get("remote_closed", False),
                 })
@@ -1101,13 +1437,17 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s"
                            if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m")
                 except Exception: dur = "?"
+                
                 hist_active.append({
                     "id": cid, "ip": info.get("ip",""), "comment": info.get("comment",""),
                     "connected_ts": info.get("connected_ts",""), "disconnected_ts": "--- ACTIVE ---",
                     "duration": dur, "close_reason": "active",
+                    "last_client_ts": info.get("last_client_ts",""),   # <- add
+                    "last_remote_ts": info.get("last_remote_ts",""),
+                    "last_remote_type": info.get("last_remote_type","?"),
+                    "last_client_type": info.get("last_client_type","?"),
                     "remote_status": "closed" if info.get("remote_closed", False) else "open",
                 })
-
         with session_history_lock: hist_closed = list(SESSION_HISTORY)
         hist_closed.sort(key=lambda s: s.get("id", 0))
         history = hist_active + hist_closed
@@ -1122,6 +1462,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
         with verbose_lock: verb = VERBOSE_ENABLED
         with hexdump_lock: hexd = HEXDUMP_ENABLED
+        with verbose_watch_lock: watched     = set(VERBOSE_WATCH)      # <- add
+        with hexdump_watch_lock: hex_watched = set(HEXDUMP_WATCH)      # <- add
+        with tcp_watch_lock: tcp_watched = set(TCP_WATCH)
 
         payload = {
             "version": TITAN_VERSION,
@@ -1143,6 +1486,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 "active":  active_list,
                 "history": history,
             },
+            "watched_ids":     list(watched),       # <- add
+            "hex_watched_ids": list(hex_watched),   # <- add
+            "tcp_watched_ids": list(tcp_watched), 
             "autoblocked": autoblocked,
             "rules": {"allow_count": allow_count, "block_count": block_count},
             "whitelist": whitelist_snapshot,
@@ -1177,6 +1523,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 token = secrets.token_hex(32)
                 with dashboard_sessions_lock:
                     DASHBOARD_SESSIONS[token] = time.time() + 86400  # 24h
+                    #DASHBOARD_SESSIONS[token] = time.time() + 604800  # becomes: 7 days <- modify
                 self.send_response(302)
                 self.send_header("Location", "/dashboard")
                 self.send_header("Set-Cookie",
@@ -1287,6 +1634,9 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 self._json(200, {"verbose":True})
             elif parsed.query == "disable":
                 with verbose_lock: VERBOSE_ENABLED = False
+                with hexdump_watch_lock: hex_watched = set(HEXDUMP_WATCH)       # <- add case c
+                if hex_watched:                                                  # <- add case c
+                    with verbose_watch_lock: VERBOSE_WATCH.update(hex_watched)  # <- add case c
                 tlog(f"{YELLOW}[{get_ts()}][*] Verbose logging DISABLED via HTTP control{RESET}", "CONTROL")
                 self._json(200, {"verbose":False})
             else:
@@ -1358,8 +1708,11 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 self._json(200, {"tcp_sniff": True})
             elif parsed.query == "disable":
                 TCP_SNIFF_ENABLED = False
-                tlog(f"{CYAN}[{get_ts()}][*] TCP Sniff DISABLED via dashboard{RESET}", "CONTROL")
-                self._json(200, {"tcp_sniff": False})
+                with tcp_watch_lock: tcp_watched = set(TCP_WATCH)               # <- add
+                if tcp_watched:                                                  # <- add
+                    pass  # per-ID watches preserved — no action needed         # <- add
+                tlog(f"{CYAN}[{get_ts()}][*] TCP Sniff DISABLED via dashboard — per-ID watches preserved{RESET}", "CONTROL")  # <- modify
+                self._json(200, {"tcp_sniff": False, "per_id_watches": list(tcp_watched)})  # <- modify
             else:
                 self._json(400, {"error": "Use ?enable or ?disable", "tcp_sniff": TCP_SNIFF_ENABLED})
             return
@@ -1391,19 +1744,205 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/dashboard/close_remote":
-                    if not self._require_auth(): return                                                              
-                    cid_raw = parse_qs(parsed.query).get("id", [None])[0]                                          
-                    if cid_raw is None: self._json(400, {"error": "missing id"}); return                            
-                    try: cid = int(cid_raw)                                                                         
-                    except ValueError: self._json(400, {"error": "id must be integer"}); return                    
-                    with pending_remote_sockets_lock: sock = PENDING_REMOTE_SOCKETS.pop(cid, None)                 
-                    if sock is None: self._json(404, {"error": f"no open remote socket for id {cid}"}); return     
-                    try: sock.shutdown(socket.SHUT_RDWR)                                                            
-                    except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close_remote: shutdown() failed for ID:#{cid}: {e}{RESET}", "ERROR")
-                    try: sock.close()                                                                               
-                    except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close_remote: close() failed for ID:#{cid}: {e}{RESET}", "ERROR")
-                    tlog(f"{YELLOW}[{get_ts()}][*] Operator force-closed remote socket for ID:#{cid}{RESET}", "CONTROL") 
-                    self._json(200, {"id": cid, "status": "remote socket closed"}); return                         
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            
+            with pending_remote_sockets_lock: sock = PENDING_REMOTE_SOCKETS.pop(cid, None)
+            if sock is None: self._json(404, {"error": f"no open remote socket for id {cid}"}); return
+            
+            try: sock.shutdown(socket.SHUT_RDWR)
+            except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close_remote: shutdown() failed for ID:#{cid}: {e}{RESET}", "ERROR")
+            
+            try: sock.close()
+            except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close_remote: close() failed for ID:#{cid}: {e}{RESET}", "ERROR")
+            tlog(f"{YELLOW}[{get_ts()}][*] Operator force-closed remote socket for ID:#{cid}{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "status": "remote socket closed"}); return
+
+        if path == "/dashboard/history/remove":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with session_history_lock:
+                before = len(SESSION_HISTORY)
+                to_keep = [e for e in SESSION_HISTORY if e.get("id") != cid]
+                removed_entry = next((e for e in SESSION_HISTORY if e.get("id") == cid), None)
+                SESSION_HISTORY.clear()
+                SESSION_HISTORY.extend(to_keep)
+                removed = before - len(SESSION_HISTORY)
+            with session_history_pending_lock:
+                SESSION_HISTORY_PENDING.pop(cid, None)
+            if removed == 0:
+                self._json(404, {"error": f"id {cid} not found in history"}); return
+            _ip      = removed_entry.get("ip", "?")       if removed_entry else "?"
+            _comment = removed_entry.get("comment", "")   if removed_entry else ""
+            _comment_str = f" ({_comment})" if _comment else ""
+            tlog(f"{YELLOW}[{get_ts()}][*] Dashboard removed ID:#{cid} {_ip}{_comment_str} from session history{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "removed": True}); return
+
+        if path == "/dashboard/tempblock":
+            if not self._require_auth(): return
+            ip = parse_qs(parsed.query).get("ip", [None])[0]
+            if not ip: self._json(400, {"error": "missing ip"}); return
+            duration_raw = parse_qs(parsed.query).get("duration", ["0"])[0]
+            try: duration = int(duration_raw)
+            except ValueError: self._json(400, {"error": "duration must be integer seconds"}); return
+            expiry = (time.time() + duration) if duration > 0 else None
+            with timed_blocklist_lock:
+                TIMED_BLOCKLIST[ip] = expiry
+            with runtime_blocklist_lock:
+                RUNTIME_BLOCKLIST.add(ip)
+            disconnect_ip(ip, reason="temp block")
+            expiry_str = datetime.datetime.fromtimestamp(expiry).strftime("%H:%M:%S") if expiry else "session"
+            with auto_blocked_lock:
+                AUTO_BLOCKED_IPS.append({
+                    "ip": ip, "score": "—", "country": "—", "ts": get_ts(),
+                    "type": "temp", "expires": expiry_str,
+                })
+            tlog(f"{YELLOW}[{get_ts()}][!] Temp block applied to {ip} — expires: {expiry_str}{RESET}", "CONTROL")
+            self._json(200, {"ip": ip, "type": "temp", "expires": expiry_str}); return
+
+        if path == "/dashboard/tempunblock":
+            if not self._require_auth(): return
+            ip = parse_qs(parsed.query).get("ip", [None])[0]
+            if not ip: self._json(400, {"error": "missing ip"}); return
+            with timed_blocklist_lock:
+                was_present = ip in TIMED_BLOCKLIST
+                TIMED_BLOCKLIST.pop(ip, None)
+            with runtime_blocklist_lock:
+                RUNTIME_BLOCKLIST.discard(ip)
+            with auto_blocked_lock:
+                AUTO_BLOCKED_IPS[:] = [e for e in AUTO_BLOCKED_IPS if not (e.get("ip") == ip and e.get("type") == "temp")]
+            if not was_present: self._json(404, {"error": f"{ip} not in temp blocklist"}); return
+            tlog(f"{YELLOW}[{get_ts()}][*] Temp block manually removed for {ip}{RESET}", "CONTROL")
+            self._json(200, {"ip": ip, "unblocked": True}); return
+
+        if path == "/dashboard/watch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with active_lock: exists = cid in ACTIVE_CONNECTIONS
+            if not exists: self._json(404, {"error": f"connection ID {cid} not active"}); return
+            with verbose_watch_lock: VERBOSE_WATCH.add(cid)
+            with active_lock: ip = ACTIVE_CONNECTIONS[cid].get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Verbose watch ENABLED for ID:#{cid} ({ip}){RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "watch": True}); return
+
+        if path == "/dashboard/unwatch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            
+            with verbose_watch_lock:
+                was_present = cid in VERBOSE_WATCH
+                VERBOSE_WATCH.discard(cid)
+            with hexdump_watch_lock:                # <- add: disable hex when watch disabled
+                HEXDUMP_WATCH.discard(cid)          # <- add
+                HEXDUMP_WATCH_PREV.pop(cid, None)   # <- add
+            with active_lock: ip = ACTIVE_CONNECTIONS.get(cid, {}).get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Verbose watch DISABLED for ID:#{cid} ({ip}){RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "watch": False}); return
+
+        if path == "/dashboard/hexwatch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with active_lock: exists = cid in ACTIVE_CONNECTIONS
+            if not exists: self._json(404, {"error": f"connection ID {cid} not active"}); return
+            with verbose_watch_lock: was_watching = cid in VERBOSE_WATCH
+            with hexdump_watch_lock:
+                HEXDUMP_WATCH.add(cid)
+                HEXDUMP_WATCH_PREV[cid] = was_watching
+            with verbose_lock: global_verbose = VERBOSE_ENABLED
+            if not global_verbose:
+                with verbose_watch_lock: VERBOSE_WATCH.add(cid)
+            with active_lock: ip = ACTIVE_CONNECTIONS[cid].get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Hex watch ENABLED for ID:#{cid} ({ip}) — was_watching={was_watching}{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "hex_watch": True, "was_watching": was_watching}); return
+
+        if path == "/dashboard/hexunwatch":
+            if not self._require_auth(): return
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return
+            try: cid = int(cid_raw)
+            except ValueError: self._json(400, {"error": "id must be integer"}); return
+            with hexdump_watch_lock:
+                HEXDUMP_WATCH.discard(cid)
+                was_watching = HEXDUMP_WATCH_PREV.pop(cid, False)
+            if not was_watching:
+                with verbose_watch_lock: VERBOSE_WATCH.discard(cid)
+            with active_lock: ip = ACTIVE_CONNECTIONS.get(cid, {}).get("ip","?")
+            tlog(f"{YELLOW}[{get_ts()}][*] Hex watch DISABLED for ID:#{cid} ({ip}) — watch_restored={was_watching}{RESET}", "CONTROL")
+            self._json(200, {"id": cid, "ip": ip, "hex_watch": False, "watch_restored": was_watching}); return
+
+        if path == "/dashboard/tcpwatch":                                        # <- add
+            if not self._require_auth(): return                                  # <- add
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]               # <- add
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return # <- add
+            try: cid = int(cid_raw)                                              # <- add
+            except ValueError: self._json(400, {"error": "id must be integer"}); return  # <- add
+            with active_lock: exists = cid in ACTIVE_CONNECTIONS                 # <- add
+            if not exists: self._json(404, {"error": f"connection ID {cid} not active"}); return  # <- add
+            with tcp_watch_lock:                                                  # <- add
+                was_watching = cid in TCP_WATCH                                  # <- add
+                TCP_WATCH.add(cid)                                               # <- add
+                TCP_WATCH_PREV[cid] = was_watching                               # <- add
+            with active_lock: ip = ACTIVE_CONNECTIONS[cid].get("ip","?")        # <- add
+            tlog(f"{CYAN}[{get_ts()}][*] TCP watch ENABLED for ID:#{cid} ({ip}){RESET}", "CONTROL")  # <- add
+            self._json(200, {"id": cid, "ip": ip, "tcp_watch": True}); return   # <- add
+
+        if path == "/dashboard/tcpunwatch":                                      # <- add
+            if not self._require_auth(): return                                  # <- add
+            cid_raw = parse_qs(parsed.query).get("id", [None])[0]               # <- add
+            if cid_raw is None: self._json(400, {"error": "missing id"}); return # <- add
+            try: cid = int(cid_raw)                                              # <- add
+            except ValueError: self._json(400, {"error": "id must be integer"}); return  # <- add
+            with tcp_watch_lock:                                                  # <- add
+                TCP_WATCH.discard(cid)                                           # <- add
+                TCP_WATCH_PREV.pop(cid, None)                                    # <- add
+            with active_lock: ip = ACTIVE_CONNECTIONS.get(cid, {}).get("ip","?")  # <- add
+            tlog(f"{CYAN}[{get_ts()}][*] TCP watch DISABLED for ID:#{cid} ({ip}){RESET}", "CONTROL")  # <- add
+            self._json(200, {"id": cid, "ip": ip, "tcp_watch": False}); return  # <- add
+
+
+        # new endpoint — add after /dashboard/history/remove block
+        if path == "/dashboard/history/removeip":
+            if not self._require_auth(): return
+            ip = parse_qs(parsed.query).get("ip", [None])[0]
+            if not ip: self._json(400, {"error": "missing ip"}); return
+            with session_history_lock:
+                before   = len(SESSION_HISTORY)
+                to_keep  = [e for e in SESSION_HISTORY if e.get("ip") != ip]
+                SESSION_HISTORY.clear()
+                SESSION_HISTORY.extend(to_keep)
+                removed  = before - len(SESSION_HISTORY)
+            tlog(f"{YELLOW}[{get_ts()}][*] Dashboard removed {removed} history entries for IP {ip}{RESET}", "CONTROL")
+            self._json(200, {"ip": ip, "removed": removed}); return
+
+        if path == "/dashboard/whitelist/editcomment":
+            if not self._require_auth(): return
+            ip = parse_qs(parsed.query).get("ip", [None])[0]
+            if not ip: self._json(400, {"error": "missing ip"}); return
+            comment = parse_qs(parsed.query).get("comment", [""])[0]
+            self._json(200, edit_whitelist_comment(ip, comment)); return
+
+        if path == "/dashboard/unblock":
+            if not self._require_auth(): return
+            ip = parse_qs(parsed.query).get("ip", [None])[0]
+            if not ip: self._json(400, {"error": "missing ip"}); return
+            self._json(200, unblock_ip(ip)); return
 
         self._json(404, {"error": "not found"})
 
@@ -1412,24 +1951,28 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 class TitanHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
+    
     def handle_error(self, request, client_address):
+        import traceback
         exc = sys.exc_info()[1]
+        if isinstance(exc, ConnectionResetError): return  # <- add: silently ignore scanner noise
+        tb  = traceback.format_exc()
         tlog(f"{YELLOW}[{get_ts()}][!] HTTP handler error from {client_address[0]}:{client_address[1]} — {type(exc).__name__}: {exc}{RESET}", "ERROR")
+        tlog(f"{YELLOW}{tb}{RESET}", "ERROR")    
 
 def http_control_loop():
     srv = TitanHTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
     tlog(f"[*] Titan v{TITAN_VERSION} HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}", "INFO")
     srv.serve_forever()
 
+# new functions — add before if __name__ == "__main__":
 
-# ── Main ──────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=TITAN_DESCRIPTION,
+def _parse_args():
+    parser = argparse.ArgumentParser(description=TITAN_HELP,
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--listenport",         type=int, required=True)
-    parser.add_argument("--remoteserver",        required=True)
-    parser.add_argument("--remoteport",          type=int, required=True)
+    parser.add_argument("--listenport",         type=int, required=False, default=None)
+    parser.add_argument("--remoteserver",        required=False, default=None)
+    parser.add_argument("--remoteport",          type=int, required=False, default=None)
     parser.add_argument("--ssl",                 action="store_true")
     parser.add_argument("--hexdump",             action="store_true")
     parser.add_argument("--tcp-sniff",           action="store_true",
@@ -1447,20 +1990,13 @@ if __name__ == "__main__":
                         help="Path to titan-dashboard/ folder containing login.html and dashboard.html")
     parser.add_argument("--dashboardauth",       type=str, metavar="USER:PASSWORD",
                         help="Credentials for web dashboard (e.g. admin:mysecret)")
-    args = parser.parse_args()
+    parser.add_argument("--changelog",           action="store_true",
+                        help="Print full version changelog and exit")
+    return parser.parse_args()
 
-    # Store for dashboard/data endpoint
-    TITAN_LISTEN_PORT   = args.listenport
-    TITAN_REMOTE_SERVER = args.remoteserver
-    TITAN_REMOTE_PORT   = args.remoteport
 
-    if args.verbose:
-        with verbose_lock: VERBOSE_ENABLED = True
-
-    if args.closeremotebyclient: CLOSE_REMOTE_BY_CLIENT = True
-    if args.closeclientbyremote: CLOSE_CLIENT_BY_REMOTE = True
-
-    # Dashboard setup
+def _setup_dashboard(args):
+    global DASHBOARD_PATH, DASHBOARD_USER, DASHBOARD_PASS_HASH
     if args.dashboardpath:
         DASHBOARD_PATH = args.dashboardpath
     if args.dashboardauth:
@@ -1470,15 +2006,8 @@ if __name__ == "__main__":
         DASHBOARD_USER, raw_pass = args.dashboardauth.split(":", 1)
         DASHBOARD_PASS_HASH = hashlib.sha256(raw_pass.encode()).hexdigest()
 
-    if args.httpexpose is not None:
-        HTTP_CTRL_PORT = args.httpexpose
-        HTTP_CTRL_HOST = args.httpbind
-        http_enabled = True
-    else:
-        http_enabled = False
-
-    RULEFILE = args.rulesfile if args.rulesfile else None
-
+def _setup_abuseblock(args):
+    global ABUSE_THRESHOLD, ABUSE_API_KEY, ABUSEBLOCK_ENABLED
     if args.abuseblock is not None:
         abuse_score_str, abuse_key_src = args.abuseblock
         try: ABUSE_THRESHOLD = int(abuse_score_str)
@@ -1495,20 +2024,77 @@ if __name__ == "__main__":
         ABUSEBLOCK_ENABLED = False
         tlog(f"{YELLOW}[{get_ts()}][*] Abuse score check disabled{RESET}", "INFO")
 
+def _setup_http_control(args):
+    global HTTP_CTRL_PORT, HTTP_CTRL_HOST
+    if args.httpexpose is not None:
+        HTTP_CTRL_PORT = args.httpexpose
+        HTTP_CTRL_HOST = args.httpbind
+        return True
+    return False
+
+def _print_startup_banner(args, http_enabled, dashboard_status):
+    tlog(f"{CYAN}[{get_ts()}][*] ---- Titan v{TITAN_VERSION} Startup Summary -------------------------", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Listen Port:              {args.listenport}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Remote Server:            {args.remoteserver}:{args.remoteport}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:     "
+         f"{'Enabled on ' + HTTP_CTRL_HOST + ':' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Web Dashboard:            {dashboard_status}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Dashboard File:           {DASHBOARD_HTML}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Verbose Logging:          {'Enabled' if args.verbose else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Hexdump Mode:             {'Enabled' if args.hexdump else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] TCP Sniff Logging:        {'Enabled' if args.tcp_sniff else 'Disabled (tracker always on)'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Rules File:               {RULEFILE if RULEFILE else 'None (disabled)'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Abuse Score Checking:     "
+         f"{'Enabled (threshold ' + str(ABUSE_THRESHOLD) + ')' if ABUSEBLOCK_ENABLED else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Close Remote By Client:   {'Enabled' if args.closeremotebyclient else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] Close Client By Remote:   {'Enabled' if args.closeclientbyremote else 'Disabled'}", "INFO")
+    tlog(f"{CYAN}[{get_ts()}][*] -------------------------------------------------------", "INFO")
+
+
+# ── Main ──────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    args = _parse_args()
+
+    if args.changelog:                          # <- add
+        print(TITAN_CHANGELOG); sys.exit(0)     # <- add
+
+    if not args.listenport or not args.remoteserver or not args.remoteport:  # <- add
+        print(f"error: At least --listenport, --remoteserver and --remoteport are required for titan proxy to run. Use --help for more options", flush=True)  # <- add
+        sys.exit(1)
+
+    TITAN_LISTEN_PORT   = args.listenport
+    TITAN_REMOTE_SERVER = args.remoteserver
+    TITAN_REMOTE_PORT   = args.remoteport
+
+    if args.verbose:
+        with verbose_lock: VERBOSE_ENABLED = True
+
+    if args.closeremotebyclient: CLOSE_REMOTE_BY_CLIENT = True
+    if args.closeclientbyremote: CLOSE_CLIENT_BY_REMOTE = True
+
+    _setup_dashboard(args)
+    http_enabled = _setup_http_control(args)
+    RULEFILE = args.rulesfile if args.rulesfile else None
+    _setup_abuseblock(args)
+
     if RULEFILE is not None:
         load_rules()
         threading.Thread(target=rules_watcher, daemon=True).start()
     else:
         tlog(f"{YELLOW}[{get_ts()}][*] No rules file provided — rule watcher disabled{RESET}", "INFO")
 
+    threading.Thread(target=timed_block_watcher, daemon=True).start()
+
     if args.hexdump:
         with hexdump_lock: HEXDUMP_ENABLED = True
 
+    # Sniffer always starts — needed for last_remote_ts tracking via AF_PACKET
+    threading.Thread(target=packet_sniffer,
+                     args=(args.listenport, args.remoteserver, args.remoteport),
+                     name='packet_sniffer', daemon=True).start()
     if args.tcp_sniff:
-        TCP_SNIFF_ENABLED = True
-        threading.Thread(target=packet_sniffer,
-                         args=(args.listenport, args.remoteserver, args.remoteport),
-                         daemon=True).start()
+        TCP_SNIFF_ENABLED = True  # enables [TCP] log lines; tracking runs regardless
 
     if http_enabled:
         threading.Thread(target=http_control_loop, daemon=True).start()
@@ -1527,21 +2113,7 @@ if __name__ == "__main__":
     elif DASHBOARD_PATH or DASHBOARD_USER:
         dashboard_status = "Partially configured (need both --dashboardpath and --dashboardauth)"
 
-    tlog(f"{CYAN}[{get_ts()}][*] ---- Titan v{TITAN_VERSION} Startup Summary -------------------------", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Listen Port:              {args.listenport}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Remote Server:            {args.remoteserver}:{args.remoteport}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:     "
-         f"{'Enabled on ' + HTTP_CTRL_HOST + ':' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Web Dashboard:            {dashboard_status}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Verbose Logging:          {'Enabled' if args.verbose else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Hexdump Mode:             {'Enabled' if args.hexdump else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] TCP Sniff Mode:           {'Enabled' if args.tcp_sniff else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Rules File:               {RULEFILE if RULEFILE else 'None (disabled)'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Abuse Score Checking:     "
-         f"{'Enabled (threshold ' + str(ABUSE_THRESHOLD) + ')' if ABUSEBLOCK_ENABLED else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Close Remote By Client:   {'Enabled' if args.closeremotebyclient else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] Close Client By Remote:   {'Enabled' if args.closeclientbyremote else 'Disabled'}", "INFO")
-    tlog(f"{CYAN}[{get_ts()}][*] -------------------------------------------------------", "INFO")
+    _print_startup_banner(args, http_enabled, dashboard_status)
 
     while True:
         try: c, a = server.accept()
@@ -1565,8 +2137,10 @@ if __name__ == "__main__":
             tlog(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}", "BLOCK")
             try: c.shutdown(socket.SHUT_RDWR)
             except Exception: pass
+            #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] shutdown() blocked {client_ip}: {e}{RESET}", "ERROR")
             try: c.close()
             except Exception: pass
+            #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close() blocked {client_ip}: {e}{RESET}", "ERROR")
             continue
 
         with rules_lock:
@@ -1578,12 +2152,14 @@ if __name__ == "__main__":
             tlog(f"{RED}[{get_ts()}] BLOCKED ATTEMPT from {client_ip}{RESET}", "BLOCK")
             try: c.shutdown(socket.SHUT_RDWR)
             except Exception: pass
+            #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] shutdown() blacklist {client_ip}: {e}{RESET}", "ERROR")
             try: c.close()
+            #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close() blacklist {client_ip}: {e}{RESET}", "ERROR")
             except Exception: pass
             continue
 
         if not is_white and ABUSEBLOCK_ENABLED:
-            score, source = abuse_lookup_cached(client_ip)
+            score, country, source = abuse_lookup_cached(client_ip)
             if score is not None:
                 tlog(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score} (by {source}){RESET}", "ABUSE")
                 if score >= ABUSE_THRESHOLD:
@@ -1592,11 +2168,13 @@ if __name__ == "__main__":
                     else: tlog(f"{YELLOW}[{get_ts()}][*] No rules file — blocking in memory only{RESET}", "INFO")
                     disconnect_ip(client_ip, reason=f"AbuseIPDB auto-block (score {score})")
                     with runtime_blocklist_lock: RUNTIME_BLOCKLIST.add(client_ip)
-                    with auto_blocked_lock: AUTO_BLOCKED_IPS.append({"ip":client_ip,"score":score,"ts":get_ts()})
-                    try: c.shutdown(socket.SHUT_RDWR)  # <- ADD
-                    except Exception: pass              # <- ADD
-                    try: c.close()                      # <- ADD
-                    except Exception: pass              # <- ADD
+                    with auto_blocked_lock: AUTO_BLOCKED_IPS.append({"ip":client_ip,"score":score,"country":country,"ts":get_ts()})
+                    try: c.shutdown(socket.SHUT_RDWR)
+                    except Exception: pass
+                    #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] shutdown() abuse block {client_ip}: {e}{RESET}", "ERROR")
+                    try: c.close()
+                    #except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] close() abuse block {client_ip}: {e}{RESET}", "ERROR")
+                    except Exception: pass
                     continue
 
         total_conn_ever += 1

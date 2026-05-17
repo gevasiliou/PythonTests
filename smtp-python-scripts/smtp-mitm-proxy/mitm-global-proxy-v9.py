@@ -4,7 +4,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 HTTP_PORT_HELP = """\
-Titan v15.8 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
+Titan v9 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
   /status                           GET     List active connections (json)
   /statustable                      GET     List active connections (ascii table)
   /rules                            GET     Show allow/block rules (json)
@@ -41,7 +41,7 @@ RULEFILE = None
 HTTP_CTRL_HOST = "127.0.0.1"
 HTTP_CTRL_PORT = 9999  # default port - used only if --httpexpose is provided
 
-# New in 15.7: runtime in-memory blocklist + abuseblock flag
+# : runtime in-memory blocklist + abuseblock flag
 RUNTIME_BLOCKLIST = set()
 ABUSEBLOCK_ENABLED = False
 
@@ -49,9 +49,6 @@ ABUSEBLOCK_ENABLED = False
 ABUSE_CACHE = {}   # { ip: (score, timestamp) }
 ABUSE_CACHE_TTL = 3600  # seconds (1 hour)
 abuse_cache_lock = threading.Lock()
-
-# New in 15.7: Datakom RM Cloud mode flag (reserved for future UID logic)
-DATAKOM_RMCLOUD_ENABLED = False
 
 connection_count = 0
 counter_lock = threading.Lock()
@@ -616,7 +613,6 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "abuse_threshold": ABUSE_THRESHOLD,
                     "abuseblock_enabled": ABUSEBLOCK_ENABLED,
                     "runtime_blocklist_size": len(RUNTIME_BLOCKLIST),
-                    "datakomrmcloud": DATAKOM_RMCLOUD_ENABLED,
                     "stats": dict(STATS),
                 }
             self._json(200, status)
@@ -857,7 +853,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             with hexdump_lock:
                 HEXDUMP_ENABLED = False
             self._json(200, {"hexdump": False})
-
+            
         else:
             self._json(404, {"error": "not found"})
 
@@ -867,12 +863,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v15.8 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v9 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Titan v15.8 Proxy
+    parser = argparse.ArgumentParser(description="""Titan v9 Proxy
     This version of Titan is using AbuseIPDB API to check new IPs abuse score.
     Known IPs (allow or blocked) are not re-tested for abuse.
     If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
@@ -886,16 +882,13 @@ if __name__ == "__main__":
     parser.add_argument("--tcp-sniff", action="store_true", help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
     parser.add_argument("--httpexpose", type=int,  metavar="HTTPPORT", help=HTTP_PORT_HELP)
 
-    # New in 15.7: override rules file path
+    # : override rules file path
     parser.add_argument("--rulesfile", type=str, help="Rules file for allow/block entries (default = none)")
 
-    # New in 15.7: configurable AbuseIPDB threshold
+    # : configurable AbuseIPDB threshold
     parser.add_argument("--abuseblock", type=int, help="Enable AbuseIPDB auto-check & block with given threshold abuse score")
     parser.add_argument("--abuseapikey", type=str, help="Path to AbuseIPDB API key file OR raw API key")
     
-    # New in 15.7: Datakom RM Cloud mode flag (reserved)
-    parser.add_argument("--datakomrmcloud", action="store_true", help="Enable Datakom RM Cloud UID mode (reserved)")
-
     args = parser.parse_args()
 
     # HTTP control: only enabled if --httpexpose is provided
@@ -924,16 +917,12 @@ if __name__ == "__main__":
         print(f"{YELLOW}[{get_ts()}][!] AbuseIPDB switch enabled but no API key provided - disabling abuse check{RESET}")
         ABUSEBLOCK_ENABLED = False
 
-    if args.datakomrmcloud:
-        DATAKOM_RMCLOUD_ENABLED = True
-        log("[*] Datakom RM Cloud mode flag enabled (--datakomrmcloud)")
-
     if RULEFILE is not None:
         load_rules()
         watcher_thread = threading.Thread(target=rules_watcher, daemon=True)
         watcher_thread.start()
     else:
-        print(f"{YELLOW}[{get_ts()}][*] No rules file provided — rule watcher disabled - all IPs are allowed")
+        print(f"{YELLOW}[{get_ts()}][*] No block/allow IP rules file provided — rule watcher disabled")
 
     if args.hexdump:
         with hexdump_lock:
@@ -972,9 +961,6 @@ if __name__ == "__main__":
 
     print(f"{CYAN}[{get_ts()}][*] Abuse Score Checking:   "
           f"{'Enabled (threshold ' + str(ABUSE_THRESHOLD) + ')' if ABUSEBLOCK_ENABLED else 'Disabled'}")
-
-    print(f"{CYAN}[{get_ts()}][*] Datakom RM Cloud Mode:  "
-          f"{'Enabled' if DATAKOM_RMCLOUD_ENABLED else 'Disabled'}")
 
     print(f"{CYAN}[{get_ts()}][*] --------------------------------")
 
@@ -1069,94 +1055,3 @@ if __name__ == "__main__":
             args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
             daemon=True
         ).start()
-
-'''
-    while True:
-        try:
-            c, a = server.accept()
-        except Exception as e:
-            print(f"{RED}[{get_ts()}][!] Accept error: {e}{RESET}")
-            continue
-
-        client_ip = a[0]
-        ip_obj = ipaddress.ip_address(client_ip)
-
-        # New in 15.7: runtime in-memory blocklist check
-        if client_ip in RUNTIME_BLOCKLIST:
-            print(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}")
-            with stats_lock:
-                STATS["blocked"] += 1
-            try:
-                c.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-            try:
-                c.close()
-            except Exception:
-                pass
-            continue
-
-        with rules_lock:
-            white_entry = ip_in_list(ip_obj, WHITELIST, return_entry=True)
-            black_entry = ip_in_list(ip_obj, BLACKLIST, return_entry=True)
-
-        # Explicit blacklist → block immediately, no AbuseIPDB
-        if black_entry:
-            print(f"{RED}[{get_ts()}] BLOCKED ATTEMPT from {client_ip}{RESET}")
-            with stats_lock:
-                STATS["blocked"] += 1
-            try:
-                c.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-            try:
-                c.close()
-            except Exception:
-                pass
-            continue
-
-        is_white = bool(white_entry)
-
-        # Only unknown IPs get AbuseIPDB check
-        if not is_white and ABUSEBLOCK_ENABLED:
-            #score = abuse_lookup(client_ip)
-            #score = abuse_lookup_cached(client_ip)
-            score, source = abuse_lookup_cached(client_ip)
-            if score is not None:
-                print(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score} (by {source}){RESET}")
-                if score >= ABUSE_THRESHOLD:
-                    print(f"{RED}[{get_ts()}][!] {client_ip} flagged by AbuseIPDB (score {score}) — auto-blocking{RESET}")
-
-                    if RULEFILE is not None:
-                        # Persistent mode
-                        add_block_rule(client_ip, score)
-                        load_rules()
-                    else:
-                        # Pure in-memory mode
-                        print(f"{YELLOW}[{get_ts()}][*] No rules file — auto-blocking {client_ip} in memory only{RESET}")
-
-                    disconnect_ip(client_ip)
-                    RUNTIME_BLOCKLIST.add(client_ip)
-
-                    with stats_lock:
-                        STATS["abuse_autoblocked"] += 1
-                        AUTO_BLOCKED_IPS.append({
-                            "ip": client_ip,
-                            "score": score,
-                            "ts": get_ts()
-                        })
-
-                    continue
-
-        total_conn_ever += 1
-        with counter_lock:
-            connection_count += 1
-        with stats_lock:
-            STATS["accepted"] += 1
-
-        threading.Thread(
-            target=bridge,
-            args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
-            daemon=True
-        ).start()
-'''

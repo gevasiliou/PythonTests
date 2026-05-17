@@ -1,0 +1,62 @@
+nohup: ignoring input
+[93m[16-05-2026 05:35:21.853][*] Abuse score check enabled — threshold: 30[0m
+[93m[16-05-2026 05:35:21.854][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 217 block[0m
+[96m[16-05-2026 05:35:21.856][*] ---- Titan v25 Startup Summary -------------------------
+[96m[16-05-2026 05:35:21.856][*] Listen Port:              65443
+[96m[16-05-2026 05:35:21.856][*] Remote Server:            rm.datakom.com.tr:90
+[96m[16-05-2026 05:35:21.856][*] HTTP Monitor/Control:     Enabled on 0.0.0.0:10001
+[96m[16-05-2026 05:35:21.856][*] Web Dashboard:            Enabled at http://0.0.0.0:10001/dashboard
+[96m[16-05-2026 05:35:21.856][*] Dashboard File:           dashboard25.html
+[96m[16-05-2026 05:35:21.856][*] Verbose Logging:          Disabled
+[96m[16-05-2026 05:35:21.856][*] Hexdump Mode:             Disabled
+[96m[16-05-2026 05:35:21.856][*] TCP Sniff Logging:        Disabled (tracker always on)
+[96m[16-05-2026 05:35:21.856][*] Rules File:               /home/gv/pytests/rm-proxy-ip-3.list
+[96m[16-05-2026 05:35:21.856][*] Abuse Score Checking:     Enabled (threshold 30)
+[96m[16-05-2026 05:35:21.856][*] Close Remote By Client:   Disabled
+[96m[16-05-2026 05:35:21.856][*] Close Client By Remote:   Disabled
+[96m[16-05-2026 05:35:21.856][*] -------------------------------------------------------
+[*] Titan v25 HTTP control on http://0.0.0.0:10001
+[96m[16-05-2026 05:35:21.866][*] TCP sniffer ACTIVE on port 65443 (AF_PACKET)[0m
+[92m[16-05-2026 05:35:59.117][*] Dashboard login: user 'admin'[0m
+[92m[16-05-2026 05:36:14.298][+] [ID:#1] CONNECTED: 62.169.230.178 (white-listed)  # Verinso (Active: 1)[0m
+[94m[16-05-2026 05:36:14.483] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[91m[16-05-2026 05:36:15.207] [ID:#1] (62.169.230.178) REMOTE->CLIENT:  # Verinso[0m
+[94m[16-05-2026 05:36:15.375] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[91m[16-05-2026 05:36:15.563] [ID:#1] (62.169.230.178) REMOTE->CLIENT:  # Verinso[0m
+[94m[16-05-2026 05:36:15.730] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:36:17.831] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:37:17.826] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:38:17.827] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:39:17.916] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:40:17.910] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:41:17.905] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:42:17.899] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:43:17.894] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:44:17.889] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:45:17.884] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:46:17.881] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:47:17.973] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:48:17.968] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:49:17.962] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:50:17.957] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:51:17.951] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:52:17.946] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:53:17.941] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:54:17.937] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:55:18.030] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:56:18.025] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:57:18.019] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:58:18.014] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 05:59:18.008] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:00:18.003] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:01:17.998] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:02:17.995] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:03:18.087] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:04:18.081] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:05:18.077] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:06:18.071] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:07:18.066] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:08:18.060] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:09:18.055] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:10:18.056] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[16-05-2026 06:11:18.144] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m

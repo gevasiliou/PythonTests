@@ -12,3 +12,4 @@ block 0.0.0.0/0
 #block 193.176.31.204 # auto block by abuse - score 100
 #block 74.82.47.2 # auto block by abuse - score 100
 allow 195.97.78.222 #comsys
+allow 2.86.254.186 #Marfin Probably

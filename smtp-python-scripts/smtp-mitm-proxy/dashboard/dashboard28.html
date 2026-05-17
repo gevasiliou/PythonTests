@@ -170,7 +170,8 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
 .log-line:hover { background:rgba(255,255,255,0.03); }
 .log-ts { color:var(--dim); margin-right:10px; }
 .log-line.CONNECT    { color:#6ee7b7; border-left-color:var(--green); }
-.log-line.DISCONNECT { color:#93c5fd; border-left-color:var(--blue); }
+.log-line.DISCONNECT { color:#fca5a5; border-left-color:var(--red); }
+.log-line.TCP        { color:#e879f9; border-left-color:#a21caf; }
 .log-line.BLOCK      { color:#fca5a5; border-left-color:var(--red); }
 .log-line.ABUSE      { color:#fcd34d; border-left-color:var(--amber); }
 .log-line.CONTROL    { color:#c4b5fd; border-left-color:#a78bfa; }
@@ -297,14 +298,17 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
                 <th class="sortable" id="ath-comment"   onclick="setActiveSort('comment')">Comment</th>
                 <th class="sortable" id="ath-conn"      onclick="setActiveSort('connected_ts')">Connected</th>
                 <th class="sortable" id="ath-client"    onclick="setActiveSort('last_client_ts')">Last Client</th>
+                <th class="sortable" id="ath-ctype"     onclick="setActiveSort('last_client_type')" title="Last TCP flag received from client (AF_PACKET)">C.Type</th>
                 <th class="sortable" id="ath-remote"    onclick="setActiveSort('last_remote_ts')">Last Remote</th>
+                <th class="sortable" id="ath-rtype"     onclick="setActiveSort('last_remote_type')" title="Last TCP flag received from remote server (AF_PACKET)">R.Type</th>
                 <th class="sortable" id="ath-idle"      onclick="setActiveSort('idle_secs')">Idle</th>
                 <th class="sortable" id="ath-remstatus" onclick="setActiveSort('remote_status')">Remote</th>
                 <th>Watch</th>
-                <th></th>
+                <th>Hex</th>
+                <th>TCP</th>
               </tr>
             </thead>
-            <tbody id="active-tbody"><tr class="empty-row"><td colspan="10">No active connections</td></tr></tbody>
+            <tbody id="active-tbody"><tr class="empty-row"><td colspan="13">No active connections</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -331,29 +335,33 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
                 <th class="sortable" id="hth-ip"        onclick="setHistSort('ip')">IP Address</th>
                 <th class="sortable" id="hth-comment"   onclick="setHistSort('comment')">Comment</th>
                 <th class="sortable" id="hth-conn"      onclick="setHistSort('connected_ts')">Connected</th>
+                <th class="sortable" id="hth-client"    onclick="setHistSort('last_client_ts')">Last Client</th>
+                <th class="sortable" id="hth-ctype"     onclick="setHistSort('last_client_type')" title="Last TCP flag received from client (AF_PACKET)">C.Type</th>
+                <th class="sortable" id="hth-remote"    onclick="setHistSort('last_remote_ts')">Last Remote</th>
+                <th class="sortable" id="hth-rtype"     onclick="setHistSort('last_remote_type')" title="Last TCP flag received from remote server (AF_PACKET)">R.Type</th>
                 <th class="sortable" id="hth-disc"      onclick="setHistSort('disconnected_ts')">Disconnected</th>
                 <th class="sortable" id="hth-dur"       onclick="setHistSort('duration_secs')">Duration</th>
-                <th class="sortable" id="hth-reason"    onclick="setHistSort('close_reason')">Reason</th>
+                <th class="sortable" id="hth-reason"    onclick="setHistSort('close_reason')">Client</th>
                 <th class="sortable" id="hth-remstatus" onclick="setHistSort('remote_status')">Remote</th>
               </tr>
             </thead>
-            <tbody id="hist-tbody"><tr class="empty-row"><td colspan="8">No history yet</td></tr></tbody>
+            <tbody id="hist-tbody"><tr class="empty-row"><td colspan="12">No history yet</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Auto-blocked -->
+    <!-- Session Blocked IPs -->
     <div class="panel">
       <div class="collapsible-header" onclick="toggleSection('blocked')">
-        <div class="panel-title">Auto-Blocked IPs</div>
+        <div class="panel-title">Session Blocked IPs</div>
         <div class="caret" id="caret-blocked">▼</div>
       </div>
       <div class="collapsible-body" id="body-blocked">
         <div class="table-wrap">
           <table>
             <thead><tr><th>IP Address</th><th>Country</th><th>Score</th><th>Blocked At</th><th>Type</th><th>Expires</th><th></th></tr></thead>
-            <tbody id="blocked-tbody"><tr class="empty-row"><td colspan="7">No auto-blocked IPs</td></tr></tbody>
+            <tbody id="blocked-tbody"><tr class="empty-row"><td colspan="7">No blocked IPs</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -415,6 +423,8 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
     <button class="filter-clear" onclick="clearLogSearch()">✕ Clear</button>
     <button class="hbadge off" id="lb-traffic" onclick="toggleHideTraffic()"
             title="Hide CLIENT→REMOTE / REMOTE→CLIENT data lines">Traffic: ON</button>
+    <button class="hbadge off" id="lb-tcp" onclick="toggleHideTCP()"
+            title="Hide TCP sniff lines">TCP Log: ON</button>
     <span   class="filter-count" id="log-count"></span>
   </div>
   <div class="log-body" id="log-body" style="display:block"></div>
@@ -433,8 +443,11 @@ thead th.sortable:not(.sort-asc):not(.sort-desc)::after { content:' ⇅'; color:
   <div class="ctx-item warning" id="ctx-blacklist"     onclick="openBlacklist()">⛔ &nbsp;Add to Blacklist</div>
   <div class="ctx-item hidden"  id="ctx-tempblock"     onclick="openTempBlock()">⏱ &nbsp;Temp Block</div>
   <div class="ctx-item danger"  id="ctx-disc"          onclick="ctxDisc()">✕ &nbsp;Disconnect</div>
-  <div class="ctx-item warning hidden" id="ctx-closeremote"   onclick="ctxCloseRemote()">🔌 &nbsp;Force Close Remote</div>
+  <div class="ctx-item warning hidden" id="ctx-closeremote" onclick="ctxCloseRemote()">🔌 &nbsp;Force Close Remote</div>
+  <div class="ctx-item success hidden" id="ctx-unblock"     onclick="ctxUnblock()">🔓 &nbsp;Unblock IP</div>
   <div class="ctx-item hidden"  id="ctx-removehistory" onclick="ctxRemoveFromHistory()">🗑 &nbsp;Remove from list</div>
+  <div class="ctx-item hidden"  id="ctx-removeip"      onclick="ctxRemoveIpFromHistory()">🗑 &nbsp;Remove all rows for IP</div>
+  <div class="ctx-item success hidden" id="ctx-editcomment" onclick="ctxEditComment()">✏ &nbsp;Edit comment</div>
 </div>
 
 <!-- MODAL -->
@@ -467,8 +480,13 @@ let autoScroll = true;
 let logLines       = [];
 let logSearchVal   = '';
 let logHideTraffic = false;
-let watchedIds = new Set();
-
+let logHideTCP = false;
+// ── Per-connection watch / hex state ───────────────────────────────────────
+let watchedIds    = new Set();
+let hexWatchedIds = new Set();
+let hexWatchPrev  = {};
+let tcpWatchedIds = new Set();
+let tcpWatchPrev  = {};
 // ── Active table filter / sort state ──────────────────────────────────────
 let activeFilter  = '';
 let activeSort    = { col: null, dir: 1 };
@@ -500,12 +518,16 @@ async function refreshAll() {
     if (r.status === 401 || r.status === 403 || r.redirected) { location.href='/dashboard/login'; return; }
     const d = await r.json();
     flash('rdot-active'); flash('rdot-hist');
+    renderFlags(d.flags);
     renderActive(d.connections.active);
-    watchedIds = new Set([...watchedIds].filter(id => d.connections.active.some(c => c.id === id)));
+    watchedIds    = new Set((d.watched_ids     || []).filter(id => d.connections.active.some(c => c.id === id)));
+    hexWatchedIds = new Set((d.hex_watched_ids || []).filter(id => d.connections.active.some(c => c.id === id)));
+    Object.keys(hexWatchPrev).forEach(k => { if (!hexWatchedIds.has(parseInt(k))) delete hexWatchPrev[k]; });
+    tcpWatchedIds = new Set((d.tcp_watched_ids || []).filter(id => d.connections.active.some(c => c.id === id)));
+    Object.keys(tcpWatchPrev).forEach(k => { if (!tcpWatchedIds.has(parseInt(k))) delete tcpWatchPrev[k]; });
     renderHistory(d.connections.history);
     renderBlocked(d.autoblocked);
     renderWhitelist(d.whitelist || []);
-    renderFlags(d.flags);
     renderConfig(d);
     renderRules(d);
     document.getElementById('conn-count').textContent = d.connections.active.length;
@@ -524,7 +546,11 @@ async function refreshTables() {
     const d = await r.json();
     flash('rdot-active'); flash('rdot-hist');
     renderActive(d.active);
-    watchedIds = new Set([...watchedIds].filter(id => d.active.some(c => c.id === id)));
+    watchedIds    = new Set([...watchedIds].filter(id => d.active.some(c => c.id === id)));
+    hexWatchedIds = new Set([...hexWatchedIds].filter(id => d.active.some(c => c.id === id)));
+    Object.keys(hexWatchPrev).forEach(k => { if (!hexWatchedIds.has(parseInt(k))) delete hexWatchPrev[k]; });
+    tcpWatchedIds = new Set([...tcpWatchedIds].filter(id => d.active.some(c => c.id === id)));
+    Object.keys(tcpWatchPrev).forEach(k => { if (!tcpWatchedIds.has(parseInt(k))) delete tcpWatchPrev[k]; });
     renderHistory(d.history);
     document.getElementById('conn-count').textContent = d.active_count;
     document.getElementById('last-updated-val').textContent = new Date().toLocaleTimeString('en-GB');
@@ -554,7 +580,7 @@ function setActiveSort(col) {
   } else { activeSort.col = col; activeSort.dir = 1; }
   updateSortHeaders({
     id:'ath-id', ip:'ath-ip', comment:'ath-comment', connected_ts:'ath-conn',
-    last_client_ts:'ath-client', last_remote_ts:'ath-remote', idle_secs:'ath-idle',
+    last_client_ts:'ath-client', last_remote_ts:'ath-remote', last_remote_type:'ath-rtype', last_client_type:'ath-ctype', idle_secs:'ath-idle',
     remote_status:'ath-remstatus'
   }, activeSort);
   applyActiveFilterSort();
@@ -569,6 +595,29 @@ function renderWatchBtn(id) {
   const data  = watching ? `data-watching="1"` : `data-watching="0"`;
   return `<button class="disc-btn" id="watch-btn-${id}" ${data} onclick="toggleWatch(${id},this)" style="${style}">${label}</button>`;
 }
+
+function renderHexWatchBtn(id) {
+  if (flags.hexdump) {
+    return `<button class="disc-btn" disabled title="Global hexdump is ON" style="opacity:0.3;cursor:not-allowed;border-color:var(--border);color:var(--dim);">⬡ Hex</button>`;
+  }
+  const hexing = hexWatchedIds.has(id);
+  const style = hexing
+    ? `border-color:var(--amber);color:#fff;background:var(--amber)`
+    : `border-color:rgba(245,158,11,0.3);color:var(--amber)`;
+  const label = hexing ? '⬡ Hexing' : '⬡ Hex';
+  const data  = hexing ? `data-hexing="1"` : `data-hexing="0"`;
+  return `<button class="disc-btn" id="hex-btn-${id}" ${data} onclick="toggleHexWatch(${id},this)" style="${style}">${label}</button>`;
+}
+
+function renderTcpWatchBtn(id) {
+  const tcping = tcpWatchedIds.has(id);
+  const style = tcping
+    ? `border-color:#e879f9;color:#fff;background:#a21caf`
+    : `border-color:rgba(232,121,249,0.3);color:#e879f9`;
+  const label = tcping ? '📡 TCPing' : '📡 TCP';
+  const data  = tcping ? `data-tcping="1"` : `data-tcping="0"`;
+  return `<button class="disc-btn" id="tcp-btn-${id}" ${data} onclick="toggleTcpWatch(${id},this)" style="${style}">${label}</button>`;
+} 
 
 function applyActiveFilterSort() {
   const tb = document.getElementById('active-tbody');
@@ -587,7 +636,7 @@ function applyActiveFilterSort() {
   } else { list.sort((a, b) => (a.id??0) - (b.id??0)); }
   updateCount('active-count', list.length, activeDataRaw.length, activeFilter);
   if (!list.length) {
-    tb.innerHTML = `<tr class="empty-row"><td colspan="10">${activeFilter ? 'No matches for "'+esc(activeFilter)+'"' : 'No active connections'}</td></tr>`;
+    tb.innerHTML = `<tr class="empty-row"><td colspan="13">${activeFilter ? 'No matches for "'+esc(activeFilter)+'"' : 'No active connections'}</td></tr>`;
     return;
   }
   tb.innerHTML = list.map(c => {
@@ -601,11 +650,14 @@ function applyActiveFilterSort() {
       <td class="cell-comment">${esc(c.comment||'')}</td>
       <td class="cell-ts" title="${esc(c.connected_ts)}">${shortTs(c.connected_ts)}</td>
       <td class="cell-ts" title="${esc(c.last_client_ts)}">${shortTs(c.last_client_ts)}</td>
+      <td><span class="tag gray" style="font-size:10px">${esc(c.last_client_type||'?')}</span></td>
       <td class="cell-ts" title="${esc(c.last_remote_ts)}">${shortTs(c.last_remote_ts)}</td>
+      <td><span class="tag gray" style="font-size:10px">${esc(c.last_remote_type||'?')}</span></td>
       <td class="cell-dur">${esc(c.idle||'?')}</td>
       <td>${remTag}</td>
       <td>${renderWatchBtn(c.id)}</td>
-      <td><button class="disc-btn" onclick="showCtx(event,${c.id},'${esc(c.ip)}','active')" style="border-color:var(--border2);color:var(--text2);">⋮ Actions</button></td>
+      <td>${renderHexWatchBtn(c.id)}</td>
+      <td>${renderTcpWatchBtn(c.id)}</td>
     </tr>`;
   }).join('');
 }
@@ -634,10 +686,15 @@ function setHistSort(col) {
   updateSortHeaders({
     id:'hth-id', ip:'hth-ip', comment:'hth-comment', connected_ts:'hth-conn',
     disconnected_ts:'hth-disc', duration_secs:'hth-dur',
+    last_client_ts:'hth-client',
+    last_remote_ts:'hth-remote',
+    last_remote_type:'hth-rtype',
+    last_client_type:'hth-ctype',
     close_reason:'hth-reason', remote_status:'hth-remstatus'
   }, histSort);
   applyHistFilterSort();
 }
+
 function applyHistFilterSort() {
   const tb = document.getElementById('hist-tbody');
   let list = histDataRaw.slice();
@@ -665,7 +722,7 @@ function applyHistFilterSort() {
   }
   updateCount('hist-count', list.length, histDataRaw.length, histFilter);
   if (!list.length) {
-    tb.innerHTML = `<tr class="empty-row"><td colspan="8">${histFilter ? 'No matches for "'+esc(histFilter)+'"' : 'No history yet'}</td></tr>`;
+    tb.innerHTML = '<tr class="empty-row"><td colspan="12">' + (histFilter ? 'No matches for "'+esc(histFilter)+'"' : 'No history yet') + '</td></tr>';
     return;
   }
   tb.innerHTML = list.map(s => {
@@ -694,6 +751,10 @@ function applyHistFilterSort() {
       <td class="cell-ip">${esc(s.ip)}</td>
       <td class="cell-comment">${esc(s.comment||'')}</td>
       <td class="cell-ts" title="${esc(s.connected_ts)}">${shortTs(s.connected_ts)}</td>
+      <td class="cell-ts" title="${esc(s.last_client_ts||'')}">${shortTs(s.last_client_ts||'')}</td>
+      <td><span class="tag gray" style="font-size:10px">${esc(s.last_client_type||'?')}</span></td>
+      <td class="cell-ts" title="${esc(s.last_remote_ts||'')}">${shortTs(s.last_remote_ts||'')}</td>
+      <td><span class="tag gray" style="font-size:10px">${esc(s.last_remote_type||'?')}</span></td>
       <td>${discCell}</td>
       <td class="cell-dur">${esc(s.duration||'')}</td>
       <td>${reasonTag}</td>
@@ -703,28 +764,35 @@ function applyHistFilterSort() {
 }
 
 // ── Context menu ───────────────────────────────────────────────────────────
-function showCtx(e, id, ip, source, remoteOpen, isActiveHistRow) {
+function showCtx(e, id, ip, source, remoteOpen, isActiveHistRow, blockType) {
   e.preventDefault();
   e.stopPropagation();
   ctxConn = {id, ip}; ctxSource = source;
   document.getElementById('ctx-ip-lbl').textContent = ip;
   const showBlacklist     = (source !== 'blocked');
   const showWhitelist     = (source !== 'white');
-  const showDisc          = (source === 'active');
+  const showDisc          = (source === 'active') || (source === 'hist' && isActiveHistRow === true);
   const showCloseRemote   = (source === 'hist' && remoteOpen === true);
   const showRemoveHistory = (source === 'hist' && !isActiveHistRow);
   const showTempBlock     = (source === 'active' || (source === 'hist' && !isActiveHistRow));
-  const showSep2          = showBlacklist || showWhitelist || showDisc || showCloseRemote || showRemoveHistory || showTempBlock;
+  const showEditComment   = (source === 'white');
+  const showUnblock       = (source === 'blocked' && blockType !== 'temp'); 
+  const showSep2          = showBlacklist || showWhitelist || showDisc || showCloseRemote || showRemoveHistory || showTempBlock || showEditComment || showUnblock;
   document.getElementById('ctx-blacklist').classList.toggle('hidden', !showBlacklist);
   document.getElementById('ctx-whitelist').classList.toggle('hidden', !showWhitelist);
   document.getElementById('ctx-tempblock').classList.toggle('hidden', !showTempBlock);
   document.getElementById('ctx-disc').classList.toggle('hidden', !showDisc);
   document.getElementById('ctx-closeremote').classList.toggle('hidden', !showCloseRemote);
+  document.getElementById('ctx-unblock').classList.toggle('hidden', !showUnblock);
   document.getElementById('ctx-removehistory').classList.toggle('hidden', !showRemoveHistory);
+  document.getElementById('ctx-removeip').classList.toggle('hidden', !showRemoveHistory);
+  if (showRemoveHistory) document.getElementById('ctx-removeip').innerHTML =
+    `🗑 &nbsp;Remove all <b style="color:var(--amber);font-family:var(--mono)">${esc(ip)}</b> rows`;
+  document.getElementById('ctx-editcomment').classList.toggle('hidden', !showEditComment);
   document.getElementById('ctx-sep2').classList.toggle('hidden', !showSep2);
   const menu = document.getElementById('ctx-menu');
   menu.style.left = Math.min(e.clientX, window.innerWidth-230)+'px';
-  menu.style.top  = Math.min(e.clientY, window.innerHeight-340)+'px';
+  menu.style.top  = Math.min(e.clientY, window.innerHeight-380)+'px';
   menu.classList.add('show');
 }
 function hideCtx() { document.getElementById('ctx-menu').classList.remove('show'); }
@@ -741,6 +809,40 @@ async function ctxCloseRemote() {
   } catch(e) { toast('Request failed', 'red'); }
 }
 
+function ctxUnblock() {
+  if (!ctxConn) return;
+  const ip = ctxConn.ip; hideCtx();
+  showModal('Unblock IP', ip);
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;">
+      Remove the block rule for <strong style="color:var(--amber);font-family:var(--mono)">${esc(ip)}</strong>.<br><br>
+      This will remove the <code>block</code> entry from the rules file and runtime blocklist.
+      The IP will <strong>not</strong> be whitelisted — it will be treated as a newcomer on next connect.
+    </p>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="modal-btn" onclick="closeModal()">Cancel</button>
+    <button class="modal-btn amber" onclick="confirmUnblock('${esc(ip)}')">🔓 Confirm Unblock</button>`;
+}
+
+async function confirmUnblock(ip) {
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><div class="spinner"></div>Unblocking...</div>';
+  document.getElementById('modal-footer').innerHTML = '';
+  try {
+    const r = await fetch(`/dashboard/unblock?ip=${encodeURIComponent(ip)}`, {method:'POST'});
+    const d = await r.json();
+    if (d.status === 'error') { modalError(d.error); return; }
+    document.getElementById('modal-body').innerHTML = `<div class="info-grid">
+      <div class="row"><div class="k">IP</div><div class="v amber">${esc(ip)}</div></div>
+      <div class="row"><div class="k">Status</div><div class="v green">UNBLOCKED</div></div>
+      <div class="row"><div class="k">File rule</div><div class="v">${d.removed_from_file ? 'removed' : 'not found'}</div></div>
+      <div class="row"><div class="k">Note</div><div class="v" style="color:var(--dim)">${esc(d.note||'')}</div></div>
+      </div>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal()">Close</button>`;
+    toast(`${ip} unblocked`, 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { modalError('Request failed: ' + e.message); }
+}
+
 async function ctxRemoveFromHistory() {
   if (!ctxConn) return;
   const id = ctxConn.id; hideCtx();
@@ -751,6 +853,69 @@ async function ctxRemoveFromHistory() {
     toast(`Entry #${id} removed from history`, 'amber');
     setTimeout(refreshTables, 200);
   } catch(e) { toast('Request failed', 'red'); }
+}
+
+async function ctxRemoveIpFromHistory() {
+  if (!ctxConn) return;
+  const ip = ctxConn.ip; hideCtx();
+  try {
+    const r = await fetch(`/dashboard/history/removeip?ip=${encodeURIComponent(ip)}`, {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Failed', 'amber'); return; }
+    toast(`${d.removed} ${d.removed === 1 ? 'entry' : 'entries'} for ${ip} removed`, 'amber');
+    setTimeout(refreshTables, 200);
+  } catch(e) { toast('Request failed', 'red'); }
+}
+
+// ── Edit whitelist comment ─────────────────────────────────────────────────
+function ctxEditComment() {
+  if (!ctxConn) return;
+  const ip = ctxConn.ip; hideCtx();
+  showModal('Edit Whitelist Comment', ip);
+  const currentComment = (() => {
+    const rows = document.querySelectorAll('#white-tbody tr');
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length >= 2 && cells[0].textContent.trim() === ip)
+        return cells[1].textContent.trim();
+    }
+    return '';
+  })();
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:13px;color:var(--text2);line-height:1.6;">
+      Edit the comment for <strong style="color:var(--blue);font-family:var(--mono)">${esc(ip)}</strong>
+      in the rules file.<br>
+      <span style="font-size:11px;color:var(--dim)">Titan will prefix your text with <code>#</code> automatically. Leave blank to remove the comment.</span>
+    </p>
+    <input id="edit-comment-input" type="text" value="${esc(currentComment)}"
+      style="width:100%;margin-top:14px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);
+             font-family:var(--mono);font-size:12px;padding:7px 10px;border-radius:4px;outline:none;"
+      placeholder="Leave blank to remove comment"
+      onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter')confirmEditComment('${esc(ip)}')">`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="modal-btn" onclick="closeModal()">Cancel</button>
+    <button class="modal-btn blue" onclick="confirmEditComment('${esc(ip)}')">✏ Save Comment</button>`;
+}
+
+async function confirmEditComment(ip) {
+  const commentEl = document.getElementById('edit-comment-input');
+  const comment = commentEl ? commentEl.value.trim() : '';
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><div class="spinner"></div>Saving...</div>';
+  document.getElementById('modal-footer').innerHTML = '';
+  try {
+    const r = await fetch(`/dashboard/whitelist/editcomment?ip=${encodeURIComponent(ip)}&comment=${encodeURIComponent(comment)}`, {method:'POST'});
+    const d = await r.json();
+    if (d.status === 'error') { modalError(d.error); return; }
+    document.getElementById('modal-body').innerHTML = `<div class="info-grid">
+      <div class="row"><div class="k">IP</div><div class="v green">${esc(ip)}</div></div>
+      <div class="row"><div class="k">New Comment</div><div class="v">${esc(comment||'(none)')}</div></div>
+      <div class="row"><div class="k">Status</div><div class="v green">UPDATED</div></div>
+      </div>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="modal-btn" onclick="closeModal()">Close</button>`;
+    toast(`Comment updated for ${ip}`, 'green');
+    setTimeout(refreshAll, 300);
+  } catch(e) { modalError('Request failed: ' + e.message); }
 }
 
 function ctxFilterIp() {
@@ -817,11 +982,15 @@ function ipSortKey(ip) {
 // ── Blocked table ──────────────────────────────────────────────────────────
 function renderBlocked(list) {
   const tb = document.getElementById('blocked-tbody');
-  if (!list||!list.length){tb.innerHTML='<tr class="empty-row"><td colspan="7">No auto-blocked IPs</td></tr>';return;}
+  if (!list||!list.length){tb.innerHTML='<tr class="empty-row"><td colspan="7">No blocked IPs</td></tr>';return;}
   tb.innerHTML = list.map(b => {
-    const isTemp = b.type === 'temp';
+    const isTemp      = b.type === 'temp';
+    const isBlacklist = b.type === 'blacklist';
+    const isRulefile = b.type === 'rulefile';
     const typeTag = isTemp
       ? `<span class="tag amber">temp</span>`
+      : isBlacklist ? `<span class="tag red">manual</span>`
+      : isRulefile ? `<span class="tag blue">rulefile</span>`
       : `<span class="tag red">auto</span>`;
     const expiresCell = isTemp
       ? `<span style="font-family:var(--mono);font-size:11px;color:var(--amber)">${esc(b.expires||'session')}</span>`
@@ -829,8 +998,8 @@ function renderBlocked(list) {
     const unblockBtn = isTemp
       ? `<button class="disc-btn" onclick="tempUnblock('${esc(b.ip)}')">Unblock</button>`
       : ``;
-    return `<tr class="row-block" oncontextmenu="showCtx(event,null,'${esc(b.ip)}','blocked')">
-      <td class="cell-ip" onclick="showCtx(event,null,'${esc(b.ip)}','blocked')" style="cursor:pointer;" title="Click for actions">${esc(b.ip)}</td>
+    return `<tr class="row-block" oncontextmenu="showCtx(event,null,'${esc(b.ip)}','blocked','',false,'${esc(b.type||'')}')">
+      <td class="cell-ip" onclick="showCtx(event,null,'${esc(b.ip)}','blocked','',false,'${esc(b.type||'')}')" style="cursor:pointer;" title="Click for actions">${esc(b.ip)}</td>
       <td><span class="tag gray">${esc(b.country||'—')}</span></td>
       <td><span class="tag red">${esc(String(b.score||'—'))}</span></td>
       <td class="cell-ts">${shortTs(b.ts)}</td>
@@ -863,6 +1032,7 @@ function openTempBlock() {
     </p>
     <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
       <button class="modal-btn" onclick="doTempBlock('${esc(ip)}',0)">🔒 Session only (until restart)</button>
+      <button class="modal-btn" onclick="doTempBlock('${esc(ip)}',60)">⏱ 1 minutes (test)</button>
       <button class="modal-btn" onclick="doTempBlock('${esc(ip)}',1800)">⏱ 30 minutes</button>
       <button class="modal-btn" onclick="doTempBlock('${esc(ip)}',3600)">⏱ 1 hour</button>
       <button class="modal-btn" onclick="doTempBlock('${esc(ip)}',21600)">⏱ 6 hours</button>
@@ -961,7 +1131,7 @@ function renderRules(d) {
   document.getElementById('rules-info').innerHTML=`
     <div class="info-row"><span class="info-key">Allow</span><span class="info-val green">${d.rules.allow_count}</span></div>
     <div class="info-row"><span class="info-key">Block</span><span class="info-val amber">${d.rules.block_count}</span></div>
-    <div class="info-row"><span class="info-key">Auto-blocked</span><span class="info-val amber">${d.autoblocked.length}</span></div>
+    <div class="info-row"><span class="info-key">Blocked</span><span class="info-val amber">${d.autoblocked.length}</span></div>
     <div class="info-row"><span class="info-key">File</span><span class="info-val" style="font-size:10px">${esc(d.rules_file||'none')}</span></div>`;
 }
 
@@ -976,15 +1146,14 @@ async function refreshLog() {
     d.lines.forEach(l => {
       if (l.seq > lastLogSeq) lastLogSeq = l.seq;
       logLines.push(l);
-      if (l.level==='CONNECT' || l.level==='DISCONNECT' || l.level==='CONTROL'
-          || l.msg.includes('disconnect')) refreshTables();
+      if (l.level==='CONNECT' || l.level==='DISCONNECT' || l.level==='CONTROL' || l.msg.includes('disconnect')) refreshTables();
+      if (l.level==='BLOCK' || l.level==='ABUSE') refreshAll();
     });
     while (logLines.length > 2000) logLines.shift();
     renderLogLines();
   } catch(e) {}
 }
 
-// ── renderLogLines ─────────────────────────────────────────────────────────
 function renderLogLines() {
   const body = document.getElementById('log-body');
   let filtered = logLines;
@@ -994,6 +1163,9 @@ function renderLogLines() {
         (l.msg.includes('CLIENT->REMOTE') || l.msg.includes('REMOTE->CLIENT'))) &&
       !(l.level === 'DATA'));
   }
+  if (logHideTCP) {
+    filtered = filtered.filter(l => l.level !== 'TCP');
+  } 
   if (logSearchVal) {
     const needle = logSearchVal;
     filtered = filtered.filter(l =>
@@ -1006,12 +1178,11 @@ function renderLogLines() {
     : `${logLines.length} lines`;
   body.innerHTML = filtered.map(l =>
     `<div class="log-line ${l.level||'INFO'}">` +
-    `<span class="log-ts">${esc(l.ts)}</span>${esc(l.msg).replace(/\n/g,'<br>')}</div>`
+    `<span class="log-ts">${esc(l.ts)}</span>${esc(l.msg).replace(/\r\n/g,'<br>').replace(/\r/g,'<br>').replace(/\n/g,'<br>')}</div>`
   ).join('');
   if (autoScroll && logOpen) body.scrollTop = body.scrollHeight;
 }
 
-// ── Log search / traffic toggle ────────────────────────────────────────────
 function onLogSearch(val) {
   logSearchVal = val.trim().toLowerCase();
   const inp = document.getElementById('log-search');
@@ -1033,6 +1204,16 @@ function toggleHideTraffic() {
   }
   renderLogLines();
 }
+
+function toggleHideTCP() {
+  logHideTCP = !logHideTCP;
+  const el = document.getElementById('lb-tcp');
+  if (el) {
+    el.textContent = logHideTCP ? 'TCP Log: OFF' : 'TCP Log: ON';
+    el.className   = `hbadge ${logHideTCP ? 'on' : 'off'}`;
+  }
+  renderLogLines();
+} 
 
 // ── Flag toggles ───────────────────────────────────────────────────────────
 const epMap={verbose:'verbose',hexdump:'hexdump',allowall:'allowall',abusecheck:'newcomerabusecheck',tcpsniff:'tcpsniff'};
@@ -1137,6 +1318,7 @@ function confirmDiscId(id, ip, e) {
     <button class="modal-btn red" onclick="closeModal();discId(${id},null)">✕ Disconnect</button>`;
 }
 
+// ── Watch toggle ───────────────────────────────────────────────────────────
 async function toggleWatch(id, btn) {
   const isWatching = btn.dataset.watching === '1';
   const endpoint = isWatching ? 'unwatch' : 'watch';
@@ -1151,6 +1333,18 @@ async function toggleWatch(id, btn) {
       btn.style.color = 'var(--purple)';
       btn.style.background = '';
       watchedIds.delete(id);
+      if (hexWatchedIds.has(id)) {
+        hexWatchedIds.delete(id);
+        delete hexWatchPrev[id];
+        const hexBtn = document.getElementById(`hex-btn-${id}`);
+        if (hexBtn) {
+          hexBtn.dataset.hexing = '0';
+          hexBtn.textContent = '⬡ Hex';
+          hexBtn.style.borderColor = 'rgba(245,158,11,0.3)';
+          hexBtn.style.color = 'var(--amber)';
+          hexBtn.style.background = '';
+        }
+      }
       toast(`Watch disabled for #${id}`, 'amber');
     } else {
       btn.dataset.watching = '1';
@@ -1163,6 +1357,86 @@ async function toggleWatch(id, btn) {
     }
   } catch(e) { toast('Request failed', 'red'); }
 }
+
+// ── Hex watch toggle ───────────────────────────────────────────────────────
+async function toggleHexWatch(id, btn) {
+  const isHexing = btn.dataset.hexing === '1';
+  const endpoint = isHexing ? 'hexunwatch' : 'hexwatch';
+  try {
+    const r = await fetch(`/dashboard/${endpoint}?id=${id}`, {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Failed', 'red'); return; }
+    if (isHexing) {
+      btn.dataset.hexing = '0';
+      btn.textContent = '⬡ Hex';
+      btn.style.borderColor = 'rgba(245,158,11,0.3)';
+      btn.style.color = 'var(--amber)';
+      btn.style.background = '';
+      hexWatchedIds.delete(id);
+      delete hexWatchPrev[id];
+      const watchBtn = document.getElementById(`watch-btn-${id}`);
+      if (watchBtn && !d.watch_restored) {
+        watchBtn.dataset.watching = '0';
+        watchBtn.textContent = '👁 Watch';
+        watchBtn.style.borderColor = 'rgba(167,139,250,0.3)';
+        watchBtn.style.color = 'var(--purple)';
+        watchBtn.style.background = '';
+        watchedIds.delete(id);
+      }
+      toast(`Hex watch disabled for #${id}`, 'amber');
+    } else {
+      const wasWatching = watchedIds.has(id);
+      hexWatchPrev[id] = wasWatching;
+      btn.dataset.hexing = '1';
+      btn.textContent = '⬡ Hexing';
+      btn.style.borderColor = 'var(--amber)';
+      btn.style.color = '#fff';
+      btn.style.background = 'var(--amber)';
+      hexWatchedIds.add(id);
+      if (!flags.verbose && !wasWatching) {
+        const watchBtn = document.getElementById(`watch-btn-${id}`);
+        if (watchBtn) {
+          watchBtn.dataset.watching = '1';
+          watchBtn.textContent = '👁 Watching';
+          watchBtn.style.borderColor = 'var(--purple)';
+          watchBtn.style.color = '#fff';
+          watchBtn.style.background = 'var(--purple)';
+          watchedIds.add(id);
+        }
+      }
+      toast(`Hex watch enabled for #${id} — filter log by ID:#${id} to inspect`, 'amber');
+    }
+  } catch(e) { toast('Request failed', 'red'); }
+}
+
+async function toggleTcpWatch(id, btn) {
+  const isTcping = btn.dataset.tcping === '1';
+  const endpoint = isTcping ? 'tcpunwatch' : 'tcpwatch';
+  try {
+    const r = await fetch(`/dashboard/${endpoint}?id=${id}`, {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Failed', 'red'); return; }
+    if (isTcping) {
+      btn.dataset.tcping = '0';
+      btn.textContent = '📡 TCP';
+      btn.style.borderColor = 'rgba(232,121,249,0.3)';
+      btn.style.color = '#e879f9';
+      btn.style.background = '';
+      tcpWatchedIds.delete(id);
+      delete tcpWatchPrev[id];
+      toast(`TCP watch disabled for #${id}`, 'amber');
+    } else {
+      btn.dataset.tcping = '1';
+      btn.textContent = '📡 TCPing';
+      btn.style.borderColor = '#e879f9';
+      btn.style.color = '#fff';
+      btn.style.background = '#a21caf';
+      tcpWatchedIds.add(id);
+      toast(`TCP watch enabled for #${id} — filter log by [ID:#${id}] to inspect`, 'green');
+    }
+  } catch(e) { toast('Request failed', 'red'); }
+}
+
 
 async function doDisconnectAll() {
   try{ const r=await fetch('/disconnectall',{method:'POST'}),d=await r.json(); toast(`${d.total_disconnected||0} connections disconnected`,'green'); setTimeout(refreshAll,300); }
@@ -1230,25 +1504,39 @@ function openWhitelistFor(ip){
   showModal('Add to Whitelist',ip);
   document.getElementById('modal-body').innerHTML=`<p style="font-size:13px;color:var(--text2);line-height:1.6;">
     This will whitelist <strong style="color:var(--blue);font-family:var(--mono)">${esc(ip)}</strong>:</p>
-    <ul style="margin:12px 0 0 16px;font-size:13px;color:var(--dim);line-height:2;">
-      <li>Append <code style="color:var(--green)">allow ${esc(ip)} #whitelisted by dashboard</code> to rules file</li>
+    <ul style="margin:12px 0 12px 16px;font-size:13px;color:var(--dim);line-height:2;">
+      <li>Append <code style="color:var(--green)">allow ${esc(ip)} #&lt;comment&gt;</code> to rules file</li>
       <li>Whitelisted IPs bypass AbuseIPDB checks on next connect</li>
-      <li>Requires a rules file to be configured at startup</li></ul>`;
+      <li>Requires a rules file to be configured at startup</li></ul>
+    <div style="margin-top:4px;">
+      <label style="font-size:11px;color:var(--dim);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Comment</label>
+      <input id="wl-comment-input" type="text" value="whitelisted by dashboard"
+        style="width:100%;margin-top:6px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);
+               font-family:var(--mono);font-size:12px;padding:7px 10px;border-radius:4px;outline:none;"
+        placeholder="Leave blank for no comment"
+        onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"
+        onkeydown="if(event.key==='Enter')confirmWhitelist('${esc(ip)}')">
+      <div style="margin-top:4px;font-size:11px;color:var(--dim)">Titan will prefix your text with <code>#</code> automatically.</div>
+    </div>`;
   document.getElementById('modal-footer').innerHTML=`
     <button class="modal-btn" onclick="closeModal()">Cancel</button>
     <button class="modal-btn blue" onclick="confirmWhitelist('${esc(ip)}')">✅ Confirm Whitelist</button>`;
 }
 
 async function confirmWhitelist(ip){
+  const commentEl = document.getElementById('wl-comment-input');
+  const comment = commentEl ? commentEl.value.trim() : 'whitelisted by dashboard';
   document.getElementById('modal-body').innerHTML='<div class="modal-loading"><div class="spinner"></div>Adding to whitelist...</div>';
   document.getElementById('modal-footer').innerHTML='';
   try{
-    const r=await fetch(`/dashboard/whitelist?ip=${ip}`,{method:'GET'}),d=await r.json();
+    const url = `/dashboard/whitelist?ip=${encodeURIComponent(ip)}&comment=${encodeURIComponent(comment)}`;
+    const r=await fetch(url,{method:'GET'}),d=await r.json();
     if(d.status==='error'){modalError(d.error);return;}
     const alreadyWhitelisted = d.status==='already whitelisted';
     document.getElementById('modal-body').innerHTML=`<div class="info-grid">
       <div class="row"><div class="k">IP</div><div class="v green">${esc(ip)}</div></div>
       <div class="row"><div class="k">Status</div><div class="v ${alreadyWhitelisted?'amber':'green'}">${alreadyWhitelisted?'ALREADY WHITELISTED':'WHITELISTED'}</div></div>
+      <div class="row"><div class="k">Comment</div><div class="v">${esc(comment||'(none)')}</div></div>
       <div class="row"><div class="k">Persistent</div><div class="v ${d.persistent?'green':'amber'}">${d.persistent?'yes — added to file':'no — file not configured'}</div></div>
       ${d.note?`<div class="row"><div class="k">Note</div><div class="v" style="color:var(--dim)">${esc(d.note)}</div></div>`:''}
       </div>`;
@@ -1292,21 +1580,41 @@ async function confirmBlacklist(ip){
 }
 
 // ── Help modal ─────────────────────────────────────────────────────────────
+
 async function openHelp(){
   document.getElementById('modal').classList.add('wide');
   showModal('Titan Help','');
-  try{
-    const r=await fetch('/help'),text=await r.text();
-    document.getElementById('modal-body').innerHTML=`
-      <div class="help-section"><div class="help-section-title">Titan API Endpoints</div><pre class="help-pre">${esc(text)}</pre></div>
-      <div class="help-section"><div class="help-section-title">Dashboard Guide</div><pre class="help-pre">HEADER BADGES (clickable)
-  Verbose    — toggle verbose data logging
-  Hexdump    — toggle hex dump of data in logs
-  AllowAll   — bypass all IP checks
-  AbuseChk   — toggle AbuseIPDB newcomer check
+  document.getElementById('modal-body').innerHTML=`
+    <div class="help-section"><div class="help-section-title">Dashboard Guide</div><pre class="help-pre">HEADER BADGES (clickable)
+  Verbose    — toggle verbose data logging for all connections
+  Hexdump    — toggle hex dump of data in logs (global)
+  AllowAll   — bypass all IP checks (blacklist, whitelist, abuse)
+  AbuseChk   — toggle AbuseIPDB newcomer abuse check
   →Remote    — toggle closeremotebyclient at runtime (confirmation required)
   →Client    — toggle closeclientbyremote at runtime (confirmation required)
-  TCPSniff   — toggle AF_PACKET TCP handshake logging
+  TCPSniff   — toggle AF_PACKET TCP handshake logging for all connections
+
+ACTIVE CONNECTIONS TABLE
+  ID          — click for context menu actions
+  IP Address  — client IP
+  Comment     — whitelist comment if IP is whitelisted
+  Connected   — connection start time
+  Last Client — last timestamp of data received from client (application layer)
+  C.Type      — last TCP flag received from client via AF_PACKET (SYN, ACK, PSH/ACK, FIN, RST, etc)
+  Last Remote — last timestamp of any packet received from remote server (AF_PACKET)
+  R.Type      — last TCP flag received from remote server via AF_PACKET
+  Idle        — time since last remote packet (upstream idle time)
+  Remote      — remote socket state (open / closed)
+  👁 Watch    — enable verbose data logging for that specific connection
+  ⬡ Hex      — enable hexdump for that specific connection
+  📡 TCP      — enable AF_PACKET TCP sniff logging for that specific connection
+
+SESSION HISTORY TABLE
+  Same columns as Active Connections plus:
+  Disconnected — client disconnect timestamp
+  Duration     — session duration
+  Client       — close reason (FIN / RST / socket error / natural / operator / blocklist / etc)
+  Remote       — remote socket final state
 
 FILTER &amp; SORT  (Active Connections and Session History — independently)
   Filter box  — type any partial IP; rows hide instantly as you type
@@ -1314,74 +1622,69 @@ FILTER &amp; SORT  (Active Connections and Session History — independently)
   ✕ Clear     — resets filter for that table only
   Sortable column headers — click: asc ▲ → desc ▼ → reset (3rd click)
 
-  Active Connections sortable: ID, IP, Comment, Connected, Last Client, Last Remote, Idle, Remote
-  Session History sortable: ID, IP, Comment, Connected, Disconnected, Duration, Reason, Remote
-  Session History default: active rows first by ID, then closed by ID
-
 LIVE LOG
-  Search box     — grep by any keyword or IP; matches in msg or timestamp
-  Search turns amber when active; counter shows matched / total lines
-  Traffic: ON/OFF — when OFF hides:
-    • INFO lines containing CLIENT→REMOTE or REMOTE→CLIENT (directional events)
-    • DATA lines (verbose payload content — hex or text)
-  Both filters stack — e.g. hide traffic AND grep an IP simultaneously
-  ✕ Clear        — clears search field only; traffic toggle is independent
-  Verbose warning — if Traffic is OFF and you enable Verbose, a modal appears
-                    offering to restore Traffic so DATA lines are visible
+  Search box      — grep by any keyword or IP; matches in msg or timestamp
+  Traffic: ON/OFF — when OFF hides INFO CLIENT/REMOTE lines and DATA lines
+  TCP Log: ON/OFF — when OFF hides TCP level lines (AF_PACKET sniff lines)
+  Both filters stack independently; ✕ Clear resets search only
 
-RIGHT-CLICK MENU (available on any table row)
-  🔎 Filter this IP       — filters ONLY the table you right-clicked on
+RIGHT-CLICK MENU (ID column click or right-click on any row)
+  🔎 Filter this IP       — filters the table you clicked on
   🔍 Whois Lookup         — query ipinfo.io for geolocation/org data
   🛡 AbuseIPDB Check      — full abuse score lookup (fresh, not cached)
-  ✅ Add to Whitelist      — append allow rule to rules file
-  ⛔ Add to Blacklist      — disconnect + block + append block rule to file (permanent)
-  ⏱ Temp Block            — block IP for a chosen duration without writing to rules file
-                            available on active rows and disconnected history rows
-                            options: session only / 30m / 1h / 6h / 24h
-                            temp-blocked IPs show in Auto-Blocked panel with amber "temp" tag
-                            use Unblock button in panel to lift early
-  ✕ Disconnect            — forcibly disconnect connection (active rows only)
-  🔌 Force Close Remote   — close open remote socket (history rows with remote=open only)
-  🗑 Remove from list     — remove entry from session history (disconnected rows only)
-                            no blocking or rules change — memory only, not persistent
+  ✅ Add to Whitelist      — append allow rule to rules file with editable comment
+  ⛔ Add to Blacklist      — disconnect + block + write to rules file (permanent)
+  ⏱ Temp Block            — block for session / 1m / 30m / 1h / 6h / 24h (no file write)
+  ✕ Disconnect            — forcibly disconnect (active rows only)
+  🔌 Force Close Remote   — close open remote socket (history rows only)
+  🗑 Remove from list     — remove entry from session history (memory only)
+  🗑 Remove all [IP] rows — remove all history entries for that IP at once
+  ✏ Edit comment          — edit the rules file comment for a whitelisted IP (whitelist table only)
+  🔓 Unblock IP           — remove block rule from rules file and runtime blocklist
+
+WHITELIST COMMENT
+  When adding to whitelist a Comment field is shown pre-filled with "whitelisted by dashboard"
+  Clear it to write the rule with no comment; Titan prefixes your text with # automatically
+  To change a comment later: right-click entry in Whitelisted IPs table → Edit comment
+  Editing a comment updates the rules file and refreshes all active connection comments immediately
 
 WATCH (per-connection verbose)
-  👁 Watch button         — on each active connection row; click to enable verbose data
-                            logging for that specific connection only
-  While watching          — button turns purple/filled; label changes to "👁 Watching"
-  Inspect data            — type ID:#N in the log search box to see only that connection
-  Stop watching           — click again to disable; cleans up automatically on disconnect
-  Works independently     — watch is additive; global Verbose does not need to be ON
+  👁 Watch button    — enable verbose data logging for that specific connection
+  While watching     — button turns purple; label changes to "👁 Watching"
+  Stop watching      — click again; auto-cleaned on disconnect
 
-AUTO-BLOCKED IPs panel
-  auto tag (red)          — AbuseIPDB auto-block (permanent until restart or rule change)
-  temp tag (amber)        — manual temp block with expiry time or "session"
-  Unblock button          — appears on temp rows only; lifts block immediately
+HEX WATCH (per-connection hexdump)
+  ⬡ Hex button       — enable hexdump for a specific connection independently
+  Button grayed out  — when global Hexdump is ON
+  Disabling Watch    — also disables Hex for that connection
 
-QUICK ACTIONS
-  Disconnect All         — disconnect all active connections (no blocking)
-  Auto Disconnect Oldest — per IP: keep newest, disconnect older ones
+TCP WATCH (per-connection AF_PACKET sniff)
+  📡 TCP button      — enable TCP sniff logging for that specific connection
+  While active       — button turns magenta; label changes to "📡 TCPing"
+  Stop watching      — click again; auto-cleaned on disconnect
+  Global TCPSniff ON — logs all connections; per-ID watches preserved when global disabled
+  Filter log         — search [ID:#N] in live log to isolate TCP lines for that connection
 
-ABUSE THRESHOLD
-  Enter 0-100 in Configuration panel and click Set to update at runtime.
+SESSION BLOCKED IPs
+  auto tag (red)     — AbuseIPDB auto-block (newcomer exceeded threshold)
+  manual tag (red)   — dashboard blacklist action
+  rulefile tag (blue)— blocked attempt from IP in rules file block list
+  temp tag (amber)   — manual temp block; Unblock button lifts it early
+  Unblock button     — lifts temp block immediately
+  🔓 Unblock IP      — right-click action; removes block rule from file and runtime blocklist
 
-CLOSE REASONS (Session History — Reason column)
-  FIN           — clean TCP close (peer sent FIN)
-  RST           — connection reset (peer sent RST / ECONNRESET)
-  socket error  — OS-level error with errno or exception type shown
-  natural       — legacy natural disc. label (pre-v21 sessions)
-  temp block    — manually temp-blocked via dashboard
-  operator      — HTTP API disconnect request
-  blocklist     — IP added to block list
-  dashboard     — blacklisted via dashboard UI
-  abuse block   — AbuseIPDB auto-block</pre></div>`;
-    document.getElementById('modal-footer').innerHTML=`
-      <button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
-  }catch(e){
-    modalError('Could not load help: '+e.message);
-    document.getElementById('modal-footer').innerHTML=`
-      <button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
-  }
+CLOSE REASONS
+  FIN              — client sent TCP FIN (clean disconnect)
+  RST              — client sent TCP RST (abrupt disconnect)
+  natural disc.    — socket closed without specific flag
+  socket error     — OS-level socket error with errno
+  temp block       — operator applied temporary block
+  operator         — manual disconnect via dashboard or HTTP API
+  blocklist        — IP added to block list while connected
+  dashboard        — blacklisted via dashboard action
+  abuse block      — AbuseIPDB score exceeded threshold</pre></div>`;
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="modal-btn" onclick="closeModal();document.getElementById('modal').classList.remove('wide')">Close</button>`;
 }
 
 // ── Modal helpers ──────────────────────────────────────────────────────────

@@ -4,22 +4,21 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 HTTP_PORT_HELP = """\
-Titan v10 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
-  /stats                                GET     Show counters about current session (json)
-  /status                               GET     List active connections (json)
-  /statustable                          GET     List active connections (ascii table)
-  /rules                                GET     Show allow/block rules (json)
-  /rulesallowtable                      GET     Show allow rules (ascii table)
-  /rulesblockedtable                    GET     Show blocked rules (ascii table)
-  /autoblocked                          GET     Autoblocked IPs in running session (json)
-  /autoblockedtable                     GET     Autoblocked IPs in running session (ascii table)
-  /disconnect?ip=X                      POST    Disconnect all sessions for given IP 
-  /disconnect_oldest?ip=X or ID=X       POST    Disconnect oldest session for a given IP or given ID (keeps only the newest one)
-  /disconnect_id?ID=X                   POST    Disconnect specific given connection ID
-  /hexdump?enable/disable               POST    Enables or Disables bytes hexdump in screen & logs
-  /autodisconnectoldest                 POST    Automaticall checks ALL active connections and autodisconnects old connections, keeping only the newest
-  /newcomerabusecheck?disable/enable    POST    Enable/Disable newcomer abusecheck in runtime (default=enable) - When disabled, rules file is active but abuse check for new IPs is skipped
-  /allowall?enable/disable              POST    Enable/Disable allow all IPs (default=disable) - When enabled abuse check skipped, rulesfile is ignored = everybody is allowed!
+Titan v15.9 Endpoints [when enabled with --httpexpose <port>(default port=9999)]:
+  /status                           GET     List active connections (json)
+  /statustable                      GET     List active connections (ascii table)
+  /rules                            GET     Show allow/block/allowUID rules (json)
+  /rulesallowtable                  GET     Show allow rules (ascii table)
+  /rulesblockedtable                GET     Show blocked rules (ascii table)
+  /rulesuidtable                    GET     Show allowUID rules (ascii table)
+  /stats                            GET     Show counters (json)
+  /autoblocked                      GET     Autoblocked IPs in running session (json)
+  /autoblockedtable                 GET     Autoblocked IPs in running session (ascii table)
+  /disconnect?ip=X                  POST    Disconnect all sessions for IP
+  /disconnect_oldest?ip=X or ID=X   POST    Disconnect oldest session for a give IP or given ID
+  /disconnect_id?ID=X               POST    Disconnect specific connection ID
+  /hexdump/on                       POST    Enable hexdump
+  /hexdump/off                      POST    Disable hexdump
 
 Usage examples (when --httpexpose is enabled):
   curl -X POST http://127.0.0.1:9999/hexdump/off
@@ -28,6 +27,7 @@ Usage examples (when --httpexpose is enabled):
   curl -s http://127.0.0.1:9999/stats
   curl -s http://127.0.0.1:9999/rules
   curl -s http://127.0.0.1:9999/status
+  curl -s http://127.0.0.1:9999/rulesuidtable
 """
 
 # ANSI Colors
@@ -43,14 +43,54 @@ RULEFILE = None
 HTTP_CTRL_HOST = "127.0.0.1"
 HTTP_CTRL_PORT = 9999  # default port - used only if --httpexpose is provided
 
-# New in 15.7: runtime in-memory blocklist + abuseblock flag
+# Runtime in-memory blocklist + abuseblock flag
 RUNTIME_BLOCKLIST = set()
+RUNTIME_BLOCKLIST_LOCK = threading.Lock()
 ABUSEBLOCK_ENABLED = False
 
-# AbuseIPDB runtime cache (NEW)
+# AbuseIPDB runtime cache
 ABUSE_CACHE = {}   # { ip: (score, timestamp) }
 ABUSE_CACHE_TTL = 3600  # seconds (1 hour)
 abuse_cache_lock = threading.Lock()
+
+
+
+# ---------------------------------------------------------------------------
+# UID Check (NEW in v15.9)
+# ---------------------------------------------------------------------------
+# When --uidcheck is active, Titan will attempt to extract the Datakom PLC
+# UID from the first incoming packet of any newcomer connection (IP not in
+# WHITELIST or BLACKLIST).  If a matching "allowUID <UID>" entry is found in
+# the rules file the connection is accepted and the buffered first-packet
+# bytes are transparently re-injected into the stream before normal piping
+# begins.  This allows PLCs on dynamic / mobile IPs to authenticate by their
+# hardware UID instead of a fixed IP address.
+#
+# Protocol note (reverse-engineered from real PLC captures):
+#   The 5-byte marker  0x0F 0x1B 0x01 0xF6 0x01  always appears at offset 16
+#   of the first packet.  The 12 bytes that immediately follow the marker are
+#   the UID (matching the value reported by the PLC firmware).
+#
+# Rules file syntax (only parsed when --uidcheck is active):
+#   allowUID 1980FF11800C08AFB55C8958   # 509TB-LAB mobile PLC
+#   allowUID 300028001551323235353431   # rokas-kalogiros
+# ---------------------------------------------------------------------------
+UIDCHECK_ENABLED = False
+
+# Marker that precedes the 12-byte UID in every Datakom PLC first-packet
+UID_MARKER = bytes([0x0f, 0x1b, 0x01, 0xf6, 0x01])
+UID_LENGTH  = 12  # bytes
+
+# WHITELIST_UIDS: dict mapping uppercase hex UID string -> comment string
+# Populated by load_rules() from "allowUID XXXX" lines in the rules file.
+WHITELIST_UIDS = {}
+uids_lock = threading.Lock()
+
+# AUTO_UID_SEEN: list of dicts recording every UID seen during this session
+# (regardless of whether it was accepted or not) – useful for operators who
+# want to discover new PLC UIDs without manually reading hexdumps.
+AUTO_UID_SEEN = []
+uid_seen_lock = threading.Lock()
 
 connection_count = 0
 counter_lock = threading.Lock()
@@ -72,7 +112,9 @@ STATS = {
     "accepted": 0,
     "blocked": 0,
     "disconnected": 0,
-    "abuse_autoblocked": 0
+    "abuse_autoblocked": 0,
+    "uid_accepted": 0,    # NEW: connections accepted via UID whitelist
+    "uid_seen": 0,        # NEW: total UID extractions (known + unknown)
 }
 stats_lock = threading.Lock()
 
@@ -102,12 +144,8 @@ ABUSE_API_KEY = load_api_key()
 ABUSE_THRESHOLD = 80
 AUTO_BLOCKED_IPS = []
 
-ALLOWALL_ENABLED = False
-_ALLOWALL_SNAPSHOT = {}  # stores state before allowall was activated
-
 def get_ts():
-    return datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-    #return datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    return datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 
 def log(msg):
@@ -123,10 +161,32 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def parse_rule(line):
+    """
+    Parse a single rule line from the rules file.
+
+    Supported actions:
+      allow  <IP or CIDR>
+      block  <IP or CIDR>
+      allowUID <24-char hex UID>   ← NEW (only active when --uidcheck is set)
+
+    Returns (action, obj) where:
+      - action is "allow", "block", or "allowUID"
+      - obj is an ipaddress object for allow/block, or a normalised uppercase
+        UID string for allowUID
+    Returns (None, None) on parse error.
+    """
     parts = line.split()
     if len(parts) != 2:
         return None, None
     action, value = parts
+
+    if action == "allowUID":
+        # UID is a hex string – normalise to uppercase for consistent comparison
+        uid = value.strip().upper()
+        if not uid:
+            return None, None
+        return "allowUID", uid
+
     try:
         if "/" in value:
             obj = ipaddress.ip_network(value, strict=False)
@@ -159,8 +219,7 @@ def check_rules(ip_str):
     return "ALLOW"
 
 
-#def disconnect_ip(ip_str):
-def disconnect_ip(ip_str, reason="block list"):
+def disconnect_ip(ip_str):
     with active_lock:
         to_kill = [cid for cid, info in ACTIVE_CONNECTIONS.items() if info["ip"] == ip_str]
 
@@ -172,21 +231,15 @@ def disconnect_ip(ip_str, reason="block list"):
             continue
         try:
             sock.shutdown(socket.SHUT_RDWR)
-        except OSError:
+        except Exception:
             pass
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] shutdown() {ip_str}: {e}{RESET}")
         try:
             sock.close()
-        except OSError:
+        except Exception:
             pass
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] close() {ip_str}: {e}{RESET}")
-
         with active_lock:
             ACTIVE_CONNECTIONS.pop(cid, None)
-        #print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} — newly added to block list{RESET}")
-        print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} (ID:#{cid}) — {reason}{RESET}")
+        print(f"{RED}[{get_ts()}][!] Forced disconnect of {ip_str} — newly added to block list{RESET}")
         killed += 1
 
     if killed:
@@ -196,8 +249,7 @@ def disconnect_ip(ip_str, reason="block list"):
     return killed
 
 
-"""
-def disconnect_connection_id(cid, reason="operator request"):
+def disconnect_connection_id(cid):
     with active_lock:
         info = ACTIVE_CONNECTIONS.get(cid)
         if not info:
@@ -207,65 +259,32 @@ def disconnect_connection_id(cid, reason="operator request"):
         sock = info["socket"]
 
         try:
-            sock.shutdown(socket.SHUT_RDWR)
-        except OSError:
-            pass  # expected — socket already closed or broken
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] shutdown() ID {cid} ({ip}): {e}{RESET}")
-
-        try:
             sock.close()
-        except OSError:
-            pass  # expected
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] close() ID {cid} ({ip}): {e}{RESET}")
+        except Exception:
+            pass
 
         del ACTIVE_CONNECTIONS[cid]
 
-        # >>> ADD THIS BLOCK <<<
-        with stats_lock:
-            STATS["disconnected"] += 1
-        # <<< END >>>
-
-        #print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
-        print(f"{RED}[{get_ts()}][!] Forced disconnect of ID:#{cid} ({ip}) — {reason}{RESET}")
+        print(f"[{get_ts()}][!] Forced disconnect of connection ID {cid} ({ip})")
         return True
-"""
 
-def disconnect_connection_id(cid, reason="operator request"):
-    with active_lock:
-        info = ACTIVE_CONNECTIONS.get(cid)
-        if not info:
-            return False
-
-        ip = info.get("ip", "unknown")
-        sock = info["socket"]
-
-        try:
-            sock.shutdown(socket.SHUT_RDWR)
-        except OSError:
-            pass  # expected — socket already closed or broken
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] shutdown() ID {cid} ({ip}): {e}{RESET}")
-
-        try:
-            sock.close()
-        except OSError:
-            pass  # expected
-        except Exception as e:
-            print(f"{YELLOW}[{get_ts()}][dbg] close() ID {cid} ({ip}): {e}{RESET}")
-
-        del ACTIVE_CONNECTIONS[cid]
-
-    # active_lock released before acquiring stats_lock — no nested lock risk
-    with stats_lock:
-        STATS["disconnected"] += 1
-
-    print(f"{RED}[{get_ts()}][!] Forced disconnect of ID:#{cid} ({ip}) — {reason}{RESET}")
-    return True
 
 def load_rules():
-    global WHITELIST, BLACKLIST, OLD_BLACKLIST, rules_mtime
+    """
+    Load (or reload) rules from RULEFILE.
+
+    Populates:
+      WHITELIST       – allow <IP/CIDR> entries
+      BLACKLIST       – block <IP/CIDR> entries
+      WHITELIST_UIDS  – allowUID <UID> entries (only when --uidcheck is active;
+                        ignored with a warning otherwise so operators notice
+                        misconfigured rule files early)
+
+    Called once at startup and then periodically by rules_watcher().
+    Hot-reload is mtime-gated so unchanged files are never re-parsed.
+    Newly blocked IPs trigger immediate disconnect of live connections.
+    """
+    global WHITELIST, BLACKLIST, OLD_BLACKLIST, WHITELIST_UIDS, rules_mtime
     if RULEFILE is None:
         print(f"{YELLOW}[{get_ts()}][!] No Rule Files specified - all connections are allowed")
         return
@@ -284,6 +303,7 @@ def load_rules():
     try:
         new_white = []
         new_black = []
+        new_uids  = {}   # uid_hex_upper -> comment
 
         with open(RULEFILE) as f:
             for raw in f:
@@ -299,11 +319,20 @@ def load_rules():
                         comment = raw.split("#", 1)[1].strip()
                     except Exception:
                         comment = ""
-                entry = {"obj": obj, "comment": comment}
+
                 if action == "allow":
-                    new_white.append(entry)
+                    new_white.append({"obj": obj, "comment": comment})
                 elif action == "block":
-                    new_black.append(entry)
+                    new_black.append({"obj": obj, "comment": comment})
+                elif action == "allowUID":
+                    if UIDCHECK_ENABLED:
+                        # obj is the normalised UID string when action == "allowUID"
+                        new_uids[obj] = comment
+                    else:
+                        # Warn once per reload so operators notice the mismatch
+                        print(f"{YELLOW}[{get_ts()}][!] load_rules(): 'allowUID' entry found but "
+                              f"--uidcheck is not active — ignoring UID rules. "
+                              f"Start Titan with --uidcheck to enable UID-based allow rules.{RESET}")
 
         with rules_lock:
             WHITELIST = new_white
@@ -317,7 +346,13 @@ def load_rules():
             OLD_BLACKLIST = BLACKLIST.copy()
             rules_mtime = mtime
 
-        print(f"{YELLOW}[{get_ts()}][!] Rules reloaded from file {RULEFILE}: {len(WHITELIST)} allow, {len(BLACKLIST)} block{RESET}")
+        with uids_lock:
+            WHITELIST_UIDS = new_uids
+
+        uid_count = len(new_uids)
+        uid_info  = f", {uid_count} allowUID" if UIDCHECK_ENABLED else ""
+        print(f"{YELLOW}[{get_ts()}][!] Rules reloaded from file {RULEFILE}: "
+              f"{len(new_white)} allow, {len(new_black)} block{uid_info}{RESET}")
 
         for entry in newly_blocked:
             rule = entry["obj"]
@@ -325,8 +360,7 @@ def load_rules():
                 continue
 
             if isinstance(rule, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
-                #disconnect_ip(str(rule))
-                disconnect_ip(str(rule), reason="newly added to block list")
+                disconnect_ip(str(rule))
             else:
                 with active_lock:
                     for cid, info in list(ACTIVE_CONNECTIONS.items()):
@@ -335,8 +369,7 @@ def load_rules():
                         except Exception:
                             continue
                         if ip in rule:
-                            #disconnect_ip(info["ip"])
-                            disconnect_ip(info["ip"], reason="newly added to block list")
+                            disconnect_ip(info["ip"])
 
     except Exception as e:
         print(f"{RED}[{get_ts()}][!] load_rules() failed: {e}{RESET}")
@@ -361,8 +394,23 @@ def format_hexdump(data):
     return "\n".join(lines)
 
 
-def pipe(source, destination, label, color, conn_id, client_ip):
+def pipe(source, destination, label, color, conn_id, client_ip, initial_data=b""):
+    """
+    Bidirectional byte relay between source and destination sockets.
+
+    initial_data (NEW in v15.9):
+        When UID check is active and a Datakom PLC is identified, Titan reads
+        the first packet from the client socket to extract the UID before the
+        normal relay begins.  That first packet must not be discarded — it is
+        passed here as initial_data and forwarded to the destination before
+        entering the normal recv() loop, making the peek completely transparent
+        to the remote server.
+    """
     try:
+        # Re-inject the first packet that was consumed during UID extraction
+        if initial_data:
+            destination.sendall(initial_data)
+
         while True:
             data = source.recv(8192)
             if not data:
@@ -371,9 +419,7 @@ def pipe(source, destination, label, color, conn_id, client_ip):
             with active_lock:
                 info = ACTIVE_CONNECTIONS.get(conn_id)
                 if info is not None:
-                    #info["last_update_ts"] = get_ts()
-                    info["last_update_ts"] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-                    #info["last_update_ts"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                    info["last_update_ts"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
             with rules_lock:
                 entry = ip_in_list(ipaddress.ip_address(client_ip), WHITELIST, return_entry=True)
@@ -394,12 +440,20 @@ def pipe(source, destination, label, color, conn_id, client_ip):
         pass
 
 
-def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id):
+def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, conn_id, initial_data=b""):
+    """
+    Set up the full-duplex relay between the accepted client socket and the
+    remote server.
+
+    initial_data (NEW in v15.9):
+        Bytes already read from client_sock during UID extraction that must be
+        forwarded to the remote server before normal piping starts.  Passed
+        through to the CLIENT->REMOTE pipe thread.  The REMOTE->CLIENT pipe is
+        unaffected.
+    """
     global connection_count
 
-    #connected_ts = get_ts()
-    #connected_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-    connected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
+    connected_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     with active_lock:
         ACTIVE_CONNECTIONS[conn_id] = {
             "ip": client_ip,
@@ -428,8 +482,19 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
         else:
             c_conn, r_conn = client_sock, remote_sock
 
-        t1 = threading.Thread(target=pipe, args=(c_conn, r_conn, "CLIENT->REMOTE", BLUE, conn_id, client_ip), daemon=True)
-        t2 = threading.Thread(target=pipe, args=(r_conn, c_conn, "REMOTE->CLIENT", RED, conn_id, client_ip), daemon=True)
+        # CLIENT->REMOTE thread receives initial_data so the first PLC packet
+        # (consumed for UID extraction) is transparently forwarded.
+        t1 = threading.Thread(
+            target=pipe,
+            args=(c_conn, r_conn, "CLIENT->REMOTE", BLUE, conn_id, client_ip),
+            kwargs={"initial_data": initial_data},
+            daemon=True
+        )
+        t2 = threading.Thread(
+            target=pipe,
+            args=(r_conn, c_conn, "REMOTE->CLIENT", RED, conn_id, client_ip),
+            daemon=True
+        )
 
         t1.start()
         t2.start()
@@ -456,6 +521,86 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
 
         with stats_lock:
             STATS["disconnected"] += 1
+
+
+def recv_until_marker(sock, marker, min_bytes=64, max_bytes=2048):
+    sock.settimeout(120.0)
+    data = b""
+    while len(data) < max_bytes:
+        chunk = sock.recv(256)
+        if not chunk:
+            break
+        data += chunk
+        if marker in data:
+            break
+    sock.settimeout(None)
+    return data
+
+
+# ---------------------------------------------------------------------------
+# UID extraction (NEW in v15.9)
+# ---------------------------------------------------------------------------
+
+
+
+def peek_uid(sock, timeout=120.0):
+    """
+    Read the first packet from a client socket (non-destructively from the
+    proxy's perspective) and attempt to extract a Datakom PLC UID.
+
+    The Datakom protocol places a fixed 5-byte marker (UID_MARKER) at offset
+    16 of the very first packet.  The 12 bytes immediately following that
+    marker are the hardware UID, identical to the value shown in the PLC
+    firmware interface.
+
+    Parameters
+    ----------
+    sock    : the raw accepted client socket (before any SSL wrap)
+    timeout : how long to wait for the first packet (default 3 s).
+              If the client does not send data within this window it is almost
+              certainly not a Datakom PLC — return gracefully so the caller
+              can fall through to the AbuseIPDB path.
+
+    Returns
+    -------
+    uid_str   : uppercase hex UID string (e.g. "1980FF11800C08AFB55C8958")
+                or None if the marker was not found or data was insufficient.
+    raw_bytes : the raw bytes read from the socket.  MUST be passed back to
+                bridge() / pipe() as initial_data so the remote server still
+                receives the complete first packet.
+    """
+    sock.settimeout(timeout)
+    try:
+        #raw_bytes = sock.recv(256)
+        raw_bytes = recv_until_marker(sock, UID_MARKER)
+        print(f"peek_uid raw bytes: {raw_bytes}")
+    except socket.timeout:
+        print(f"{YELLOW}[{get_ts()}][UID] peek_uid(): timeout waiting for first packet — not a PLC?{RESET}")
+        raw_bytes = b""
+    except Exception as e:
+        print(f"{YELLOW}[{get_ts()}][UID] peek_uid(): recv error: {e}{RESET}")
+        raw_bytes = b""
+    finally:
+        # Restore blocking mode for the normal relay
+        sock.settimeout(None)
+
+    if not raw_bytes:
+        return None, raw_bytes
+
+    # Search for the fixed protocol marker
+    idx = raw_bytes.find(UID_MARKER)
+    if idx == -1:
+        return None, raw_bytes
+
+    uid_start = idx + len(UID_MARKER)
+    if len(raw_bytes) < uid_start + UID_LENGTH:
+        # Marker found but not enough bytes for a full UID — truncated packet
+        print(f"{YELLOW}[{get_ts()}][UID] peek_uid(): marker found but packet too short for UID{RESET}")
+        return None, raw_bytes
+
+    uid_bytes = raw_bytes[uid_start : uid_start + UID_LENGTH]
+    uid_str   = uid_bytes.hex().upper()
+    return uid_str, raw_bytes
 
 
 def parse_ethernet_header(data):
@@ -654,6 +799,14 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _text(self, body_str):
+        body = body_str.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/status":
@@ -678,88 +831,56 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "abuse_threshold": ABUSE_THRESHOLD,
                     "abuseblock_enabled": ABUSEBLOCK_ENABLED,
                     "runtime_blocklist_size": len(RUNTIME_BLOCKLIST),
-                    "allowall": ALLOWALL_ENABLED,
+                    "uidcheck_enabled": UIDCHECK_ENABLED,          # NEW
+                    "whitelist_uids_count": len(WHITELIST_UIDS),   # NEW
                     "stats": dict(STATS),
                 }
             self._json(200, status)
 
         elif parsed.path == "/rules":
-            with rules_lock:
+            with rules_lock, uids_lock:
                 allow = [str(e["obj"]) for e in WHITELIST]
                 block = [str(e["obj"]) for e in BLACKLIST]
-            self._json(200, {"allow": allow, "block": block})
-        
-#        elif parsed.path == "/stats":
-#            with stats_lock:
-#                stats_copy = dict(STATS)
-#            self._json(200, stats_copy)
-        
+                # NEW: include allowUID entries so API consumers see the full picture
+                uids  = {uid: comment for uid, comment in WHITELIST_UIDS.items()}
+            self._json(200, {"allow": allow, "block": block, "allowUID": uids})
+
         elif parsed.path == "/stats":
-            with stats_lock, counter_lock, active_lock:
+            with stats_lock:
                 stats_copy = dict(STATS)
-                #stats_copy["connected"] = connection_count  # real-time active count
-                stats_copy["connected"] = len(ACTIVE_CONNECTIONS)
             self._json(200, stats_copy)
-        
+
         elif parsed.path == "/autoblocked":
             self._json(200, {"autoblocked": AUTO_BLOCKED_IPS})
-        
+
         elif parsed.path == "/autoblockedtable":
             rows = []
             for entry in AUTO_BLOCKED_IPS:
-                ip = entry.get("ip", "")
+                ip    = entry.get("ip", "")
                 score = entry.get("score", "")
-                ts = entry.get("ts", "")
+                ts    = entry.get("ts", "")
                 rows.append([ip, score, ts])
-
             headers = ["IP", "Score", "Timestamp"]
-            table = make_table(rows, headers)
+            self._text(make_table(rows, headers))
 
-            body = table.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        
         elif parsed.path == "/rulesallowtable":
             with rules_lock:
-                rows = []
-                for entry in WHITELIST:
-                    obj = str(entry["obj"])
-                    comment = entry["comment"]
-                    rows.append([obj, comment])
+                rows = [[str(e["obj"]), e["comment"]] for e in WHITELIST]
+            self._text(make_table(rows, ["Allow Rule", "Comment"]))
 
-            headers = ["Allow Rule", "Comment"]
-            table = make_table(rows, headers)
-
-            body = table.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        
         elif parsed.path == "/rulesblockedtable":
             with rules_lock:
-                rows = []
-                for entry in BLACKLIST:
-                    obj = str(entry["obj"])
-                    comment = entry["comment"]
-                    rows.append([obj, comment])
+                rows = [[str(e["obj"]), e["comment"]] for e in BLACKLIST]
+            self._text(make_table(rows, ["Block Rule", "Comment"]))
 
-            headers = ["Block Rule", "Comment"]
-            table = make_table(rows, headers)
-            body = table.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        
+        elif parsed.path == "/rulesuidtable":
+            # NEW: human-readable table of allowUID entries
+            with uids_lock:
+                rows = [[uid, comment] for uid, comment in WHITELIST_UIDS.items()]
+            if not UIDCHECK_ENABLED:
+                rows = [["(--uidcheck not active)", ""]]
+            self._text(make_table(rows, ["AllowUID", "Comment"]))
+
         elif parsed.path == "/statustable":
             with active_lock, rules_lock:
                 rows = []
@@ -770,88 +891,36 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     connected_ts = info.get("connected_ts", "")
                     last_update_ts = info.get("last_update_ts", "")
                     rows.append([cid, ip, comment, connected_ts, last_update_ts])
+            self._text(make_table(rows, ["ID", "IP", "Comment", "Connected", "Last Update"]))
 
-            headers = ["ID", "IP", "Comment", "Connected", "Last Update"]
-            table = make_table(rows, headers)
+        elif parsed.path == "/uidseen":
+            # NEW: return all UIDs observed in this session (accepted and unknown)
+            with uid_seen_lock:
+                seen_copy = list(AUTO_UID_SEEN)
+            self._json(200, {"uid_seen": seen_copy})
 
-            body = table.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
+        elif parsed.path == "/uidseen_table":
+            # NEW: human-readable table of observed UIDs
+            with uid_seen_lock:
+                rows = []
+                for entry in AUTO_UID_SEEN:
+                    rows.append([
+                        entry.get("uid", ""),
+                        entry.get("ip", ""),
+                        entry.get("status", ""),
+                        entry.get("comment", ""),
+                        entry.get("ts", ""),
+                    ])
+            self._text(make_table(rows, ["UID", "IP", "Status", "Comment", "Timestamp"]))
 
-        elif parsed.path == "/upstreamtable":
-            now = datetime.datetime.now()
-            rows = []
-
-            with active_lock:
-                for cid, info in ACTIVE_CONNECTIONS.items():
-                    ip = info["ip"]
-                    connected_ts = info.get("connected_ts", "")
-                    last_update_ts = info.get("last_update_ts", "")
-
-                    # Calculate seconds since last activity
-                    try:
-                        last_dt = datetime.datetime.strptime(last_update_ts, "%d-%m-%Y %H:%M:%S.%f")
-                        idle_secs = int((now - last_dt).total_seconds())
-                    except Exception:
-                        idle_secs = -1
-
-                    # Determine status
-                    if connected_ts == last_update_ts:
-                        status = "NEW"
-                    elif idle_secs < 0:
-                        status = "UNKNOWN"
-                    elif idle_secs < 120:
-                        status = "ACTIVE"
-                    elif idle_secs < 300:
-                        status = "IDLE"
-                    elif idle_secs < 600:
-                        status = "STALE"
-                    else:
-                        status = "DEAD"
-
-                    # Format idle time nicely
-                    if idle_secs < 0:
-                        idle_str = "?"
-                    elif idle_secs < 60:
-                        idle_str = f"{idle_secs}s"
-                    elif idle_secs < 3600:
-                        idle_str = f"{idle_secs // 60}m {idle_secs % 60}s"
-                    else:
-                        idle_str = f"{idle_secs // 3600}h {(idle_secs % 3600) // 60}m"
-
-                    rows.append([cid, ip, connected_ts, last_update_ts, idle_str, status])
-
-            headers = ["ID", "IP", "Connected", "Last Activity", "Idle", "Status"]
-            table = make_table(rows, headers)
-
-            body = table.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        
         elif parsed.path == "/help":
-            help_text = HTTP_PORT_HELP
-            body = help_text.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        
+            self._text(HTTP_PORT_HELP)
+
         else:
             self._json(404, {"error": "not found"})
 
     def do_POST(self):
-        #global HEXDUMP_ENABLED
-        global HEXDUMP_ENABLED, ABUSEBLOCK_ENABLED, ALLOWALL_ENABLED, _ALLOWALL_SNAPSHOT
+        global HEXDUMP_ENABLED
 
         parsed = urlparse(self.path)
         qs = parse_qs(parsed.query)
@@ -861,8 +930,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             if not ip:
                 self._json(400, {"error": "missing ip"})
                 return
-            #killed = disconnect_ip(ip)
-            killed = disconnect_ip(ip, reason="HTTP operator request")
+            killed = disconnect_ip(ip)
             self._json(200, {"ip": ip, "disconnected": killed})
 
         elif parsed.path == "/disconnect_oldest":
@@ -902,10 +970,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 return
 
             # sort by connected_ts (oldest first)
-            from datetime import datetime
-            #matches.sort(key=lambda x: datetime.strptime(x[1], "%H:%M:%S.%f"))
-            #matches.sort(key=lambda x: datetime.datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
-            matches.sort(key=lambda x: datetime.strptime(x[1], "%d-%m-%Y %H:%M:%S.%f"))
+            matches.sort(key=lambda x: datetime.datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
 
             # newest connection is the LAST one
             newest_cid = matches[-1][0]
@@ -913,8 +978,7 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
             # disconnect all except newest
             disconnected = []
             for cid2, ts in matches[:-1]:
-                #if disconnect_connection_id(cid2):
-                if disconnect_connection_id(cid2, reason="HTTP operator — keep newest only"):
+                if disconnect_connection_id(cid2):
                     disconnected.append(cid2)
 
             self._json(200, {
@@ -923,7 +987,6 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 "disconnected_ids": disconnected,
                 "remaining_connections": 1
             })
-            return
 
         elif parsed.path == "/disconnect_id":
             cid_raw = qs.get("ID", [None])[0]
@@ -937,22 +1000,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 self._json(400, {"error": "ID must be an integer"})
                 return
 
-            # Grab IP before disconnect deletes the entry
-            with active_lock:
-                info = ACTIVE_CONNECTIONS.get(cid)
-                ip = info["ip"] if info else None
-
-            #killed = disconnect_connection_id(cid)
-            killed = disconnect_connection_id(cid, reason="HTTP operator request")
-
+            killed = disconnect_connection_id(cid)
             if not killed:
                 self._json(404, {"error": f"connection ID {cid} not found"})
                 return
+            self._json(200, {"disconnected_id": cid})
 
-            #self._json(200, {"disconnected_id": cid})
-            self._json(200, {"disconnected_id": cid, "ip": ip})
-            return
-        
         elif parsed.path == "/autodisconnectoldest":
             disconnected = {}
             with active_lock:
@@ -963,24 +1016,20 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     ts = info.get("connected_ts", "")
                     ip_groups.setdefault(ip, []).append((cid, ts))
 
-            from datetime import datetime
-
             for ip, items in ip_groups.items():
                 if len(items) <= 1:
                     continue
 
                 # sort oldest → newest
-                #items.sort(key=lambda x: datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
-                items.sort(key=lambda x: datetime.strptime(x[1], "%d-%m-%Y %H:%M:%S.%f"))
+                items.sort(key=lambda x: datetime.datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"))
 
                 # keep newest
-                keep = items[-1][0]
+                keep    = items[-1][0]
                 to_kill = [cid for cid, _ in items[:-1]]
 
                 killed = []
                 for cid in to_kill:
-                    #if disconnect_connection_id(cid):
-                    if disconnect_connection_id(cid, reason="HTTP auto disconnect — keep newest only"):
+                    if disconnect_connection_id(cid):
                         killed.append(cid)
 
                 if killed:
@@ -993,99 +1042,16 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 "result": "ok",
                 "disconnected_groups": disconnected
             })
-            return
-        
-        elif parsed.path == "/hexdump":
-            if parsed.query == "enable":
-                with hexdump_lock:
-                    HEXDUMP_ENABLED = True
-                print(f"{YELLOW}[{get_ts()}][*] HEXDUMP ENABLED via HTTP control{RESET}")
-                self._json(200, {"hexdump": True})
 
-            elif parsed.query == "disable":
-                with hexdump_lock:
-                    HEXDUMP_ENABLED = False
-                print(f"{YELLOW}[{get_ts()}][*] HEXDUMP DISABLED via HTTP control{RESET}")
-                self._json(200, {"hexdump": False})
+        elif parsed.path == "/hexdump/on":
+            with hexdump_lock:
+                HEXDUMP_ENABLED = True
+            self._json(200, {"hexdump": True})
 
-            else:
-                self._json(400, {
-                    "error": "Missing parameter. Use ?enable or ?disable",
-                    "hexdump": HEXDUMP_ENABLED
-                })
-        
-        elif parsed.path == "/allowall":
-                    if parsed.query == "enable":
-                        if ALLOWALL_ENABLED:
-                            self._json(200, {
-                                "allowall": True,
-                                "note": "Already active"
-                            })
-                            return
-                        # Snapshot current state before overriding
-                        _ALLOWALL_SNAPSHOT = {
-                            "ABUSEBLOCK_ENABLED": ABUSEBLOCK_ENABLED,
-                        }
-                        ABUSEBLOCK_ENABLED = False
-                        ALLOWALL_ENABLED = True
-                        print(f"{YELLOW}[{get_ts()}][*] ALLOWALL ENABLED via HTTP control — "
-                              f"all IP checks suspended, all newcomers accepted{RESET}")
-                        self._json(200, {
-                            "allowall": True,
-                            "snapshot_saved": _ALLOWALL_SNAPSHOT,
-                            "note": "Blacklist, whitelist and abuse check suspended"
-                        })
-                    elif parsed.query == "disable":
-                        if not ALLOWALL_ENABLED:
-                            self._json(200, {
-                                "allowall": False,
-                                "note": "Already inactive"
-                            })
-                            return
-                        # Restore from snapshot
-                        ABUSEBLOCK_ENABLED = _ALLOWALL_SNAPSHOT.get("ABUSEBLOCK_ENABLED", False)
-                        ALLOWALL_ENABLED = False
-                        _ALLOWALL_SNAPSHOT = {}
-                        print(f"{YELLOW}[{get_ts()}][*] ALLOWALL DISABLED via HTTP control — "
-                              f"previous behavior restored (abuseblock={ABUSEBLOCK_ENABLED}){RESET}")
-                        self._json(200, {
-                            "allowall": False,
-                            "restored": {
-                                "abuseblock_enabled": ABUSEBLOCK_ENABLED,
-                            },
-                            "note": "Rules file enforcement and abuse check restored to pre-allowall state"
-                        })
-                    else:
-                        self._json(400, {
-                            "error": "Missing parameter. Use ?enable or ?disable",
-                            "allowall": ALLOWALL_ENABLED
-                        })
-
-        elif parsed.path == "/newcomerabusecheck":
-                    if parsed.query == "enable":
-                        if not ABUSE_API_KEY:
-                            self._json(409, {
-                                "error": "Cannot enable — no AbuseIPDB API key was provided at startup",
-                                "newcomer_abuse_check": False
-                            })
-                            return
-                        ABUSEBLOCK_ENABLED = True
-                        print(f"{YELLOW}[{get_ts()}][*] Newcomer abuse check ENABLED via HTTP control — "
-                              f"threshold: {ABUSE_THRESHOLD}{RESET}")
-                        self._json(200, {"newcomer_abuse_check": True, "threshold": ABUSE_THRESHOLD})
-                    elif parsed.query == "disable":
-                        ABUSEBLOCK_ENABLED = False
-                        print(f"{YELLOW}[{get_ts()}][*] Newcomer abuse check DISABLED via HTTP control — "
-                              f"blacklist/whitelist/runtime-blocklist still enforced{RESET}")
-                        self._json(200, {
-                            "newcomer_abuse_check": False,
-                            "note": "Blacklist, whitelist and runtime blocklist remain active"
-                        })
-                    else:
-                        self._json(400, {
-                            "error": "Missing parameter. Use ?enable or ?disable",
-                            "newcomer_abuse_check": ABUSEBLOCK_ENABLED
-                        })
+        elif parsed.path == "/hexdump/off":
+            with hexdump_lock:
+                HEXDUMP_ENABLED = False
+            self._json(200, {"hexdump": False})
 
         else:
             self._json(404, {"error": "not found"})
@@ -1096,32 +1062,64 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v10 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v15.9 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Titan v10 Proxy
-    This version of Titan is using AbuseIPDB API to check new IPs abuse score.
-    Known IPs (allow or blocked) are not re-tested for abuse.
-    If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
-    HTTP control is optional and must be explicitly enabled with --httpexpose <port>.
-    """, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--listenport", type=int, required=True, help="Mandatory Option - Listening Port of Proxy")
-    parser.add_argument("--remoteserver", required=True, help="Mandatory Option - address to forward data transparently")
-    parser.add_argument("--remoteport", type=int, required=True, help="Mandatory Option - port of remote server server for data forwarding")
-    parser.add_argument("--ssl", action="store_true")
-    parser.add_argument("--hexdump", action="store_true", help="Enable hex data dumping on the screen")
-    parser.add_argument("--tcp-sniff", action="store_true", help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
-    parser.add_argument("--httpexpose", type=int,  metavar="HTTPPORT", help=HTTP_PORT_HELP)
+    parser = argparse.ArgumentParser(description="""\
+Titan v15.9 Proxy
 
-    # New in 15.7: override rules file path
-    parser.add_argument("--rulesfile", type=str, help="Rules file for allow/block entries (default = none)")
+This version of Titan is using AbuseIPDB API to check new IPs abuse score.
+Known IPs (allow or blocked) are not re-tested for abuse.
+If an ip (newcomer) has abuse score > threshold then this new IP is auto blocked.
+HTTP control is optional and must be explicitly enabled with --httpexpose <port>.
 
-    # New in 15.7: configurable AbuseIPDB threshold
-    parser.add_argument("--abuseblock", type=int, help="Enable AbuseIPDB auto-check & block with given threshold abuse score")
-    parser.add_argument("--abuseapikey", type=str, help="Path to AbuseIPDB API key file OR raw API key")
-    
+UID Check (--uidcheck, NEW in v15.9):
+  Enables Datakom PLC hardware-UID based authentication for newcomer IPs.
+  When active, Titan peeks at the first packet of every newcomer connection,
+  extracts the 12-byte Datakom UID (if the protocol marker is present) and
+  checks it against "allowUID <UID>" entries in the rules file.
+  A matching UID grants access regardless of the source IP, making this ideal
+  for PLCs on dynamic / mobile networks.
+  Priority order: BLACKLIST > WHITELIST (IP) > allowUID (UID) > AbuseIPDB.
+""", formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument("--listenport",   type=int, required=True,
+                        help="Mandatory Option - Listening Port of Proxy")
+    parser.add_argument("--remoteserver", required=True,
+                        help="Mandatory Option - address to forward data transparently")
+    parser.add_argument("--remoteport",   type=int, required=True,
+                        help="Mandatory Option - port of remote server server for data forwarding")
+    parser.add_argument("--ssl",          action="store_true")
+    parser.add_argument("--hexdump",      action="store_true",
+                        help="Enable hex data dumping on the screen")
+    parser.add_argument("--tcp-sniff",    action="store_true",
+                        help="Enable AF_PACKET TCP handshake logging (Linux only, requires root)")
+    parser.add_argument("--httpexpose",   type=int, metavar="HTTPPORT",
+                        help=HTTP_PORT_HELP)
+    parser.add_argument("--rulesfile",    type=str,
+                        help="Rules file for allow/block/allowUID entries (default = none)")
+    parser.add_argument("--abuseblock",   type=int,
+                        help="Enable AbuseIPDB auto-check & block with given threshold abuse score")
+    parser.add_argument("--abuseapikey",  type=str,
+                        help="Path to AbuseIPDB API key file OR raw API key")
+
+    # NEW in v15.9 ─────────────────────────────────────────────────────────
+    parser.add_argument("--uidcheck", action="store_true",
+                        help=(
+                            "Enable Datakom PLC UID-based authentication for newcomer IPs.\n"
+                            "When set, Titan reads the first packet of every newcomer connection\n"
+                            "and attempts to extract the hardware UID using the Datakom protocol\n"
+                            "marker (0x0F 0x1B 0x01 0xF6 0x01 at offset 16, followed by 12 UID bytes).\n"
+                            "If the UID matches an 'allowUID <UID>' entry in --rulesfile the\n"
+                            "connection is accepted regardless of source IP — useful for PLCs on\n"
+                            "dynamic / mobile networks.\n"
+                            "Has no effect without --rulesfile containing allowUID entries.\n"
+                            "Priority: BLACKLIST > IP WHITELIST > UID WHITELIST > AbuseIPDB."
+                        ))
+    # ───────────────────────────────────────────────────────────────────────
+
     args = parser.parse_args()
 
     # HTTP control: only enabled if --httpexpose is provided
@@ -1131,13 +1129,10 @@ if __name__ == "__main__":
     else:
         http_enabled = False
 
-    if args.rulesfile:
-        RULEFILE = args.rulesfile
-    else:
-        RULEFILE = None
+    RULEFILE = args.rulesfile if args.rulesfile else None
 
     if args.abuseblock is not None:
-        ABUSE_THRESHOLD = args.abuseblock
+        ABUSE_THRESHOLD   = args.abuseblock
         ABUSEBLOCK_ENABLED = True
         print(f"{YELLOW}[{get_ts()}][*] Abuse score switch enabled - abuse score threshold set to {ABUSE_THRESHOLD}")
     else:
@@ -1150,12 +1145,22 @@ if __name__ == "__main__":
         print(f"{YELLOW}[{get_ts()}][!] AbuseIPDB switch enabled but no API key provided - disabling abuse check{RESET}")
         ABUSEBLOCK_ENABLED = False
 
+    # NEW: UID check flag
+    if args.uidcheck:
+        UIDCHECK_ENABLED = True
+        if RULEFILE is None:
+            print(f"{YELLOW}[{get_ts()}][!] --uidcheck is active but no --rulesfile was provided. "
+                  f"UID check will run but no 'allowUID' entries can be loaded. "
+                  f"All newcomer UIDs will fall through to AbuseIPDB.{RESET}")
+    else:
+        UIDCHECK_ENABLED = False
+
     if RULEFILE is not None:
         load_rules()
         watcher_thread = threading.Thread(target=rules_watcher, daemon=True)
         watcher_thread.start()
     else:
-        print(f"{YELLOW}[{get_ts()}][*] No block/allow IP rules file provided — rule watcher disabled")
+        print(f"{YELLOW}[{get_ts()}][*] No rules file provided — rule watcher disabled - all IPs are allowed")
 
     if args.hexdump:
         with hexdump_lock:
@@ -1179,28 +1184,41 @@ if __name__ == "__main__":
     server.listen(100)
 
     total_conn_ever = 0
-    print(f"{CYAN}[{get_ts()}][*] ---- Titan Startup Summary ----")
 
+    print(f"{CYAN}[{get_ts()}][*] ---- Titan Startup Summary ----")
     print(f"{CYAN}[{get_ts()}][*] Listen Port:            {args.listenport}")
     print(f"{CYAN}[{get_ts()}][*] Remote Server:          {args.remoteserver}:{args.remoteport}")
-    print(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:       "
+    print(f"{CYAN}[{get_ts()}][*] HTTP Monitor/Control:   "
           f"{'Enabled on port ' + str(HTTP_CTRL_PORT) if http_enabled else 'Disabled'}")
-
     print(f"{CYAN}[{get_ts()}][*] Hexdump Mode:           {'Enabled' if args.hexdump else 'Disabled'}")
     print(f"{CYAN}[{get_ts()}][*] TCP Sniff Mode:         {'Enabled' if args.tcp_sniff else 'Disabled'}")
-
     print(f"{CYAN}[{get_ts()}][*] Rules File:             "
           f"{RULEFILE if RULEFILE is not None else 'None (rules disabled)'}")
-
     print(f"{CYAN}[{get_ts()}][*] Abuse Score Checking:   "
           f"{'Enabled (threshold ' + str(ABUSE_THRESHOLD) + ')' if ABUSEBLOCK_ENABLED else 'Disabled'}")
-
+    print(f"{CYAN}[{get_ts()}][*] UID Check Mode:         "                       # NEW
+          f"{'Enabled (Datakom PLC UID auth for newcomers)' if UIDCHECK_ENABLED else 'Disabled'}")
     print(f"{CYAN}[{get_ts()}][*] --------------------------------")
-
 
     if args.tcp_sniff:
         print(f"{CYAN}[{get_ts()}][*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
 
+    # -----------------------------------------------------------------------
+    # Main accept loop
+    # Decision flow for each incoming connection:
+    #
+    #  1. RUNTIME_BLOCKLIST  → drop  (in-memory, fastest check)
+    #  2. BLACKLIST (IP)     → drop  (file-backed)
+    #  3. WHITELIST (IP)     → accept immediately (trusted static IP)
+    #  4. --uidcheck active? → peek first packet, extract Datakom UID
+    #       4a. UID found & in WHITELIST_UIDS  → accept (dynamic-IP PLC)
+    #       4b. UID found & NOT in WHITELIST_UIDS → fall through to AbuseIPDB
+    #       4c. UID not found (not a PLC packet) → fall through to AbuseIPDB
+    #  5. AbuseIPDB check (if enabled)
+    #       score >= threshold → auto-block + drop
+    #       score <  threshold → accept
+    #  6. No AbuseIPDB → accept as plain newcomer
+    # -----------------------------------------------------------------------
 
     while True:
         try:
@@ -1210,25 +1228,12 @@ if __name__ == "__main__":
             continue
 
         client_ip = a[0]
-        ip_obj = ipaddress.ip_address(client_ip)
+        ip_obj    = ipaddress.ip_address(client_ip)
 
-        # ✅ ALLOWALL: skip all checks, bridge immediately
-        if ALLOWALL_ENABLED:
-            total_conn_ever += 1
-            with counter_lock:
-                connection_count += 1
-            with stats_lock:
-                STATS["accepted"] += 1
-            print(f"{GREEN}[{get_ts()}][+] ALLOWALL: {client_ip} accepted without checks{RESET}")
-            threading.Thread(
-                target=bridge,
-                args=(c, a, client_ip, args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
-                daemon=True
-            ).start()
-            continue
-
-        # Runtime in-memory blocklist check
-        if client_ip in RUNTIME_BLOCKLIST:
+        # ── Step 1: Runtime in-memory blocklist (fastest path) ─────────────
+        with RUNTIME_BLOCKLIST_LOCK:
+            in_runtime_block = client_ip in RUNTIME_BLOCKLIST
+        if in_runtime_block:
             print(f"{RED}[{get_ts()}] RUNTIME BLOCKLIST: blocked {client_ip}{RESET}")
             with stats_lock:
                 STATS["blocked"] += 1
@@ -1246,10 +1251,8 @@ if __name__ == "__main__":
             white_entry = ip_in_list(ip_obj, WHITELIST, return_entry=True)
             black_entry = ip_in_list(ip_obj, BLACKLIST, return_entry=True)
 
-        is_white = bool(white_entry)
-
-        # ✅ FIX: whitelist has absolute priority
-        if not is_white and black_entry:
+        # ── Step 2: Explicit IP blacklist ───────────────────────────────────
+        if black_entry:
             print(f"{RED}[{get_ts()}] BLOCKED ATTEMPT from {client_ip}{RESET}")
             with stats_lock:
                 STATS["blocked"] += 1
@@ -1263,8 +1266,87 @@ if __name__ == "__main__":
                 pass
             continue
 
-        # Only unknown (non-whitelisted) IPs get AbuseIPDB check
-        if not is_white and ABUSEBLOCK_ENABLED:
+        # ── Step 3: Explicit IP whitelist — accept immediately ──────────────
+        is_white = bool(white_entry)
+        if is_white:
+            # Trusted IP — skip UID check and AbuseIPDB entirely
+            total_conn_ever += 1
+            with counter_lock:
+                connection_count += 1
+            with stats_lock:
+                STATS["accepted"] += 1
+            threading.Thread(
+                target=bridge,
+                args=(c, a, client_ip, args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
+                kwargs={"initial_data": b""},
+                daemon=True
+            ).start()
+            continue
+
+        # ── Newcomer from here on ────────────────────────────────────────────
+        # Steps 4-6 apply only to IPs not in either IP list.
+
+        initial_data = b""   # will hold first-packet bytes if UID peek runs
+
+        # ── Step 4: UID check (only when --uidcheck is active) ──────────────
+        uid_accepted = False
+        if UIDCHECK_ENABLED:
+            uid_str, initial_data = peek_uid(c)
+
+            if uid_str:
+                with stats_lock:
+                    STATS["uid_seen"] += 1
+
+                with uids_lock:
+                    uid_comment = WHITELIST_UIDS.get(uid_str)
+
+                # Record every UID seen for operator visibility (/uidseen)
+                uid_status = "allowed" if uid_comment is not None else "unknown"
+                with uid_seen_lock:
+                    AUTO_UID_SEEN.append({
+                        "uid":     uid_str,
+                        "ip":      client_ip,
+                        "status":  uid_status,
+                        "comment": uid_comment or "",
+                        "ts":      get_ts(),
+                    })
+
+                if uid_comment is not None:
+                    # Known UID → accept regardless of source IP
+                    print(f"{GREEN}[{get_ts()}][UID] ACCEPTED newcomer {client_ip} "
+                          f"via UID {uid_str}  # {uid_comment}{RESET}")
+                    with stats_lock:
+                        STATS["uid_accepted"] += 1
+                    uid_accepted = True
+                else:
+                    # UID found but not in allowUID list → log and fall through
+                    print(f"{YELLOW}[{get_ts()}][UID] Unknown UID {uid_str} from {client_ip} "
+                          f"— not in allowUID list, proceeding to AbuseIPDB check{RESET}")
+            else:
+                # No UID marker in first packet → not a Datakom PLC (or timed out)
+                if initial_data:
+                    print(f"{YELLOW}[{get_ts()}][UID] No Datakom UID marker in first packet "
+                          f"from {client_ip} — proceeding to AbuseIPDB check{RESET}")
+                # If initial_data is empty (timeout/error) the client sent nothing;
+                # still fall through — AbuseIPDB will handle it.
+
+        if uid_accepted:
+            # Bypass AbuseIPDB for UID-whitelisted connections
+            total_conn_ever += 1
+            with counter_lock:
+                connection_count += 1
+            with stats_lock:
+                STATS["accepted"] += 1
+            threading.Thread(
+                target=bridge,
+                args=(c, a, client_ip, args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
+                kwargs={"initial_data": initial_data},
+                daemon=True
+            ).start()
+            continue
+
+        # ── Step 5: AbuseIPDB check ─────────────────────────────────────────
+        if ABUSEBLOCK_ENABLED:
             score, source = abuse_lookup_cached(client_ip)
             if score is not None:
                 print(f"{YELLOW}[{get_ts()}][INFO] AbuseIPDB score for {client_ip}: {score} (by {source}){RESET}")
@@ -1272,27 +1354,36 @@ if __name__ == "__main__":
                     print(f"{RED}[{get_ts()}][!] {client_ip} flagged by AbuseIPDB (score {score}) — auto-blocking{RESET}")
 
                     if RULEFILE is not None:
-                        # Persistent mode
+                        # Persistent mode: write block rule to file
                         add_block_rule(client_ip, score)
                         load_rules()
                     else:
-                        # In-memory only
+                        # Pure in-memory mode
                         print(f"{YELLOW}[{get_ts()}][*] No rules file — auto-blocking {client_ip} in memory only{RESET}")
 
-                    #disconnect_ip(client_ip)
-                    disconnect_ip(client_ip, reason=f"AbuseIPDB auto-block (score {score})")
-                    RUNTIME_BLOCKLIST.add(client_ip)
+                    disconnect_ip(client_ip)
+                    with RUNTIME_BLOCKLIST_LOCK:
+                        RUNTIME_BLOCKLIST.add(client_ip)
 
                     with stats_lock:
                         STATS["abuse_autoblocked"] += 1
                         AUTO_BLOCKED_IPS.append({
-                            "ip": client_ip,
+                            "ip":    client_ip,
                             "score": score,
-                            "ts": get_ts()
+                            "ts":    get_ts()
                         })
 
+                    try:
+                        c.shutdown(socket.SHUT_RDWR)
+                    except Exception:
+                        pass
+                    try:
+                        c.close()
+                    except Exception:
+                        pass
                     continue
 
+        # ── Step 6: Accept as plain newcomer ────────────────────────────────
         total_conn_ever += 1
         with counter_lock:
             connection_count += 1
@@ -1301,6 +1392,7 @@ if __name__ == "__main__":
 
         threading.Thread(
             target=bridge,
-            args=(c, a, a[0], args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
+            args=(c, a, client_ip, args.remoteserver, args.remoteport, args.ssl, total_conn_ever),
+            kwargs={"initial_data": initial_data},
             daemon=True
         ).start()

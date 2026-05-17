@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-# In this V3 , we allow specific IPs to get connected and make use of this proxy.
-# Allowed IPs are stored in a local file named "smtp-proxy-allowed-ip"
-# This sounds silly, but when this script is exposed on the global internet you will get
-# million of hits by bots and attackers - without IP filtering the --remoteserver most probably will ban you.
 import socket, ssl, threading, base64, re, argparse, sys, signal, datetime
 import logging
 import ipaddress

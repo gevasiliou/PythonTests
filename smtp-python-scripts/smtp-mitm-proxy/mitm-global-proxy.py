@@ -81,7 +81,7 @@ def bridge(client_sock, addr, remote_host, remote_port, force_ssl, show_hex, con
             except: pass
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Titan v11 Transparent Proxy")
+    parser = argparse.ArgumentParser(description="Titan v1 Transparent Proxy")
     parser.add_argument("--listenport", type=int, required=True)
     parser.add_argument("--remoteserver", required=True)
     parser.add_argument("--remoteport", type=int, required=True)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     server.listen(100) # Higher backlog for web resources
     
     total_conn_ever = 0
-    print(f"{GREEN}[*] TITAN v11 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
+    print(f"{GREEN}[*] TITAN v1 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
 
     while True:
         c, a = server.accept()

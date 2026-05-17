@@ -189,3 +189,4 @@
 189-block 85.217.140.6 # auto block by abuse - score 100
 190-block 194.164.107.4 # auto block by abuse - score 100
 191-block 85.217.140.50 # auto block by abuse - score 100
+allow 2.86.254.186 #Marfin Probably

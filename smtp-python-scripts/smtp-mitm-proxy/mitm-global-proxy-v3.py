@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 import socket, ssl, threading, argparse, sys, signal, datetime, os, time, ipaddress
 
+# This version of Titan supports IP black-list &  white-list. IPs rules are stored in a local file rm-proxy-ip-list.
+# In this ip-list file you can allow IP (allow to use the proxy) , or you can block IP
+# for new IPs coming default action is allow.
+# 
+
 # ANSI Colors
 RED, BLUE, GREEN, YELLOW, CYAN, MAGENTA, RESET = (
     '\033[91m','\033[94m','\033[92m','\033[93m','\033[96m','\033[95m','\033[0m'
@@ -152,7 +157,7 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, sh
             except: pass
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Titan v13 Transparent Proxy")
+    parser = argparse.ArgumentParser(description="Titan v13 Transparent Proxy with IP allow/block logic")
     parser.add_argument("--listenport", type=int, required=True)
     parser.add_argument("--remoteserver", required=True)
     parser.add_argument("--remoteport", type=int, required=True)

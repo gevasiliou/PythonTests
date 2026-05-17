@@ -2,7 +2,7 @@
 import socket, ssl, threading, base64, re, argparse, sys, signal, datetime
 import logging
 
-# ANSI Colors
+# ANSI Colors --
 RED, BLUE, GREEN, YELLOW, RESET = '\033[91m', '\033[94m', '\033[92m', '\033[93m', '\033[0m'
 CERTFILE = 'cert.pem'
 KEYFILE = 'key.pem'

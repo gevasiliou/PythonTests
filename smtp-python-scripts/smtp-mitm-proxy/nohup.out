@@ -1,0 +1,26 @@
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+60 packets captured
+60 packets received by filter
+0 packets dropped by kernel
+567 packets captured
+567 packets received by filter
+0 packets dropped by kernel
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+tcpdump: can't parse filter expression: syntax error
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+tcpdump: can't parse filter expression: syntax error
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+1665 packets captured
+1665 packets received by filter
+0 packets dropped by kernel
+16337 packets captured
+16337 packets received by filter
+0 packets dropped by kernel

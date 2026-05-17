@@ -654,11 +654,24 @@ def pipe(source, destination, label, color, conn_id, client_ip):
             except Exception as e: tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] shutdown() destination (error REMOTE->CLIENT): {e}{RESET}", "ERROR")
     finally:
         if label == "REMOTE->CLIENT":
-            with active_lock:
-                info = ACTIVE_CONNECTIONS.get(conn_id)
+            if _pipe_close_tag == "[FIN]":                                       # <- add this line
+                _rclose_type = "FIN"                                             # <- add this line
+            elif _pipe_close_tag == "[RST]":                                     # <- add this line
+                _rclose_type = "RST"                                             # <- add this line
+            elif _pipe_close_tag:                                                 # <- add this line
+                _rclose_type = _pipe_close_tag.strip("[]")                       # <- add this line
+            else:                                                                 # <- add this line
+                _rclose_type = "?"                                               # <- add this line
+            with active_lock:                                                    # (anchor - unchanged)
+                info = ACTIVE_CONNECTIONS.get(conn_id)                          # (anchor - unchanged)
                 if info is not None:
                     info["remote_closed"] = True
+                    info["last_remote_type"] = _rclose_type                      # <- add this line
                     tlog(f"{YELLOW}[{get_ts()}][*] [ID:#{conn_id}] Remote socket closed by remote server {_pipe_close_tag}{RESET}", "INFO")
+            with session_history_pending_lock:                                   # <- add this line
+                _pending = SESSION_HISTORY_PENDING.get(conn_id)                 # <- add this line
+                if _pending is not None:                                         # <- add this line
+                    _pending["last_remote_type"] = _rclose_type                 # <- add this line
         elif label == "CLIENT->REMOTE":
             with active_lock: info = ACTIVE_CONNECTIONS.pop(conn_id, None)
             if info is None: return

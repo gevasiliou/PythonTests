@@ -6,6 +6,9 @@ from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from collections import deque
 
+DASHBOARD_HTML = "dashboard24.html"
+TITAN_VERSION  = 24
+
 TCP_SNIFF_ENABLED = False
 # ── v18: directional flags (unchanged from v17) ───────────────────────────
 CLOSE_REMOTE_BY_CLIENT = False
@@ -22,7 +25,7 @@ dashboard_sessions_lock = threading.Lock()
 DASHBOARD_USER      = None
 DASHBOARD_PASS_HASH = None
 DASHBOARD_PATH      = None             # path to titan-dashboard/ folder
-DASHBOARD_HTML      = "dashboard24.html"
+
 TITAN_START_TIME    = time.time()
 
 # Set in __main__ so dashboard/data can report them
@@ -99,10 +102,18 @@ HEXDUMP_WATCH      = set()  # conn_ids with per-id hexdump enabled
 HEXDUMP_WATCH_PREV = {}     # {conn_id: bool} watch state before hex on
 hexdump_watch_lock = threading.Lock()
 
-TITAN_VERSION = 24
+
 TITAN_DESCRIPTION = f"""\
 Titan v{TITAN_VERSION} - Change Log:
+TODO:   Last Remote ts is inaccurate - current implementation counts only remote responses with payload (data bytes) - ACK, SYN, FIN are not counted
+        Provide Option to unblock an IP - not white-list it , just unblock it
+        Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
+        
 v24:    Enhancements to tcp sniffer function
+        WhiteList comment editing
+        Active Connections Comment refresh live
+        Autoblocked Table became Session Blocked table that contains entries that were autoblocked but also entries that user blocks
+        Session History Table - new action "Remove all IPs rows" to massively remove from the list a repeating ID of the same IP
 v23:    Enable per ID hex dump to avoid global enabling hex dump for all ids (log flood)
         Add Column LAST CLIENT to Session History
         Add "disconnect" action (id click & right click) in session history entries that show ACTIVE in Disconnected column.

@@ -1,0 +1,109 @@
+nohup: ignoring input
+[93m[18-05-2026 01:02:08.919][*] Abuse score check enabled — threshold: 30[0m
+[93m[18-05-2026 01:02:08.920][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 224 block[0m
+[96m[18-05-2026 01:02:08.922][*] ---- Titan v28 Startup Summary -------------------------
+[96m[18-05-2026 01:02:08.922][*] Listen Port:              65443
+[96m[18-05-2026 01:02:08.922][*] Remote Server:            rm.datakom.com.tr:90
+[96m[18-05-2026 01:02:08.922][*] HTTP Monitor/Control:     Enabled on 0.0.0.0:10001
+[96m[18-05-2026 01:02:08.922][*] Web Dashboard:            Enabled at http://0.0.0.0:10001/dashboard
+[96m[18-05-2026 01:02:08.922][*] Dashboard File:           dashboard28.html
+[96m[18-05-2026 01:02:08.922][*] Verbose Logging:          Disabled
+[96m[18-05-2026 01:02:08.922][*] Hexdump Mode:             Disabled
+[96m[18-05-2026 01:02:08.922][*] TCP Sniff Logging:        Disabled (tracker always on)
+[96m[18-05-2026 01:02:08.922][*] Rules File:               /home/gv/pytests/rm-proxy-ip-3.list
+[96m[18-05-2026 01:02:08.922][*] Abuse Score Checking:     Enabled (threshold 30)
+[96m[18-05-2026 01:02:08.922][*] Close Remote By Client:   Disabled
+[96m[18-05-2026 01:02:08.923][*] Close Client By Remote:   Disabled
+[96m[18-05-2026 01:02:08.923][*] -------------------------------------------------------
+[*] Titan v28 HTTP control on http://0.0.0.0:10001
+[96m[18-05-2026 01:02:08.937][*] TCP sniffer ACTIVE on port 65443 (AF_PACKET)[0m
+[92m[18-05-2026 01:02:31.918][*] Dashboard login: user 'admin'[0m
+[91m[18-05-2026 01:02:42.574] BLOCKED ATTEMPT from 46.177.20.72[0m
+[92m[18-05-2026 01:02:53.028][+] [ID:#1] CONNECTED: 62.169.230.178 (white-listed)  # Verinso (Active: 1)[0m
+[94m[18-05-2026 01:02:53.213] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[91m[18-05-2026 01:02:54.122] [ID:#1] (62.169.230.178) REMOTE->CLIENT:  # Verinso[0m
+[94m[18-05-2026 01:02:54.290] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[91m[18-05-2026 01:02:54.496] [ID:#1] (62.169.230.178) REMOTE->CLIENT:  # Verinso[0m
+[94m[18-05-2026 01:02:54.666] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:02:56.762] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:03:56.756] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:04:56.751] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:05:56.745] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:06:56.740] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:07:56.735] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:08:33.948][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 223 block[0m
+[92m[18-05-2026 01:08:33.949][*] Dashboard unblocked 46.177.20.72 — block rule removed from /home/gv/pytests/rm-proxy-ip-3.list[0m
+[94m[18-05-2026 01:08:56.730] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:09:35.759][INFO] AbuseIPDB score for 46.177.20.72: 0 (by cache)[0m
+[92m[18-05-2026 01:09:35.760][+] [ID:#2] CONNECTED: 46.177.20.72(newcommer) (Active: 2)[0m
+[94m[18-05-2026 01:09:38.785] [ID:#2] (46.177.20.72) CLIENT->REMOTE:[0m
+[91m[18-05-2026 01:09:55.321][!] Dashboard blacklisted 46.177.20.72 — added to /home/gv/pytests/rm-proxy-ip-3.list[0m
+[94m[18-05-2026 01:09:56.725] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:09:58.950][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 224 block[0m
+[91m[18-05-2026 01:09:58.952][-] [ID:#2] DISCONNECTED 46.177.20.72 — added to block list (remote: open)[0m
+[91m[18-05-2026 01:09:58.953][!] Forced disconnect of 46.177.20.72 (ID:#2) — added to block list[0m
+[93m[18-05-2026 01:10:30.650][*] [ID:#2] Remote socket now closed 46.177.20.72[0m
+[93m[18-05-2026 01:10:30.651][*] Operator force-closed remote socket for ID:#2[0m
+[94m[18-05-2026 01:10:56.719] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:11:56.714] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:12:56.709] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:13:56.703] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:14:56.698] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:15:56.692] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:16:56.687] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:17:56.681] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:18:15.146][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 223 block[0m
+[92m[18-05-2026 01:18:15.147][*] Dashboard unblocked 46.177.20.72 — block rule removed from /home/gv/pytests/rm-proxy-ip-3.list[0m
+[93m[18-05-2026 01:18:40.939][INFO] AbuseIPDB score for 46.177.20.72: 0 (by cache)[0m
+[92m[18-05-2026 01:18:40.942][+] [ID:#3] CONNECTED: 46.177.20.72(newcommer) (Active: 2)[0m
+[94m[18-05-2026 01:18:46.259] [ID:#3] (46.177.20.72) CLIENT->REMOTE:[0m
+[94m[18-05-2026 01:18:56.676] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[91m[18-05-2026 01:19:26.608][!] Dashboard blacklisted 46.177.20.72 — added to /home/gv/pytests/rm-proxy-ip-3.list[0m
+[93m[18-05-2026 01:19:29.002][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 224 block[0m
+[91m[18-05-2026 01:19:29.004][-] [ID:#3] DISCONNECTED 46.177.20.72 — added to block list (remote: open)[0m
+[91m[18-05-2026 01:19:29.005][!] Forced disconnect of 46.177.20.72 (ID:#3) — added to block list[0m
+[91m[18-05-2026 01:19:41.254] BLOCKED ATTEMPT from 46.177.20.72[0m
+[94m[18-05-2026 01:19:56.671] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:20:23.553][*] [ID:#3] Remote socket now closed 46.177.20.72[0m
+[94m[18-05-2026 01:20:56.665] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[93m[18-05-2026 01:21:28.098][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 223 block[0m
+[92m[18-05-2026 01:21:28.099][*] Dashboard unblocked 46.177.20.72 — block rule removed from /home/gv/pytests/rm-proxy-ip-3.list[0m
+[96m[18-05-2026 01:21:53.964][*] TCP watch ENABLED for ID:#1 (62.169.230.178)[0m
+[94m[18-05-2026 01:21:56.661] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[95m[18-05-2026 01:21:56.662] [TCP] [ID:#1] 62.169.230.178:5421 -> 144.172.96.163:65443 [PSH/ACK] Seq=12623871 Ack=2916740873 Win=1112 Len=616[0m
+[95m[18-05-2026 01:21:56.662] [TCP] [ID:#1] 144.172.96.163:65443 -> 62.169.230.178:5421 [ACK] Seq=2916740873 Ack=12624487 Win=64064 Len=0[0m
+[95m[18-05-2026 01:21:56.663] [TCP] [ID:#1] 144.172.96.163:39142 -> rm.datakom.com.tr:90 [PSH/ACK] Seq=3339471453 Ack=1797853624 Win=502 Len=616[0m
+[95m[18-05-2026 01:21:56.879] [TCP] [ID:#1] rm.datakom.com.tr:90 -> 144.172.96.163:39142 [ACK] Seq=1797853624 Ack=3339472069 Win=255 Len=0[0m
+[94m[18-05-2026 01:22:56.655] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[95m[18-05-2026 01:22:56.657] [TCP] [ID:#1] 62.169.230.178:5421 -> 144.172.96.163:65443 [PSH/ACK] Seq=12624487 Ack=2916740873 Win=1112 Len=616[0m
+[95m[18-05-2026 01:22:56.657] [TCP] [ID:#1] 144.172.96.163:65443 -> 62.169.230.178:5421 [ACK] Seq=2916740873 Ack=12625103 Win=64064 Len=0[0m
+[95m[18-05-2026 01:22:56.657] [TCP] [ID:#1] 144.172.96.163:39142 -> rm.datakom.com.tr:90 [PSH/ACK] Seq=3339472069 Ack=1797853624 Win=502 Len=616[0m
+[95m[18-05-2026 01:22:56.874] [TCP] [ID:#1] rm.datakom.com.tr:90 -> 144.172.96.163:39142 [ACK] Seq=1797853624 Ack=3339472685 Win=253 Len=0[0m
+[91m[18-05-2026 01:23:28.706][!] Dashboard blacklisted 46.177.20.72 — added to /home/gv/pytests/rm-proxy-ip-3.list[0m
+[93m[18-05-2026 01:23:29.021][!] Rules reloaded from /home/gv/pytests/rm-proxy-ip-3.list: 4 allow, 224 block[0m
+[96m[18-05-2026 01:23:55.638][*] TCP Sniff ENABLED via dashboard[0m
+[94m[18-05-2026 01:23:56.649] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[95m[18-05-2026 01:23:56.650] [TCP] [ID:#1] 62.169.230.178:5421 -> 144.172.96.163:65443 [PSH/ACK] Seq=12625103 Ack=2916740873 Win=1112 Len=616[0m
+[95m[18-05-2026 01:23:56.650] [TCP] [ID:#1] 144.172.96.163:65443 -> 62.169.230.178:5421 [ACK] Seq=2916740873 Ack=12625719 Win=64064 Len=0[0m
+[95m[18-05-2026 01:23:56.650] [TCP] [ID:#1] 144.172.96.163:39142 -> rm.datakom.com.tr:90 [PSH/ACK] Seq=3339472685 Ack=1797853624 Win=502 Len=616[0m
+[95m[18-05-2026 01:23:56.871] [TCP] [ID:#1] rm.datakom.com.tr:90 -> 144.172.96.163:39142 [ACK] Seq=1797853624 Ack=3339473301 Win=251 Len=0[0m
+[96m[18-05-2026 01:24:03.711][*] TCP Sniff DISABLED via dashboard — per-ID watches preserved[0m
+[96m[18-05-2026 01:24:23.886][*] TCP watch DISABLED for ID:#1 (62.169.230.178)[0m
+[94m[18-05-2026 01:24:56.644] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:25:56.639] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:26:56.633] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:27:56.628] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:28:56.623] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:29:56.618] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:30:56.612] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:31:56.607] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:32:56.602] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:33:56.597] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:34:56.592] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:35:56.661] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:36:56.580] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:37:56.576] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:38:56.570] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:39:56.565] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:40:56.558] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m
+[94m[18-05-2026 01:41:56.553] [ID:#1] (62.169.230.178) CLIENT->REMOTE:  # Verinso[0m

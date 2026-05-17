@@ -4,8 +4,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 HTTP_PORT_HELP = """\
-HTTP control port for Titan.
-Default Port: 9999
+This is Titan v8 with HTTP control - > Default Port: 9999
 
 Endpoints:
   /status                 GET     List active connections (json)
@@ -765,13 +764,12 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
 
 def http_control_loop():
     srv = HTTPServer((HTTP_CTRL_HOST, HTTP_CTRL_PORT), TitanHTTPHandler)
-    log(f"[*] Titan v15.3 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
+    log(f"[*] Titan v8 HTTP control on http://{HTTP_CTRL_HOST}:{HTTP_CTRL_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
-    #parser = argparse.ArgumentParser(description="Titan v15.3 Proxy (packet-aware + forced disconnect + AbuseIPDB + HTTP control)")
-    parser = argparse.ArgumentParser(description="""Titan v15.3 Proxy
+    parser = argparse.ArgumentParser(description="""Titan v8 Proxy
     This version of Titan is using AbuseIPDB API to check new IPs abuse score
     Known IPs (allow or blocked) are not re-tested for abuse.
     If an ip (newcomer) has abuse score > 80% then this new IP is auto blocked (auto appended to file rm-proxy-ip-list with block entry and #auto-block comment).
@@ -812,7 +810,7 @@ if __name__ == "__main__":
     server.listen(100)
 
     total_conn_ever = 0
-    print(f"{GREEN}[{get_ts()}][*] TITAN v15.3 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
+    print(f"{GREEN}[{get_ts()}][*] TITAN v8 ACTIVE: {args.listenport} -> {args.remoteserver}:{args.remoteport}{RESET}")
     if args.tcp_sniff:
         print(f"{CYAN}[{get_ts()}][*] TCP handshake logging ENABLED (--tcp-sniff){RESET}")
 

@@ -1347,6 +1347,7 @@ If everything is correct, it will just login!
 systemctl restart ssh
 
 .B Using scp (securecopy) with ssh key or ssh profile
+ps: reminder that scp synthax is always scp source target
 Local to Remote                 --> scp ./local-file cloudzy:/home/gv/pytests
 Local to Remote                 --> scp -i ~/.ssh/gvssh -P 2222 /path/to/local/file gv@vpsIP:/path/on/server/
 Remote to Local                 --> scp -i ~/.ssh/gvssh -P 2222 gv@vpsIP:/path/on/server/file /local/path/

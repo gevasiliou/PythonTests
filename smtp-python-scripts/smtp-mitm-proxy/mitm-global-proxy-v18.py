@@ -103,13 +103,17 @@ v17:    Replaced --chainremotesockets with two independent directional flags: --
 v16:    SESSION_HISTORY_PENDING for accurate remote_status tracking (remote close sockets in later time than client disconnected time.
         Fixed /sessiontable missing natural client-close entries.
 v15:    --chainremotesockets. Fixed /sessiontable missing forced-disconnect entries.
-        new: --chainremotesockets CLI flag introduced — when enabled, remote (upstream) sockets are forcibly closed when the downstream socket closes; disabled by default, making the v11 behavior opt-in rather than always-on
+        new: --chainremotesockets CLI flag introduced — when enabled, remote (upstream) sockets are forcibly closed when the downstream socket closes; 
+            disabled by default, making the v11 (chain) behavior opt-in rather than always-on
         change: pipe() upstream socket chaining is now conditional on --chainremotesockets. Both natural close and exception call destination.shutdown()
-        fix:    forced disconnects via disconnect_ip() and disconnect_connection_id() now write to SESSION_HISTORY immediately at disconnect time, instead of relying on bridge() finally block — 
-                root cause of missing entries in /sessiontable and /closedconnectionstable when connections were forcibly terminated
-        fix: bridge() finally block now only writes to SESSION_HISTORY if info is not None — preventing duplicate entries when a disconnect function has already written the record
-        improvement: disconnect_ip() now captures all connection metadata (last_client_ts, last_remote_ts, comment, connected_ts) before removing the entry from ACTIVE_CONNECTIONS, so the session history record is complete even on forced disconnects
-        improvement: disconnect_connection_id() similarly captures all connection metadata before deleting the ACTIVE_CONNECTIONS entry, ensuring the immediately-written session history record is fully populated
+        fix:    forced disconnects via disconnect_ip() and disconnect_connection_id() now write to SESSION_HISTORY immediately at disconnect time, 
+                instead of relying on bridge() finally block —  root cause of missing entries in /sessiontable and /closedconnectionstable when connections 
+                were forcibly terminated
+        fix: bridge() finally block now only writes to SESSION_HISTORY if info is not None — preventing duplicate entries from disconnect function
+        improvement:    disconnect_ip() captures all metadata (last_client_ts, last_remote_ts, comment, connected_ts) before removing from ACTIVE_CONNECTIONS, 
+                        so the session history record is complete even on forced disconnects
+        improvement:    disconnect_connection_id() similarly captures all connection metadata before deleting the ACTIVE_CONNECTIONS entry, 
+                        ensuring the immediately-written session history record is fully populated
 v14:    Change to --abuseblock and --abuseapikey - Now --abuseblock has mandatory options <score> and <api-key-file> or <api-key-raw>
         Removed: --abuseapikey as a standalone CLI argument — the API key is now always provided as the second argument to --abuseblock
         improvement: --abuseblock now exits with an error immediately at startup if the API key cannot be loaded, rather than silently disabling abuse checking
