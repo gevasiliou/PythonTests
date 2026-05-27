@@ -1,0 +1,151 @@
+================================================================================
+python-modbus-poll -- Changelog 
+================================================================================
+
+v12 to v13
+
+ARCHITECTURE
+------------
+
+Output handling
+  v12 : Three globals: log_file_handle, ENABLE_TIMESTAMP, QUIET_MODE
+  v13 : Logger class -- instantiated once, passed to all functions
+
+Receive logic
+  v12 : s.recv(260) -- single read, silent truncation possible on slow links
+  v13 : recv_modbus_response() -- reads MBAP header first, then loops for
+        exactly the right number of bytes (pdu_length - 1 after header)
+
+Connection model
+  v12 : New TCP socket per poll, no retry
+  v13 : Retry loop with configurable attempts; persistent socket in continuous polling mode
+
+
+BUG FIXES
+---------
+
+recv_modbus_response -- length-aware receive
+  v12 : s.recv(260) assumes the full response arrives in one TCP read.
+        On slow or fragmented links this silently truncates the response.
+  v13 : Reads the 7-byte MBAP header first, extracts the Length field,
+        then loops until exactly pdu_length - 1 additional bytes are
+        received. The -1 subtracts the Unit ID byte already consumed
+        by the header read.
+
+FC01 / FC02 -- coil and discrete input parsing
+  v12 : parse_modbus_response() unconditionally treats all response data
+        as 16-bit register pairs. FC01/FC02 responses are bit-packed
+        (8 coils per byte, LSB first) -- the v12 parser would
+        misinterpret or error on these responses.
+  v13 : parse_modbus_response() detects FC01/FC02 and unpacks bits
+        correctly, trims padding bits to the requested count, and routes
+        the result to the new decode_coils() display function.
+
+
+NEW ARGUMENTS
+-------------
+
+  --interval N    Poll continuously every N seconds (default: 0 = single
+                  shot). Ctrl-C stops cleanly with poll count reported.
+                  TCP connection is kept alive between polls and
+                  reconnected automatically on failure.
+
+  --retries N     Retry attempts on any socket/IO failure (default: 3).
+                  Each failed attempt waits 1 second before retrying.
+
+  --timeout N     Per-attempt socket timeout in seconds (default: 5).
+                  Useful for slow serial gateways which may need 10+.
+
+--analyze renamed to --verbose
+  The flag that enables full register breakdown was renamed from
+  --analyze to --verbose for clarity. Behaviour is identical.
+
+Modbus spec count guard
+  --count is now validated against Modbus specification limits:
+    FC01 / FC02 : maximum 2000 coils
+    FC03 / FC04 : maximum 125 registers
+  If the supplied value exceeds the limit it is clamped with a printed
+  warning before the request is sent.
+
+
+NEW DECODE CAPABILITIES (--verbose mode)
+-----------------------------------------
+
+BCD -- Binary Coded Decimal (per register)
+  Each 16-bit register is decoded as packed BCD (4 nibbles = 4 decimal
+  digits). If any nibble is > 9 the register is flagged as invalid BCD.
+  Common in older PLCs: Siemens S5, Mitsubishi, Omron.
+  Example: 0x1234 -> 1234
+
+IPv4 (per 32-bit pair)
+  Every pair of consecutive registers is decoded as a packed IPv4
+  address (hi byte / lo byte per register, ABCD order).
+  Example: r0=0xC0A8, r1=0x0101 -> 192.168.1.1
+
+Unix epoch -> datetime (32-bit and 64-bit)
+  All integer interpretations (32-bit and 64-bit, all endian formats)
+  are checked against a plausible year 2000-2100 window. If plausible,
+  the UTC datetime is shown alongside the raw integer value. 64-bit
+  values are also checked as millisecond epochs (common in Java-
+  originated industrial systems).
+
+64-bit types -- FLOAT64, INT64, UINT64
+  Whenever 4 or more registers are polled, groups of 4 consecutive
+  registers are decoded as 64-bit types in four word-order formats,
+  mirroring the 32-bit naming convention extended to 4 words:
+
+    ABCDEFGH  Big Endian standard
+    GHEFCDAB  Big Endian word-swap
+    BADCFEHG  Little Endian byte-swap
+    HGFEDCBA  Little Endian full reverse
+
+UTF-16-BE and UTF-16-LE (multi-register summary)
+  v12 : Only utf-16-be shown, labelled "Full UTF16"
+  v13 : Both "Full UTF16-BE" and "Full UTF16-LE" shown explicitly.
+        Byte order genuinely changes decoded text for UTF-16, unlike
+        ASCII/UTF-8 where endian swapping is meaningless.
+
+FC01 / FC02 -- coil display via decode_coils()
+  New dedicated display function for coil and discrete input results:
+    - Always shows a compact bit summary line and raw hex bytes
+    - In --verbose mode additionally lists every coil address with
+      its ON [1] / OFF [0] state
+
+
+CODE STRUCTURE
+--------------
+
+  v12 decode_registers()     Single monolithic function
+  v13                        Split into:
+                               decode_register_16bit()
+                               decode_32bit_block()
+                               decode_64bit_block()
+                               decode_multi_register_summary()
+
+  v12 parse_modbus_response()  Registers only, no count parameter
+  v13                          Handles FC01/FC02 bits and FC03/FC04
+                               registers; takes optional count parameter
+
+  v12  Single-shot only
+  v13  Continuous polling loop with persistent socket and clean
+       Ctrl-C handling
+
+  v12  --analyze flag
+  v13  Renamed to --verbose
+
+
+WHAT DID NOT CHANGE
+-------------------
+
+  - All original epilog examples and notes preserved verbatim
+  - Modbus exception code table and detection logic (0x80 bit check)
+  - build_modbus_request() framing
+  - reorder_bytes_for_format() 32-bit endian logic
+  - --offsetminus1, --raw, --log, --timestamp, --quiet, --slave,
+    --port, --floatformat -- behaviour unchanged
+  - Raw frame display (show_raw_frames) -- same output, parameter
+    renamed analyze -> verbose internally
+  - --regfunction accepts 01/02/03/04 numeric FC codes in both versions
+
+
+================================================================================

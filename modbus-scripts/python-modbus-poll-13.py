@@ -235,7 +235,16 @@ def send_modbus_request(ip, port, frame, retries, timeout, logger):
 # Response parsing
 # =============================================================================
 
-def parse_modbus_response(resp, logger):
+def parse_modbus_response(resp, logger, count=None):
+    """
+    Parse a raw Modbus TCP response frame.
+
+    Returns (function_code, byte_count, values, raw_data) where:
+      - FC 01/02 (coils/discrete inputs): values = list of 0/1 bits, one per
+        requested coil, trimmed to *count* (padding bits discarded).
+      - FC 03/04 (registers): values = list of 16-bit unsigned integers.
+    Returns None on any error or Modbus exception.
+    """
     if resp is None or len(resp) < 7:
         logger.print("[!] Error: Response too short to contain MBAP header")
         return None
@@ -271,6 +280,18 @@ def parse_modbus_response(resp, logger):
 
     data = pdu[2:2 + byte_count]
 
+    # --- FC01 / FC02: bit-packed coils / discrete inputs ---
+    if function_code in (1, 2):
+        bits = []
+        for byte in data:
+            for bit_pos in range(8):           # LSB first per Modbus spec
+                bits.append((byte >> bit_pos) & 1)
+        # Trim padding bits — device rounds up to whole bytes
+        if count is not None:
+            bits = bits[:count]
+        return function_code, byte_count, bits, data
+
+    # --- FC03 / FC04: 16-bit holding / input registers ---
     registers = []
     for i in range(0, byte_count, 2):
         if i + 1 >= len(data):
@@ -279,6 +300,42 @@ def parse_modbus_response(resp, logger):
         registers.append(struct.unpack(">H", data[i:i+2])[0])
 
     return function_code, byte_count, registers, data
+
+
+
+# =============================================================================
+# Coil / Discrete Input display
+# =============================================================================
+
+def decode_coils(bits, startreg, verbose, logger):
+    """
+    Display coil / discrete input results.
+    bits     : list of 0/1 values, one per requested coil/input
+    startreg : starting coil address (for labelling)
+    verbose  : if True, show individual coil breakdown; else compact summary
+    """
+    logger.print(f"\n[+] Coil / Discrete Input values ({len(bits)} bits):")
+
+    # Always show compact summary line
+    summary = " ".join(str(b) for b in bits)
+    logger.print(f"    Bits (LSB-first, ABCD order) : {summary}")
+
+    # Compact hex of the raw bit pattern grouped by byte
+    byte_groups = []
+    for i in range(0, len(bits), 8):
+        group = bits[i:i+8]
+        val = 0
+        for bit_pos, b in enumerate(group):
+            val |= (b << bit_pos)
+        byte_groups.append(f"{val:02X}")
+    logger.print(f"    Raw bytes HEX                : {' '.join(byte_groups)}")
+
+    if verbose:
+        logger.print("")
+        for idx, bit_val in enumerate(bits):
+            addr = startreg + idx
+            state = "ON  [1]" if bit_val else "OFF [0]"
+            logger.print(f"    Coil/Input {addr:>5} : {state}")
 
 
 # =============================================================================
@@ -642,6 +699,10 @@ def main():
             "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
             "    secs=23871; printf \"%02dh %02dm %02ds\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
             "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s, just human delay switching from terminal to browser)\n"
+            "  - FC01 / FC02 (Coils / Discrete Inputs): these are bit-packed, not 16-bit registers.\n"
+            "    8 coils are packed into each response byte, LSB first (coil 0 = bit 0 of byte 0).\n"
+            "    The tool correctly unpacks and trims padding bits, then shows each coil ON/OFF state.\n"
+            "    --count is clamped to 2000 for FC01/02 and 125 for FC03/04 per Modbus spec.\n"
             "  - BCD (Binary Coded Decimal): shown per register in --verbose mode. Common in older PLCs (Siemens S5, Mitsubishi, Omron).\n"
             "    A register value of 0x1234 in BCD means 1234 decimal. If any nibble > 9 it is flagged as invalid BCD.\n"
             "  - IPv4: in --verbose mode the 32-bit block shows the two registers decoded as packed IPv4 (hi/lo byte per register).\n"
@@ -701,6 +762,13 @@ def main():
                         help='Suppress terminal output (log file still receives output)')
 
     args = parser.parse_args()
+
+    # --- Modbus spec count limits ---
+    max_count = 2000 if args.regfunction in ('01', '02') else 125
+    if args.count > max_count:
+        print(f"[!] --count {args.count} exceeds Modbus spec limit of {max_count} "
+              f"for FC{args.regfunction}. Clamping to {max_count}.")
+        args.count = max_count
 
     logger = Logger(
         enable_timestamp=args.timestamp,
@@ -816,7 +884,7 @@ def main():
 
         # --- Raw frames ---
         if args.raw:
-            parsed = parse_modbus_response(response_frame, logger)
+            parsed = parse_modbus_response(response_frame, logger, count=args.count)
             show_raw_frames(
                 args.slave, register, args.count, function_code,
                 request_frame, response_frame,
@@ -827,18 +895,24 @@ def main():
                 return None
 
         # --- Parse ---
-        parsed = parse_modbus_response(response_frame, logger)
+        parsed = parse_modbus_response(response_frame, logger, count=args.count)
         if parsed is None:
             return None
 
-        fc, byte_count, regs, data = parsed
+        fc, byte_count, values, data = parsed
 
+        # --- FC01 / FC02: coils / discrete inputs ---
+        if fc in (1, 2):
+            decode_coils(values, args.startingregister, args.verbose, logger)
+            return values
+
+        # --- FC03 / FC04: holding / input registers ---
         if args.verbose:
-            decode_registers(regs, args.floatformat, args.startingregister, logger)
+            decode_registers(values, args.floatformat, args.startingregister, logger)
         else:
-            logger.print(f"\n[+] Raw registers: {regs}")
+            logger.print(f"\n[+] Raw registers: {values}")
 
-        return regs
+        return values
 
     # -------------------------------------------------------------------------
     # Poll loop
