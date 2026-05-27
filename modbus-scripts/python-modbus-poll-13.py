@@ -98,6 +98,73 @@ def reorder_bytes_for_format(r0, r1, fmt):
     }[fmt]
 
 
+def reorder_bytes_for_format_64(r0, r1, r2, r3, fmt):
+    """
+    Return an 8-byte sequence for the given 64-bit word-order format.
+    Formats mirror the 32-bit naming convention, extended to 4 words:
+      abcdefgh - Big Endian standard        : r0_hi r0_lo r1_hi r1_lo r2_hi r2_lo r3_hi r3_lo
+      ghefcdab - Big Endian word-swap       : r3_hi r3_lo r2_hi r2_lo r1_hi r1_lo r0_hi r0_lo
+      badcfehg - Little Endian byte-swap    : byte-swap inside each 16-bit word
+      hgfedcba - Little Endian full reverse : full byte reversal
+    """
+    words = []
+    for r in (r0, r1, r2, r3):
+        words.append((r >> 8) & 0xFF)
+        words.append(r & 0xFF)
+    A, B, C, D, E, F, G, H = words
+    return {
+        "abcdefgh": bytes([A, B, C, D, E, F, G, H]),
+        "ghefcdab": bytes([G, H, E, F, C, D, A, B]),
+        "badcfehg": bytes([B, A, D, C, F, E, H, G]),
+        "hgfedcba": bytes([H, G, F, E, D, C, B, A]),
+    }[fmt]
+
+
+def decode_bcd_register(reg):
+    """
+    Decode a 16-bit register as packed BCD (4 nibbles = 4 decimal digits).
+    Returns the integer value if all nibbles are valid (0-9), else None.
+    Example: 0x1234 -> 1234
+    """
+    result = 0
+    for shift in (12, 8, 4, 0):
+        nibble = (reg >> shift) & 0xF
+        if nibble > 9:
+            return None
+        result = result * 10 + nibble
+    return result
+
+
+def decode_ipv4_from_two_registers(r0, r1):
+    """
+    Interpret two consecutive 16-bit registers as a packed IPv4 address.
+    Each register holds 2 octets: hi byte = first octet, lo byte = second.
+    Example: r0=0xC0A8, r1=0x0101 -> 192.168.1.1
+    """
+    o1 = (r0 >> 8) & 0xFF
+    o2 =  r0       & 0xFF
+    o3 = (r1 >> 8) & 0xFF
+    o4 =  r1       & 0xFF
+    return f"{o1}.{o2}.{o3}.{o4}"
+
+
+# Epoch plausibility window: 2000-01-01 to 2100-01-01 in Unix seconds
+_EPOCH_MIN = 946684800
+_EPOCH_MAX = 4102444800
+
+def decode_epoch(value):
+    """
+    If value falls within a plausible Unix epoch range (year 2000-2100),
+    return a formatted datetime string, else return None.
+    """
+    if _EPOCH_MIN <= value <= _EPOCH_MAX:
+        try:
+            return datetime.utcfromtimestamp(value).strftime("%Y-%m-%d %H:%M:%S UTC")
+        except Exception:
+            return None
+    return None
+
+
 # =============================================================================
 # Modbus framing
 # =============================================================================
@@ -219,7 +286,7 @@ def parse_modbus_response(resp, logger):
 # =============================================================================
 
 def show_raw_frames(slave, register, count, function_code,
-                    request_frame, response_frame, analyze, logger):
+                    request_frame, response_frame, verbose, logger):
 
     is_exception = (
         response_frame is not None and
@@ -230,7 +297,7 @@ def show_raw_frames(slave, register, count, function_code,
     logger.print('\n=== Raw Modbus TCP Query ===')
     logger.print(f'MBAP + PDU HEX : {hexdump(request_frame)}')
 
-    if analyze and not is_exception:
+    if verbose and not is_exception:
         logger.print('Breakdown:')
         logger.print(f'  Transaction ID : {request_frame[0]:02X}{request_frame[1]:02X}')
         logger.print(f'  Protocol ID    : {request_frame[2]:02X}{request_frame[3]:02X}')
@@ -250,7 +317,7 @@ def show_raw_frames(slave, register, count, function_code,
     if is_exception:
         return
 
-    if analyze:
+    if verbose:
         fc         = response_frame[7]
         byte_count = response_frame[8]
         pdu        = response_frame[7:]
@@ -293,9 +360,16 @@ def decode_register_16bit(idx, reg, startreg, logger):
     logger.print(f'ASCII          : {printable_ascii(reg_bytes)}')
     logger.print(f'8-bit HI/LO    : {hi}  {lo}')
 
+    # BCD decode (per individual register)
+    bcd_val = decode_bcd_register(reg)
+    if bcd_val is not None:
+        logger.print(f'BCD            : {bcd_val}')
+    else:
+        logger.print(f'BCD            : <invalid - contains non-BCD nibble>')
+
 
 def decode_32bit_block(r0, r1, real_reg1, real_reg2, floatformat, logger):
-    """Print float32, uint32, int32, hex and ASCII for one register pair."""
+    """Print float32, uint32, int32, IPv4, epoch, hex and ASCII for one register pair."""
     float_formats = ["abcd", "cdab", "badc", "dcba"]
     formats_to_run = float_formats if floatformat == "auto" else [floatformat]
 
@@ -325,12 +399,99 @@ def decode_32bit_block(r0, r1, real_reg1, real_reg2, floatformat, logger):
             logger.print(f'UINT32 {fmt.upper():4s} : <invalid>')
             logger.print(f'INT32  {fmt.upper():4s} : <invalid>')
 
+    # IPv4 decode (ABCD only - canonical byte order for packed IPs)
+    ipv4_str = decode_ipv4_from_two_registers(r0, r1)
+    logger.print(f"\nIPv4 (ABCD hi/lo each reg)         : {ipv4_str}")
+
+    # Unix epoch -> datetime (check all 32-bit format interpretations)
+    logger.print("\nUnix epoch interpretations (if plausible):")
+    epoch_found = False
+    for fmt in formats_to_run:
+        try:
+            b = reorder_bytes_for_format(r0, r1, fmt)
+            u = struct.unpack(">I", b)[0]
+            dt = decode_epoch(u)
+            if dt:
+                logger.print(f'  EPOCH {fmt.upper():4s} : {u} -> {dt}')
+                epoch_found = True
+        except Exception:
+            pass
+    if not epoch_found:
+        logger.print(f'  (no format yields a plausible epoch in 2000-2100)')
+
     # HEX + ASCII
     logger.print("\nHEX / ASCII representations:")
     for fmt in formats_to_run:
         b = reorder_bytes_for_format(r0, r1, fmt)
         logger.print(f'HEX   {fmt.upper():4s} : {hexdump(b)}')
         logger.print(f'ASCII {fmt.upper():4s} : {printable_ascii(b)}')
+
+
+def decode_64bit_block(r0, r1, r2, r3, real_reg0, real_reg3, floatformat, logger):
+    """
+    Print float64 (double), int64, uint64 and epoch interpretations
+    for a group of four consecutive registers.
+    """
+    fmt64_all  = ["abcdefgh", "ghefcdab", "badcfehg", "hgfedcba"]
+    # Map 32-bit floatformat selection to the 64-bit equivalent
+    fmt64_map  = {
+        "abcd": "abcdefgh",
+        "cdab": "ghefcdab",
+        "badc": "badcfehg",
+        "dcba": "hgfedcba",
+        "auto": "auto"
+    }
+    fmt64_sel  = fmt64_map.get(floatformat, "auto")
+    fmts_to_run = fmt64_all if fmt64_sel == "auto" else [fmt64_sel]
+
+    logger.print(f"\n--- 64-bit block for registers {real_reg0}–{real_reg3} ---")
+
+    # FLOAT64 (double precision)
+    if fmt64_sel == "auto":
+        logger.print("Float64 (double) AUTO mode (all formats):")
+    for fmt in fmts_to_run:
+        try:
+            b   = reorder_bytes_for_format_64(r0, r1, r2, r3, fmt)
+            val = struct.unpack(">d", b)[0]
+            logger.print(f'FLOAT64 {fmt.upper()} : {val}')
+        except Exception:
+            logger.print(f'FLOAT64 {fmt.upper()} : <invalid>')
+
+    # INT64 / UINT64
+    logger.print("\nInteger 64-bit interpretations:")
+    for fmt in fmts_to_run:
+        try:
+            b    = reorder_bytes_for_format_64(r0, r1, r2, r3, fmt)
+            u64  = struct.unpack(">Q", b)[0]
+            i64  = struct.unpack(">q", b)[0]
+            logger.print(f'UINT64 {fmt.upper()} : {u64}')
+            logger.print(f'INT64  {fmt.upper()} : {i64}')
+        except Exception:
+            logger.print(f'UINT64 {fmt.upper()} : <invalid>')
+            logger.print(f'INT64  {fmt.upper()} : <invalid>')
+
+    # Unix epoch as 64-bit (millisecond epoch common in Java/industrial systems)
+    logger.print("\nUnix epoch 64-bit interpretations (if plausible):")
+    epoch_found = False
+    for fmt in fmts_to_run:
+        try:
+            b   = reorder_bytes_for_format_64(r0, r1, r2, r3, fmt)
+            u64 = struct.unpack(">Q", b)[0]
+            # Try as seconds
+            dt_sec = decode_epoch(u64)
+            if dt_sec:
+                logger.print(f'  EPOCH-sec  {fmt.upper()} : {u64} -> {dt_sec}')
+                epoch_found = True
+            # Try as milliseconds (divide by 1000)
+            u64_ms = u64 // 1000
+            dt_ms = decode_epoch(u64_ms)
+            if dt_ms and u64_ms != u64:
+                logger.print(f'  EPOCH-ms   {fmt.upper()} : {u64} -> {dt_ms} (as milliseconds)')
+                epoch_found = True
+        except Exception:
+            pass
+    if not epoch_found:
+        logger.print(f'  (no format yields a plausible epoch in 2000-2100)')
 
 
 def decode_multi_register_summary(regs, logger):
@@ -404,9 +565,11 @@ def decode_registers(regs, floatformat, startreg, logger):
     """Top-level decode dispatcher — calls the three helpers above."""
     logger.print(f'\n[+] Raw registers: {regs}')
 
+    # --- Per-register 16-bit breakdown (includes BCD) ---
     for idx, reg in enumerate(regs):
         decode_register_16bit(idx, reg, startreg, logger)
 
+    # --- 32-bit pairwise (float32, int32, uint32, IPv4, epoch) ---
     if len(regs) >= 2:
         logger.print('\n=== Combined 32-bit interpretations (pairwise) ===')
         for i in range(0, len(regs) - 1, 2):
@@ -416,6 +579,17 @@ def decode_registers(regs, floatformat, startreg, logger):
                 floatformat, logger
             )
 
+    # --- 64-bit quad-register groups (float64, int64, uint64, epoch) ---
+    if len(regs) >= 4:
+        logger.print('\n=== Combined 64-bit interpretations (quad registers) ===')
+        for i in range(0, len(regs) - 3, 4):
+            decode_64bit_block(
+                regs[i], regs[i+1], regs[i+2], regs[i+3],
+                startreg + i, startreg + i + 3,
+                floatformat, logger
+            )
+
+    # --- Full multi-register summary (hex / ASCII / UTF) ---
     decode_multi_register_summary(regs, logger)
 
 
@@ -433,9 +607,11 @@ def main():
             "  (c) python3 python-modbus-poll-13.py --deviceIP 10.242.105.67 --startingregister 10622 --slave 0 --raw --log query.log --timestamp\n"
             "  (d) python3 python-modbus-poll-13.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0 --raw --log query.log --timestamp --floatformat abcd\n"
             "  (e) python3 python-modbus-poll-13.py --deviceIP 172.28.228.221 --startingregister 7 --count 10 --slave 1 --raw\n"
-            "  (f) python3 python-modbus-poll-13.py --deviceIP 10.242.105.67 --slave 1 --raw --startingregister 1036 --count 6 --analyze\n"
+            "  (f) python3 python-modbus-poll-13.py --deviceIP 10.242.105.67 --slave 1 --raw --startingregister 1036 --count 6 --verbose\n"
             "  (g) python3 python-modbus-poll-13.py --deviceIP 192.168.1.10 --startingregister 100 --count 4 --interval 5\n"
             "  (h) python3 python-modbus-poll-13.py --deviceIP 192.168.1.10 --startingregister 100 --retries 5 --timeout 10\n"
+            "  (i) python3 python-modbus-poll-13.py --deviceIP 192.168.1.10 --startingregister 100 --count 8 --verbose\n"
+            "      (count 8 = four 32-bit pairs AND two 64-bit quads decoded automatically)\n"
             "\n"
             "Notes:\n"
             "  - --interval N polls continuously every N seconds (Ctrl-C to stop).\n"
@@ -466,6 +642,14 @@ def main():
             "  - When dealing with registers 32bit that contain time in seconds (i.e Teltonika Uptime Register 1) you can convert the seconds returned:\n"
             "    secs=23871; printf \"%02dh %02dm %02ds\" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))\n"
             "    Result: 06h 37m 51s (Teltonika web page was indicating 06h 38m 07s, just human delay switching from terminal to browser)\n"
+            "  - BCD (Binary Coded Decimal): shown per register in --verbose mode. Common in older PLCs (Siemens S5, Mitsubishi, Omron).\n"
+            "    A register value of 0x1234 in BCD means 1234 decimal. If any nibble > 9 it is flagged as invalid BCD.\n"
+            "  - IPv4: in --verbose mode the 32-bit block shows the two registers decoded as packed IPv4 (hi/lo byte per register).\n"
+            "    Example: r0=0xC0A8, r1=0x0101 -> 192.168.1.1\n"
+            "  - Unix epoch: in --verbose mode, all 32-bit and 64-bit integer interpretations are checked against the\n"
+            "    year 2000-2100 window and displayed as UTC datetime if plausible. 64-bit millisecond epochs are also checked.\n"
+            "  - 64-bit types (FLOAT64/double, INT64, UINT64): decoded automatically in --verbose mode whenever 4 or more\n"
+            "    registers are polled, using the same word-order formats extended to 4 words (abcdefgh / ghefcdab / badcfehg / hgfedcba).\n"
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
@@ -482,8 +666,8 @@ def main():
                         help='Subtract 1 from starting register before sending')
     parser.add_argument('--raw',              action='store_true',
                         help='Print raw MBAP + PDU hex frames')
-    parser.add_argument('--analyze',          action='store_true',
-                        help='Full register breakdown and multi-format decoding')
+    parser.add_argument('--verbose',          action='store_true',
+                        help='Full register breakdown and multi-format decoding (BCD, IPv4, epoch, 64-bit, UTF)')
     parser.add_argument('--regfunction',
                         choices=['01', '02', '03', '04'], default='03',
                         help=(
@@ -549,7 +733,7 @@ def main():
         logger.print("Mode   : single shot")
     logger.print(f"Retries: {args.retries}  Timeout: {args.timeout}s")
 
-    if args.analyze:
+    if args.verbose:
         logger.print("\n=== Modbus Polling Parameters ===")
         logger.print(f"[*] Device IP       : {args.deviceIP}")
         logger.print(f"[*] Port            : {args.port}")
@@ -636,7 +820,7 @@ def main():
             show_raw_frames(
                 args.slave, register, args.count, function_code,
                 request_frame, response_frame,
-                analyze=args.analyze,
+                verbose=args.verbose,
                 logger=logger
             )
             if parsed is None:
@@ -649,7 +833,7 @@ def main():
 
         fc, byte_count, regs, data = parsed
 
-        if args.analyze:
+        if args.verbose:
             decode_registers(regs, args.floatformat, args.startingregister, logger)
         else:
             logger.print(f"\n[+] Raw registers: {regs}")
