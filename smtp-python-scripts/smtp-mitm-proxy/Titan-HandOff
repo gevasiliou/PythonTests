@@ -1,0 +1,123 @@
+TITAN TCP PROXY — Handoff Summary
+Project Overview
+    Titan is a Python transparent TCP proxy with a web dashboard. 
+    Real-world use: routing 20 PLC devices (Datakom D500/D509) data to Datakom cloud (rm.datakom.com.tr). Runs as a systemd service on a Debian VPS.
+
+Session Rules (always apply):
+    * Always read real code files before suggesting any patch
+    * When giving patches, always specify exactly which file / function / sub-function the patch applies to and also provide two previous code lines that will not change.
+    * if a patch requires more than 50% of the existed function to change then simply provide full function for drop-in replacement and don't add #comments in this case
+    * Mark changed lines with comments: # <- add this line # <- remove this line # <- modify this line
+    * New functions: add a global comment at the top # new function — add before/after function XX
+    * If unsure about anything, ask — do not guess or assume code blocks or functions.
+    * Avoid contradictions — clarify before coding, read the real code, do not assume
+    * When asked to update a full file, produce the complete file
+    * When patches are small, the user applies them locally
+    * Before delivering any patch set, do a systematic cross-check of all file/function/endpoint references between Python and HTML real file — do not rely on memory but only on real files. * Do not guess code, do not suppose codes - always read the real code. Hold on to receive files.
+
+
+Project File Locations
+    Python v30: /home/gv/pytests/mitm-global-proxy-v30.py
+    Dashboard v30: /home/gv/pytests/dashboard/dashboard30.html
+    Rules file: /home/gv/pytests/rm-proxy-ip.list
+    AbuseIPDB key: /home/gv/pytests/abuseipdb.key
+    Main log: /var/log/rm-proxy.log
+    VerboseLog: /var/log/rm-proxy-verbose.log (owned by gv:gv)
+    Service file: /etc/systemd/system/rm-proxy.service
+
+Production Service File (current)
+    ini[Unit]
+    Description=Custom Datakom Rainbow Proxy
+    After=network.target
+
+    [Service]
+    User=gv
+    WorkingDirectory=/home/gv/pytests
+    AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
+    #ExecStart=/usr/bin/python3 -u mitm-global-proxy-v28.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 20 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P"
+    ExecStart=/usr/bin/python3 -u mitm-global-proxy-v30.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 20 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P" --verboselog /var/log/rm-proxy-verbose.log
+
+    Restart=always
+    RestartSec=3
+    StandardOutput=append:/var/log/rm-proxy.log
+    StandardError=append:/var/log/rm-proxy.log
+
+    [Install]
+    WantedBy=multi-user.target
+
+Titan v29 Changes:
+Python:
+    --verboselog <path> startup flag
+    Newcomer-only payload logging to rotating file (midnight rotation, backupCount=1, 500MB cap)
+    "newcomer": not bool(entry) tracked per connection in ACTIVE_CONNECTIONS
+    POST /verboselog?enable|disable runtime endpoint
+    GET /dashboard/verboselog?id=X&offset=N streaming endpoint
+    Four new functions: setup_verbose_log, write_verbose_log, _find_rotated_verbose_log, read_verbose_log_for_id
+    New globals: VERBOSELOG_PATH, VERBOSELOG_ENABLED, VERBOSELOG_MAX_SIZE, VERBOSELOG_CAPPED, _verbose_log_handler, verbose_log_file_lock
+
+Dashboard:
+    VerboseLog: ON/OFF header badge (hidden when --verboselog not set, shows CAP! in red at 500MB)
+    📋 Verbose button in Active Connections and Session History tables
+    Modal with live polling (active) or single fetch (closed connections)
+    Searches both current and rotated log file for full 48h coverage
+    confirmDiscId function added (was missing from compressed dashboard)
+
+
+v30 Changes 
+Dashboard:
+    Verbose Log Modal — Hex View + Search + Clear:
+    New globals: verboseLines=[], verboseHexMode=false, verboseSearchVal=''
+    textToHexdump(text) — client-side hex conversion, 16-byte rows, offset hex |ascii| format
+    renderVerboseArea() — re-renders verboseLines[] in current mode; applies search filter; splits line on direction label to hex payload only, prefix stays readable
+    toggleVerboseHex() — toggles mode, updates ⬡ Hex: OFF/ON button (amber when active)
+    onVerboseSearch(val) / clearVerboseSearch() — client-side grep on verboseLines[], works on ID, IP, keyword, payload; updates match count display
+    clearVerboseLog() / confirmClearVerboseLog() — double confirmation, calls POST /dashboard/verboselog/clear, resets browser state
+    openVerboseModal() updated — resets all state on open; search bar + match counter above log area; vlog-area uses height:calc(65vh - 180px) with min-height:200px; footer has 🗑 Clear Log (left), Close, ⬡ Hex: OFF
+    fetchVerboseLogs() updated — accumulates into verboseLines[], delegates to renderVerboseArea()
+    Log buffer increased: deque(maxlen=10000) Python, logLines.length>10000 dashboard
+    Provide VerboseLog Clear button (truncates both verboselog files- working and rotating)
+    Search modal searches both current and rotated file (full 48h window)
+    Fixed in v30: multi-line recv chunks now split into individual tagged entries (each line gets its own [timestamp] [ID:#N] (ip) DIRECTION: payload entry) to prevent lines being lost during splitlines() filter
+
+Python v30:
+    POST /dashboard/verboselog/clear endpoint — truncates both current and rotated verbose log files, resets VERBOSELOG_CAPPED
+
+VerboseLog Behaviour Explained
+    TimedRotatingFileHandler with when='midnight', backupCount=1
+    Rotation only triggers when emit() is called after midnight — if no newcomer data written after midnight, rotation is deferred
+    Rotated file name: rm-proxy-verbose.log.YYYY-MM-DD
+    500MB cap — writes suspended at cap, resume after rotation
+
+Pending Bugs Reported by previous claude sessions (needs to be rechecked)
+
+Bug 1 — disconnect_ip() : _popped is None branch is logically inverted (code bug)
+    File: Python · function disconnect_ip()
+    What happens: When _popped is None, it means pipe()'s finally block already popped and cleaned up the entry before disconnect_ip() reached the pop. 
+    The code should silently continue — instead it logs a fake "Forced disconnect" and increments killed, making the caller believe it disconnected something it did not. The history entry is correctly skipped (pipe already wrote it), so only the log line and the count are wrong.
+    Correct behaviour: just continue.
+
+Bug 2 — Main accept loop: AbuseIPDB auto-block entry is missing "type" and "expires" fields (code bug)
+    File: Python · if __name__ == "__main__": accept loop
+    Every other code path that appends to AUTO_BLOCKED_IPS includes "type" and "expires":
+    In JS renderBlocked(), b.type being undefined falls silently to the auto tag — so the badge renders correctly. 
+    But b.expires being undefined means the expires cell is rendered as — only because the JS isTemp branch is not taken. 
+    If you ever add logic that reads b.expires for non-temp entries this will break.
+
+Bug 3 — Context menu ctxDisc() bypasses the confirmation modal (UX/design bug)
+    File: HTML/JS · function ctxDisc()
+    discId() disconnects immediately with no confirmation. 
+    The function confirmDiscId() (with a modal and Cancel button) already exists but is never called from the context menu. 
+    The right-click menu is the primary way to disconnect in the current UI — every other destructive action (Disconnect All, Blacklist, Unblock) has a confirmation modal. 
+    This one silently fires.
+
+Bug 4 — abuse_lookup_cached() called inside the rulefile-block rejection path (design/performance bug)
+    File: Python · if __name__ == "__main__": accept loop
+    This was added in v28 to populate the score/country for the Session Blacklist table. 
+    The problem: for every connection attempt from a rulefile-blocked IP, a (cached) AbuseIPDB lookup is triggered. 
+    The 1-hour cache helps, but the very first hit per IP within any hour window makes a live network request (requests.get(...)) while the main accept loop is blocked on it — delaying the rejection and potentially all other new connections in flight. The score/country is cosmetic data for a UI table; 
+    it should not be fetched in the hot path.
+
+User ToDo List
+    Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
+    Configurable idle timeout watchdog that auto-disconnects connections where Idle exceeds a threshold. Can be better combined with a cli swith like --autodisconect 
+    Change the logic of auto disconnect oldest in dashboard - now that we have "IDLE" counter in Active Connections, auto disconnect oldest can just check the IDLE time versus a treshold (i.e > 1 hour) and auto disconnect frozen clients or frozen remotes.

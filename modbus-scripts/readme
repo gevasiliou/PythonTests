@@ -2,7 +2,11 @@ Versions after 3 stopped using pymodbus library to avoid future (and current) co
 We use simple python to built the modbus hex query sent to device and simple python to decode the device hex answer.
 
 This one works ok, polling register 10341 = 509TB Battery Voltage = 15.1 at the time of polling.
-Note that for polling slave ID had to be zero; though in PLC configuration suite this ID is 1.
+Note that for polling slave ID for some device has to be zero, even if in PLC configuration Device ID is 1.
+For example IL4-AMF8 needs --slave 0.
+On the other hand IL4-AMF25 needs --slave 1.
+For AMF25, registers does not need an offset. 
+Some modbus testers (i.e Schneider Modbus Tester) require offset +1 and some other testers require offset -1.
 
 python3 python-modbus-poll-7.py --deviceIP 10.242.105.67 --startingregister 10341 --slave 0
 [*] Connecting to 10.242.105.67:502
@@ -58,3 +62,8 @@ TYPICAL DATAKOM REGISTERS
 10250 R 32bit x10 Genset phase L3 voltage
 10341 R 16bit x100 Battery volt
 10622 R 32bit x100 Counter: engine hours run
+
+
+Valid poll for IL4-AMF25 (27-05-2025, Chania Spare)
+python3 python-modbus-poll-7.py --deviceIP 192.168.7.250 --startingregister 1361 --count 1 --slave 1
+
