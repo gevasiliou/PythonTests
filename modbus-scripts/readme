@@ -67,3 +67,15 @@ TYPICAL DATAKOM REGISTERS
 Valid poll for IL4-AMF25 (27-05-2025, Chania Spare)
 python3 python-modbus-poll-7.py --deviceIP 192.168.7.250 --startingregister 1361 --count 1 --slave 1
 
+python3 python-modbus-poll-13.py --deviceIP 192.168.7.250 --startingregister 1290 --count 16 --slave 1 --analyze
+Full HEX (all registers ABCD)      : 49 6E 74 65 6C 69 4C 69 74 65 34 2D 31 2E 38 2E 30 2E 33 34 00 00 00 00 00 00 00 00 00 00 00 00
+Full HEX (pairs CDAB)              : 74 65 49 6E 4C 69 6C 69 34 2D 74 65 38 2E 31 2E 33 34 30 2E 00 00 00 00 00 00 00 00 00 00 00 00
+Full HEX (pairs - byte swap BADC)  : 6E 49 65 74 69 6C 69 4C 65 74 2D 34 2E 31 2E 38 2E 30 34 33 00 00 00 00 00 00 00 00 00 00 00 00
+Full HEX (pairs DCBA)              : 65 74 6E 49 69 4C 69 6C 2D 34 65 74 2E 38 2E 31 34 33 2E 30 00 00 00 00 00 00 00 00 00 00 00 00
+Full HEX (all registers DCBA)      : 00 00 00 00 00 00 00 00 00 00 00 00 34 33 2E 30 2E 38 2E 31 2D 34 65 74 69 4C 69 6C 65 74 6E 49
+8-bit unsigned integers ABCD       : 73 110 116 101 108 105 76 105 116 101 52 45 49 46 56 46 48 46 51 52 0 0 0 0 0 0 0 0 0 0 0 0
+Full ASCII (all registers ABCD)    : InteliLite4-1.8.0.34............
+Full UTF16-BE (all registers ABCD) : 䥮瑥汩䱩瑥㐭ㄮ㠮〮㌴
+Full UTF16-LE (all registers ABCD) : 湉整楬楌整ⴴ⸱⸸⸰㐳
+Full UTF8 (all registers ABCD)     : InteliLite4-1.8.0.34
+
