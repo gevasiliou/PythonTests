@@ -6,8 +6,8 @@ from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from collections import deque
 
-DASHBOARD_HTML = "dashboard30.html"
-TITAN_VERSION  = 30
+TITAN_VERSION  = 31
+DASHBOARD_HTML = f"dashboard{TITAN_VERSION}.html"
 
 TCP_SNIFF_ENABLED = False
 # ── v18: directional flags ────────────────────────────────────────────────
@@ -115,14 +115,16 @@ TITAN_CHANGELOG = f"""\
 TITAN TCP Proxy Changelog
 Current Titan Version is v{TITAN_VERSION}
 
-TODO:   Since after v26 tcp sniff is by default enabled (but not printed) we can now easily provide per-ID tcp-sniff printing.
-        Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
+TODO:   Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
         Configurable idle timeout watchdog that auto-disconnects connections where Idle exceeds a threshold.
         Change the logic of auto disconnect oldest in dashboard - now that we have "IDLE" counter in Active Connections, auto disconnect oldest can just
         check the IDLE time versus a treshold (i.e > 1 hour) and auto disconnect frozen clients
+v31:    Changes to both python and html file in order to include Datakom PLC Unique ID (extracted by PLC hex train) and Datakom PLC Friendly Name
+        Column "DEVICE" added to dashboard tables (PLC friendly name) - UID shown on DEVICE mouse hover. UID Copy available on right click in device column.
 v30:    dashboard30.html :  The Verbose Log modal (📋 button introduced in v29) gains a client-side hex display toggle.
                             Verbose Log Modal gains a grep search capability.
                             Verbose Log Modal gains a button that can delete all verbose lines (from current+rotating file)
+                            Various finetuning to improve verboselog file reading
         python:             some lines sent by newcomers not logged and not displayed in verboselog file - now fixed
                             new endopoint added for verbose clear
                             Live Log in dashboard is now holding 10000 lines (also a small change applies to dashboard30.html)
@@ -462,7 +464,6 @@ def disconnect_ip(ip_str, reason="block list"):
             killed += 1
             continue
         disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-
         duration = _calc_duration(connected_ts, disconnected_ts)
         remote_status = "closed" if CLOSE_REMOTE_BY_CLIENT else "open"
         entry_dict = {
@@ -472,6 +473,8 @@ def disconnect_ip(ip_str, reason="block list"):
             "last_remote_ts": last_remote_ts, "close_reason": reason,
             "last_client_type": last_client_type,
             "remote_status": remote_status,
+            "plc_uid": info.get("plc_uid","") if info else "",    # <- add this line
+            "plc_name": info.get("plc_name","") if info else "",  # <- add this line
         }
         with session_history_lock: SESSION_HISTORY.append(entry_dict)
         if remote_status == "open":
@@ -511,6 +514,8 @@ def disconnect_connection_id(cid, reason="operator request"):
         "last_remote_ts": last_remote_ts, "close_reason": reason,
         "last_client_type": last_client_type,
         "remote_status": remote_status,
+        "plc_uid": info.get("plc_uid",""),    # <- add this line
+        "plc_name": info.get("plc_name",""),  # <- add this line
     }
     with session_history_lock: SESSION_HISTORY.append(entry_dict)
     if remote_status == "open":
@@ -556,7 +561,15 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                     ts_now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
                     if label == "CLIENT->REMOTE":
                         info["last_client_ts"] = ts_now
-                        if info.get("remote_closed", False): _should_break = True  # <- modify this line
+                        if info.get("remote_closed", False): _should_break = True
+                        if not info.get("plc_uid") and len(data) >= 0x59 and data[0:3] == b'\x44\x59\x30':  # <- add this line
+                            try:                                                                               # <- add this line
+                                info["plc_uid"]  = data[0x15:0x21].hex().upper()                             # <- add this line
+                                raw_name         = data[0x39:0x59]                                            # <- add this line
+                                name             = raw_name.rstrip(b'\x2d\x00').decode('ascii', errors='ignore').strip()  # <- add this line
+                                info["plc_name"] = name if name else ""                                       # <- add this line
+                            except Exception as e:                                                            # <- add this line
+                                tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] plc_uid extraction failed: {e}{RESET}", "ERROR")  # <- add this line
                     else:
                         info["last_remote_ts"] = ts_now
             with rules_lock:
@@ -636,6 +649,8 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                 "last_remote_type": info.get("last_remote_type","?"),
                 "last_client_type": info.get("last_client_type","?"),
                 "close_reason": close_reason, "remote_status": remote_status,
+                "plc_uid": info.get("plc_uid",""),    # <- add this line
+                "plc_name": info.get("plc_name",""),  # <- add this line
             }
             with session_history_lock: SESSION_HISTORY.append(entry_dict)
             if remote_status == "open":
@@ -662,6 +677,8 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
             "last_client_type": "?",
             "comment": conn_comment,
             "newcomer": not bool(entry),
+            "plc_uid": "",
+            "plc_name": "",
         }
     tlog(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip}{tag}{comment} "
          f"(Active: {connection_count}){RESET}", "CONNECT")
@@ -719,6 +736,8 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
                     "last_remote_type": info.get("last_remote_type","?"),
                     "last_client_type": info.get("last_client_type","?"),
                     "close_reason": close_reason, "remote_status": "closed",
+                    "plc_uid": info.get("plc_uid",""),
+                    "plc_name": info.get("plc_name",""),
                 })
             tlog(f"{RED}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
                  f"(Active: {connection_count}) — {close_reason}{RESET}", "DISCONNECT")
@@ -1274,6 +1293,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         "last_client_type": info.get("last_client_type","?"),
                         "duration": dur, "idle": idle_str,
                         "remote_closed": info.get("remote_closed", False),
+                        "plc_uid": info.get("plc_uid",""),    # <- add this line
+                        "plc_name": info.get("plc_name",""),  # <- add this line
                     })
             hist_active = []
             with active_lock:
@@ -1292,6 +1313,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         "last_remote_type": info.get("last_remote_type","?"),
                         "last_client_type": info.get("last_client_type","?"),
                         "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                        "plc_uid": info.get("plc_uid",""),    # <- add this line
+                        "plc_name": info.get("plc_name",""),  # <- add this line
                     })
             with session_history_lock: hist_closed = list(SESSION_HISTORY)
             hist_closed.sort(key=lambda s: s.get("id", 0))
@@ -1439,13 +1462,15 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "last_client_type": info.get("last_client_type","?"),
                     "duration": dur, "idle": idle_str,
                     "remote_closed": info.get("remote_closed", False),
+                    "plc_uid": info.get("plc_uid",""),    # <- add this line
+                    "plc_name": info.get("plc_name",""),  # <- add this line
                 })
-
         hist_active = []
         with active_lock:
             for cid, info in ACTIVE_CONNECTIONS.items():
                 try:
                     dur_secs = int((now - datetime.datetime.strptime(info.get("connected_ts",""), "%d-%m-%Y %H:%M:%S.%f")).total_seconds())
+
                     dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s"
                            if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m")
                 except Exception: dur = "?"
@@ -1458,6 +1483,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "last_remote_type": info.get("last_remote_type","?"),
                     "last_client_type": info.get("last_client_type","?"),
                     "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                    "plc_uid": info.get("plc_uid",""),    # <- add this line
+                    "plc_name": info.get("plc_name",""),  # <- add this line
                 })
         with session_history_lock: hist_closed = list(SESSION_HISTORY)
         hist_closed.sort(key=lambda s: s.get("id", 0))

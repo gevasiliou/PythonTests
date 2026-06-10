@@ -6,8 +6,8 @@ from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from collections import deque
 
-DASHBOARD_HTML = "dashboard30.html"
-TITAN_VERSION  = 30
+TITAN_VERSION  = 32
+DASHBOARD_HTML = f"dashboard{TITAN_VERSION}.html"
 
 TCP_SNIFF_ENABLED = False
 # ── v18: directional flags ────────────────────────────────────────────────
@@ -115,17 +115,21 @@ TITAN_CHANGELOG = f"""\
 TITAN TCP Proxy Changelog
 Current Titan Version is v{TITAN_VERSION}
 
-TODO:   Since after v26 tcp sniff is by default enabled (but not printed) we can now easily provide per-ID tcp-sniff printing.
-        Provide Option to search rules file (by dashboard) for a specific IP or pattern like 31.67.*.*
-        Configurable idle timeout watchdog that auto-disconnects connections where Idle exceeds a threshold.
-        Change the logic of auto disconnect oldest in dashboard - now that we have "IDLE" counter in Active Connections, auto disconnect oldest can just
-        check the IDLE time versus a treshold (i.e > 1 hour) and auto disconnect frozen clients
+v32:    VerboseLog subsystem rewritten from a rotating-file model (TimedRotatingFileHandler, current + 1 rotated file) to a SINGLE capped file model: 
+        one append-only file, trimmed to its last VERBOSELOG_MAX_LINES lines (50000 lines) by a dedicated midnight watcher thread. 
+        No more rotated rm-proxy-verbose.log.YYYY-MM-DD files.
+        File trimming is skipped if the lines inside real file is less than 50000. 
+        In both cases (verboselog file trimmed or trimming skipped) a dedicated message is loged in the titan main log.
+v31:    Changes to both python and html file in order to include Datakom PLC Unique ID (extracted by PLC hex train) and Datakom PLC Friendly Name
+        Column "DEVICE" added to dashboard tables (PLC friendly name) - UID shown on DEVICE mouse hover. UID Copy available on right click in device column.
+        Fixed: bridge() natural-disconnect history path now carries plc_uid/plc_name (DEVICE column populated on all disconnect paths).
 v30:    dashboard30.html :  The Verbose Log modal (📋 button introduced in v29) gains a client-side hex display toggle.
                             Verbose Log Modal gains a grep search capability.
                             Verbose Log Modal gains a button that can delete all verbose lines (from current+rotating file)
+                            Various finetuning to improve verboselog file reading
         python:             some lines sent by newcomers not logged and not displayed in verboselog file - now fixed
                             new endopoint added for verbose clear
-                            Live Log in dashboard is now holding 10000 lines (also a small change applies to dashboard30.html)
+                            Live Log in dashboard is now holding last 10000 lines (also a small change applies to dashboard30.html)
 v29:    VerboseLog: newcomer verbose data logged to a separate rotating file.
         New --verboselog <path> startup flag — starts ON when provided, midnight rotation, 2-day retention, 500MB cap.
         Dashboard VerboseLog badge — toggle at runtime; shows CAP! warning when 500MB limit is hit.
@@ -278,6 +282,7 @@ timed_blocklist_lock = threading.Lock()
 VERBOSELOG_PATH       = None
 VERBOSELOG_ENABLED    = False
 VERBOSELOG_MAX_SIZE   = 500 * 1024 * 1024   # 500 MB hard cap
+VERBOSELOG_MAX_LINES  = 50000
 VERBOSELOG_CAPPED     = False
 _verbose_log_handler  = None
 verbose_log_file_lock = threading.Lock()
@@ -462,7 +467,6 @@ def disconnect_ip(ip_str, reason="block list"):
             killed += 1
             continue
         disconnected_ts = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
-
         duration = _calc_duration(connected_ts, disconnected_ts)
         remote_status = "closed" if CLOSE_REMOTE_BY_CLIENT else "open"
         entry_dict = {
@@ -472,6 +476,8 @@ def disconnect_ip(ip_str, reason="block list"):
             "last_remote_ts": last_remote_ts, "close_reason": reason,
             "last_client_type": last_client_type,
             "remote_status": remote_status,
+            "plc_uid": info.get("plc_uid","") if info else "",    # <- add this line
+            "plc_name": info.get("plc_name","") if info else "",  # <- add this line
         }
         with session_history_lock: SESSION_HISTORY.append(entry_dict)
         if remote_status == "open":
@@ -511,6 +517,8 @@ def disconnect_connection_id(cid, reason="operator request"):
         "last_remote_ts": last_remote_ts, "close_reason": reason,
         "last_client_type": last_client_type,
         "remote_status": remote_status,
+        "plc_uid": info.get("plc_uid",""),    # <- add this line
+        "plc_name": info.get("plc_name",""),  # <- add this line
     }
     with session_history_lock: SESSION_HISTORY.append(entry_dict)
     if remote_status == "open":
@@ -556,7 +564,15 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                     ts_now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")[:-3]
                     if label == "CLIENT->REMOTE":
                         info["last_client_ts"] = ts_now
-                        if info.get("remote_closed", False): _should_break = True  # <- modify this line
+                        if info.get("remote_closed", False): _should_break = True
+                        if not info.get("plc_uid") and len(data) >= 0x59 and data[0:3] == b'\x44\x59\x30':  # <- add this line
+                            try:                                                                               # <- add this line
+                                info["plc_uid"]  = data[0x15:0x21].hex().upper()                             # <- add this line
+                                raw_name         = data[0x39:0x59]                                            # <- add this line
+                                name             = raw_name.rstrip(b'\x2d\x00').decode('ascii', errors='ignore').strip()  # <- add this line
+                                info["plc_name"] = name if name else ""                                       # <- add this line
+                            except Exception as e:                                                            # <- add this line
+                                tlog(f"{YELLOW}[{get_ts()}][!] [ID:#{conn_id}] plc_uid extraction failed: {e}{RESET}", "ERROR")  # <- add this line
                     else:
                         info["last_remote_ts"] = ts_now
             with rules_lock:
@@ -636,6 +652,8 @@ def pipe(source, destination, label, color, conn_id, client_ip):
                 "last_remote_type": info.get("last_remote_type","?"),
                 "last_client_type": info.get("last_client_type","?"),
                 "close_reason": close_reason, "remote_status": remote_status,
+                "plc_uid": info.get("plc_uid",""),    # <- add this line
+                "plc_name": info.get("plc_name",""),  # <- add this line
             }
             with session_history_lock: SESSION_HISTORY.append(entry_dict)
             if remote_status == "open":
@@ -662,6 +680,8 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
             "last_client_type": "?",
             "comment": conn_comment,
             "newcomer": not bool(entry),
+            "plc_uid": "",
+            "plc_name": "",
         }
     tlog(f"{GREEN}[{get_ts()}][+] [ID:#{conn_id}] CONNECTED: {client_ip}{tag}{comment} "
          f"(Active: {connection_count}){RESET}", "CONNECT")
@@ -719,6 +739,8 @@ def bridge(client_sock, addr, client_ip, remote_host, remote_port, force_ssl, co
                     "last_remote_type": info.get("last_remote_type","?"),
                     "last_client_type": info.get("last_client_type","?"),
                     "close_reason": close_reason, "remote_status": "closed",
+                    "plc_uid": info.get("plc_uid",""),
+                    "plc_name": info.get("plc_name",""),
                 })
             tlog(f"{RED}[{get_ts()}][-] [ID:#{conn_id}] DISCONNECTED {client_ip} "
                  f"(Active: {connection_count}) — {close_reason}{RESET}", "DISCONNECT")
@@ -1047,19 +1069,75 @@ def unblock_ip(ip):
 
 # ── VerboseLog functions ──────────────────────────────────────────────────
 
+def _build_verbose_log_handler(path):
+    handler = logging.FileHandler(path, mode='a', encoding='utf-8', delay=False)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    return handler
+
 def setup_verbose_log(path):
     global _verbose_log_handler
     try:
-        handler = logging.handlers.TimedRotatingFileHandler(
-            path, when='midnight', backupCount=1, encoding='utf-8', delay=False
-        )
-        handler.setFormatter(logging.Formatter('%(message)s'))
-        _verbose_log_handler = handler
+        _verbose_log_handler = _build_verbose_log_handler(path)
         tlog(f"{CYAN}[{get_ts()}][*] VerboseLog active → {path} "
-             f"(midnight rotation, 2-day retention, 500MB cap){RESET}", "INFO")
+             f"(line cap {VERBOSELOG_MAX_LINES}, 500MB backstop, midnight trim){RESET}", "INFO")
     except Exception as e:
         tlog(f"{RED}[{get_ts()}][!] VerboseLog setup failed: {e}{RESET}", "ERROR")
         _verbose_log_handler = None
+
+def _trim_verbose_log():
+    """Trim the verbose log to its last VERBOSELOG_MAX_LINES lines, then
+    rebuild the handler so writes continue against the new file. Runs under
+    verbose_log_file_lock so no write interleaves mid-trim."""
+    global _verbose_log_handler, VERBOSELOG_CAPPED
+    if not VERBOSELOG_PATH:
+        return
+    with verbose_log_file_lock:
+        try:
+            if not os.path.exists(VERBOSELOG_PATH):
+                return
+            with open(VERBOSELOG_PATH, 'r', encoding='utf-8', errors='replace') as f:
+                lines = f.readlines()
+            if len(lines) <= VERBOSELOG_MAX_LINES:
+                tlog(f"{CYAN}[{get_ts()}][*] VerboseLog trim skipped — {len(lines)} lines "
+                     f"(≤ cap {VERBOSELOG_MAX_LINES}){RESET}", "INFO")
+                return
+            kept = lines[-VERBOSELOG_MAX_LINES:]
+            tmp = VERBOSELOG_PATH + ".trimtmp"
+            with open(tmp, 'w', encoding='utf-8', errors='replace') as f:
+                f.writelines(kept)
+            # close current handler stream before swapping the file underneath it
+            if _verbose_log_handler is not None:
+                try: _verbose_log_handler.close()
+                except Exception as e:
+                    tlog(f"{RED}[{get_ts()}][!] VerboseLog trim: handler close failed: {e}{RESET}", "ERROR")
+            os.replace(tmp, VERBOSELOG_PATH)
+            # rebuild handler against the freshly trimmed file (Option 1)
+            try:
+                _verbose_log_handler = _build_verbose_log_handler(VERBOSELOG_PATH)
+            except Exception as e:
+                tlog(f"{RED}[{get_ts()}][!] VerboseLog trim: handler rebuild failed: {e}{RESET}", "ERROR")
+                _verbose_log_handler = None
+            VERBOSELOG_CAPPED = False
+            tlog(f"{CYAN}[{get_ts()}][*] VerboseLog trimmed → kept last {len(kept)} of {len(lines)} lines{RESET}", "CONTROL")
+        except Exception as e:
+            tlog(f"{RED}[{get_ts()}][!] VerboseLog trim failed: {e}{RESET}", "ERROR")
+
+# new function — add after _trim_verbose_log, before write_verbose_log
+def verboselog_trim_watcher():
+    """Sleep until the next local midnight, trim the verbose log, repeat."""
+    while True:
+        try:
+            now = datetime.datetime.now()
+            tomorrow = (now + datetime.timedelta(days=1)).replace(
+                hour=0, minute=0, second=5, microsecond=0)
+            sleep_secs = (tomorrow - now).total_seconds()
+            if sleep_secs < 0:
+                sleep_secs = 60
+            time.sleep(sleep_secs)
+            _trim_verbose_log()
+        except Exception as e:
+            tlog(f"{RED}[{get_ts()}][!] VerboseLog trim watcher error: {e}{RESET}", "ERROR")
+            time.sleep(60)
 
 def write_verbose_log(msg):
     global VERBOSELOG_CAPPED
@@ -1072,7 +1150,7 @@ def write_verbose_log(msg):
                 if not VERBOSELOG_CAPPED:
                     VERBOSELOG_CAPPED = True
                     tlog(f"{RED}[{get_ts()}][!] VerboseLog reached 500MB cap — "
-                         f"writes suspended until midnight rotation{RESET}", "ERROR")
+                         f"writes suspended until midnight line trimming {RESET}", "ERROR")
                 return
             if VERBOSELOG_CAPPED:
                 VERBOSELOG_CAPPED = False
@@ -1082,18 +1160,6 @@ def write_verbose_log(msg):
             _verbose_log_handler.emit(record)
         except Exception as e:                                                          # <- modify this line
             tlog(f"{RED}[{get_ts()}][!] VerboseLog write failed: {e}{RESET}", "ERROR") # <- modify this line
-
-def _find_rotated_verbose_log():
-    if not VERBOSELOG_PATH:
-        return None
-    try:
-        files = glob.glob(VERBOSELOG_PATH + '.*')
-        if not files:
-            return None
-        return max(files, key=os.path.getmtime)
-    except Exception as e:
-        tlog(f"{RED}[{get_ts()}][!] VerboseLog rotated file lookup failed: {e}{RESET}", "ERROR")
-        return None
 
 def read_verbose_log_for_id(cid, offset):
     tag    = f"[ID:#{cid}]"
@@ -1110,16 +1176,6 @@ def read_verbose_log_for_id(cid, offset):
             result["lines"] = [l for l in lines if tag in l]
         except Exception as e:
             tlog(f"{RED}[{get_ts()}][!] VerboseLog read error (current file) for ID:#{cid}: {e}{RESET}", "ERROR")
-    if offset == 0:
-        rotated = _find_rotated_verbose_log()
-        if rotated:
-            try:
-                with open(rotated, 'rb') as f:
-                    raw = f.read()
-                lines = raw.decode('utf-8', errors='replace').splitlines()
-                result["rotated_lines"] = [l for l in lines if tag in l]
-            except Exception as e:
-                tlog(f"{RED}[{get_ts()}][!] VerboseLog read error (rotated file) for ID:#{cid}: {e}{RESET}", "ERROR")
     return result
 
 
@@ -1274,6 +1330,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         "last_client_type": info.get("last_client_type","?"),
                         "duration": dur, "idle": idle_str,
                         "remote_closed": info.get("remote_closed", False),
+                        "plc_uid": info.get("plc_uid",""),    # <- add this line
+                        "plc_name": info.get("plc_name",""),  # <- add this line
                     })
             hist_active = []
             with active_lock:
@@ -1292,6 +1350,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                         "last_remote_type": info.get("last_remote_type","?"),
                         "last_client_type": info.get("last_client_type","?"),
                         "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                        "plc_uid": info.get("plc_uid",""),    # <- add this line
+                        "plc_name": info.get("plc_name",""),  # <- add this line
                     })
             with session_history_lock: hist_closed = list(SESSION_HISTORY)
             hist_closed.sort(key=lambda s: s.get("id", 0))
@@ -1439,13 +1499,15 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "last_client_type": info.get("last_client_type","?"),
                     "duration": dur, "idle": idle_str,
                     "remote_closed": info.get("remote_closed", False),
+                    "plc_uid": info.get("plc_uid",""),    # <- add this line
+                    "plc_name": info.get("plc_name",""),  # <- add this line
                 })
-
         hist_active = []
         with active_lock:
             for cid, info in ACTIVE_CONNECTIONS.items():
                 try:
                     dur_secs = int((now - datetime.datetime.strptime(info.get("connected_ts",""), "%d-%m-%Y %H:%M:%S.%f")).total_seconds())
+
                     dur = (f"{dur_secs}s" if dur_secs < 60 else f"{dur_secs//60}m {dur_secs%60}s"
                            if dur_secs < 3600 else f"{dur_secs//3600}h {(dur_secs%3600)//60}m")
                 except Exception: dur = "?"
@@ -1458,6 +1520,8 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                     "last_remote_type": info.get("last_remote_type","?"),
                     "last_client_type": info.get("last_client_type","?"),
                     "remote_status": "closed" if info.get("remote_closed", False) else "open",
+                    "plc_uid": info.get("plc_uid",""),    # <- add this line
+                    "plc_name": info.get("plc_name",""),  # <- add this line
                 })
         with session_history_lock: hist_closed = list(SESSION_HISTORY)
         hist_closed.sort(key=lambda s: s.get("id", 0))
@@ -1974,14 +2038,10 @@ class TitanHTTPHandler(BaseHTTPRequestHandler):
                 with verbose_log_file_lock:
                     open(VERBOSELOG_PATH, 'w').close()
                     VERBOSELOG_CAPPED = False
-                    rotated = _find_rotated_verbose_log()
-                    if rotated:
-                        open(rotated, 'w').close()
-                tlog(f"{YELLOW}[{get_ts()}][*] VerboseLog cleared by dashboard — current: {VERBOSELOG_PATH}" # <- modify this line
-                     f"{(' rotated: ' + rotated) if rotated else ''}{RESET}", "CONTROL")                     # <- modify this line
+                tlog(f"{YELLOW}[{get_ts()}][*] VerboseLog cleared by dashboard — {VERBOSELOG_PATH}{RESET}", "CONTROL")
                 self._json(200, {"status": "cleared", "path": VERBOSELOG_PATH})
             except Exception as e:
-                tlog(f"{RED}[{get_ts()}][!] VerboseLog clear failed: {e}{RESET}", "ERROR")  # <- add this line
+                tlog(f"{RED}[{get_ts()}][!] VerboseLog clear failed: {e}{RESET}", "ERROR")
                 self._json(500, {"error": str(e)})
             return
 
@@ -2034,7 +2094,7 @@ def _parse_args():
                         help="Print full version changelog and exit")
     parser.add_argument("--verboselog",          type=str, metavar="PATH",
                         help="Path for newcomer verbose log file "
-                             "(midnight rotation, 2-day retention, 500MB cap)")
+                             "(midnight trimming capped at 50000 lines / 500MB safety size cap)")
     return parser.parse_args()
 
 
@@ -2135,6 +2195,7 @@ if __name__ == "__main__":
         VERBOSELOG_PATH    = args.verboselog
         VERBOSELOG_ENABLED = True
         setup_verbose_log(VERBOSELOG_PATH)
+        threading.Thread(target=verboselog_trim_watcher, daemon=True).start()
 
     if args.hexdump:
         with hexdump_lock: HEXDUMP_ENABLED = True
