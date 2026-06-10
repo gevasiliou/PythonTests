@@ -6,6 +6,7 @@ After=network.target
 User=gv
 WorkingDirectory=/home/gv/pytests
 AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
+# this file lives in path /etc/systemd/system/rm-proxy.service
 # ExecStart=/usr/bin/python3 -u mitm-global-proxy-v28.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 20 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P"
 # ExecStart=/usr/bin/python3 -u mitm-global-proxy-v30.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 20 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P" --verboselog /home/gv/pytests/rm-proxy-verbose.log
 ExecStart=/usr/bin/python3 -u mitm-global-proxy-v32.py --listenport 443 --remoteserver rm.datakom.com.tr --remoteport 90 --closeclientbyremote --abuseblock 20 /home/gv/pytests/abuseipdb.key --rulesfile /home/gv/pytests/rm-proxy-ip.list --httpexpose 11111 --httpbind 0.0.0.0 --dashboardpath /home/gv/pytests/dashboard --dashboardauth admin:"p%%8!2!8Pp%%8!2!8Pp%%8!2!8Pp%%8!2!8P" --verboselog /home/gv/pytests/rm-proxy-verbose-v32.log
